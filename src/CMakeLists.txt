@@ -130,6 +130,19 @@ target_precompile_headers(
 		"${SOURCE_DIR}/PCH.h"
 )
 
+#追加 20220429
+target_compile_definitions(
+	"${PROJECT_NAME}"
+	PUBLIC
+		_CRT_SECURE_NO_WARNINGS
+)
+if(MSVC)
+  target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX-)
+else(MSVC)
+  target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic -Werror)
+endif(MSVC)
+
+
 if("${COPY_OUTPUT}")
 	add_custom_command(
 		TARGET "${PROJECT_NAME}"

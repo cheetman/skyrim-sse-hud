@@ -58,6 +58,23 @@
       ],
       "name": "vs2022-windows",
       "toolset": "v143"
+    },
+    {
+      "architecture": {
+        "strategy": "set",
+        "value": "x64"
+      },
+      "cacheVariables": {
+        "CMAKE_CXX_FLAGS": "/EHsc /MP /W4 /WX"
+      },
+      "generator": "Visual Studio 16 2019",
+      "inherits": [
+        "cmake-dev",
+        "vcpkg",
+        "windows"
+      ],
+      "name": "vs2019-windows",
+      "toolset": "v142"
     }
   ],
   "version": 3

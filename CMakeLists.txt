@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 
 project(
-	ExampleProject
+	skyrim-sse-hud
 	VERSION 1.0.0
 	LANGUAGES CXX
 )
