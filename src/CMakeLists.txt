@@ -3,6 +3,7 @@ set(ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
 set(SOURCE_DIR "${ROOT_DIR}/src")
 set(SOURCE_FILES
 	"${SOURCE_DIR}/main.h"
+	"${SOURCE_DIR}/papyrus.cpp"
 	"${SOURCE_DIR}/main.cpp"
 	"${SOURCE_DIR}/PCH.h"
 	"${SOURCE_DIR}/sse-imgui/cimgui.h"
@@ -11,6 +12,11 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/sse-imgui/sse-imgui.h"
 	"${SOURCE_DIR}/event/BSTMenuEvent.h"
 	"${SOURCE_DIR}/event/BSTScriptEvent.h"
+	"${SOURCE_DIR}/event/BSTCrosshairRefEvent.h"
+	"${SOURCE_DIR}/event/BSTCrosshairRefEvent.cpp"
+	
+	"${SOURCE_DIR}/hook/hudhook.h"
+	"${SOURCE_DIR}/hook/hudhook.cpp"
 	"${SOURCE_DIR}/utils/NameUtil.h"
 	"${SOURCE_DIR}/utils/NameUtil.cpp"
 	"${SOURCE_DIR}/utils/PlayerDataProvider.h"
