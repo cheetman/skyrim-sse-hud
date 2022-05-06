@@ -1,4 +1,7 @@
-skyrim-sse-hud
+HUD状态显示[SSE]
+
+## References
+* [SSE-ImGui](https://github.com/ryobg/sse-imgui)
 
 ## Requirements
 * [CMake](https://cmake.org/)
