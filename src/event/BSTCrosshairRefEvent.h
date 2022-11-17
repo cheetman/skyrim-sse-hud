@@ -9,11 +9,15 @@ using EventResult = RE::BSEventNotifyControl;
 static class BSTCrosshairRefEvent : public RE::BSTEventSink<SKSE::CrosshairRefEvent>
 {
 public:
-	//static BSTCrosshairRefEvent* GetSingleton();
+	static BSTCrosshairRefEvent* GetSingleton();
 
 	static void Register();
 
 	RE::TESObjectREFR* GetCrosshairReference();
+
+	//static RE::TESObjectREFR* getRef() {
+	//	return _cachedRef;
+	//}
 
 protected:
 	EventResult ProcessEvent(const SKSE::CrosshairRefEvent* a_event, RE::BSTEventSource<SKSE::CrosshairRefEvent>*);

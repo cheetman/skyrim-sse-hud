@@ -156,6 +156,7 @@ static float colorPlotHistogramZ = 0;
 static float colorPlotHistogramW = 1;
 
 static bool show_enemy_window = false;
+static bool show_crosshair = false;
 
 
 bool save_settings();

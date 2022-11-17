@@ -1,10 +1,10 @@
 #include "BSTCrosshairRefEvent.h"
 
-	//BSTCrosshairRefEvent* BSTCrosshairRefEvent::GetSingleton()
-	//{
-	//	static BSTCrosshairRefEvent singleton;
-	//	return std::addressof(singleton);
-	//}
+	BSTCrosshairRefEvent* BSTCrosshairRefEvent::GetSingleton()
+	{
+		static BSTCrosshairRefEvent singleton;
+		return std::addressof(singleton);
+	}
 
 	void BSTCrosshairRefEvent::Register()
 	{

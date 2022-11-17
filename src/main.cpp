@@ -442,6 +442,18 @@ static void __stdcall render(int active)
 		imgui.igEnd();
 	}
 
+	if (show_crosshair) {
+		imgui.igBegin("准星信息", nullptr, window_flags);
+		RE::TESObjectREFR* _cachedRef = BSTCrosshairRefEvent::GetSingleton()->GetCrosshairReference();
+		if (_cachedRef) {
+			logger::debug("准星");
+			logger::debug(StringUtil::Utf8ToGbk(_cachedRef->GetDisplayFullName()));
+			logger::debug(_cachedRef->GetFormID());
+		}
+
+		imgui.igEnd();
+	}
+
 	if (active) {
 		static bool show_demo_window = false;
 		static bool show_another_window = false;
@@ -1152,7 +1164,6 @@ bool load_settings()
 				show_enemy_window = j2["isShow"].get<bool>();
 			}
 
-			
 			if (j.contains("playerBaseInfo")) {
 				auto const& j2 = j["playerBaseInfo"];
 				show_player_base_info_window = j2["isShow"].get<bool>();
@@ -1167,9 +1178,6 @@ bool load_settings()
 					}
 				}
 			}
-
-
-
 		}
 	} catch (std::exception const& ex) {
 		//log() << "Unable to save settings file: " << ex.what() << std::endl;
@@ -1227,8 +1235,8 @@ bool save_settings()
 													   { "isShow", show_player_weapon_window },
 												   } },
 								   { "EnemyInfo", {
-													   { "isShow", show_enemy_window },
-												   } },
+													  { "isShow", show_enemy_window },
+												  } },
 								   { "DebugInfo", {
 													  { "isShow", show_player_debug_window },
 												  } }
