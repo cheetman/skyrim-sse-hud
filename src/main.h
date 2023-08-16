@@ -13,6 +13,7 @@
 #include <tchar.h>
 #include <windows.h>
 #include "hook\hudhook.h"
+#include "hook\d3d11hook.h"
 
 //static float health = 0.0f;
 //static float kMagicka = 0.0f;

@@ -14,7 +14,8 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/event/BSTScriptEvent.h"
 	"${SOURCE_DIR}/event/BSTCrosshairRefEvent.h"
 	"${SOURCE_DIR}/event/BSTCrosshairRefEvent.cpp"
-	
+	"${SOURCE_DIR}/hook/d3d11hook.h"
+	"${SOURCE_DIR}/hook/d3d11hook.cpp"
 	"${SOURCE_DIR}/hook/hudhook.h"
 	"${SOURCE_DIR}/hook/hudhook.cpp"
 	"${SOURCE_DIR}/utils/NameUtil.h"
@@ -124,10 +125,16 @@ target_include_directories(
 
 add_subdirectory("${ROOT_DIR}/external/CommonLibSSE" CommonLibSSE)
 
+
+find_package(imgui REQUIRED)
+find_package(minhook CONFIG REQUIRED)
+
 target_link_libraries(
 	"${PROJECT_NAME}"
 	PRIVATE
 		CommonLibSSE::CommonLibSSE
+		imgui::imgui
+		minhook::minhook
 )
 
 target_precompile_headers(

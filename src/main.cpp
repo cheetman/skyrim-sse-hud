@@ -9,10 +9,12 @@
 #include "main.h"
 #include <nlohmann/json.hpp>
 
+
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
 {
 	settings = "data\\skse\\plugins\\sse-hud.json";
 	fontFilePath = "data\\skse\\plugins\\msyh.ttc";
+
 
 	//MessageBox(nullptr, TEXT("测试中文."), nullptr, MB_OK);
 	load_settings();
@@ -658,8 +660,8 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 		{
 			logger::info("PostLoad"sv);
 			auto messaging = SKSE::GetMessagingInterface();
-			if (!messaging->RegisterListener("SSEIMGUI", ImguiMessageHandler)) {
-			}
+	/*		if (!messaging->RegisterListener("SSEIMGUI", ImguiMessageHandler)) {
+			}*/
 			break;
 		}
 	case SKSE::MessagingInterface::kPostPostLoad:
@@ -712,6 +714,12 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 			break;
 		}
 	}
+}
+
+void __cdecl installimgui(void*)
+{
+	Sleep(5000);
+	d3d11hook::Install();
 }
 
 void __cdecl RefreshGameInfo(void*)
@@ -1079,8 +1087,11 @@ void __cdecl RefreshAutoUnequipAmmo(void*)
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_skse)
 {
 	logger::info("SKSEPlugin_Load"sv);
-	//MessageBoxA(nullptr, "SKSEPlugin_Load", nullptr, MB_OK);
-	//Sleep(10000);
+#ifndef NDEBUG
+	MessageBoxA(nullptr, "SKSEPlugin_Load", nullptr, MB_OK);
+	Sleep(5000);
+#endif
+
 	logger::info("{} v{}"sv, Plugin::NAME, Plugin::VERSION.string());
 	SKSE::Init(a_skse);
 
@@ -1097,7 +1108,14 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 
 	_beginthread(RefreshGameInfo, 0, NULL);
 	_beginthread(RefreshAutoUnequipAmmo, 0, NULL);
+
+	
+	_beginthread(installimgui, 0, NULL);
+
+
 	return true;
+
+	//RE::BSRenderManager::GetSingleton();
 }
 
 bool load_settings()
