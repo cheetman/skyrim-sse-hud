@@ -15,6 +15,7 @@ namespace d3d11hook
 	ID3D11DeviceContext* g_pd3dContext = nullptr;
 	ID3D11RenderTargetView* D3D11RenderView = nullptr;
 	HWND g_hwnd = nullptr;
+	bool active = false;
 
 	typedef HRESULT(__stdcall* D3D11PresentHook)(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags);
 	D3D11PresentHook phookD3D11Present = nullptr;
@@ -25,7 +26,16 @@ namespace d3d11hook
 
 	LRESULT __stdcall WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 	{
-		ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
+		// 临时写法
+		if (uMsg == WM_KEYUP && wParam == VK_INSERT) {
+			active = !active;
+			ImGui::GetIO().MouseDrawCursor = active;
+		}
+
+
+		if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) {
+			return true;
+		}
 		return CallWindowProc(OldWndProc, hWnd, uMsg, wParam, lParam);
 	}
 
@@ -55,6 +65,9 @@ namespace d3d11hook
 
 		ImGui_ImplDX11_NewFrame();
 		ImGui_ImplWin32_NewFrame();
+		
+		
+		//ImGui::GetIO().MouseDrawCursor = true;
 
 		ImGui::NewFrame();
 		ImGui::Begin("TestWindow");
@@ -62,6 +75,7 @@ namespace d3d11hook
 		ImGui::End();
 
 		ImGui::EndFrame();
+
 		ImGui::Render();
 
 		//g_pd3dContext->OMSetRenderTargets(1, &D3D11RenderView, nullptr);
