@@ -10,12 +10,11 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam
 
 namespace d3d11hook
 {
-	ID3D11Device* D3D11Device = nullptr;
-	IDXGISwapChain* DXGISwapChain = nullptr;
-	ID3D11DeviceContext* D3D11DeviceContext = nullptr;
+	ID3D11Device* g_pd3dDevice = nullptr;
+	IDXGISwapChain* g_pSwapChain = nullptr;
+	ID3D11DeviceContext* g_pd3dContext = nullptr;
 	ID3D11RenderTargetView* D3D11RenderView = nullptr;
-
-	HWND TargetWindow = nullptr;
+	HWND g_hwnd = nullptr;
 
 	typedef HRESULT(__stdcall* D3D11PresentHook)(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags);
 	D3D11PresentHook phookD3D11Present = nullptr;
@@ -35,23 +34,22 @@ namespace d3d11hook
 	{
 		static std::once_flag ImguiInit;
 		std::call_once(ImguiInit, [&]() {
-			DXGISwapChain = pSwapChain;
-			if (SUCCEEDED(DXGISwapChain->GetDevice(IID_PPV_ARGS(&D3D11Device)))) {
-				D3D11Device->GetImmediateContext(&D3D11DeviceContext);
-				DXGI_SWAP_CHAIN_DESC sd;
-				DXGISwapChain->GetDesc(&sd);
-				TargetWindow = sd.OutputWindow;
-				ID3D11Texture2D* backBuffer;
-				DXGISwapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
-				D3D11Device->CreateRenderTargetView(backBuffer, nullptr, &D3D11RenderView);
-				backBuffer->Release();
-				OldWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(TargetWindow, GWLP_WNDPROC, (LONG_PTR)WndProc));
+			g_pSwapChain = pSwapChain;
+			if (SUCCEEDED(g_pSwapChain->GetDevice(IID_PPV_ARGS(&g_pd3dDevice)))) {
+				g_pd3dDevice->GetImmediateContext(&g_pd3dContext);
+
+		/*		ID3D11Texture2D* backBuffer;
+				g_pSwapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
+				g_pd3dDevice->CreateRenderTargetView(backBuffer, nullptr, &D3D11RenderView);
+				backBuffer->Release();*/
+
+				OldWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(g_hwnd, GWLP_WNDPROC, (LONG_PTR)WndProc));
 
 				ImGui::CreateContext();
-				ImGuiIO& io = ImGui::GetIO();
-				io.ConfigFlags = ImGuiConfigFlags_NoMouseCursorChange;
-				ImGui_ImplWin32_Init(TargetWindow);
-				ImGui_ImplDX11_Init(D3D11Device, D3D11DeviceContext);
+		/*		ImGuiIO& io = ImGui::GetIO();
+				io.ConfigFlags = ImGuiConfigFlags_NoMouseCursorChange;*/
+				ImGui_ImplWin32_Init(g_hwnd);
+				ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dContext);
 			}
 		});
 
@@ -66,7 +64,7 @@ namespace d3d11hook
 		ImGui::EndFrame();
 		ImGui::Render();
 
-		D3D11DeviceContext->OMSetRenderTargets(1, &D3D11RenderView, nullptr);
+		//g_pd3dContext->OMSetRenderTargets(1, &D3D11RenderView, nullptr);
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
 		return phookD3D11Present(pSwapChain, SyncInterval, Flags);
@@ -76,28 +74,22 @@ namespace d3d11hook
 
 	bool TryD3D11()
 	{
-		auto hd = FindWindow(0, "Skyrim Special Edition");
+		g_hwnd = FindWindow(0, "Skyrim Special Edition");
 
-		DXGI_SWAP_CHAIN_DESC swapChainDesc{};
-		swapChainDesc.BufferCount = 1;
-		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		swapChainDesc.OutputWindow = hd;
-		swapChainDesc.SampleDesc.Count = 1;
-		swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-		swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-		swapChainDesc.Windowed = TRUE;
+		DXGI_SWAP_CHAIN_DESC sd{};
+		sd.BufferCount = 1;
+		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		sd.OutputWindow = g_hwnd;
+		sd.SampleDesc.Count = 1;
+		sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+		sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+		sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+		sd.Windowed = ((GetWindowLongPtr(g_hwnd, GWL_STYLE) & WS_POPUP) != 0) ? false : true;
 
 		D3D_FEATURE_LEVEL featureLevel{};
 
-		//using TD3D11CreateDeviceAndSwapChain = HRESULT (*)(IDXGIAdapter * pAdapter, D3D_DRIVER_TYPE DriverType, HMODULE Software, UINT Flags, const D3D_FEATURE_LEVEL* pFeatureLevels,
-		//	UINT FeatureLevels, UINT SDKVersion, const DXGI_SWAP_CHAIN_DESC* pSwapChainDesc, IDXGISwapChain** ppSwapChain, ID3D11Device** ppDevice, D3D_FEATURE_LEVEL* pFeatureLevel,
-		//	ID3D11DeviceContext** ppImmediateContext);
-		//TD3D11CreateDeviceAndSwapChain RealD3D11CreateDeviceAndSwapChain = nullptr;
-		//RealD3D11CreateDeviceAndSwapChain = reinterpret_cast<TD3D11CreateDeviceAndSwapChain>(SKSE::PatchIAT(HookD3D11CreateDeviceAndSwapChain, "d3d11.dll", "D3D11CreateDeviceAndSwapChain"));
-
-		const auto hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, nullptr, 0, D3D11_SDK_VERSION, &swapChainDesc, &DXGISwapChain, &D3D11Device, &featureLevel, nullptr);
+		const auto hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, nullptr, 0, D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice, &featureLevel, nullptr);
 
 		if (FAILED(hr)) {
 			return false;
@@ -115,7 +107,7 @@ namespace d3d11hook
 				}
 
 				DWORD_PTR* pSwapChainVTable = nullptr;
-				pSwapChainVTable = (DWORD_PTR*)(DXGISwapChain);
+				pSwapChainVTable = (DWORD_PTR*)(g_pSwapChain);
 				pSwapChainVTable = (DWORD_PTR*)(pSwapChainVTable[0]);
 
 				if (MH_CreateHook((DWORD_PTR*)pSwapChainVTable[8], PresentHook, reinterpret_cast<void**>(&phookD3D11Present)) != MH_OK) {
