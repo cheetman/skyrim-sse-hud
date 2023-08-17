@@ -26,11 +26,14 @@ namespace d3d11hook
 
 	LRESULT __stdcall WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 	{
-		// 临时写法
+			// 临时写法
 		if (uMsg == WM_KEYUP && wParam == VK_INSERT) {
-			active = !active;
-			ImGui::GetIO().MouseDrawCursor = active;
+			if (ImGui::GetCurrentContext() != NULL) {
+				active = !active;
+			}
+
 		}
+
 
 
 		if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) {
@@ -67,7 +70,7 @@ namespace d3d11hook
 		ImGui_ImplWin32_NewFrame();
 		
 		
-		//ImGui::GetIO().MouseDrawCursor = true;
+		ImGui::GetIO().MouseDrawCursor = active;
 
 		ImGui::NewFrame();
 		ImGui::Begin("TestWindow");

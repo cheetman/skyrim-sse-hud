@@ -18,6 +18,8 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/hook/d3d11hook.cpp"
 	"${SOURCE_DIR}/hook/hudhook.h"
 	"${SOURCE_DIR}/hook/hudhook.cpp"
+	"${SOURCE_DIR}/memory/memory.h"
+	"${SOURCE_DIR}/memory/memory.cpp"
 	"${SOURCE_DIR}/utils/NameUtil.h"
 	"${SOURCE_DIR}/utils/NameUtil.cpp"
 	"${SOURCE_DIR}/utils/PlayerDataProvider.h"
@@ -155,7 +157,7 @@ else(MSVC)
   target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic -Werror)
 endif(MSVC)
 
-
+set(COPY_OUTPUT true)
 if("${COPY_OUTPUT}")
 	add_custom_command(
 		TARGET "${PROJECT_NAME}"
