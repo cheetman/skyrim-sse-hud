@@ -24,22 +24,65 @@ namespace d3d11hook
 	using WndProcFunc = std::add_pointer_t<LRESULT((__stdcall)(HWND, UINT, WPARAM, LPARAM))>;
 	WndProcFunc OldWndProc;
 
-	LRESULT __stdcall WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
+	LRESULT __stdcall WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 	{
-			// 临时写法
-		if (uMsg == WM_KEYUP && wParam == VK_INSERT) {
-			if (ImGui::GetCurrentContext() != NULL) {
-				active = !active;
-			}
 
-		}
+		//LRESULT ret = 0;
+		//if (active) {
+		//	//extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
+		//	ret = ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam);
+		//}
+		//return ret;
+
+
+		//switch (uMsg) {
+		//case WM_LBUTTONDOWN:
+		//	ImGui::GetIO().MouseDown[0] = true;
+		//	return ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam);
+		//	break;
+		//case WM_LBUTTONUP:
+		//	ImGui::GetIO().MouseDown[0] = false;
+		//	return ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam);
+		//	break;
+		//case WM_RBUTTONDOWN:
+		//	ImGui::GetIO().MouseDown[1] = true;
+		//	return ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam);
+		//	break;
+		//case WM_RBUTTONUP:
+		//	ImGui::GetIO().MouseDown[1] = false;
+		//	return ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam);
+		//	break;
+		//case WM_MBUTTONDOWN:
+		//	ImGui::GetIO().MouseDown[2] = true;
+		//	return ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam);
+		//	break;
+		//case WM_MBUTTONUP:
+		//	ImGui::GetIO().MouseDown[2] = false;
+		//	return ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam);
+		//	break;
+		//case WM_MOUSEWHEEL:
+		//	ImGui::GetIO().MouseWheel += GET_WHEEL_DELTA_WPARAM(wParam) > 0 ? +1.0f : -1.0f;
+		//	return ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam);
+		//	break;
+		//case WM_MOUSEMOVE:
+		//	ImGui::GetIO().MousePos.x = (signed short)(lParam);
+		//	ImGui::GetIO().MousePos.y = (signed short)(lParam >> 16);
+		//	return ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam);
+		//	break;
+		//}
+
+		//return CallWindowProc(OldWndProc, hwnd, uMsg, wParam, lParam);
 
 
 
-		if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) {
-			return true;
-		}
-		return CallWindowProc(OldWndProc, hWnd, uMsg, wParam, lParam);
+
+		//if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam)) {
+		//	return true;
+		//}
+		//return CallWindowProc(OldWndProc, hwnd, uMsg, wParam, lParam);
+
+
+		return OldWndProc( hwnd, uMsg, wParam, lParam);
 	}
 
 
@@ -51,37 +94,52 @@ namespace d3d11hook
 			if (SUCCEEDED(g_pSwapChain->GetDevice(IID_PPV_ARGS(&g_pd3dDevice)))) {
 				g_pd3dDevice->GetImmediateContext(&g_pd3dContext);
 
-		/*		ID3D11Texture2D* backBuffer;
+				ID3D11Texture2D* backBuffer;
 				g_pSwapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
 				g_pd3dDevice->CreateRenderTargetView(backBuffer, nullptr, &D3D11RenderView);
-				backBuffer->Release();*/
+				backBuffer->Release();
 
-				OldWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(g_hwnd, GWLP_WNDPROC, (LONG_PTR)WndProc));
+				
+				DXGI_SWAP_CHAIN_DESC sd;
+				pSwapChain->GetDesc(&sd);
+				auto window = sd.OutputWindow;
+
+				OldWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(window, GWLP_WNDPROC, (LONG_PTR)WndProc));
 
 				ImGui::CreateContext();
-		/*		ImGuiIO& io = ImGui::GetIO();
-				io.ConfigFlags = ImGuiConfigFlags_NoMouseCursorChange;*/
+				ImGuiIO& io = ImGui::GetIO();
+				io.ConfigFlags = ImGuiConfigFlags_NoMouseCursorChange;
 				ImGui_ImplWin32_Init(g_hwnd);
 				ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dContext);
 			}
 		});
 
+		if (GetAsyncKeyState(VK_INSERT) & 0x1) {
+			active ? active = false : active = true;
+		}
+		//ImGui::GetIO().WantCaptureMouse = active;
+		ImGui::GetIO().MouseDrawCursor = active;
+		//ImGui::GetIO().WantSetMousePos = true;
+
 		ImGui_ImplDX11_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		
 		
-		ImGui::GetIO().MouseDrawCursor = active;
 
 		ImGui::NewFrame();
-		ImGui::Begin("TestWindow");
-		ImGui::Text("Test.");
-		ImGui::End();
+
+		if (active) {
+			ImGui::Begin("TestWindow",&active);
+			ImGui::Text("Test.");
+			ImGui::End();
+		}
+
 
 		ImGui::EndFrame();
 
 		ImGui::Render();
 
-		//g_pd3dContext->OMSetRenderTargets(1, &D3D11RenderView, nullptr);
+		g_pd3dContext->OMSetRenderTargets(1, &D3D11RenderView, nullptr);
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
 		return phookD3D11Present(pSwapChain, SyncInterval, Flags);

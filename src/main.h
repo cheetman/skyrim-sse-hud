@@ -3,8 +3,8 @@
 #include "event\BSTScriptEvent.h"
 #include "event\BSTCrosshairRefEvent.h"
 
-#include "sse-imgui\imgui_wrapped.h"
-#include "sse-imgui\sse-imgui.h"
+//#include "sse-imgui\imgui_wrapped.h"
+//#include "sse-imgui\sse-imgui.h"
 #include "utils\GeneralUtil.h"
 #include "utils\NameUtil.h"
 #include "utils\PlayerDataProvider.h"
@@ -29,6 +29,20 @@
 //static float heavyArmor2 = 0.0f;
 //std::string playerRaceName = "";
 
+class OnInputEventDispatch
+{
+public:
+	static void Install()
+	{
+		auto& trampoline = SKSE::GetTrampoline();
+		REL::Relocation<uintptr_t> caller{ REL::ID(67315) };
+		_DispatchInputEvent = trampoline.write_call<5>(caller.address() + 0x7B, DispatchInputEvent);
+	}
+
+private:
+	static void DispatchInputEvent(RE::BSTEventSource<RE::InputEvent*>* a_dispatcher, RE::InputEvent** a_evns);
+	static inline REL::Relocation<decltype(DispatchInputEvent)> _DispatchInputEvent;
+};
 
 static bool auto_remove_ammo = false;
 
