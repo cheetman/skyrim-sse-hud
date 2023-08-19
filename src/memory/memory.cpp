@@ -17,8 +17,6 @@ void __cdecl RefreshGameInfo(void*)
 {
 	//auto game_hwnd = FindWindowA(NULL, "Skyrim Special Edition");
 	Sleep(10000);
-	//MenuOpenCloseEvent::Register();    //Register Bethesda Menu Event
-	//BSTCrosshairRefEvent::Register();  //Register Bethesda Menu Event
 
 	// 标记装备槽是否主要
 	//wornArmos[1].isMainSlotAlert =

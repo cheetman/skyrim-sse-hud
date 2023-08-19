@@ -5,6 +5,7 @@
 #include <MinHook.h>
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
+#include <imgui/menu.h>
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -128,11 +129,14 @@ namespace d3d11hook
 
 		ImGui::NewFrame();
 
-		if (active) {
+
+		menu::render(active);
+
+	/*	if (active) {
 			ImGui::Begin("TestWindow",&active);
 			ImGui::Text("Test.");
 			ImGui::End();
-		}
+		}*/
 
 
 		ImGui::EndFrame();
