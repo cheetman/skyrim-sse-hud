@@ -2,6 +2,7 @@
 #include <string>
 #include <RE/F/FormTypes.h>
 #include <RE/N/NiPoint3.h>
+#include <RE/A/ActorState.h>
 
 
 
@@ -146,6 +147,7 @@ struct ActorInfo
 	float kMagickaBase = 0.0f;
 	float kStaminaBase = 0.0f;
 	time_t updateTime = 0;
+	RE::ACTOR_LIFE_STATE lifeState = RE::ACTOR_LIFE_STATE::kAlive;
 };
 extern int actorCount;
 

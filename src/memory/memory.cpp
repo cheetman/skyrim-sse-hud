@@ -395,9 +395,10 @@ void __cdecl RefreshActorInfo(void*)
 				actorInfo[i].distance = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
 
 				//actorInfo[i].isDead = (actor->boolBits & RE::Actor::BOOL_BITS::kDead) == RE::Actor::BOOL_BITS::kDead;
-				actorInfo[i].isDead = actor->boolBits.all(RE::Actor::BOOL_BITS::kDead);
+				//actorInfo[i].isDead = actor->boolBits.all(RE::Actor::BOOL_BITS::kDead);
 				actorInfo[i].isTeammate = actor->IsPlayerTeammate();
 				
+				actorInfo[i].lifeState = actor->GetLifeState();
 				
 
 				;

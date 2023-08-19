@@ -503,7 +503,11 @@ namespace menu
 				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
 				float enemyHealthRate = item.kHealth / (item.kHealthBase == 0 ? 1 : item.kHealthBase);
 				if (enemyHealthRate > 0.85f) {
-					myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
+					if (item.kHealthBase == item.kHealth) {
+						myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%.0f/%.0f", item.kHealth, item.kHealthBase);
+					} else {
+						myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
+					}
 				} else if (enemyHealthRate < 0.20f) {
 					myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
 				} else if (enemyHealthRate <= 0) {
@@ -514,9 +518,11 @@ namespace menu
 				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
 				myText2("]");
 				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-				myText(" [%.1f]", item.distance);
+				myText(" [%.1f米]", item.distance);
 				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-				myText(" %s", item.isDead ? "已死亡" : "");
+				if (item.lifeState == RE::ACTOR_LIFE_STATE::kDead) {
+					myText(" %s",  "已死亡");
+				}
 				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
 				myText(" %s", item.isTeammate ? "队友" : "");
 			}
