@@ -284,7 +284,7 @@ private:
 		}
 
 		if (weapon) {
-			logger::trace("Equipped Item is {}, left {}"sv, weapon->GetDisplayName(), a_left);
+			//logger::trace("Equipped Item is {}, left {}"sv, weapon->GetDisplayName(), a_left);
 		}
 		return weapon;
 	};

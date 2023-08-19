@@ -464,8 +464,8 @@ namespace dinputhook
 			_DispatchInputEvent(a_dispatcher, a_evns);
 			return;
 		}
-		ProcessEvent(a_evns);
 		if (d3d11hook::active) {
+			ProcessEvent(a_evns);
 			_DispatchInputEvent(a_dispatcher, dummy);
 			return;
 		} else {

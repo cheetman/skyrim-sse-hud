@@ -35,7 +35,7 @@ namespace menu
 	static bool show_player_armor_window = true;
 	static bool show_player_weapon_window = true;
 	static bool show_player_debug_window = false;
-	static bool no_titlebar = false;
+	static bool no_titlebar = true;
 	static bool no_resize = false;
 	static bool no_collapse = false;
 	static bool no_background = false;
@@ -45,7 +45,7 @@ namespace menu
 	// 20220428 追加
 	static bool window_border = true;
 	static bool frame_border = true;
-	static bool bullet_text = false;
+	static bool bullet_text = true;
 
 	//static int refresh_time_show = 1000;
 	static float colorPlotHistogramX = 0.9f;
@@ -54,6 +54,7 @@ namespace menu
 	static float colorPlotHistogramW = 1;
 
 	static bool show_enemy_window = false;
+	static bool show_npc_window = false;
 	static bool show_crosshair = false;
 
 	// 基础属性进度条
@@ -108,6 +109,9 @@ namespace menu
 		RE::ActorValue::kMarksmanPowerModifier,
 		RE::ActorValue::kDestructionPowerModifier,
 	};
+
+	
+	std::vector<RE::Actor*> actors;
 
 	static void myText(const char* fmt, ...)
 	{
@@ -477,10 +481,19 @@ namespace menu
 						ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
 						myTextColored(ImVec4(0.0f, 0, 1, 1.0f), "%.0f", item.kMagicka);
 						ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-						//myText2("] %d", item.isSentient);
+						myText2("] %d", item.isSentient);
 						myText2("]");
 					}
 				}
+			}
+			ImGui::End();
+		}
+		if (show_npc_window) {
+			ImGui::Begin("npc信息", nullptr, window_flags);
+			for (auto item : actors) {
+				myText("[%d] %s [", item->GetLevel(), item->GetDisplayFullName());
+				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
+				myText2("%.0f ", item->GetActorValue(RE::ActorValue::kHealth));
 			}
 			ImGui::End();
 		}
@@ -501,7 +514,6 @@ namespace menu
 			static bool show_demo_window = false;
 			static bool show_another_window = false;
 
-			// 瀹樻柟Demo
 			if (show_demo_window)
 				ImGui::ShowDemoWindow(&show_demo_window);
 
@@ -532,13 +544,29 @@ namespace menu
 							ImGui::Checkbox("人物属性加成", &show_player_mod_window);
 							ImGui::Checkbox("其他信息", &show_player_debug_window);
 							ImGui::Checkbox("敌人信息", &show_enemy_window);
+							ImGui::Checkbox("npc信息", &show_npc_window);
+							
 
 							ImGui::Checkbox("是否自动卸除箭袋", &auto_remove_ammo);
+							// 测试
+							ImGui::Checkbox("Demo", &show_demo_window);
+							if (ImGui::Button("测试获取人物")) {
+								actors.clear();
+								auto pl = RE::ProcessLists::GetSingleton();
+								for (auto& handle : pl->highActorHandles) {
+									auto actor = handle.get().get();
+									if (actor) {
+										actors.push_back(actor);
+									}
+								}
+							}
 
 							ImGui::EndGroup();
 						}
 
-						if (ImGui::CollapsingHeader("窗口设置", 0)) {
+						 ImGui::Separator();
+
+						if (ImGui::CollapsingHeader("窗口设置", ImGuiTreeNodeFlags_DefaultOpen)) {
 							ImGui::BeginGroup();
 
 							static int style_idx = imgui_style_index;
@@ -619,7 +647,7 @@ namespace menu
 							}
 							ImGui::TreePop();
 						}
-						if (ImGui::TreeNode("属性修改(永久)")) {
+						if (ImGui::TreeNodeEx("属性修改(永久)", ImGuiTreeNodeFlags_DefaultOpen)) {
 							myText("修改项:");
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							ImGui::Combo("##cbActorValuePer", &statePerMod_selectIndex, perActorValues, ((int)(sizeof(perActorValues) / sizeof(*(perActorValues)))), 6);

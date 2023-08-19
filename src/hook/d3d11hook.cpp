@@ -110,6 +110,10 @@ namespace d3d11hook
 				ImGui::CreateContext();
 				ImGuiIO& io = ImGui::GetIO();
 				io.ConfigFlags = ImGuiConfigFlags_NoMouseCursorChange;
+				if (std::filesystem::exists(fontFilePath)) {
+					io.Fonts->AddFontFromFileTTF(fontFilePath.c_str(), 20.0f, NULL, io.Fonts->GetGlyphRangesChineseFull());
+				}
+
 				ImGui_ImplWin32_Init(g_hwnd);
 				ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dContext);
 			}
