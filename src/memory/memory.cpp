@@ -13,6 +13,9 @@ WeaponInfo ammoInfo;
 ArmorInfo wornArmos[32];
 PlayerInfo playerInfo;
 
+
+ bool isGameLoading = false;
+
 void __cdecl RefreshGameInfo(void*)
 {
 	//auto game_hwnd = FindWindowA(NULL, "Skyrim Special Edition");
@@ -333,4 +336,80 @@ void __cdecl RefreshGameInfo(void*)
 			}
 		}
 	}
+}
+
+
+ActorInfo actorInfo[50];
+int actorCount = 0;
+
+ActorInfo* getActorData()
+{
+	return &actorInfo[0];
+}
+
+
+auto IsSentient2(RE::Actor* actor) -> uint32_t
+{
+	using func_t = decltype(&IsSentient2);
+	REL::Relocation<func_t> func{ REL::ID(36889) };
+	return func(actor);
+}
+
+float calculateDistance(const RE::NiPoint3& p1, const RE::NiPoint3& p2)
+{
+	float dx = p2.x - p1.x;
+	float dy = p2.y - p1.y;
+	float dz = p2.z - p1.z;
+
+	return std::sqrt(dx * dx + dy * dy + dz * dz);
+}
+
+
+void __cdecl RefreshActorInfo(void*)
+{
+
+	
+	while (true) {
+		Sleep(1000);
+
+		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
+		auto pl = RE::ProcessLists::GetSingleton();
+
+		actorCount = pl->numberHighActors;
+		if (pl->highActorHandles.size() != actorCount) {
+			Sleep(1000);
+			continue;
+		}
+		for (int i = 0; i < actorCount; i++) {
+			auto actor = pl->highActorHandles[i].get().get();
+			if (actor) {
+				actorInfo[i].formId = FormIDToString(actor->GetFormID());
+				actorInfo[i].level = actor->GetLevel();
+				actorInfo[i].name = actor->GetDisplayFullName();
+				actorInfo[i].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth);
+				actorInfo[i].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
+				// 判断是否生物
+				actorInfo[i].isSentient = IsSentient2(actor);
+				actorInfo[i].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
+
+				actorInfo[i].distance = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
+
+				//actorInfo[i].isDead = (actor->boolBits & RE::Actor::BOOL_BITS::kDead) == RE::Actor::BOOL_BITS::kDead;
+				actorInfo[i].isDead = actor->boolBits.all(RE::Actor::BOOL_BITS::kDead);
+				actorInfo[i].isTeammate = actor->IsPlayerTeammate();
+				
+				
+
+				;
+			}
+
+		}
+
+	
+
+
+
+
+	}
+
 }

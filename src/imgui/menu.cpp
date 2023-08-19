@@ -4,6 +4,7 @@
 #include <imgui/menu.h>
 #include <memory/memory.h>
 #include <nlohmann/json.hpp>
+#include <event/BSTMenuEvent.h>
 
 std::filesystem::path settings = "";
 std::string fontFilePath = "";
@@ -110,7 +111,6 @@ namespace menu
 		RE::ActorValue::kDestructionPowerModifier,
 	};
 
-	
 	std::vector<RE::Actor*> actors;
 
 	static void myText(const char* fmt, ...)
@@ -144,9 +144,13 @@ namespace menu
 	void __fastcall render(int active)
 	{
 		// 当打开菜单时不显示
-		//if (isOpenCursorMenu && !active) {
-		//	return;
-		//}
+		if (isOpenCursorMenu && !active) {
+			return;
+		}
+		
+		if (isGameLoading && !active) {
+			return;
+		}
 
 		ImGuiWindowFlags window_flags = 0;
 		if (no_titlebar)
@@ -490,10 +494,31 @@ namespace menu
 		}
 		if (show_npc_window) {
 			ImGui::Begin("npc信息", nullptr, window_flags);
-			for (auto item : actors) {
-				myText("[%d] %s [", item->GetLevel(), item->GetDisplayFullName());
+			auto actorInfo = getActorData();
+			for (int i = 0; i < actorCount; i++) {
+				auto item = actorInfo[i];
+				myText("%s ", item.formId.c_str());
 				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-				myText2("%.0f ", item->GetActorValue(RE::ActorValue::kHealth));
+				myText("[%d] %s [", item.level, item.name.c_str());
+				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
+				float enemyHealthRate = item.kHealth / (item.kHealthBase == 0 ? 1 : item.kHealthBase);
+				if (enemyHealthRate > 0.85f) {
+					myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
+				} else if (enemyHealthRate < 0.20f) {
+					myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
+				} else if (enemyHealthRate <= 0) {
+					myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "0/%.0f",  item.kHealthBase);
+				} else {
+					myText2("%.1f/%.0f", item.kHealth, item.kHealthBase);
+				}
+				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
+				myText2("]");
+				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
+				myText(" [%.1f]", item.distance);
+				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
+				myText(" %s", item.isDead ? "已死亡" : "");
+				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
+				myText(" %s", item.isTeammate ? "队友" : "");
 			}
 			ImGui::End();
 		}
@@ -532,7 +557,7 @@ namespace menu
 								if (ImGui::TreeNodeEx("人物基本属性 - 设置", ImGuiTreeNodeFlags_DefaultOpen)) {
 									ImGui::Checkbox("显示进度条", &flag_process);
 									if (flag_process) {
-										ImGui::ColorEdit4("进度条颜色", (float*)&(style.Colors[ImGuiCol_PlotHistogram]), ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+										ImGui::ColorEdit4("进度条颜色", &style.Colors[ImGuiCol_PlotHistogram].x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
 									}
 									ImGui::TreePop();
 								}
@@ -545,7 +570,6 @@ namespace menu
 							ImGui::Checkbox("其他信息", &show_player_debug_window);
 							ImGui::Checkbox("敌人信息", &show_enemy_window);
 							ImGui::Checkbox("npc信息", &show_npc_window);
-							
 
 							ImGui::Checkbox("是否自动卸除箭袋", &auto_remove_ammo);
 							// 测试
@@ -564,7 +588,7 @@ namespace menu
 							ImGui::EndGroup();
 						}
 
-						 ImGui::Separator();
+						ImGui::Separator();
 
 						if (ImGui::CollapsingHeader("窗口设置", ImGuiTreeNodeFlags_DefaultOpen)) {
 							ImGui::BeginGroup();

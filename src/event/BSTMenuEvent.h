@@ -1,7 +1,7 @@
 #pragma once
 #include <PCH.h>
 
-static bool isOpenCursorMenu = false;
+extern bool isOpenCursorMenu;
 
 class MenuOpenCloseEvent : public RE::BSTEventSink<RE::MenuOpenCloseEvent>
 {

@@ -51,8 +51,6 @@ struct EnemyInfo
 
 
 
-
-
 template <typename T1, typename T2>
 inline T2* dyna_cast(T1* base)
 {
@@ -65,5 +63,6 @@ inline T2* dyna_cast(T1* base)
 void hookInstall();
 
 EnemyInfo* getEnemyData();
+
 
 //bool Hook_EnemyHealthLookupReferenceByHandle_impl(const RE::RefHandle& refHandle, RE::NiPointer<RE::TESObjectREFR>& refrOut);

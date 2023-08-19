@@ -7,6 +7,7 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/main.cpp"
 	"${SOURCE_DIR}/PCH.h"
 	"${SOURCE_DIR}/event/BSTMenuEvent.h"
+	"${SOURCE_DIR}/event/BSTMenuEvent.cpp"
 	"${SOURCE_DIR}/event/BSTScriptEvent.h"
 	"${SOURCE_DIR}/event/BSTCrosshairRefEvent.h"
 	"${SOURCE_DIR}/event/BSTCrosshairRefEvent.cpp"
@@ -163,7 +164,7 @@ if("${COPY_OUTPUT}")
 		TARGET "${PROJECT_NAME}"
 		POST_BUILD
 		COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:${PROJECT_NAME}>" "${Skyrim64Path}/Data/SKSE/Plugins/"
-		COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_PDB_FILE:${PROJECT_NAME}>" "${Skyrim64Path}/Data/SKSE/Plugins/"
+		#COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_PDB_FILE:${PROJECT_NAME}>" "${Skyrim64Path}/Data/SKSE/Plugins/"
 		VERBATIM
 	)
 endif()

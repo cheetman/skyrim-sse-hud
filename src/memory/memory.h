@@ -102,6 +102,57 @@ struct WeaponInfo
 } ;
 
 
+struct ActorInfo
+{
+	std::string formId = "";
+	std::string name = "";         // 玩家名
+	std::string ArrowDamage = "";  //弓箭伤害
+	std::string DamageRight = "";  //右手伤害
+	std::string DamageLeft = "";   //左手伤害
+	std::string DamageStr = "";    //HUD显示内容
+	//std::string DamageResist = ""; // 护甲值
+	float kDamageResist = 0.0f;   // 护甲值
+	float kPoisonResist = 0.0f;   // 毒抗
+	float kResistFire = 0.0f;     // 火炕
+	float kResistFrost = 0.0f;    // 冰抗
+	float kResistShock = 0.0f;    // 雷抗
+	float kResistMagic = 0.0f;    // 法抗
+	float kResistDisease = 0.0f;  // 抗疾病
+	//RE::NiPoint3 Angle;           // 视角
+	//RE::NiPoint3 Position;        // 坐标
+
+	//float kOneHandedModifier = 0.0f;
+	//float kTwoHandedModifier = 0.0f;
+	//float kMarksmanModifier = 0.0f;
+	//float kSmithingModifier = 0.0f;
+	//float kSmithingPowerModifier = 0.0f;
+	//float kSmithingSkillAdvance = 0.0f;
+	//float kAlchemyModifier = 0.0f;
+	//float kAlchemySkillAdvance = 0.0f;
+	//float kAlchemyPowerModifier = 0.0f;
+	//float kEnchantingModifier = 0.0f;
+	//float kEnchantingPowerModifier = 0.0f;
+	//float kEnchantingSkillAdvance = 0.0f;
+
+	float kHealth = 0.0f;
+	float kMagicka = 0.0f;
+	float kStamina = 0.0f;
+	float distance = 0.0f;
+	int isSentient = 0;
+	int level = 0.0f;
+	bool isDead = false;
+	bool isTeammate = false;
+	float kHealthBase = 0.0f;
+	float kMagickaBase = 0.0f;
+	float kStaminaBase = 0.0f;
+	time_t updateTime = 0;
+};
+extern int actorCount;
+
+
+
+
+
 extern WeaponInfo leftWeaponInfo;
 extern WeaponInfo rightWeaponInfo;
 extern WeaponInfo ammoInfo;
@@ -111,3 +162,13 @@ extern bool startflag;
 
 
 void __cdecl RefreshGameInfo(void*);
+void __cdecl RefreshActorInfo(void*);
+
+
+	ActorInfo* getActorData();
+
+
+	// 临时
+
+	
+extern bool isGameLoading;

@@ -113,6 +113,7 @@ int SehFilter(DWORD dwExceptionCode)
 //	sseimgui->render_listener(&render, 0);
 //}
 
+
 void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 {
 	switch (a_msg->type) {
@@ -132,11 +133,14 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 	case SKSE::MessagingInterface::kPreLoadGame:
 		{
 			logger::info("kPreLoadGame"sv);
+			isGameLoading = true;
+			startflag = true;
 			break;
 		}
 	case SKSE::MessagingInterface::kPostLoadGame:
 		{
 			logger::info("kPostLoadGame"sv);
+			isGameLoading = false;
 			startflag = true;
 			break;
 		}
@@ -178,9 +182,9 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 
 void __cdecl installimgui(void*)
 {
+	Sleep(5000);
 	MenuOpenCloseEvent::Register();    //Register Bethesda Menu Event
 	BSTCrosshairRefEvent::Register();  //Register Bethesda Menu Event
-	Sleep(5000);
 	d3d11hook::Install();
 	dinputhook ::Install();
 }
@@ -247,9 +251,10 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 
 	_beginthread(RefreshGameInfo, 0, NULL);
 	_beginthread(RefreshAutoUnequipAmmo, 0, NULL);
-
+	_beginthread(RefreshActorInfo, 0, NULL);
 	_beginthread(installimgui, 0, NULL);
 
+	
 	return true;
 
 	//RE::BSRenderManager::GetSingleton();
