@@ -501,30 +501,36 @@ namespace menu
 				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
 				myText("[%d] %s [", item.level, item.name.c_str());
 				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-				float enemyHealthRate = item.kHealth / (item.kHealthBase == 0 ? 1 : item.kHealthBase);
-				if (enemyHealthRate > 0.85f) {
-					if (item.kHealthBase == item.kHealth) {
-						myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%.0f/%.0f", item.kHealth, item.kHealthBase);
-					} else {
-						myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
-					}
-				} else if (enemyHealthRate < 0.20f) {
-					myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
-				} else if (enemyHealthRate <= 0) {
-					myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "0/%.0f",  item.kHealthBase);
+
+				if (item.lifeState == RE::ACTOR_LIFE_STATE::kDead) {
+					myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "已死亡");
 				} else {
-					myText2("%.1f/%.0f", item.kHealth, item.kHealthBase);
+					float enemyHealthRate = item.kHealth / (item.kHealthBase == 0 ? 1 : item.kHealthBase);
+					if (enemyHealthRate > 0.85f) {
+						if (item.kHealthBase == item.kHealth) {
+							myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%.0f/%.0f", item.kHealth, item.kHealthBase);
+						} else {
+							myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
+						}
+					} else if (enemyHealthRate < 0.20f) {
+						myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
+					} else if (enemyHealthRate <= 0) {
+						myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "0/%.0f", item.kHealthBase);
+					} else {
+						myText2("%.1f/%.0f", item.kHealth, item.kHealthBase);
+					}
 				}
+
 				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
 				myText2("]");
 				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
 				myText(" [%.1f米]", item.distance);
 				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-				if (item.lifeState == RE::ACTOR_LIFE_STATE::kDead) {
-					myText(" %s",  "已死亡");
-				}
-				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
 				myText(" %s", item.isTeammate ? "队友" : "");
+				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
+				myText(" %s", item.idHostile ? "敌对" : "");
+
+				
 			}
 			ImGui::End();
 		}

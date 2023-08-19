@@ -399,6 +399,9 @@ void __cdecl RefreshActorInfo(void*)
 				actorInfo[i].isTeammate = actor->IsPlayerTeammate();
 				
 				actorInfo[i].lifeState = actor->GetLifeState();
+				actorInfo[i].idHostile = actor->IsHostileToActor(player);
+
+				
 				
 
 				;

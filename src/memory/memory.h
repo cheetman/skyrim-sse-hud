@@ -143,10 +143,12 @@ struct ActorInfo
 	int level = 0.0f;
 	bool isDead = false;
 	bool isTeammate = false;
+	bool idHostile = false;
 	float kHealthBase = 0.0f;
 	float kMagickaBase = 0.0f;
 	float kStaminaBase = 0.0f;
 	time_t updateTime = 0;
+	
 	RE::ACTOR_LIFE_STATE lifeState = RE::ACTOR_LIFE_STATE::kAlive;
 };
 extern int actorCount;
