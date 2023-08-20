@@ -107,8 +107,8 @@ struct ActorInfo
 {
 	RE::Actor* ptr = nullptr;
 
-
-	std::string formId = "";
+	std::string formIdStr = "";
+	RE::FormID formId = 0;
 	std::string name = "";         // 玩家名
 	std::string ArrowDamage = "";  //弓箭伤害
 	std::string DamageRight = "";  //右手伤害
@@ -154,7 +154,6 @@ struct ActorInfo
 	
 	RE::ACTOR_LIFE_STATE lifeState = RE::ACTOR_LIFE_STATE::kAlive;
 };
-extern int actorCount;
 
 
 
@@ -172,7 +171,12 @@ void __cdecl RefreshGameInfo(void*);
 void __cdecl RefreshActorInfo(void*);
 
 
-	ActorInfo* getActorData();
+extern int npcCount;
+extern int enemyCount;
+extern int teammateCount;
+ActorInfo* getTeammateData();
+ActorInfo* getNpcData();
+ActorInfo* getEnemy2Data();
 
 
 	// 临时

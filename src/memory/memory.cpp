@@ -1,9 +1,7 @@
 #include "memory.h"
-#include <utils/PlayerDataProvider.h>
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
-
-
+#include <utils/PlayerDataProvider.h>
 
 int refresh_time_data = 300;
 bool startflag = false;
@@ -13,8 +11,7 @@ WeaponInfo ammoInfo;
 ArmorInfo wornArmos[32];
 PlayerInfo playerInfo;
 
-
- bool isGameLoading = false;
+bool isGameLoading = false;
 
 void __cdecl RefreshGameInfo(void*)
 {
@@ -306,7 +303,6 @@ void __cdecl RefreshGameInfo(void*)
 				} else {
 					rightWeaponInfo.isExist = false;
 				}
-
 				// 弹药
 				auto ammo = player->GetCurrentAmmo();
 				if (ammo) {
@@ -338,15 +334,25 @@ void __cdecl RefreshGameInfo(void*)
 	}
 }
 
+ActorInfo npcInfo[50];
+ActorInfo enemyInfo[50];
+ActorInfo teammateInfo[50];
+int npcCount = 0;
+int enemyCount = 0;
+int teammateCount = 0;
 
-ActorInfo actorInfo[50];
-int actorCount = 0;
-
-ActorInfo* getActorData()
+ActorInfo* getNpcData()
 {
-	return &actorInfo[0];
+	return &npcInfo[0];
 }
-
+ActorInfo* getEnemy2Data()
+{
+	return &enemyInfo[0];
+}
+ActorInfo* getTeammateData()
+{
+	return &teammateInfo[0];
+}
 
 auto IsSentient2(RE::Actor* actor) -> uint32_t
 {
@@ -364,11 +370,19 @@ float calculateDistance(const RE::NiPoint3& p1, const RE::NiPoint3& p2)
 	return std::sqrt(dx * dx + dy * dy + dz * dz);
 }
 
+bool compareByLevel(const ActorInfo& info1, const ActorInfo& info2)
+{
+	if (info1.isDead != info2.isDead) {
+		return info1.isDead > info2.isDead;
+	} else if (info1.level != info2.level) {
+		return info1.level < info2.level;
+	} else {
+		return info1.formId < info2.formId;
+	}
+}
 
 void __cdecl RefreshActorInfo(void*)
 {
-
-	
 	while (true) {
 		Sleep(1000);
 
@@ -376,49 +390,69 @@ void __cdecl RefreshActorInfo(void*)
 		auto pl = RE::ProcessLists::GetSingleton();
 
 		//actorCount = pl->numberHighActors;
-		actorCount = pl->highActorHandles.size();
+		auto actorCount = pl->highActorHandles.size();
 		//if (pl->highActorHandles.size() != actorCount) {
 		//	Sleep(1000);
 		//	continue;
 		//}
+
+		int tmpNpcCount = 0;
+		int tmpEnemyCount = 0;
+		int tmpTeammateCount = 0;
+
 		for (int i = 0; i < actorCount; i++) {
 			auto actor = pl->highActorHandles[i].get().get();
 			if (actor) {
-				actorInfo[i].formId = FormIDToString(actor->GetFormID());
-				actorInfo[i].ptr = actor;
-				actorInfo[i].level = actor->GetLevel();
-				actorInfo[i].name = actor->GetDisplayFullName();
-				actorInfo[i].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth);
-				actorInfo[i].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
-				// 判断是否生物
-				actorInfo[i].isSentient = IsSentient2(actor);
-				actorInfo[i].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
+				//actorInfo[i].isTeammate = actor->IsPlayerTeammate();
+				if (actor->IsPlayerTeammate()) {
+					teammateInfo[tmpTeammateCount].formId = actor->GetFormID();
+					teammateInfo[tmpTeammateCount].formIdStr = FormIDToString(actor->GetFormID());
+					teammateInfo[tmpTeammateCount].ptr = actor;
+					teammateInfo[tmpTeammateCount].level = actor->GetLevel();
+					teammateInfo[tmpTeammateCount].name = actor->GetDisplayFullName();
+					teammateInfo[tmpTeammateCount].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth);
+					teammateInfo[tmpTeammateCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
+					teammateInfo[tmpTeammateCount].isSentient = IsSentient2(actor);
+					teammateInfo[tmpTeammateCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
+					teammateInfo[tmpTeammateCount].distance = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
+					teammateInfo[tmpTeammateCount++].lifeState = actor->GetLifeState();
+					//teammateInfo[i].idHostile = actor->IsHostileToActor(player);
+				} else if (actor->IsHostileToActor(player)) {
+					enemyInfo[tmpEnemyCount].formId = actor->GetFormID();
+					enemyInfo[tmpEnemyCount].formIdStr = FormIDToString(actor->GetFormID());
+					enemyInfo[tmpEnemyCount].ptr = actor;
+					enemyInfo[tmpEnemyCount].level = actor->GetLevel();
+					enemyInfo[tmpEnemyCount].name = actor->GetDisplayFullName();
+					enemyInfo[tmpEnemyCount].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth);
+					enemyInfo[tmpEnemyCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
+					enemyInfo[tmpEnemyCount].isSentient = IsSentient2(actor);
+					enemyInfo[tmpEnemyCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
+					enemyInfo[tmpEnemyCount].distance = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
+					enemyInfo[tmpEnemyCount++].lifeState = actor->GetLifeState();
+				} else {
+					npcInfo[tmpNpcCount].formId = actor->GetFormID();
+					npcInfo[tmpNpcCount].formIdStr = FormIDToString(actor->GetFormID());
+					npcInfo[tmpNpcCount].ptr = actor;
+					npcInfo[tmpNpcCount].level = actor->GetLevel();
+					npcInfo[tmpNpcCount].name = actor->GetDisplayFullName();
+					npcInfo[tmpNpcCount].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth);
+					npcInfo[tmpNpcCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
+					npcInfo[tmpNpcCount].isSentient = IsSentient2(actor);
+					npcInfo[tmpNpcCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
+					npcInfo[tmpNpcCount].distance = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
+					npcInfo[tmpNpcCount++].lifeState = actor->GetLifeState();
+				}
 
-				actorInfo[i].distance = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
+				std::sort(teammateInfo, teammateInfo + tmpTeammateCount, compareByLevel);
+				std::sort(enemyInfo, enemyInfo + tmpEnemyCount, compareByLevel);
+				std::sort(npcInfo, npcInfo + tmpNpcCount, compareByLevel);
 
-				//actorInfo[i].isDead = (actor->boolBits & RE::Actor::BOOL_BITS::kDead) == RE::Actor::BOOL_BITS::kDead;
-				//actorInfo[i].isDead = actor->boolBits.all(RE::Actor::BOOL_BITS::kDead);
-				actorInfo[i].isTeammate = actor->IsPlayerTeammate();
 				
-				actorInfo[i].lifeState = actor->GetLifeState();
-				actorInfo[i].idHostile = actor->IsHostileToActor(player);
-
-				
-				/*std::string tmp = actorInfo[i].formId;
-				tmp.append(" - %d %s [%.0f/%.0f]");
-				wornArmos[i].treeId = tmp;*/
-				
-
-				;
 			}
-
 		}
 
-	
-
-
-
-
+		npcCount = tmpNpcCount;
+		enemyCount = tmpEnemyCount;
+		teammateCount = tmpTeammateCount;
 	}
-
 }

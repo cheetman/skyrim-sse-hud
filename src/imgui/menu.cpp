@@ -141,6 +141,93 @@ namespace menu
 		va_end(args);
 	}
 
+	void __fastcall buildNpcInfo(int active, ActorInfo* actorInfo, int actorCount)
+	{
+		if (active) {
+			for (int i = 0; i < actorCount; i++) {
+				auto item = actorInfo[i];
+
+				char hp[16] = "已死亡";
+				if (item.lifeState != RE::ACTOR_LIFE_STATE::kDead) {
+					sprintf(hp, "%.0f/%.0f", item.kHealth, item.kHealthBase);
+				}
+
+				if (ImGui::TreeNodeEx(item.formIdStr.c_str(), 0, "%s - [%d] %s [ %s ]", item.formIdStr.c_str(), item.level, item.name.c_str(), hp)) {
+					if (ImGui::SmallButton("传送到目标")) {
+						std::string commandStr = "player.moveto ";
+						commandStr.append(item.formIdStr);
+
+						// 调用控制台
+						const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
+						const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
+						if (script) {
+							const auto selectedRef = RE::Console::GetSelectedRef();
+							script->SetCommand(commandStr);
+							script->CompileAndRun(selectedRef.get());
+							delete script;
+						}
+					}
+
+					if (item.lifeState != RE::ACTOR_LIFE_STATE::kDead) {
+						if (ImGui::SmallButton("传送到玩家")) {
+							std::string commandStr = "moveto player";
+							//commandStr.append(item.formId);
+							//commandStr.append("moveto player");
+
+							// 调用控制台
+							const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
+							const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
+							if (script) {
+								script->SetCommand(commandStr);
+								script->CompileAndRun(item.ptr);
+								delete script;
+							}
+						}
+					}
+
+					ImGui::TreePop();
+				}
+			}
+		} else {
+			for (int i = 0; i < actorCount; i++) {
+				auto item = actorInfo[i];
+
+				//myText("%s ", item.formId.c_str());
+				//ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
+				myText("[%d] %s [", item.level, item.name.c_str());
+				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+
+				if (item.lifeState == RE::ACTOR_LIFE_STATE::kDead) {
+					myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "已死亡");
+				} else {
+					float enemyHealthRate = item.kHealth / (item.kHealthBase == 0 ? 1 : item.kHealthBase);
+					if (enemyHealthRate > 0.85f) {
+						if (item.kHealthBase == item.kHealth) {
+							myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%.0f/%.0f", item.kHealth, item.kHealthBase);
+						} else {
+							myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
+						}
+					} else if (enemyHealthRate < 0.20f) {
+						myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
+					} else if (enemyHealthRate <= 0) {
+						myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "0/%.0f", item.kHealthBase);
+					} else {
+						myText2("%.1f/%.0f", item.kHealth, item.kHealthBase);
+					}
+				}
+
+				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				myText2("]");
+				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				myText(" [%.1f米]", item.distance);
+				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				myText(" %s", item.isTeammate ? "队友" : "");
+				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				myText(" %s", item.idHostile ? "敌对" : "");
+			}
+		}
+	}
+
 	void __fastcall render(int active)
 	{
 		// 当打开菜单时不显示
@@ -499,86 +586,26 @@ namespace menu
 		}
 		if (show_npc_window) {
 			ImGui::Begin("npc信息", nullptr, window_flags);
-			auto actorInfo = getActorData();
-
-			if (active) {
-				for (int i = 0; i < actorCount; i++) {
-					auto item = actorInfo[i];
-					if (ImGui::TreeNodeEx(item.formId.c_str(), 0, "%s - %d %s [%.0f/%.0f]", item.formId.c_str(), item.level, item.name.c_str(), item.kHealth, item.kHealthBase)) {
-						if (ImGui::SmallButton("传送到目标")) {
-							std::string commandStr = "player.moveto ";
-							commandStr.append(item.formId);
-
-							// 调用控制台
-							const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
-							const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
-							if (script) {
-								const auto selectedRef = RE::Console::GetSelectedRef();
-								script->SetCommand(commandStr);
-								script->CompileAndRun(selectedRef.get());
-								delete script;
-							}
-						}
-
-						if (item.lifeState != RE::ACTOR_LIFE_STATE::kDead) {
-							if (ImGui::SmallButton("传送到玩家")) {
-								std::string commandStr = "moveto player";
-								//commandStr.append(item.formId);
-								//commandStr.append("moveto player");
-
-								// 调用控制台
-								const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
-								const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
-								if (script) {
-									script->SetCommand(commandStr);
-									script->CompileAndRun(item.ptr);
-									delete script;
-								}
-							}
-						}
-
-						ImGui::TreePop();
-					}
-				}
-			} else {
-				for (int i = 0; i < actorCount; i++) {
-					auto item = actorInfo[i];
-
-					//myText("%s ", item.formId.c_str());
-					//ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-					myText("[%d] %s [", item.level, item.name.c_str());
-					ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-
-					if (item.lifeState == RE::ACTOR_LIFE_STATE::kDead) {
-						myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "已死亡");
-					} else {
-						float enemyHealthRate = item.kHealth / (item.kHealthBase == 0 ? 1 : item.kHealthBase);
-						if (enemyHealthRate > 0.85f) {
-							if (item.kHealthBase == item.kHealth) {
-								myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%.0f/%.0f", item.kHealth, item.kHealthBase);
-							} else {
-								myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
-							}
-						} else if (enemyHealthRate < 0.20f) {
-							myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
-						} else if (enemyHealthRate <= 0) {
-							myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "0/%.0f", item.kHealthBase);
-						} else {
-							myText2("%.1f/%.0f", item.kHealth, item.kHealthBase);
-						}
-					}
-
-					ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-					myText2("]");
-					ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-					myText(" [%.1f米]", item.distance);
-					ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-					myText(" %s", item.isTeammate ? "队友" : "");
-					ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-					myText(" %s", item.idHostile ? "敌对" : "");
-				}
+			if (npcCount > 0) {
+				myText("npc：");
+				auto actorInfo = getNpcData();
+				buildNpcInfo(active, actorInfo, npcCount);
+				ImGui::Separator();
 			}
-			ImGui::End();
+
+			if (npcCount > 0) {
+				myText("enemy：");
+				auto actorInfo = getEnemy2Data();
+				buildNpcInfo(active, actorInfo, enemyCount);
+				ImGui::Separator();
+			}
+
+			if (npcCount > 0) {
+				myText("team：");
+				auto actorInfo = getTeammateData();
+				buildNpcInfo(active, actorInfo, teammateCount);
+				ImGui::End();
+			}
 		}
 
 		if (show_crosshair) {
