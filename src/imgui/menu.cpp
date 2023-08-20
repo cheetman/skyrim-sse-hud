@@ -1,10 +1,10 @@
 #include <event/BSTCrosshairRefEvent.h>
+#include <event/BSTMenuEvent.h>
 #include <hook/hudhook.h>
 #include <imgui.h>
 #include <imgui/menu.h>
 #include <memory/memory.h>
 #include <nlohmann/json.hpp>
-#include <event/BSTMenuEvent.h>
 
 std::filesystem::path settings = "";
 std::string fontFilePath = "";
@@ -147,7 +147,7 @@ namespace menu
 		if (isOpenCursorMenu && !active) {
 			return;
 		}
-		
+
 		if (isGameLoading && !active) {
 			return;
 		}
@@ -408,32 +408,37 @@ namespace menu
 						//imgui.igPushStyleColor
 					}
 
-					if (ImGui::TreeNode(item.treeId.c_str())) {
-						myText("类型: %s", item.formTypeName.c_str());
-						myText("装备类型: %s", item.armorTypeName.c_str());
-						myText("ID: %s", item.formID.c_str());
-						ImGui::SameLine(0, 0);
-						if (ImGui::SmallButton("卸载")) {
-							std::string commandStr = "player.unequipItem ";
-							commandStr.append(item.formID);
+					if (active) {
+						if (ImGui::TreeNode(item.treeId.c_str())) {
+							myText("类型: %s", item.formTypeName.c_str());
+							myText("装备类型: %s", item.armorTypeName.c_str());
+							myText("ID: %s", item.formID.c_str());
+							ImGui::SameLine(0, 0);
+							if (ImGui::SmallButton("卸载")) {
+								std::string commandStr = "player.unequipItem ";
+								commandStr.append(item.formID);
 
-							// 调用控制台
-							const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
-							const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
-							if (script) {
-								const auto selectedRef = RE::Console::GetSelectedRef();
-								script->SetCommand(commandStr);
-								script->CompileAndRun(selectedRef.get());
-								delete script;
+								// 调用控制台
+								const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
+								const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
+								if (script) {
+									const auto selectedRef = RE::Console::GetSelectedRef();
+									script->SetCommand(commandStr);
+									script->CompileAndRun(selectedRef.get());
+									delete script;
+								}
 							}
+							myText("价格: %d$", item.goldValue);
+							myText("属性值: %d", item.value);
+							myText("装备等级: %.2f", item.armorRating);
+							myText("插槽: %s", item.equipSlotName.c_str());
+							myText("重量: %.1f", item.weight);
+							ImGui::TreePop();
 						}
-						myText("价格: %d$", item.goldValue);
-						myText("属性值: %d", item.value);
-						myText("装备等级: %.2f", item.armorRating);
-						myText("插槽: %s", item.equipSlotName.c_str());
-						myText("重量: %.1f", item.weight);
-						ImGui::TreePop();
+					} else {
+						myText("%s", item.treeId.c_str());
 					}
+
 				} else {
 					if (item.isMainSlotAlert) {
 						unWornArmosAlertSlots += 1 << i;
@@ -495,42 +500,83 @@ namespace menu
 		if (show_npc_window) {
 			ImGui::Begin("npc信息", nullptr, window_flags);
 			auto actorInfo = getActorData();
-			for (int i = 0; i < actorCount; i++) {
-				auto item = actorInfo[i];
-				myText("%s ", item.formId.c_str());
-				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-				myText("[%d] %s [", item.level, item.name.c_str());
-				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
 
-				if (item.lifeState == RE::ACTOR_LIFE_STATE::kDead) {
-					myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "已死亡");
-				} else {
-					float enemyHealthRate = item.kHealth / (item.kHealthBase == 0 ? 1 : item.kHealthBase);
-					if (enemyHealthRate > 0.85f) {
-						if (item.kHealthBase == item.kHealth) {
-							myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%.0f/%.0f", item.kHealth, item.kHealthBase);
-						} else {
-							myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
+			if (active) {
+				for (int i = 0; i < actorCount; i++) {
+					auto item = actorInfo[i];
+					if (ImGui::TreeNodeEx(item.formId.c_str(), 0, "%s - %d %s [%.0f/%.0f]", item.formId.c_str(), item.level, item.name.c_str(), item.kHealth, item.kHealthBase)) {
+						if (ImGui::SmallButton("传送到目标")) {
+							std::string commandStr = "player.moveto ";
+							commandStr.append(item.formId);
+
+							// 调用控制台
+							const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
+							const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
+							if (script) {
+								const auto selectedRef = RE::Console::GetSelectedRef();
+								script->SetCommand(commandStr);
+								script->CompileAndRun(selectedRef.get());
+								delete script;
+							}
 						}
-					} else if (enemyHealthRate < 0.20f) {
-						myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
-					} else if (enemyHealthRate <= 0) {
-						myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "0/%.0f", item.kHealthBase);
-					} else {
-						myText2("%.1f/%.0f", item.kHealth, item.kHealthBase);
+
+						if (item.lifeState != RE::ACTOR_LIFE_STATE::kDead) {
+							if (ImGui::SmallButton("传送到玩家")) {
+								std::string commandStr = "moveto player";
+								//commandStr.append(item.formId);
+								//commandStr.append("moveto player");
+
+								// 调用控制台
+								const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
+								const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
+								if (script) {
+									script->SetCommand(commandStr);
+									script->CompileAndRun(item.ptr);
+									delete script;
+								}
+							}
+						}
+
+						ImGui::TreePop();
 					}
 				}
+			} else {
+				for (int i = 0; i < actorCount; i++) {
+					auto item = actorInfo[i];
 
-				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-				myText2("]");
-				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-				myText(" [%.1f米]", item.distance);
-				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-				myText(" %s", item.isTeammate ? "队友" : "");
-				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-				myText(" %s", item.idHostile ? "敌对" : "");
+					//myText("%s ", item.formId.c_str());
+					//ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
+					myText("[%d] %s [", item.level, item.name.c_str());
+					ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
 
-				
+					if (item.lifeState == RE::ACTOR_LIFE_STATE::kDead) {
+						myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "已死亡");
+					} else {
+						float enemyHealthRate = item.kHealth / (item.kHealthBase == 0 ? 1 : item.kHealthBase);
+						if (enemyHealthRate > 0.85f) {
+							if (item.kHealthBase == item.kHealth) {
+								myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%.0f/%.0f", item.kHealth, item.kHealthBase);
+							} else {
+								myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
+							}
+						} else if (enemyHealthRate < 0.20f) {
+							myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
+						} else if (enemyHealthRate <= 0) {
+							myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "0/%.0f", item.kHealthBase);
+						} else {
+							myText2("%.1f/%.0f", item.kHealth, item.kHealthBase);
+						}
+					}
+
+					ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
+					myText2("]");
+					ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
+					myText(" [%.1f米]", item.distance);
+					ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
+					myText(" %s", item.isTeammate ? "队友" : "");
+					ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
+					myText(" %s", item.idHostile ? "敌对" : "");
+				}
 			}
 			ImGui::End();
 		}
@@ -586,7 +632,7 @@ namespace menu
 							ImGui::Checkbox("是否自动卸除箭袋", &auto_remove_ammo);
 							// 测试
 							ImGui::Checkbox("Demo", &show_demo_window);
-							if (ImGui::Button("测试获取人物")) {
+							/*		if (ImGui::Button("测试获取人物")) {
 								actors.clear();
 								auto pl = RE::ProcessLists::GetSingleton();
 								for (auto& handle : pl->highActorHandles) {
@@ -595,7 +641,7 @@ namespace menu
 										actors.push_back(actor);
 									}
 								}
-							}
+							}*/
 
 							ImGui::EndGroup();
 						}

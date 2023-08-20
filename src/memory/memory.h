@@ -105,6 +105,9 @@ struct WeaponInfo
 
 struct ActorInfo
 {
+	RE::Actor* ptr = nullptr;
+
+
 	std::string formId = "";
 	std::string name = "";         // 玩家名
 	std::string ArrowDamage = "";  //弓箭伤害

@@ -375,15 +375,17 @@ void __cdecl RefreshActorInfo(void*)
 		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 		auto pl = RE::ProcessLists::GetSingleton();
 
-		actorCount = pl->numberHighActors;
-		if (pl->highActorHandles.size() != actorCount) {
-			Sleep(1000);
-			continue;
-		}
+		//actorCount = pl->numberHighActors;
+		actorCount = pl->highActorHandles.size();
+		//if (pl->highActorHandles.size() != actorCount) {
+		//	Sleep(1000);
+		//	continue;
+		//}
 		for (int i = 0; i < actorCount; i++) {
 			auto actor = pl->highActorHandles[i].get().get();
 			if (actor) {
 				actorInfo[i].formId = FormIDToString(actor->GetFormID());
+				actorInfo[i].ptr = actor;
 				actorInfo[i].level = actor->GetLevel();
 				actorInfo[i].name = actor->GetDisplayFullName();
 				actorInfo[i].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth);
@@ -402,6 +404,9 @@ void __cdecl RefreshActorInfo(void*)
 				actorInfo[i].idHostile = actor->IsHostileToActor(player);
 
 				
+				/*std::string tmp = actorInfo[i].formId;
+				tmp.append(" - %d %s [%.0f/%.0f]");
+				wornArmos[i].treeId = tmp;*/
 				
 
 				;
