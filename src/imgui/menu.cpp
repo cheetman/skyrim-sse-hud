@@ -185,6 +185,12 @@ namespace menu
 						}
 					}
 
+					for (int i2 = 0; i2 < item.inventoryCount; i2++) {
+						auto inv = item.Inventorys[i2];
+						//myText("%s - %s [%d] %.1f ", inv.formIdStr, inv.name, inv.isWorn, inv.weight);
+						//ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+					}
+
 					ImGui::TreePop();
 				}
 			}

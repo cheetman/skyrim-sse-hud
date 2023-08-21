@@ -102,6 +102,13 @@ struct WeaponInfo
 	bool isTwoHand = false;            // 是否占用双手
 } ;
 
+struct InventoryInfo
+{
+	std::string name = "";
+	std::string formIdStr = "";
+	float weight = 0;
+	bool isWorn = 0;
+};
 
 struct ActorInfo
 {
@@ -153,6 +160,11 @@ struct ActorInfo
 	time_t updateTime = 0;
 	
 	RE::ACTOR_LIFE_STATE lifeState = RE::ACTOR_LIFE_STATE::kAlive;
+	
+
+	 int inventoryCount = 0;
+
+	InventoryInfo Inventorys[50];
 };
 
 
@@ -166,7 +178,7 @@ extern WeaponInfo ammoInfo;
 extern int refresh_time_data;
 extern bool startflag;
 
-
+extern bool isRefreshActorInfo;
 void __cdecl RefreshGameInfo(void*);
 void __cdecl RefreshActorInfo(void*);
 
