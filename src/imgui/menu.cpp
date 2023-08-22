@@ -71,6 +71,10 @@ namespace menu
 	static float statePerMod_nowValue = 0;
 	static float statePerMod_newValue = 0;
 
+	ImVec4 colorProgress(1.0f, 0.5f, 0.0f, 1.0f);
+
+	
+
 	const char* actorValues[] = {
 		"负重 [kCarryWeight]",
 		"生命恢复 [kHealRate]",
@@ -153,6 +157,9 @@ namespace menu
 				}
 
 				if (ImGui::TreeNodeEx(item.formIdStr.c_str(), 0, "%s - [%d] %s [ %s ]", item.formIdStr.c_str(), item.level, item.name.c_str(), hp)) {
+					ImGui::PushID(i + 1000);
+					char str1[16];
+					sprintf(str1, "%s%s", u8"\uf101", "传送到目标");
 					if (ImGui::SmallButton("传送到目标")) {
 						std::string commandStr = "player.moveto ";
 						commandStr.append(item.formIdStr);
@@ -167,9 +174,13 @@ namespace menu
 							delete script;
 						}
 					}
+					ImGui::PopID();
 
 					if (item.lifeState != RE::ACTOR_LIFE_STATE::kDead) {
-						if (ImGui::SmallButton("传送到玩家")) {
+						ImGui::PushID(i + 2000);
+				/*		char str2[16];
+						sprintf(str2, "%s%s", u8"\uf100", "传送到玩家");*/
+						if (ImGui::SmallButton("\uf100传送到玩家")) {
 							std::string commandStr = "moveto player";
 							//commandStr.append(item.formId);
 							//commandStr.append("moveto player");
@@ -183,12 +194,26 @@ namespace menu
 								delete script;
 							}
 						}
+						ImGui::PopID();
 					}
 
-					for (int i2 = 0; i2 < item.inventoryCount; i2++) {
-						auto inv = item.Inventorys[i2];
-						myText("%s - %s [%d] %.1f ", inv.formIdStr.c_str(), inv.name.c_str(), inv.isWorn, inv.weight);
-						//ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+					if (item.inventoryCount > 0) {
+						ImGui::Separator();
+						for (int i2 = 0; i2 < item.inventoryCount; i2++) {
+							auto inv = item.Inventorys[i2];
+							myText("%s %s - %s %s %.1f ", u8"\uf01c", inv.formIdStr.c_str(), inv.isWorn ? "[装备中]" : "", inv.name.c_str(), inv.weight);
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::PushID(i2);
+
+							char str3[16]; 
+							sprintf(str3, "%s%s", u8"\uf019", "获取");
+
+							if (ImGui::SmallButton(str3)) {
+								auto player = RE::PlayerCharacter::GetSingleton();
+								item.ptr->RemoveItem(inv.ptr, 1, RE::ITEM_REMOVE_REASON::kSelling, 0, player);
+							}
+							ImGui::PopID();
+						}
 					}
 
 					ImGui::TreePop();
@@ -214,7 +239,7 @@ namespace menu
 							myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
 						}
 					} else if (enemyHealthRate < 0.20f) {
-						myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
+						myTextColored(ImVec4(1, 0.5f, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
 					} else if (enemyHealthRate <= 0) {
 						myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "0/%.0f", item.kHealthBase);
 					} else {
@@ -276,7 +301,9 @@ namespace menu
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 				char buf[32];
 				sprintf(buf, "%d/%d", (int)playerInfo.kHealth, (int)playerInfo.kHealthBase);
+				ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colorProgress);
 				ImGui::ProgressBar(progress, ImVec2(0.f, 0.f), buf);
+				ImGui::PopStyleColor();
 
 				myText("耐力:");
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -650,7 +677,16 @@ namespace menu
 								if (ImGui::TreeNodeEx("人物基本属性 - 设置", ImGuiTreeNodeFlags_DefaultOpen)) {
 									ImGui::Checkbox("显示进度条", &flag_process);
 									if (flag_process) {
-										ImGui::ColorEdit4("进度条颜色", &style.Colors[ImGuiCol_PlotHistogram].x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+										//colorPro;
+										//ImVec4 plotHistogramColor = ImGui::GetStyleColorVec4(ImGuiCol_PlotHistogram);
+										//if (ImGui::ColorEdit4("进度条颜色", &style.Colors[ImGuiCol_PlotHistogram].x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf)) {
+										if (ImGui::ColorEdit4("进度条颜色", &colorProgress.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf))
+											;
+										//ImGui::PushStyleColor(ImGuiCol_PlotHistogram, plotHistogramColor);  // 设置新的颜色
+
+										/*	style.Colors[ImGuiCol_PlotHistogram].x = */
+
+										//ImGui::ColorEdit4("进度条颜色", &style.Colors[ImGuiCol_PlotHistogram].x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
 									}
 									ImGui::TreePop();
 								}

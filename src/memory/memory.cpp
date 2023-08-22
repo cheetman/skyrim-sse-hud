@@ -392,6 +392,16 @@ bool compareByLevel(const ActorInfo& info1, const ActorInfo& info2)
 }
 
 
+bool compareForInventory(const InventoryInfo& info1, const InventoryInfo& info2)
+{
+	if (info1.isWorn != info2.isWorn) {
+		return info1.isWorn > info2.isWorn;
+	} else {
+		return info1.formId < info2.formId;
+	}
+}
+
+
 void RefreshInventory(RE::Actor* actor, ActorInfo* actorInfo, int tmpIndex)
 {
 	int i = 0;
@@ -410,15 +420,22 @@ void RefreshInventory(RE::Actor* actor, ActorInfo* actorInfo, int tmpIndex)
 			//const auto armor = item->As<RE::TESObjectARMO>();
 		if (count > 0) {
 			//actorInfo[tmpIndex].Inventorys[i].formIdStr = FormIDToString(armor->GetFormID());
-			actorInfo[tmpIndex].Inventorys[i].formIdStr = FormIDToString(item->GetFormID());
-			actorInfo[tmpIndex].Inventorys[i].name = entry.get()->GetDisplayName();
-			//actorInfo[tmpIndex].Inventorys[i].name = armor->GetFullName();
-			actorInfo[tmpIndex].Inventorys[i].weight = item->GetWeight();
-			actorInfo[tmpIndex].Inventorys[i++].isWorn = entry.get()->IsWorn();
-			
+			if (item->GetWeight() >= 0) {
+				actorInfo[tmpIndex].Inventorys[i].ptr = item;
+				actorInfo[tmpIndex].Inventorys[i].formId = item->GetFormID();
+				actorInfo[tmpIndex].Inventorys[i].formIdStr = FormIDToString(item->GetFormID());
+				actorInfo[tmpIndex].Inventorys[i].name = entry.get()->GetDisplayName();
+				//actorInfo[tmpIndex].Inventorys[i].name = armor->GetFullName();
+				actorInfo[tmpIndex].Inventorys[i].weight = item->GetWeight();
+				actorInfo[tmpIndex].Inventorys[i++].isWorn = entry.get()->IsWorn();
+			}
 		}
 	}
 
+	if (i > 1) {
+		std::sort(actorInfo[tmpIndex].Inventorys, actorInfo[tmpIndex].Inventorys + i, compareForInventory);
+	}
+	
 	actorInfo[tmpIndex].inventoryCount = i;
 
 }
@@ -433,7 +450,7 @@ void __cdecl RefreshActorInfo(void*)
 
 
 	while (true) {
-		Sleep(1000);
+		Sleep(500);
 		//isRefreshActorInfo = true;
 		nowIndex = !nowIndex;
 
@@ -469,6 +486,9 @@ void __cdecl RefreshActorInfo(void*)
 					actorInfo[nowIndex].teammateInfo[tmpTeammateCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
 					actorInfo[nowIndex].teammateInfo[tmpTeammateCount].distance = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
 					actorInfo[nowIndex].teammateInfo[tmpTeammateCount].lifeState = actor->GetLifeState();
+					actorInfo[nowIndex].teammateInfo[tmpTeammateCount].isInCombat = actor->IsInCombat();
+
+					
 					//teammateInfo[i].idHostile = actor->IsHostileToActor(player);
 					RefreshInventory(actor, actorInfo[nowIndex].teammateInfo, tmpTeammateCount++);
 
@@ -506,6 +526,7 @@ void __cdecl RefreshActorInfo(void*)
 					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
 					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].distance = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
 					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].lifeState = actor->GetLifeState();
+					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].isInCombat = actor->IsInCombat();
 
 					RefreshInventory(actor, actorInfo[nowIndex].enemyInfo, tmpEnemyCount++);
 					//int i = 0;
@@ -540,6 +561,7 @@ void __cdecl RefreshActorInfo(void*)
 					actorInfo[nowIndex].npcInfo[tmpNpcCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
 					actorInfo[nowIndex].npcInfo[tmpNpcCount].distance = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
 					actorInfo[nowIndex].npcInfo[tmpNpcCount].lifeState = actor->GetLifeState();
+					actorInfo[nowIndex].npcInfo[tmpNpcCount].isInCombat = actor->IsInCombat();
 
 					
 					RefreshInventory(actor, actorInfo[nowIndex].npcInfo, tmpNpcCount++);

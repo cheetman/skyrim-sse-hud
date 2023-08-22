@@ -10,6 +10,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a
 {
 	settings = "data\\skse\\plugins\\sse-hud.json";
 	fontFilePath = "data\\skse\\plugins\\msyh.ttc";
+	//fontFilePath2 = "data\\skse\\plugins\\xyght3.0-62354202.ttf";
 
 	//MessageBox(nullptr, TEXT("测试中文."), nullptr, MB_OK);
 	menu::load_settings();

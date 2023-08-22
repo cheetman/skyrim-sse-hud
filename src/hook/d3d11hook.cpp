@@ -111,7 +111,15 @@ namespace d3d11hook
 				ImGuiIO& io = ImGui::GetIO();
 				io.ConfigFlags = ImGuiConfigFlags_NoMouseCursorChange;
 				if (std::filesystem::exists(fontFilePath)) {
-					io.Fonts->AddFontFromFileTTF(fontFilePath.c_str(), 20.0f, NULL, io.Fonts->GetGlyphRangesChineseFull());
+					//io.Fonts->AddFontFromFileTTF(fontFilePath.c_str(), 20.0f, NULL, io.Fonts->GetGlyphRangesDefault());
+					io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\xyght3.0-62354202.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesChineseFull());
+					//io.Fonts->AddFontFromFileTTF(fontFilePath.c_str(), 20.0f, NULL, io.Fonts->GetGlyphRangesChineseFull());
+
+					ImFontConfig config;
+					config.MergeMode = true;
+					config.GlyphMinAdvanceX = 13.0f; 
+					static const ImWchar icon_ranges[] = { 0xf000, 0xf3ff, 0 };
+					io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\fontawesome-webfont.ttf", 18.0f, &config, icon_ranges);
 				}
 
 				ImGui_ImplWin32_Init(g_hwnd);

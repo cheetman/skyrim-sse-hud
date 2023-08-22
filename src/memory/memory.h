@@ -104,8 +104,10 @@ struct WeaponInfo
 
 struct InventoryInfo
 {
+	RE::TESBoundObject* ptr = nullptr;
 	std::string name = "";
 	std::string formIdStr = "";
+	RE::FormID formId = 0;
 	float weight = 0;
 	bool isWorn = 0;
 };
@@ -154,6 +156,8 @@ struct ActorInfo
 	bool isDead = false;
 	bool isTeammate = false;
 	bool idHostile = false;
+	bool isInCombat = false;
+	
 	float kHealthBase = 0.0f;
 	float kMagickaBase = 0.0f;
 	float kStaminaBase = 0.0f;
