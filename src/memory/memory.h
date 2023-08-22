@@ -178,18 +178,30 @@ extern WeaponInfo ammoInfo;
 extern int refresh_time_data;
 extern bool startflag;
 
-extern bool isRefreshActorInfo;
+//extern bool isRefreshActorInfo;
 void __cdecl RefreshGameInfo(void*);
 void __cdecl RefreshActorInfo(void*);
 
 
-extern int npcCount;
-extern int enemyCount;
-extern int teammateCount;
+
 ActorInfo* getTeammateData();
 ActorInfo* getNpcData();
 ActorInfo* getEnemy2Data();
+int getTeammateCount();
+int getNpcCount();
+int getEnemyCount();
 
+
+
+struct Actor2Info
+{
+	int npcCount = 0;
+	int enemyCount = 0;
+	int teammateCount = 0;
+	ActorInfo npcInfo[50];
+	ActorInfo enemyInfo[50];
+	ActorInfo teammateInfo[50];
+};
 
 	// 临时
 

@@ -187,7 +187,7 @@ namespace menu
 
 					for (int i2 = 0; i2 < item.inventoryCount; i2++) {
 						auto inv = item.Inventorys[i2];
-						//myText("%s - %s [%d] %.1f ", inv.formIdStr, inv.name, inv.isWorn, inv.weight);
+						myText("%s - %s [%d] %.1f ", inv.formIdStr.c_str(), inv.name.c_str(), inv.isWorn, inv.weight);
 						//ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 					}
 
@@ -592,26 +592,28 @@ namespace menu
 		}
 		if (show_npc_window) {
 			ImGui::Begin("npc信息", nullptr, window_flags);
-			if (npcCount > 0) {
+			//if (!isRefreshActorInfo) {
+			if (getNpcCount() > 0) {
 				myText("npc：");
 				auto actorInfo = getNpcData();
-				buildNpcInfo(active, actorInfo, npcCount);
+				buildNpcInfo(active, actorInfo, getNpcCount());
 				ImGui::Separator();
 			}
 
-			if (npcCount > 0) {
+			if (getEnemyCount() > 0) {
 				myText("enemy：");
 				auto actorInfo = getEnemy2Data();
-				buildNpcInfo(active, actorInfo, enemyCount);
+				buildNpcInfo(active, actorInfo, getEnemyCount());
 				ImGui::Separator();
 			}
 
-			if (npcCount > 0) {
+			if (getTeammateCount() > 0) {
 				myText("team：");
 				auto actorInfo = getTeammateData();
-				buildNpcInfo(active, actorInfo, teammateCount);
-				ImGui::End();
+				buildNpcInfo(active, actorInfo, getTeammateCount());
 			}
+			//}
+			ImGui::End();
 		}
 
 		if (show_crosshair) {

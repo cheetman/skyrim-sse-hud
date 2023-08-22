@@ -334,24 +334,34 @@ void __cdecl RefreshGameInfo(void*)
 	}
 }
 
-ActorInfo npcInfo[50];
-ActorInfo enemyInfo[50];
-ActorInfo teammateInfo[50];
-int npcCount = 0;
-int enemyCount = 0;
-int teammateCount = 0;
+
+Actor2Info actorInfo[2];
+int nowIndex = 0;
 
 ActorInfo* getNpcData()
 {
-	return &npcInfo[0];
+	return &actorInfo[!nowIndex].npcInfo[0];
 }
 ActorInfo* getEnemy2Data()
 {
-	return &enemyInfo[0];
+	return &actorInfo[!nowIndex].enemyInfo[0];
 }
 ActorInfo* getTeammateData()
 {
-	return &teammateInfo[0];
+	return &actorInfo[!nowIndex].teammateInfo[0];
+}
+
+int getNpcCount()
+{
+	return actorInfo[!nowIndex].npcCount;
+}
+int getEnemyCount()
+{
+	return actorInfo[!nowIndex].enemyCount;
+}
+int getTeammateCount()
+{
+	return actorInfo[!nowIndex].teammateCount;
 }
 
 auto IsSentient2(RE::Actor* actor) -> uint32_t
@@ -387,20 +397,23 @@ void RefreshInventory(RE::Actor* actor, ActorInfo* actorInfo, int tmpIndex)
 	int i = 0;
 
 		// 装备信息
-	const auto inv = actor->GetInventory([](RE::TESBoundObject& a_object) {
-		return !a_object.IsDynamicForm() && !a_object.IsDeleted() && !a_object.IsIgnored();
-		//return a_object.IsArmor();
-	});
+	//const auto inv = actor->GetInventory([](RE::TESBoundObject& a_object) {
+	//	//return !a_object.IsDynamicForm() && !a_object.IsDeleted() && !a_object.IsIgnored();
+	//	return a_object.IsArmor();
+	//});
 
-	//const auto inv = actor->GetInventory();
+	const auto inv = actor->GetInventory();
 
 	for (const auto& [item, invData] : inv) {
 		const auto& [count, entry] = invData;
 		//if (count > 0 && entry->IsWorn()) {
+			//const auto armor = item->As<RE::TESObjectARMO>();
 		if (count > 0) {
+			//actorInfo[tmpIndex].Inventorys[i].formIdStr = FormIDToString(armor->GetFormID());
 			actorInfo[tmpIndex].Inventorys[i].formIdStr = FormIDToString(item->GetFormID());
 			actorInfo[tmpIndex].Inventorys[i].name = entry.get()->GetDisplayName();
-			actorInfo[tmpIndex].Inventorys[i].weight = entry.get()->GetWeight();
+			//actorInfo[tmpIndex].Inventorys[i].name = armor->GetFullName();
+			actorInfo[tmpIndex].Inventorys[i].weight = item->GetWeight();
 			actorInfo[tmpIndex].Inventorys[i++].isWorn = entry.get()->IsWorn();
 			
 		}
@@ -411,7 +424,7 @@ void RefreshInventory(RE::Actor* actor, ActorInfo* actorInfo, int tmpIndex)
 }
 
 
-bool isRefreshActorInfo = false;
+//bool isRefreshActorInfo = false;
 
 void __cdecl RefreshActorInfo(void*)
 {
@@ -421,7 +434,8 @@ void __cdecl RefreshActorInfo(void*)
 
 	while (true) {
 		Sleep(1000);
-		isRefreshActorInfo = true;
+		//isRefreshActorInfo = true;
+		nowIndex = !nowIndex;
 
 		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 		auto pl = RE::ProcessLists::GetSingleton();
@@ -444,124 +458,124 @@ void __cdecl RefreshActorInfo(void*)
 
 				//actorInfo[i].isTeammate = actor->IsPlayerTeammate();
 				if (actor->IsPlayerTeammate()) {
-					teammateInfo[tmpTeammateCount].formId = actor->GetFormID();
-					teammateInfo[tmpTeammateCount].formIdStr = FormIDToString(actor->GetFormID());
-					teammateInfo[tmpTeammateCount].ptr = actor;
-					teammateInfo[tmpTeammateCount].level = actor->GetLevel();
-					teammateInfo[tmpTeammateCount].name = actor->GetDisplayFullName();
-					teammateInfo[tmpTeammateCount].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth);
-					teammateInfo[tmpTeammateCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
-					teammateInfo[tmpTeammateCount].isSentient = IsSentient2(actor);
-					teammateInfo[tmpTeammateCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
-					teammateInfo[tmpTeammateCount].distance = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
-					teammateInfo[tmpTeammateCount].lifeState = actor->GetLifeState();
+					actorInfo[nowIndex].teammateInfo[tmpTeammateCount].formId = actor->GetFormID();
+					actorInfo[nowIndex].teammateInfo[tmpTeammateCount].formIdStr = FormIDToString(actor->GetFormID());
+					actorInfo[nowIndex].teammateInfo[tmpTeammateCount].ptr = actor;
+					actorInfo[nowIndex].teammateInfo[tmpTeammateCount].level = actor->GetLevel();
+					actorInfo[nowIndex].teammateInfo[tmpTeammateCount].name = actor->GetDisplayFullName();
+					actorInfo[nowIndex].teammateInfo[tmpTeammateCount].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth);
+					actorInfo[nowIndex].teammateInfo[tmpTeammateCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
+					actorInfo[nowIndex].teammateInfo[tmpTeammateCount].isSentient = IsSentient2(actor);
+					actorInfo[nowIndex].teammateInfo[tmpTeammateCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
+					actorInfo[nowIndex].teammateInfo[tmpTeammateCount].distance = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
+					actorInfo[nowIndex].teammateInfo[tmpTeammateCount].lifeState = actor->GetLifeState();
 					//teammateInfo[i].idHostile = actor->IsHostileToActor(player);
-					//RefreshInventory(actor, teammateInfo, tmpTeammateCount++);
+					RefreshInventory(actor, actorInfo[nowIndex].teammateInfo, tmpTeammateCount++);
 
-						int i = 0;
+					//	int i = 0;
 
-					// 装备信息
-					const auto inv = actor->GetInventory([](RE::TESBoundObject& a_object) {
-						return !a_object.IsDynamicForm() && !a_object.IsDeleted() && !a_object.IsIgnored();
-					});
+					//// 装备信息
+					//const auto inv = actor->GetInventory([](RE::TESBoundObject& a_object) {
+					//	return !a_object.IsDynamicForm() && !a_object.IsDeleted() && !a_object.IsIgnored();
+					//});
 
 
-					for (const auto& [item, invData] : inv) {
-						const auto& [count, entry] = invData;
-						//if (count > 0 && entry->IsWorn()) {
-						if (count > 0) {
-							teammateInfo[tmpTeammateCount].Inventorys[i].formIdStr = FormIDToString(item->GetFormID());
-							teammateInfo[tmpTeammateCount].Inventorys[i].name = entry.get()->GetDisplayName();
-							teammateInfo[tmpTeammateCount].Inventorys[i].weight = entry.get()->GetWeight();
-							teammateInfo[tmpTeammateCount].Inventorys[i++].isWorn = entry.get()->IsWorn();
-						}
-					}
+					//for (const auto& [item, invData] : inv) {
+					//	const auto& [count, entry] = invData;
+					//	//if (count > 0 && entry->IsWorn()) {
+					//	if (count > 0) {
+					//		teammateInfo[tmpTeammateCount].Inventorys[i].formIdStr = FormIDToString(item->GetFormID());
+					//		teammateInfo[tmpTeammateCount].Inventorys[i].name = entry.get()->GetDisplayName();
+					//		teammateInfo[tmpTeammateCount].Inventorys[i].weight = entry.get()->GetWeight();
+					//		teammateInfo[tmpTeammateCount].Inventorys[i++].isWorn = entry.get()->IsWorn();
+					//	}
+					//}
 
-					teammateInfo[tmpTeammateCount++].inventoryCount = i;
+					//teammateInfo[tmpTeammateCount++].inventoryCount = i;
 
 
 				} else if (actor->IsHostileToActor(player)) {
-					enemyInfo[tmpEnemyCount].formId = actor->GetFormID();
-					enemyInfo[tmpEnemyCount].formIdStr = FormIDToString(actor->GetFormID());
-					enemyInfo[tmpEnemyCount].ptr = actor;
-					enemyInfo[tmpEnemyCount].level = actor->GetLevel();
-					enemyInfo[tmpEnemyCount].name = actor->GetDisplayFullName();
-					enemyInfo[tmpEnemyCount].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth);
-					enemyInfo[tmpEnemyCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
-					enemyInfo[tmpEnemyCount].isSentient = IsSentient2(actor);
-					enemyInfo[tmpEnemyCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
-					enemyInfo[tmpEnemyCount].distance = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
-					enemyInfo[tmpEnemyCount].lifeState = actor->GetLifeState();
+					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].formId = actor->GetFormID();
+					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].formIdStr = FormIDToString(actor->GetFormID());
+					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].ptr = actor;
+					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].level = actor->GetLevel();
+					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].name = actor->GetDisplayFullName();
+					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth);
+					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
+					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].isSentient = IsSentient2(actor);
+					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
+					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].distance = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
+					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].lifeState = actor->GetLifeState();
 
-					//RefreshInventory(actor, enemyInfo, tmpEnemyCount++);
-					int i = 0;
+					RefreshInventory(actor, actorInfo[nowIndex].enemyInfo, tmpEnemyCount++);
+					//int i = 0;
 
-					// 装备信息
-					const auto inv = actor->GetInventory([](RE::TESBoundObject& a_object) {
-						return !a_object.IsDynamicForm() && !a_object.IsDeleted() && !a_object.IsIgnored();
-					});
+					//// 装备信息
+					//const auto inv = actor->GetInventory([](RE::TESBoundObject& a_object) {
+					//	return !a_object.IsDynamicForm() && !a_object.IsDeleted() && !a_object.IsIgnored();
+					//});
 
-					for (const auto& [item, invData] : inv) {
-						const auto& [count, entry] = invData;
-						//if (count > 0 && entry->IsWorn()) {
-						if (count > 0) {
-							enemyInfo[tmpEnemyCount].Inventorys[i].formIdStr = FormIDToString(item->GetFormID());
-							enemyInfo[tmpEnemyCount].Inventorys[i].name = entry.get()->GetDisplayName();
-							enemyInfo[tmpEnemyCount].Inventorys[i].weight = entry.get()->GetWeight();
-							enemyInfo[tmpEnemyCount].Inventorys[i++].isWorn = entry.get()->IsWorn();
-						}
-					}
+					//for (const auto& [item, invData] : inv) {
+					//	const auto& [count, entry] = invData;
+					//	//if (count > 0 && entry->IsWorn()) {
+					//	if (count > 0) {
+					//		enemyInfo[tmpEnemyCount].Inventorys[i].formIdStr = FormIDToString(item->GetFormID());
+					//		enemyInfo[tmpEnemyCount].Inventorys[i].name = entry.get()->GetDisplayName();
+					//		enemyInfo[tmpEnemyCount].Inventorys[i].weight = entry.get()->GetWeight();
+					//		enemyInfo[tmpEnemyCount].Inventorys[i++].isWorn = entry.get()->IsWorn();
+					//	}
+					//}
 
-					enemyInfo[tmpEnemyCount++].inventoryCount = i;
+					//enemyInfo[tmpEnemyCount++].inventoryCount = i;
 
 				} else {
-					npcInfo[tmpNpcCount].formId = actor->GetFormID();
-					npcInfo[tmpNpcCount].formIdStr = FormIDToString(actor->GetFormID());
-					npcInfo[tmpNpcCount].ptr = actor;
-					npcInfo[tmpNpcCount].level = actor->GetLevel();
-					npcInfo[tmpNpcCount].name = actor->GetDisplayFullName();
-					npcInfo[tmpNpcCount].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth);
-					npcInfo[tmpNpcCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
-					npcInfo[tmpNpcCount].isSentient = IsSentient2(actor);
-					npcInfo[tmpNpcCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
-					npcInfo[tmpNpcCount].distance = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
-					npcInfo[tmpNpcCount].lifeState = actor->GetLifeState();
+					actorInfo[nowIndex].npcInfo[tmpNpcCount].formId = actor->GetFormID();
+					actorInfo[nowIndex].npcInfo[tmpNpcCount].formIdStr = FormIDToString(actor->GetFormID());
+					actorInfo[nowIndex].npcInfo[tmpNpcCount].ptr = actor;
+					actorInfo[nowIndex].npcInfo[tmpNpcCount].level = actor->GetLevel();
+					actorInfo[nowIndex].npcInfo[tmpNpcCount].name = actor->GetDisplayFullName();
+					actorInfo[nowIndex].npcInfo[tmpNpcCount].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth);
+					actorInfo[nowIndex].npcInfo[tmpNpcCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
+					actorInfo[nowIndex].npcInfo[tmpNpcCount].isSentient = IsSentient2(actor);
+					actorInfo[nowIndex].npcInfo[tmpNpcCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
+					actorInfo[nowIndex].npcInfo[tmpNpcCount].distance = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
+					actorInfo[nowIndex].npcInfo[tmpNpcCount].lifeState = actor->GetLifeState();
 
 					
-					//RefreshInventory(actor, npcInfo, tmpNpcCount++);
-					int i = 0;
+					RefreshInventory(actor, actorInfo[nowIndex].npcInfo, tmpNpcCount++);
+					//int i = 0;
 
-					// 装备信息
-					const auto inv = actor->GetInventory([](RE::TESBoundObject& a_object) {
-						return !a_object.IsDynamicForm() && !a_object.IsDeleted() && !a_object.IsIgnored();
-					});
+					//// 装备信息
+					//const auto inv = actor->GetInventory([](RE::TESBoundObject& a_object) {
+					//	return a_object.IsArmor();
+					//});
 
-					for (const auto& [item, invData] : inv) {
-						const auto& [count, entry] = invData;
-						//if (count > 0 && entry->IsWorn()) {
-						if (count > 0) {
-							npcInfo[tmpNpcCount].Inventorys[i].formIdStr = FormIDToString(item->GetFormID());
-							npcInfo[tmpNpcCount].Inventorys[i].name = entry.get()->GetDisplayName();
-							npcInfo[tmpNpcCount].Inventorys[i].weight = entry.get()->GetWeight();
-							npcInfo[tmpNpcCount].Inventorys[i++].isWorn = entry.get()->IsWorn();
-						}
-					}
+					//for (const auto& [item, invData] : inv) {
+					//	const auto& [count, entry] = invData;
+					//	//if (count > 0 && entry->IsWorn()) {
+					//	if (count > 0) {
+					//		npcInfo[tmpNpcCount].Inventorys[i].formIdStr = FormIDToString(item->GetFormID());
+					//		npcInfo[tmpNpcCount].Inventorys[i].name = entry.get()->GetDisplayName();
+					//		npcInfo[tmpNpcCount].Inventorys[i].weight = entry.get()->GetWeight();
+					//		npcInfo[tmpNpcCount].Inventorys[i++].isWorn = entry.get()->IsWorn();
+					//	}
+					//}
 
-					npcInfo[tmpNpcCount++].inventoryCount = i;
+					//npcInfo[tmpNpcCount++].inventoryCount = i;
 				}
 
-				std::sort(teammateInfo, teammateInfo + tmpTeammateCount, compareByLevel);
-				std::sort(enemyInfo, enemyInfo + tmpEnemyCount, compareByLevel);
-				std::sort(npcInfo, npcInfo + tmpNpcCount, compareByLevel);
+				std::sort(actorInfo[nowIndex].teammateInfo, actorInfo[nowIndex].teammateInfo + tmpTeammateCount, compareByLevel);
+				std::sort(actorInfo[nowIndex].enemyInfo, actorInfo[nowIndex].enemyInfo + tmpEnemyCount, compareByLevel);
+				std::sort(actorInfo[nowIndex].npcInfo, actorInfo[nowIndex].npcInfo + tmpNpcCount, compareByLevel);
 			}
 		}
 
-		npcCount = tmpNpcCount;
-		enemyCount = tmpEnemyCount;
-		teammateCount = tmpTeammateCount;
+		actorInfo[nowIndex].npcCount = tmpNpcCount;
+		actorInfo[nowIndex].enemyCount = tmpEnemyCount;
+		actorInfo[nowIndex].teammateCount = tmpTeammateCount;
 
 		
-		isRefreshActorInfo = false;
+		//isRefreshActorInfo = false;
 	}
 }
 
