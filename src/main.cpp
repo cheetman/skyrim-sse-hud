@@ -135,7 +135,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 		{
 			logger::info("kPreLoadGame"sv);
 			isGameLoading = true;
-			startflag = true;
+			//startflag = true;
 			break;
 		}
 	case SKSE::MessagingInterface::kPostLoadGame:

@@ -73,8 +73,6 @@ namespace menu
 
 	ImVec4 colorProgress(1.0f, 0.5f, 0.0f, 1.0f);
 
-	
-
 	const char* actorValues[] = {
 		"负重 [kCarryWeight]",
 		"生命恢复 [kHealRate]",
@@ -117,6 +115,17 @@ namespace menu
 
 	std::vector<RE::Actor*> actors;
 
+	enum PlayerInfoColumnID
+	{
+		PlayerInfoColumnID_ID,
+		PlayerInfoColumnID_1,
+		PlayerInfoColumnID_2,
+		PlayerInfoColumnID_3,
+		PlayerInfoColumnID_4,
+		PlayerInfoColumnID_5
+
+	};
+
 	static void myText(const char* fmt, ...)
 	{
 		va_list args;
@@ -158,9 +167,9 @@ namespace menu
 
 				if (ImGui::TreeNodeEx(item.formIdStr.c_str(), 0, "%s - [%d] %s [ %s ]", item.formIdStr.c_str(), item.level, item.name.c_str(), hp)) {
 					ImGui::PushID(i + 1000);
-					char str1[16];
-					sprintf(str1, "%s%s", u8"\uf101", "传送到目标");
-					if (ImGui::SmallButton("传送到目标")) {
+					/*				char str1[16];
+					sprintf(str1, "%s%s", u8"\uf101", "传送到目标");*/
+					if (ImGui::SmallButton("\uf101传送到目标")) {
 						std::string commandStr = "player.moveto ";
 						commandStr.append(item.formIdStr);
 
@@ -178,7 +187,7 @@ namespace menu
 
 					if (item.lifeState != RE::ACTOR_LIFE_STATE::kDead) {
 						ImGui::PushID(i + 2000);
-				/*		char str2[16];
+						/*		char str2[16];
 						sprintf(str2, "%s%s", u8"\uf100", "传送到玩家");*/
 						if (ImGui::SmallButton("\uf100传送到玩家")) {
 							std::string commandStr = "moveto player";
@@ -201,14 +210,14 @@ namespace menu
 						ImGui::Separator();
 						for (int i2 = 0; i2 < item.inventoryCount; i2++) {
 							auto inv = item.Inventorys[i2];
-							myText("%s %s - %s %s %.1f ", u8"\uf01c", inv.formIdStr.c_str(), inv.isWorn ? "[装备中]" : "", inv.name.c_str(), inv.weight);
+							myText("%s %s - %s %s (%d) %.1f ", u8"\uf01c", inv.formIdStr.c_str(), inv.isWorn ? "[装备中]" : "", inv.name.c_str(), inv.count, inv.weight);
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							ImGui::PushID(i2);
 
-							char str3[16]; 
-							sprintf(str3, "%s%s", u8"\uf019", "获取");
+							/*			char str3[16]; 
+							sprintf(str3, "%s%s", u8"\uf019", "获取");*/
 
-							if (ImGui::SmallButton(str3)) {
+							if (ImGui::SmallButton(" \uf019 ")) {
 								auto player = RE::PlayerCharacter::GetSingleton();
 								item.ptr->RemoveItem(inv.ptr, 1, RE::ITEM_REMOVE_REASON::kSelling, 0, player);
 							}
@@ -640,6 +649,65 @@ namespace menu
 				buildNpcInfo(active, actorInfo, getTeammateCount());
 			}
 			//}
+			ImGui::End();
+		}
+
+		if (show_npc_window) {
+			ImGui::Begin("装备信息", nullptr, window_flags);
+
+			static ImGuiTableFlags flags =
+				//ImGuiTableFlags_Resizable |
+				/*	ImGuiTableFlags_Reorderable
+			| ImGuiTableFlags_Hideable*/
+				ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders
+				/*	| ImGuiTableFlags_NoBordersInBody
+				| ImGuiTableFlags_ScrollX
+				| ImGuiTableFlags_ScrollY
+				| ImGuiTableFlags_SizingFixedFit*/
+				;
+
+			const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+			if (ImGui::BeginTable("table_sorting", 6, flags, ImVec2(0.0f, TEXT_BASE_HEIGHT * 15), 0.0f)) {
+				ImGui::TableSetupColumn("已装备", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_ID);
+				ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 100.0f, PlayerInfoColumnID_1);
+				ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_2);
+				ImGui::TableSetupColumn("重量", ImGuiTableColumnFlags_WidthFixed, 40, PlayerInfoColumnID_3);
+				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 100.0f, PlayerInfoColumnID_4);
+				//ImGui::TableSetupColumn("地址", ImGuiTableColumnFlags_WidthFixed, 0.0f, PlayerInfoColumnID_5);
+				ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
+				ImGui::TableHeadersRow();
+
+				ImGuiListClipper clipper;
+				clipper.Begin(getPlayerInvCount());
+				while (clipper.Step())
+					for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
+						// Display a data item
+						InventoryInfo* item = getPlayerInvData(row_n);
+						if (item ) {
+							ImGui::PushID(row_n + 7000);
+							ImGui::TableNextRow();
+							ImGui::TableNextColumn();
+							ImGui::Text("%s", item->isWorn ? "×" : "");
+							ImGui::TableNextColumn();
+							ImGui::Text("%s", item->name.c_str());
+							ImGui::TableNextColumn();
+							//if (isShowFriend && isShowEnemy) {
+							ImGui::Text("%d", item->count);
+							//}
+							ImGui::TableNextColumn();
+							//if (isAim) {
+							ImGui::Text("%.1f", item->weight);
+							//}
+							ImGui::TableNextColumn();
+							ImGui::Text("%s", item->formIdStr.c_str());
+							//ImGui::TableNextColumn();
+							//ImGui::Text("0x%X", item->address);
+							ImGui::PopID();
+						}
+					}
+				ImGui::EndTable();
+			}
+
 			ImGui::End();
 		}
 

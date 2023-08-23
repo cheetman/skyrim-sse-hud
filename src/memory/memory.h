@@ -108,6 +108,7 @@ struct InventoryInfo
 	std::string name = "";
 	std::string formIdStr = "";
 	RE::FormID formId = 0;
+	int count = 0;
 	float weight = 0;
 	bool isWorn = 0;
 };
@@ -191,9 +192,12 @@ void __cdecl RefreshActorInfo(void*);
 ActorInfo* getTeammateData();
 ActorInfo* getNpcData();
 ActorInfo* getEnemy2Data();
+InventoryInfo* getPlayerInvData();
+InventoryInfo* getPlayerInvData(int);
 int getTeammateCount();
 int getNpcCount();
 int getEnemyCount();
+int getPlayerInvCount();
 
 
 
@@ -205,6 +209,12 @@ struct Actor2Info
 	ActorInfo npcInfo[50];
 	ActorInfo enemyInfo[50];
 	ActorInfo teammateInfo[50];
+};
+
+struct PlayerInventoryInfo
+{
+	int inventoryCount = 0;
+	InventoryInfo inventorys[300];
 };
 
 	// 临时

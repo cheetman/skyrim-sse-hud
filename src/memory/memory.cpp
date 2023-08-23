@@ -334,7 +334,6 @@ void __cdecl RefreshGameInfo(void*)
 	}
 }
 
-
 Actor2Info actorInfo[2];
 int nowIndex = 0;
 
@@ -350,6 +349,7 @@ ActorInfo* getTeammateData()
 {
 	return &actorInfo[!nowIndex].teammateInfo[0];
 }
+
 
 int getNpcCount()
 {
@@ -391,7 +391,6 @@ bool compareByLevel(const ActorInfo& info1, const ActorInfo& info2)
 	}
 }
 
-
 bool compareForInventory(const InventoryInfo& info1, const InventoryInfo& info2)
 {
 	if (info1.isWorn != info2.isWorn) {
@@ -401,12 +400,11 @@ bool compareForInventory(const InventoryInfo& info1, const InventoryInfo& info2)
 	}
 }
 
-
 void RefreshInventory(RE::Actor* actor, ActorInfo* actorInfo, int tmpIndex)
 {
 	int i = 0;
 
-		// 装备信息
+	// 装备信息
 	//const auto inv = actor->GetInventory([](RE::TESBoundObject& a_object) {
 	//	//return !a_object.IsDynamicForm() && !a_object.IsDeleted() && !a_object.IsIgnored();
 	//	return a_object.IsArmor();
@@ -417,11 +415,12 @@ void RefreshInventory(RE::Actor* actor, ActorInfo* actorInfo, int tmpIndex)
 	for (const auto& [item, invData] : inv) {
 		const auto& [count, entry] = invData;
 		//if (count > 0 && entry->IsWorn()) {
-			//const auto armor = item->As<RE::TESObjectARMO>();
+		//const auto armor = item->As<RE::TESObjectARMO>();
 		if (count > 0) {
 			//actorInfo[tmpIndex].Inventorys[i].formIdStr = FormIDToString(armor->GetFormID());
 			if (item->GetWeight() >= 0) {
 				actorInfo[tmpIndex].Inventorys[i].ptr = item;
+				actorInfo[tmpIndex].Inventorys[i].count = count;
 				actorInfo[tmpIndex].Inventorys[i].formId = item->GetFormID();
 				actorInfo[tmpIndex].Inventorys[i].formIdStr = FormIDToString(item->GetFormID());
 				actorInfo[tmpIndex].Inventorys[i].name = entry.get()->GetDisplayName();
@@ -435,27 +434,88 @@ void RefreshInventory(RE::Actor* actor, ActorInfo* actorInfo, int tmpIndex)
 	if (i > 1) {
 		std::sort(actorInfo[tmpIndex].Inventorys, actorInfo[tmpIndex].Inventorys + i, compareForInventory);
 	}
-	
+
 	actorInfo[tmpIndex].inventoryCount = i;
-
 }
-
 
 //bool isRefreshActorInfo = false;
 
+
+PlayerInventoryInfo MyInventoryInfo[2];
+
+int getPlayerInvCount()
+{
+	return MyInventoryInfo[!nowIndex].inventoryCount;
+}
+
+InventoryInfo* getPlayerInvData()
+{
+	return &MyInventoryInfo[!nowIndex].inventorys[0];
+}
+InventoryInfo* getPlayerInvData(int i)
+{
+	return &MyInventoryInfo[!nowIndex].inventorys[i];
+}
+
 void __cdecl RefreshActorInfo(void*)
 {
-
-
-
-
 	while (true) {
 		Sleep(500);
 		//isRefreshActorInfo = true;
-		nowIndex = !nowIndex;
 
 		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 		auto pl = RE::ProcessLists::GetSingleton();
+
+		if (!startflag) {
+			Sleep(3000);
+			continue;
+
+		}
+
+		if (!player) {
+			Sleep(3000);
+			continue;
+		}
+
+
+
+		nowIndex = !nowIndex;
+
+
+		{
+			// 刷新自己的装备
+			const auto inv = player->GetInventory();
+			int i = 0;
+			for (const auto& [item, invData] : inv) {
+				const auto& [count, entry] = invData;
+				//if (count > 0 && entry->IsWorn()) {
+				//const auto armor = item->As<RE::TESObjectARMO>();
+				if (count > 0) {
+					//actorInfo[tmpIndex].Inventorys[i].formIdStr = FormIDToString(armor->GetFormID());
+					if (item->IsGold()) {
+						continue;
+					}
+					if (item->GetWeight() >= 0) {
+						MyInventoryInfo[nowIndex].inventorys[i].ptr = item;
+						MyInventoryInfo[nowIndex].inventorys[i].count = count;
+						MyInventoryInfo[nowIndex].inventorys[i].formId = item->GetFormID();
+						MyInventoryInfo[nowIndex].inventorys[i].formIdStr = FormIDToString(item->GetFormID());
+						MyInventoryInfo[nowIndex].inventorys[i].name = entry.get()->GetDisplayName();
+						MyInventoryInfo[nowIndex].inventorys[i].weight = item->GetWeight();
+						MyInventoryInfo[nowIndex].inventorys[i++].isWorn = entry.get()->IsWorn();
+						logger::trace("Inv Name {} {} "sv, i ,entry.get()->GetDisplayName());
+					}
+				}
+			}
+
+			if (i > 1) {
+				std::sort(MyInventoryInfo[nowIndex].inventorys, MyInventoryInfo[nowIndex].inventorys + i, compareForInventory);
+			}
+
+			MyInventoryInfo[nowIndex].inventoryCount = i;
+		}
+
+
 
 		//actorCount = pl->numberHighActors;
 		auto actorCount = pl->highActorHandles.size();
@@ -463,7 +523,6 @@ void __cdecl RefreshActorInfo(void*)
 		//	Sleep(1000);
 		//	continue;
 		//}
-
 		int tmpNpcCount = 0;
 		int tmpEnemyCount = 0;
 		int tmpTeammateCount = 0;
@@ -471,8 +530,6 @@ void __cdecl RefreshActorInfo(void*)
 		for (int i = 0; i < actorCount; i++) {
 			auto actor = pl->highActorHandles[i].get().get();
 			if (actor) {
-			
-
 				//actorInfo[i].isTeammate = actor->IsPlayerTeammate();
 				if (actor->IsPlayerTeammate()) {
 					actorInfo[nowIndex].teammateInfo[tmpTeammateCount].formId = actor->GetFormID();
@@ -488,7 +545,6 @@ void __cdecl RefreshActorInfo(void*)
 					actorInfo[nowIndex].teammateInfo[tmpTeammateCount].lifeState = actor->GetLifeState();
 					actorInfo[nowIndex].teammateInfo[tmpTeammateCount].isInCombat = actor->IsInCombat();
 
-					
 					//teammateInfo[i].idHostile = actor->IsHostileToActor(player);
 					RefreshInventory(actor, actorInfo[nowIndex].teammateInfo, tmpTeammateCount++);
 
@@ -498,7 +554,6 @@ void __cdecl RefreshActorInfo(void*)
 					//const auto inv = actor->GetInventory([](RE::TESBoundObject& a_object) {
 					//	return !a_object.IsDynamicForm() && !a_object.IsDeleted() && !a_object.IsIgnored();
 					//});
-
 
 					//for (const auto& [item, invData] : inv) {
 					//	const auto& [count, entry] = invData;
@@ -512,7 +567,6 @@ void __cdecl RefreshActorInfo(void*)
 					//}
 
 					//teammateInfo[tmpTeammateCount++].inventoryCount = i;
-
 
 				} else if (actor->IsHostileToActor(player)) {
 					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].formId = actor->GetFormID();
@@ -563,7 +617,6 @@ void __cdecl RefreshActorInfo(void*)
 					actorInfo[nowIndex].npcInfo[tmpNpcCount].lifeState = actor->GetLifeState();
 					actorInfo[nowIndex].npcInfo[tmpNpcCount].isInCombat = actor->IsInCombat();
 
-					
 					RefreshInventory(actor, actorInfo[nowIndex].npcInfo, tmpNpcCount++);
 					//int i = 0;
 
@@ -596,7 +649,6 @@ void __cdecl RefreshActorInfo(void*)
 		actorInfo[nowIndex].enemyCount = tmpEnemyCount;
 		actorInfo[nowIndex].teammateCount = tmpTeammateCount;
 
-		
 		//isRefreshActorInfo = false;
 	}
 }
