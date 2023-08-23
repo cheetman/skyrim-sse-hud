@@ -268,8 +268,75 @@ namespace menu
 		}
 	}
 
+	void __fastcall buildPlayerInvInfo(int count, InventoryInfo inv[])
+	{
+
+		
+				static ImGuiTableFlags flags =
+			//ImGuiTableFlags_Resizable |
+			/*	ImGuiTableFlags_Reorderable
+			| ImGuiTableFlags_Hideable*/
+			ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders
+			/*	| ImGuiTableFlags_NoBordersInBody
+				| ImGuiTableFlags_ScrollX
+				| ImGuiTableFlags_ScrollY
+				| ImGuiTableFlags_SizingFixedFit*/
+			;
+
+
+			const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+		if (ImGui::BeginTable("table_sorting", 6, flags, ImVec2(0.0f, TEXT_BASE_HEIGHT * 15), 0.0f)) {
+			ImGui::TableSetupColumn("已装备", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_ID);
+			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 100.0f, PlayerInfoColumnID_1);
+			ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_2);
+			ImGui::TableSetupColumn("重量", ImGuiTableColumnFlags_WidthFixed, 40, PlayerInfoColumnID_3);
+			ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 100.0f, PlayerInfoColumnID_4);
+			//ImGui::TableSetupColumn("地址", ImGuiTableColumnFlags_WidthFixed, 0.0f, PlayerInfoColumnID_5);
+			ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
+			ImGui::TableHeadersRow();
+
+			ImGuiListClipper clipper;
+			clipper.Begin(count);
+			while (clipper.Step())
+				for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
+					// Display a data item
+					//InventoryInfo* item = getPlayerInvData(row_n);
+					InventoryInfo item = inv[row_n];
+					//if (item) {
+						ImGui::PushID(row_n + 7000);
+						ImGui::TableNextRow();
+						ImGui::TableNextColumn();
+						ImGui::Text("%s", item.isWorn ? "×" : "");
+						ImGui::TableNextColumn();
+						ImGui::Text("%s", item.name.c_str());
+						ImGui::TableNextColumn();
+						//if (isShowFriend && isShowEnemy) {
+						ImGui::Text("%d", item.count);
+						//}
+						ImGui::TableNextColumn();
+						//if (isAim) {
+						ImGui::Text("%.1f", item.weight);
+						//}
+						ImGui::TableNextColumn();
+						ImGui::Text("%s", item.formIdStr.c_str());
+						//ImGui::TableNextColumn();
+						//ImGui::Text("0x%X", item->address);
+						ImGui::PopID();
+					//}
+				}
+			ImGui::EndTable();
+		}
+
+		}
+
+
 	void __fastcall render(int active)
 	{
+		//第一次加载游戏后
+		if (!startflag && !active) {
+			return;
+		}
+
 		// 当打开菜单时不显示
 		if (isOpenCursorMenu && !active) {
 			return;
@@ -653,60 +720,41 @@ namespace menu
 		}
 
 		if (show_npc_window) {
-			ImGui::Begin("装备信息", nullptr, window_flags);
 
-			static ImGuiTableFlags flags =
-				//ImGuiTableFlags_Resizable |
-				/*	ImGuiTableFlags_Reorderable
-			| ImGuiTableFlags_Hideable*/
-				ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders
-				/*	| ImGuiTableFlags_NoBordersInBody
-				| ImGuiTableFlags_ScrollX
-				| ImGuiTableFlags_ScrollY
-				| ImGuiTableFlags_SizingFixedFit*/
-				;
+		
 
-			const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
-			if (ImGui::BeginTable("table_sorting", 6, flags, ImVec2(0.0f, TEXT_BASE_HEIGHT * 15), 0.0f)) {
-				ImGui::TableSetupColumn("已装备", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_ID);
-				ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 100.0f, PlayerInfoColumnID_1);
-				ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_2);
-				ImGui::TableSetupColumn("重量", ImGuiTableColumnFlags_WidthFixed, 40, PlayerInfoColumnID_3);
-				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 100.0f, PlayerInfoColumnID_4);
-				//ImGui::TableSetupColumn("地址", ImGuiTableColumnFlags_WidthFixed, 0.0f, PlayerInfoColumnID_5);
-				ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
-				ImGui::TableHeadersRow();
+			ImGui::Begin("装备信息", nullptr, window_flags & (~ImGuiWindowFlags_AlwaysAutoResize));
 
-				ImGuiListClipper clipper;
-				clipper.Begin(getPlayerInvCount());
-				while (clipper.Step())
-					for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
-						// Display a data item
-						InventoryInfo* item = getPlayerInvData(row_n);
-						if (item ) {
-							ImGui::PushID(row_n + 7000);
-							ImGui::TableNextRow();
-							ImGui::TableNextColumn();
-							ImGui::Text("%s", item->isWorn ? "×" : "");
-							ImGui::TableNextColumn();
-							ImGui::Text("%s", item->name.c_str());
-							ImGui::TableNextColumn();
-							//if (isShowFriend && isShowEnemy) {
-							ImGui::Text("%d", item->count);
-							//}
-							ImGui::TableNextColumn();
-							//if (isAim) {
-							ImGui::Text("%.1f", item->weight);
-							//}
-							ImGui::TableNextColumn();
-							ImGui::Text("%s", item->formIdStr.c_str());
-							//ImGui::TableNextColumn();
-							//ImGui::Text("0x%X", item->address);
-							ImGui::PopID();
-						}
-					}
-				ImGui::EndTable();
+	
+
+			
+				ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+			if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
+				if (ImGui::BeginTabItem("武器", 0, 0)) {
+					buildPlayerInvInfo(getPlayerInvWEAPCount(), getPlayerInvWEAPData());
+					ImGui::EndTabItem();
+				}
+				if (ImGui::BeginTabItem("装备", 0, 0)) {
+					buildPlayerInvInfo(getPlayerInvARMOCount(), getPlayerInvARMOData());
+					ImGui::EndTabItem();
+				}
+				if (ImGui::BeginTabItem("弹药", 0, 0)) {
+					buildPlayerInvInfo(getPlayerInvAMMOCount(), getPlayerInvAMMOData());
+					ImGui::EndTabItem();
+				}
+				if (ImGui::BeginTabItem("书", 0, 0)) {
+					buildPlayerInvInfo(getPlayerInvBOOKCount(), getPlayerInvBOOKData());
+					ImGui::EndTabItem();
+				}
+				if (ImGui::BeginTabItem("杂项", 0, 0)) {
+					buildPlayerInvInfo(getPlayerInvCount(), getPlayerInvData());
+					ImGui::EndTabItem();
+				}
+
+				ImGui::EndTabBar();
 			}
+
+
 
 			ImGui::End();
 		}

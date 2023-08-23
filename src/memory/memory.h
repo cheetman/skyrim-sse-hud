@@ -192,14 +192,24 @@ void __cdecl RefreshActorInfo(void*);
 ActorInfo* getTeammateData();
 ActorInfo* getNpcData();
 ActorInfo* getEnemy2Data();
-InventoryInfo* getPlayerInvData();
-InventoryInfo* getPlayerInvData(int);
 int getTeammateCount();
 int getNpcCount();
 int getEnemyCount();
+
+
 int getPlayerInvCount();
+int getPlayerInvBOOKCount();
+int getPlayerInvWEAPCount();
+int getPlayerInvARMOCount();
+int getPlayerInvAMMOCount();
 
 
+InventoryInfo* getPlayerInvData();
+InventoryInfo* getPlayerInvARMOData();
+InventoryInfo* getPlayerInvBOOKData();
+InventoryInfo* getPlayerInvWEAPData();
+InventoryInfo* getPlayerInvAMMOData();
+InventoryInfo* getPlayerInvData(int);
 
 struct Actor2Info
 {
@@ -213,7 +223,16 @@ struct Actor2Info
 
 struct PlayerInventoryInfo
 {
+	int inventoryARMOCount = 0;
+	int inventoryWEAPCount = 0;
+	int inventoryBOOKCount = 0;
+	int inventoryAMMOCount = 0;
 	int inventoryCount = 0;
+	int gold = 0;
+	InventoryInfo inventorysARMO[300];
+	InventoryInfo inventorysWEAP[300];
+	InventoryInfo inventorysBOOK[300];
+	InventoryInfo inventorysAMMO[100];
 	InventoryInfo inventorys[300];
 };
 

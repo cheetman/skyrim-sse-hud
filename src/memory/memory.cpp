@@ -350,7 +350,6 @@ ActorInfo* getTeammateData()
 	return &actorInfo[!nowIndex].teammateInfo[0];
 }
 
-
 int getNpcCount()
 {
 	return actorInfo[!nowIndex].npcCount;
@@ -440,21 +439,73 @@ void RefreshInventory(RE::Actor* actor, ActorInfo* actorInfo, int tmpIndex)
 
 //bool isRefreshActorInfo = false;
 
-
 PlayerInventoryInfo MyInventoryInfo[2];
 
 int getPlayerInvCount()
 {
 	return MyInventoryInfo[!nowIndex].inventoryCount;
 }
+int getPlayerInvBOOKCount()
+{
+	return MyInventoryInfo[!nowIndex].inventoryBOOKCount;
+}
+int getPlayerInvWEAPCount()
+{
+	return MyInventoryInfo[!nowIndex].inventoryWEAPCount;
+}
+int getPlayerInvARMOCount()
+{
+	return MyInventoryInfo[!nowIndex].inventoryARMOCount;
+}
+int getPlayerInvAMMOCount()
+{
+	return MyInventoryInfo[!nowIndex].inventoryAMMOCount;
+}
+
+
+//InventoryInfo* getPlayerInvData2()
+//{
+//	return &MyInventoryInfo[!nowIndex].inventorys[0];
+//}
 
 InventoryInfo* getPlayerInvData()
 {
 	return &MyInventoryInfo[!nowIndex].inventorys[0];
 }
+InventoryInfo* getPlayerInvARMOData()
+{
+	return &MyInventoryInfo[!nowIndex].inventorysARMO[0];
+}
+InventoryInfo* getPlayerInvWEAPData()
+{
+	return &MyInventoryInfo[!nowIndex].inventorysWEAP[0];
+}
+InventoryInfo* getPlayerInvBOOKData()
+{
+	return &MyInventoryInfo[!nowIndex].inventorysBOOK[0];
+}
+InventoryInfo* getPlayerInvAMMOData()
+{
+	return &MyInventoryInfo[!nowIndex].inventorysAMMO[0];
+}
+
+
+
 InventoryInfo* getPlayerInvData(int i)
 {
 	return &MyInventoryInfo[!nowIndex].inventorys[i];
+}
+
+void __fastcall buildPlayerInvData(InventoryInfo inv[], int& i, RE::TESBoundObject* item, RE::InventoryEntryData* entry, std::int32_t count)
+{
+	inv[i].ptr = item;
+	inv[i].count = count;
+	inv[i].formId = item->GetFormID();
+	inv[i].formIdStr = FormIDToString(item->GetFormID());
+	inv[i].name = entry->GetDisplayName();
+	inv[i].weight = item->GetWeight();
+	inv[i++].isWorn = entry->IsWorn();
+	logger::trace("Inv Name {} {} "sv, i, StringUtil::Utf8ToGbk(entry->GetDisplayName()));
 }
 
 void __cdecl RefreshActorInfo(void*)
@@ -469,7 +520,6 @@ void __cdecl RefreshActorInfo(void*)
 		if (!startflag) {
 			Sleep(3000);
 			continue;
-
 		}
 
 		if (!player) {
@@ -477,45 +527,60 @@ void __cdecl RefreshActorInfo(void*)
 			continue;
 		}
 
-
-
 		nowIndex = !nowIndex;
-
 
 		{
 			// 刷新自己的装备
 			const auto inv = player->GetInventory();
-			int i = 0;
+			MyInventoryInfo[nowIndex].inventoryARMOCount = 0;
+			MyInventoryInfo[nowIndex].inventoryBOOKCount = 0;
+			MyInventoryInfo[nowIndex].inventoryWEAPCount = 0;
+			MyInventoryInfo[nowIndex].inventoryAMMOCount = 0;
+			MyInventoryInfo[nowIndex].inventoryCount = 0;
+
 			for (const auto& [item, invData] : inv) {
 				const auto& [count, entry] = invData;
 				//if (count > 0 && entry->IsWorn()) {
 				//const auto armor = item->As<RE::TESObjectARMO>();
 				if (count > 0) {
 					//actorInfo[tmpIndex].Inventorys[i].formIdStr = FormIDToString(armor->GetFormID());
-					if (item->IsGold()) {
-						continue;
-					}
 					if (item->GetWeight() >= 0) {
-						MyInventoryInfo[nowIndex].inventorys[i].ptr = item;
-						MyInventoryInfo[nowIndex].inventorys[i].count = count;
-						MyInventoryInfo[nowIndex].inventorys[i].formId = item->GetFormID();
-						MyInventoryInfo[nowIndex].inventorys[i].formIdStr = FormIDToString(item->GetFormID());
-						MyInventoryInfo[nowIndex].inventorys[i].name = entry.get()->GetDisplayName();
-						MyInventoryInfo[nowIndex].inventorys[i].weight = item->GetWeight();
-						MyInventoryInfo[nowIndex].inventorys[i++].isWorn = entry.get()->IsWorn();
-						logger::trace("Inv Name {} {} "sv, i ,entry.get()->GetDisplayName());
+						if (item->IsGold()) {
+							MyInventoryInfo[nowIndex].gold = count;
+						} else if (item->IsArmor()) {
+							buildPlayerInvData(MyInventoryInfo[nowIndex].inventorysARMO, MyInventoryInfo[nowIndex].inventoryARMOCount, item, entry.get(), count);
+						} else if (item->IsWeapon()) {
+							buildPlayerInvData(MyInventoryInfo[nowIndex].inventorysWEAP, MyInventoryInfo[nowIndex].inventoryWEAPCount, item, entry.get(), count);
+						} else if (item->IsAmmo()) {
+							buildPlayerInvData(MyInventoryInfo[nowIndex].inventorysAMMO, MyInventoryInfo[nowIndex].inventoryAMMOCount, item, entry.get(), count);
+						} else if (item->IsBook()) {
+							buildPlayerInvData(MyInventoryInfo[nowIndex].inventorysBOOK, MyInventoryInfo[nowIndex].inventoryBOOKCount, item, entry.get(), count);
+						} else {
+							buildPlayerInvData(MyInventoryInfo[nowIndex].inventorys, MyInventoryInfo[nowIndex].inventoryCount, item, entry.get(), count);
+						}
 					}
 				}
 			}
 
-			if (i > 1) {
-				std::sort(MyInventoryInfo[nowIndex].inventorys, MyInventoryInfo[nowIndex].inventorys + i, compareForInventory);
+			if (MyInventoryInfo[nowIndex].inventoryARMOCount > 1) {
+				std::sort(MyInventoryInfo[nowIndex].inventorysARMO, MyInventoryInfo[nowIndex].inventorysARMO + MyInventoryInfo[nowIndex].inventoryARMOCount, compareForInventory);
+			}
+			if (MyInventoryInfo[nowIndex].inventoryWEAPCount > 1) {
+				std::sort(MyInventoryInfo[nowIndex].inventorysWEAP, MyInventoryInfo[nowIndex].inventorysWEAP + MyInventoryInfo[nowIndex].inventoryWEAPCount, compareForInventory);
+			}
+			if (MyInventoryInfo[nowIndex].inventoryBOOKCount > 1) {
+				std::sort(MyInventoryInfo[nowIndex].inventorysBOOK, MyInventoryInfo[nowIndex].inventorysBOOK + MyInventoryInfo[nowIndex].inventoryBOOKCount, compareForInventory);
+			}
+			if (MyInventoryInfo[nowIndex].inventoryCount > 1) {
+				std::sort(MyInventoryInfo[nowIndex].inventorys, MyInventoryInfo[nowIndex].inventorys + MyInventoryInfo[nowIndex].inventoryCount, compareForInventory);
+			}
+			if (MyInventoryInfo[nowIndex].inventoryAMMOCount > 1) {
+				std::sort(MyInventoryInfo[nowIndex].inventorysAMMO, MyInventoryInfo[nowIndex].inventorysAMMO + MyInventoryInfo[nowIndex].inventoryAMMOCount, compareForInventory);
 			}
 
-			MyInventoryInfo[nowIndex].inventoryCount = i;
+			// 双缓冲可以不用
+			//MyInventoryInfo[nowIndex].inventoryCount = i;
 		}
-
-
 
 		//actorCount = pl->numberHighActors;
 		auto actorCount = pl->highActorHandles.size();
