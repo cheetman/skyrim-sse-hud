@@ -440,7 +440,10 @@ void RefreshInventory(RE::Actor* actor, ActorInfo* actorInfo, int tmpIndex)
 //bool isRefreshActorInfo = false;
 
 PlayerInventoryInfo MyInventoryInfo[2];
-
+int getPlayerGoldCount()
+{
+	return MyInventoryInfo[!nowIndex].gold;
+}
 int getPlayerInvCount()
 {
 	return MyInventoryInfo[!nowIndex].inventoryCount;
@@ -499,13 +502,14 @@ InventoryInfo* getPlayerInvData(int i)
 void __fastcall buildPlayerInvData(InventoryInfo inv[], int& i, RE::TESBoundObject* item, RE::InventoryEntryData* entry, std::int32_t count)
 {
 	inv[i].ptr = item;
+	inv[i].invPtr = entry;
 	inv[i].count = count;
 	inv[i].formId = item->GetFormID();
 	inv[i].formIdStr = FormIDToString(item->GetFormID());
 	inv[i].name = entry->GetDisplayName();
 	inv[i].weight = item->GetWeight();
 	inv[i++].isWorn = entry->IsWorn();
-	logger::trace("Inv Name {} {} "sv, i, StringUtil::Utf8ToGbk(entry->GetDisplayName()));
+	//logger::trace("Inv Name {} {} "sv, i, StringUtil::Utf8ToGbk(entry->GetDisplayName()));
 }
 
 void __cdecl RefreshActorInfo(void*)
@@ -537,6 +541,7 @@ void __cdecl RefreshActorInfo(void*)
 			MyInventoryInfo[nowIndex].inventoryWEAPCount = 0;
 			MyInventoryInfo[nowIndex].inventoryAMMOCount = 0;
 			MyInventoryInfo[nowIndex].inventoryCount = 0;
+			MyInventoryInfo[nowIndex].gold = 0;
 
 			for (const auto& [item, invData] : inv) {
 				const auto& [count, entry] = invData;

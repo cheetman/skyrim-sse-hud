@@ -270,9 +270,7 @@ namespace menu
 
 	void __fastcall buildPlayerInvInfo(int count, InventoryInfo inv[])
 	{
-
-		
-				static ImGuiTableFlags flags =
+		static ImGuiTableFlags flags =
 			//ImGuiTableFlags_Resizable |
 			/*	ImGuiTableFlags_Reorderable
 			| ImGuiTableFlags_Hideable*/
@@ -283,8 +281,7 @@ namespace menu
 				| ImGuiTableFlags_SizingFixedFit*/
 			;
 
-
-			const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+		const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
 		if (ImGui::BeginTable("table_sorting", 6, flags, ImVec2(0.0f, TEXT_BASE_HEIGHT * 15), 0.0f)) {
 			ImGui::TableSetupColumn("已装备", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_ID);
 			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 100.0f, PlayerInfoColumnID_1);
@@ -303,32 +300,63 @@ namespace menu
 					//InventoryInfo* item = getPlayerInvData(row_n);
 					InventoryInfo item = inv[row_n];
 					//if (item) {
-						ImGui::PushID(row_n + 7000);
-						ImGui::TableNextRow();
-						ImGui::TableNextColumn();
-						ImGui::Text("%s", item.isWorn ? "×" : "");
-						ImGui::TableNextColumn();
-						ImGui::Text("%s", item.name.c_str());
-						ImGui::TableNextColumn();
-						//if (isShowFriend && isShowEnemy) {
-						ImGui::Text("%d", item.count);
-						//}
-						ImGui::TableNextColumn();
-						//if (isAim) {
-						ImGui::Text("%.1f", item.weight);
-						//}
-						ImGui::TableNextColumn();
-						ImGui::Text("%s", item.formIdStr.c_str());
-						//ImGui::TableNextColumn();
-						//ImGui::Text("0x%X", item->address);
-						ImGui::PopID();
+					ImGui::PushID(row_n + 7000);
+					ImGui::TableNextRow();
+					//if (ImGui::IsItemHovered()) {
+					//if (ImGui::IsMouseDoubleClicked(0) && ImGui::TableGetRowIndex() == row_n) {
+					//		//if (ImGui::IsMouseDoubleClicked(0) && ImGui::IsItemHovered()) {
+					//	// 在这里执行双击行的操作
+					//	// 例如，您可以打开一个新的窗口或显示一些详细信息
+					//	// 这里只是一个示例，您可以根据您的需求进行相应的操作
+					//	/*printf("Row %d double-clicked!\n", row);*/
+					//	if (item.ptr->IsAmmo() || item.ptr->IsArmor() || item.ptr->IsWeapon()) {
+					//		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
+					//		auto actorEquipManager = RE::ActorEquipManager::GetSingleton();
+					//		if (item.invPtr->IsWorn()) {
+					//			actorEquipManager->UnequipObject(player, item.ptr);
+					//		} else {
+					//			actorEquipManager->EquipObject(player, item.ptr);
+					//		}
+					//	}
+					//}
+					ImGui::TableNextColumn();
+					ImGui::Text("%s", item.isWorn ? "×" : "");
+					ImGui::TableNextColumn();
+
+
+					if (ImGui::Selectable(item.name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick)) {
+						if (ImGui::IsMouseDoubleClicked(0)) {
+							if (item.ptr->IsAmmo() || item.ptr->IsArmor() || item.ptr->IsWeapon()) {
+								RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
+								auto actorEquipManager = RE::ActorEquipManager::GetSingleton();
+								if (item.isWorn) {
+									actorEquipManager->UnequipObject(player, item.ptr);
+									item.isWorn = false;
+								} else {
+									actorEquipManager->EquipObject(player, item.ptr);
+									item.isWorn = true;
+								}
+							}
+						}
+					}
+					ImGui::TableNextColumn();
+					//if (isShowFriend && isShowEnemy) {
+					ImGui::Text("%d", item.count);
+					//}
+					ImGui::TableNextColumn();
+					//if (isAim) {
+					ImGui::Text("%.1f", item.weight);
+					//}
+					ImGui::TableNextColumn();
+					ImGui::Text("%s", item.formIdStr.c_str());
+					//ImGui::TableNextColumn();
+					//ImGui::Text("0x%X", item->address);
+					ImGui::PopID();
 					//}
 				}
 			ImGui::EndTable();
 		}
-
-		}
-
+	}
 
 	void __fastcall render(int active)
 	{
@@ -720,15 +748,9 @@ namespace menu
 		}
 
 		if (show_npc_window) {
-
-		
-
 			ImGui::Begin("装备信息", nullptr, window_flags & (~ImGuiWindowFlags_AlwaysAutoResize));
 
-	
-
-			
-				ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+			ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 			if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
 				if (ImGui::BeginTabItem("武器", 0, 0)) {
 					buildPlayerInvInfo(getPlayerInvWEAPCount(), getPlayerInvWEAPData());
@@ -754,7 +776,8 @@ namespace menu
 				ImGui::EndTabBar();
 			}
 
-
+			myText("钱：%d", getPlayerGoldCount());
+			
 
 			ImGui::End();
 		}

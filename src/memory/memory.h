@@ -105,6 +105,7 @@ struct WeaponInfo
 struct InventoryInfo
 {
 	RE::TESBoundObject* ptr = nullptr;
+	RE::InventoryEntryData* invPtr = nullptr;
 	std::string name = "";
 	std::string formIdStr = "";
 	RE::FormID formId = 0;
@@ -202,7 +203,7 @@ int getPlayerInvBOOKCount();
 int getPlayerInvWEAPCount();
 int getPlayerInvARMOCount();
 int getPlayerInvAMMOCount();
-
+int getPlayerGoldCount();
 
 InventoryInfo* getPlayerInvData();
 InventoryInfo* getPlayerInvARMOData();
