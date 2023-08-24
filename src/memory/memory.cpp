@@ -49,7 +49,8 @@ void __cdecl RefreshGameInfo(void*)
 				auto playerFormEditorID = player->GetFormEditorID();
 				auto playerFormID = player->GetFormID();
 				auto playerGoldValue = player->GetGoldValue();
-				auto playerGoldAmount = player->GetGoldAmount();
+				// 用不到
+				//auto playerGoldAmount = player->GetGoldAmount();
 				auto playerDisplayFullName = player->GetDisplayFullName();
 
 				auto playerLevel = player->GetLevel();
@@ -75,6 +76,8 @@ void __cdecl RefreshGameInfo(void*)
 				//heavyArmor = player->GetActorValue(RE::ActorValue::kHeavyArmor);
 				//
 				//player->GetLevel();
+				playerInfo.equippedWeight = player->equippedWeight;
+				playerInfo.carryWeight = player->GetActorValue(RE::ActorValue::kCarryWeight);
 
 				playerInfo.kHealth = player->GetActorValue(RE::ActorValue::kHealth);
 				playerInfo.kMagicka = player->GetActorValue(RE::ActorValue::kMagicka);
@@ -465,7 +468,6 @@ int getPlayerInvAMMOCount()
 	return MyInventoryInfo[!nowIndex].inventoryAMMOCount;
 }
 
-
 //InventoryInfo* getPlayerInvData2()
 //{
 //	return &MyInventoryInfo[!nowIndex].inventorys[0];
@@ -492,8 +494,6 @@ InventoryInfo* getPlayerInvAMMOData()
 	return &MyInventoryInfo[!nowIndex].inventorysAMMO[0];
 }
 
-
-
 InventoryInfo* getPlayerInvData(int i)
 {
 	return &MyInventoryInfo[!nowIndex].inventorys[i];
@@ -501,16 +501,50 @@ InventoryInfo* getPlayerInvData(int i)
 
 void __fastcall buildPlayerInvData(InventoryInfo inv[], int& i, RE::TESBoundObject* item, RE::InventoryEntryData* entry, std::int32_t count)
 {
-	inv[i].ptr = item;
-	inv[i].invPtr = entry;
-	inv[i].count = count;
-	inv[i].formId = item->GetFormID();
-	inv[i].formIdStr = FormIDToString(item->GetFormID());
-	inv[i].name = entry->GetDisplayName();
-	inv[i].weight = item->GetWeight();
-	inv[i++].isWorn = entry->IsWorn();
+	// 要判断extras
+
+	if (entry->extraLists) {
+		for (auto& xList : *entry->extraLists) {
+			if (xList) {
+				auto xCount = xList->GetCount();
+
+				//logger::trace("Inv Name {} {} "sv, i, StringUtil::Utf8ToGbk(entry->GetDisplayName()));
+				//logger::trace("Inv2 Name {} {} "sv, xCount, StringUtil::Utf8ToGbk(xList->GetDisplayName(item)));
+
+				inv[i].ptr = item;
+				inv[i].invPtr = entry;
+				inv[i].invExtraPtr = xList;
+				inv[i].count = xCount;
+				inv[i].formId = item->GetFormID();
+				inv[i].formIdStr = FormIDToString(item->GetFormID());
+				inv[i].name = xList->GetDisplayName(item);
+				inv[i].weight = item->GetWeight();
+				inv[i++].isWorn = (xList->HasType<RE::ExtraWorn>() || xList->HasType<RE::ExtraWornLeft>());
+
+				count -= xCount;
+			}
+		}
+	}
+	if (count > 0) {
+		inv[i].ptr = item;
+		inv[i].invPtr = entry;
+		inv[i].invExtraPtr = nullptr;
+		inv[i].count = count;
+		inv[i].formId = item->GetFormID();
+		inv[i].formIdStr = FormIDToString(item->GetFormID());
+		//inv[i].name = entry->GetDisplayName();
+		inv[i].name = item->GetName();
+		
+		inv[i].weight = item->GetWeight();
+		//inv[i++].isWorn = entry->IsWorn();
+		inv[i++].isWorn = false;
+	}
+
 	//logger::trace("Inv Name {} {} "sv, i, StringUtil::Utf8ToGbk(entry->GetDisplayName()));
 }
+
+int show_npc_window_dis_meter = 30;
+bool show_npc_window_dis = false;
 
 void __cdecl RefreshActorInfo(void*)
 {
@@ -587,8 +621,7 @@ void __cdecl RefreshActorInfo(void*)
 			//MyInventoryInfo[nowIndex].inventoryCount = i;
 		}
 
-		//actorCount = pl->numberHighActors;
-		auto actorCount = pl->highActorHandles.size();
+		//auto actorCount = pl->highActorHandles.size();
 		//if (pl->highActorHandles.size() != actorCount) {
 		//	Sleep(1000);
 		//	continue;
@@ -597,10 +630,10 @@ void __cdecl RefreshActorInfo(void*)
 		int tmpEnemyCount = 0;
 		int tmpTeammateCount = 0;
 
-		for (int i = 0; i < actorCount; i++) {
-			auto actor = pl->highActorHandles[i].get().get();
+		for (auto& handle : pl->highActorHandles) {
+			//for (int i = 0; i < actorCount; i++) {
+			auto actor = handle.get().get();
 			if (actor) {
-				//actorInfo[i].isTeammate = actor->IsPlayerTeammate();
 				if (actor->IsPlayerTeammate()) {
 					actorInfo[nowIndex].teammateInfo[tmpTeammateCount].formId = actor->GetFormID();
 					actorInfo[nowIndex].teammateInfo[tmpTeammateCount].formIdStr = FormIDToString(actor->GetFormID());
@@ -618,27 +651,14 @@ void __cdecl RefreshActorInfo(void*)
 					//teammateInfo[i].idHostile = actor->IsHostileToActor(player);
 					RefreshInventory(actor, actorInfo[nowIndex].teammateInfo, tmpTeammateCount++);
 
-					//	int i = 0;
-
-					//// 装备信息
-					//const auto inv = actor->GetInventory([](RE::TESBoundObject& a_object) {
-					//	return !a_object.IsDynamicForm() && !a_object.IsDeleted() && !a_object.IsIgnored();
-					//});
-
-					//for (const auto& [item, invData] : inv) {
-					//	const auto& [count, entry] = invData;
-					//	//if (count > 0 && entry->IsWorn()) {
-					//	if (count > 0) {
-					//		teammateInfo[tmpTeammateCount].Inventorys[i].formIdStr = FormIDToString(item->GetFormID());
-					//		teammateInfo[tmpTeammateCount].Inventorys[i].name = entry.get()->GetDisplayName();
-					//		teammateInfo[tmpTeammateCount].Inventorys[i].weight = entry.get()->GetWeight();
-					//		teammateInfo[tmpTeammateCount].Inventorys[i++].isWorn = entry.get()->IsWorn();
-					//	}
-					//}
-
-					//teammateInfo[tmpTeammateCount++].inventoryCount = i;
-
 				} else if (actor->IsHostileToActor(player)) {
+					float dis = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
+					if (show_npc_window_dis) {
+						if (dis > show_npc_window_dis_meter) {
+							continue;
+						}
+					}
+					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].distance = dis;
 					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].formId = actor->GetFormID();
 					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].formIdStr = FormIDToString(actor->GetFormID());
 					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].ptr = actor;
@@ -648,32 +668,19 @@ void __cdecl RefreshActorInfo(void*)
 					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
 					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].isSentient = IsSentient2(actor);
 					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
-					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].distance = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
 					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].lifeState = actor->GetLifeState();
 					actorInfo[nowIndex].enemyInfo[tmpEnemyCount].isInCombat = actor->IsInCombat();
 
 					RefreshInventory(actor, actorInfo[nowIndex].enemyInfo, tmpEnemyCount++);
-					//int i = 0;
-
-					//// 装备信息
-					//const auto inv = actor->GetInventory([](RE::TESBoundObject& a_object) {
-					//	return !a_object.IsDynamicForm() && !a_object.IsDeleted() && !a_object.IsIgnored();
-					//});
-
-					//for (const auto& [item, invData] : inv) {
-					//	const auto& [count, entry] = invData;
-					//	//if (count > 0 && entry->IsWorn()) {
-					//	if (count > 0) {
-					//		enemyInfo[tmpEnemyCount].Inventorys[i].formIdStr = FormIDToString(item->GetFormID());
-					//		enemyInfo[tmpEnemyCount].Inventorys[i].name = entry.get()->GetDisplayName();
-					//		enemyInfo[tmpEnemyCount].Inventorys[i].weight = entry.get()->GetWeight();
-					//		enemyInfo[tmpEnemyCount].Inventorys[i++].isWorn = entry.get()->IsWorn();
-					//	}
-					//}
-
-					//enemyInfo[tmpEnemyCount++].inventoryCount = i;
 
 				} else {
+					float dis = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
+					if (show_npc_window_dis) {
+						if (dis > show_npc_window_dis_meter) {
+							continue;
+						}
+					}
+					actorInfo[nowIndex].npcInfo[tmpNpcCount].distance = dis;
 					actorInfo[nowIndex].npcInfo[tmpNpcCount].formId = actor->GetFormID();
 					actorInfo[nowIndex].npcInfo[tmpNpcCount].formIdStr = FormIDToString(actor->GetFormID());
 					actorInfo[nowIndex].npcInfo[tmpNpcCount].ptr = actor;
@@ -688,25 +695,6 @@ void __cdecl RefreshActorInfo(void*)
 					actorInfo[nowIndex].npcInfo[tmpNpcCount].isInCombat = actor->IsInCombat();
 
 					RefreshInventory(actor, actorInfo[nowIndex].npcInfo, tmpNpcCount++);
-					//int i = 0;
-
-					//// 装备信息
-					//const auto inv = actor->GetInventory([](RE::TESBoundObject& a_object) {
-					//	return a_object.IsArmor();
-					//});
-
-					//for (const auto& [item, invData] : inv) {
-					//	const auto& [count, entry] = invData;
-					//	//if (count > 0 && entry->IsWorn()) {
-					//	if (count > 0) {
-					//		npcInfo[tmpNpcCount].Inventorys[i].formIdStr = FormIDToString(item->GetFormID());
-					//		npcInfo[tmpNpcCount].Inventorys[i].name = entry.get()->GetDisplayName();
-					//		npcInfo[tmpNpcCount].Inventorys[i].weight = entry.get()->GetWeight();
-					//		npcInfo[tmpNpcCount].Inventorys[i++].isWorn = entry.get()->IsWorn();
-					//	}
-					//}
-
-					//npcInfo[tmpNpcCount++].inventoryCount = i;
 				}
 
 				std::sort(actorInfo[nowIndex].teammateInfo, actorInfo[nowIndex].teammateInfo + tmpTeammateCount, compareByLevel);

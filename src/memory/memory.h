@@ -47,6 +47,11 @@ struct PlayerInfo
 	float kMagickaBase = 0.0f;
 	float kStaminaBase = 0.0f;
 
+	float gold = 0.0f;
+	float equippedWeight = 0.0f;
+	float carryWeight = 0.0f;
+
+	
 };
 
 
@@ -106,6 +111,7 @@ struct InventoryInfo
 {
 	RE::TESBoundObject* ptr = nullptr;
 	RE::InventoryEntryData* invPtr = nullptr;
+	RE::ExtraDataList* invExtraPtr = nullptr;
 	std::string name = "";
 	std::string formIdStr = "";
 	RE::FormID formId = 0;
@@ -175,7 +181,8 @@ struct ActorInfo
 
 
 
-
+extern int show_npc_window_dis_meter;
+extern bool show_npc_window_dis;
 
 extern WeaponInfo leftWeaponInfo;
 extern WeaponInfo rightWeaponInfo;

@@ -81,8 +81,5 @@ bool Hook_EnemyHealthLookupReferenceByHandle_impl(const RE::RefHandle& refHandle
 void hookInstall()
 {
 	auto& trampoline = SKSE::GetTrampoline();
-	//trampoline.write_call<5>(
-	//	RE::unrestricted_cast<std::uintptr_t>(EnemyUpdateHook),
-	//	RE::unrestricted_cast<std::uintptr_t>(Hook_EnemyHealthLookupReferenceByHandle_impl));
 	trampoline.write_call<5>(EnemyUpdateHook, Hook_EnemyHealthLookupReferenceByHandle_impl);
 }

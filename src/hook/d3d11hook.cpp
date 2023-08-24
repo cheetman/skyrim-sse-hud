@@ -144,13 +144,6 @@ namespace d3d11hook
 
 		menu::render(active);
 
-	/*	if (active) {
-			ImGui::Begin("TestWindow",&active);
-			ImGui::Text("Test.");
-			ImGui::End();
-		}*/
-
-
 		ImGui::EndFrame();
 
 		ImGui::Render();

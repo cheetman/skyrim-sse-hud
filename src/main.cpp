@@ -248,16 +248,14 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 
 	// 测试
 	SKSE::AllocTrampoline(1 << 6);
-	hookInstall();
+	//hookInstall();
 
 	_beginthread(RefreshGameInfo, 0, NULL);
 	_beginthread(RefreshAutoUnequipAmmo, 0, NULL);
 	_beginthread(RefreshActorInfo, 0, NULL);
 	_beginthread(installimgui, 0, NULL);
 
-	
 	return true;
-
 	//RE::BSRenderManager::GetSingleton();
 }
 

@@ -55,7 +55,11 @@ namespace menu
 	static float colorPlotHistogramW = 1;
 
 	static bool show_enemy_window = false;
-	static bool show_npc_window = false;
+	static bool show_npc_window = true;
+	//static bool show_npc_window_dis = false;
+	//static int show_npc_window_dis_meter = 30;
+	static bool show_inv_window = true;
+	static int show_inv_window_height = 15;
 	static bool show_crosshair = false;
 
 	// 基础属性进度条
@@ -153,6 +157,10 @@ namespace menu
 		ImGui::TextColoredV(col, fmt, args);
 		va_end(args);
 	}
+
+	static bool show_npc = true;
+	static bool show_enemy = true;
+	static bool show_teammate = true;
 
 	void __fastcall buildNpcInfo(int active, ActorInfo* actorInfo, int actorCount)
 	{
@@ -271,18 +279,16 @@ namespace menu
 	void __fastcall buildPlayerInvInfo(int count, InventoryInfo inv[])
 	{
 		static ImGuiTableFlags flags =
-			//ImGuiTableFlags_Resizable |
 			/*	ImGuiTableFlags_Reorderable
 			| ImGuiTableFlags_Hideable*/
-			ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders
+			ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_NoBordersInBody
 			/*	| ImGuiTableFlags_NoBordersInBody
 				| ImGuiTableFlags_ScrollX
-				| ImGuiTableFlags_ScrollY
 				| ImGuiTableFlags_SizingFixedFit*/
 			;
 
 		const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
-		if (ImGui::BeginTable("table_sorting", 6, flags, ImVec2(0.0f, TEXT_BASE_HEIGHT * 15), 0.0f)) {
+		if (ImGui::BeginTable("table_sorting", 6, flags, ImVec2(0.0f, TEXT_BASE_HEIGHT * show_inv_window_height), 0.0f)) {
 			ImGui::TableSetupColumn("已装备", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_ID);
 			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 100.0f, PlayerInfoColumnID_1);
 			ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_2);
@@ -302,42 +308,24 @@ namespace menu
 					//if (item) {
 					ImGui::PushID(row_n + 7000);
 					ImGui::TableNextRow();
-					//if (ImGui::IsItemHovered()) {
-					//if (ImGui::IsMouseDoubleClicked(0) && ImGui::TableGetRowIndex() == row_n) {
-					//		//if (ImGui::IsMouseDoubleClicked(0) && ImGui::IsItemHovered()) {
-					//	// 在这里执行双击行的操作
-					//	// 例如，您可以打开一个新的窗口或显示一些详细信息
-					//	// 这里只是一个示例，您可以根据您的需求进行相应的操作
-					//	/*printf("Row %d double-clicked!\n", row);*/
-					//	if (item.ptr->IsAmmo() || item.ptr->IsArmor() || item.ptr->IsWeapon()) {
-					//		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
-					//		auto actorEquipManager = RE::ActorEquipManager::GetSingleton();
-					//		if (item.invPtr->IsWorn()) {
-					//			actorEquipManager->UnequipObject(player, item.ptr);
-					//		} else {
-					//			actorEquipManager->EquipObject(player, item.ptr);
-					//		}
-					//	}
-					//}
 					ImGui::TableNextColumn();
 					ImGui::Text("%s", item.isWorn ? "×" : "");
 					ImGui::TableNextColumn();
 
-
 					if (ImGui::Selectable(item.name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick)) {
-						if (ImGui::IsMouseDoubleClicked(0)) {
+						//if (ImGui::IsMouseDoubleClicked(0)) {
 							if (item.ptr->IsAmmo() || item.ptr->IsArmor() || item.ptr->IsWeapon()) {
 								RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 								auto actorEquipManager = RE::ActorEquipManager::GetSingleton();
 								if (item.isWorn) {
-									actorEquipManager->UnequipObject(player, item.ptr);
+									actorEquipManager->UnequipObject(player, item.ptr, item.invExtraPtr,1);
 									item.isWorn = false;
 								} else {
-									actorEquipManager->EquipObject(player, item.ptr);
+									actorEquipManager->EquipObject(player, item.ptr,item.invExtraPtr,1);
 									item.isWorn = true;
 								}
 							}
-						}
+						//}
 					}
 					ImGui::TableNextColumn();
 					//if (isShowFriend && isShowEnemy) {
@@ -721,34 +709,60 @@ namespace menu
 			}
 			ImGui::End();
 		}
+
 		if (show_npc_window) {
 			ImGui::Begin("npc信息", nullptr, window_flags);
 			//if (!isRefreshActorInfo) {
 			if (getNpcCount() > 0) {
-				myText("npc：");
-				auto actorInfo = getNpcData();
-				buildNpcInfo(active, actorInfo, getNpcCount());
-				ImGui::Separator();
+				if (active) {
+					ImGui::Checkbox("npc", &show_npc);
+				} else {
+					if (show_npc) {
+						myText("npc：");
+					}
+				}
+				if (show_npc) {
+					auto actorInfo = getNpcData();
+					buildNpcInfo(active, actorInfo, getNpcCount());
+					ImGui::Separator();
+				}
 			}
 
 			if (getEnemyCount() > 0) {
-				myText("enemy：");
-				auto actorInfo = getEnemy2Data();
-				buildNpcInfo(active, actorInfo, getEnemyCount());
-				ImGui::Separator();
+				if (active) {
+					ImGui::Checkbox("enemy", &show_enemy);
+				} else {
+					if (show_enemy) {
+						myText("enemy：");
+					}
+				}
+				if (show_enemy) {
+					auto actorInfo = getEnemy2Data();
+					buildNpcInfo(active, actorInfo, getEnemyCount());
+					ImGui::Separator();
+				}
 			}
 
 			if (getTeammateCount() > 0) {
-				myText("team：");
-				auto actorInfo = getTeammateData();
-				buildNpcInfo(active, actorInfo, getTeammateCount());
+				if (active) {
+					ImGui::Checkbox("team", &show_teammate);
+				} else {
+					if (show_teammate) {
+						myText("team：");
+					}
+				}
+				if (show_teammate) {
+					auto actorInfo = getTeammateData();
+					buildNpcInfo(active, actorInfo, getTeammateCount());
+				}
 			}
 			//}
 			ImGui::End();
 		}
 
-		if (show_npc_window) {
-			ImGui::Begin("装备信息", nullptr, window_flags & (~ImGuiWindowFlags_AlwaysAutoResize));
+		if (show_inv_window) {
+			
+			ImGui::Begin("装备信息", nullptr, window_flags);//window_flags&(~ImGuiWindowFlags_AlwaysAutoResize)
 
 			ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 			if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
@@ -776,8 +790,8 @@ namespace menu
 				ImGui::EndTabBar();
 			}
 
-			myText("钱：%d", getPlayerGoldCount());
-			
+			myText("\uf0d6 %d", getPlayerGoldCount());
+			//myText("负重：%0.1f/%0.0f", playerInfo.equippedWeight, playerInfo.carryWeight);
 
 			ImGui::End();
 		}
@@ -807,8 +821,8 @@ namespace menu
 				ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 				if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
 					if (ImGui::BeginTabItem("插件设置", 0, 0)) {
-						if (ImGui::CollapsingHeader("HUD设置", ImGuiTreeNodeFlags_DefaultOpen)) {
-							ImGui::BeginGroup();
+						if (ImGui::TreeNodeEx("HUD设置", ImGuiTreeNodeFlags_DefaultOpen)) {
+							//ImGui::BeginGroup();
 
 							ImGui::Checkbox("人物基本属性", &show_player_base_info_window);
 
@@ -836,30 +850,48 @@ namespace menu
 							ImGui::Checkbox("装备信息", &show_player_armor_window);
 							ImGui::Checkbox("人物属性加成", &show_player_mod_window);
 							ImGui::Checkbox("其他信息", &show_player_debug_window);
-							ImGui::Checkbox("敌人信息", &show_enemy_window);
-							ImGui::Checkbox("npc信息", &show_npc_window);
+							//ImGui::Checkbox("敌人信息", &show_enemy_window);
+							ImGui::Checkbox("NPC信息", &show_npc_window);
+							if (show_npc_window) {
+								if (ImGui::TreeNodeEx("NPC信息 - 设置", ImGuiTreeNodeFlags_DefaultOpen)) {
+									ImGui::Checkbox("只显示距离内NPC", &show_npc_window_dis);
+									if (show_npc_window_dis) {
+										ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+										ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
+										ImGui::DragInt("##距离", &show_npc_window_dis_meter, 1, 10, 100, "%d米内");
+										ImGui::PopItemWidth();
+									}
+
+									ImGui::TreePop();
+								}
+							}
+							ImGui::Checkbox("#装备信息", &show_inv_window);
+							if (show_inv_window) {
+								if (ImGui::TreeNodeEx("装备信息 - 设置", ImGuiTreeNodeFlags_DefaultOpen)) {
+									ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
+									ImGui::DragInt("显示数据", &show_inv_window_height, 1, 15, 80, "%d条");
+									ImGui::PopItemWidth();
+									ImGui::TreePop();
+								}
+							}
 
 							ImGui::Checkbox("是否自动卸除箭袋", &auto_remove_ammo);
 							// 测试
-							ImGui::Checkbox("Demo", &show_demo_window);
-							/*		if (ImGui::Button("测试获取人物")) {
-								actors.clear();
-								auto pl = RE::ProcessLists::GetSingleton();
-								for (auto& handle : pl->highActorHandles) {
-									auto actor = handle.get().get();
-									if (actor) {
-										actors.push_back(actor);
-									}
-								}
-							}*/
+							//ImGui::Checkbox("Demo", &show_demo_window);
+			
 
-							ImGui::EndGroup();
+							//ImGui::EndGroup();
+							ImGui::TreePop();
+
+
 						}
 
 						ImGui::Separator();
 
-						if (ImGui::CollapsingHeader("窗口设置", ImGuiTreeNodeFlags_DefaultOpen)) {
-							ImGui::BeginGroup();
+						
+
+						if (ImGui::TreeNodeEx("窗口设置", ImGuiTreeNodeFlags_DefaultOpen)) {
+							//ImGui::BeginGroup();
 
 							static int style_idx = imgui_style_index;
 							if (ImGui::Combo("主题", &style_idx, "Dark\0Light\0Classic\0", -1)) {
@@ -879,26 +911,40 @@ namespace menu
 								}
 							}
 
-							//imgui.igShowStyleSelector("style");
-							//ImGui::TableNextColumn();
-							ImGui::Checkbox("不显示标题", &no_titlebar);
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Checkbox("不允许缩放", &no_resize);
-							ImGui::Checkbox("不允许折叠", &no_collapse);
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Checkbox("不显示背景", &no_background);
-							ImGui::Checkbox("窗体边框", &window_border);
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Checkbox("控件边框", &frame_border);
 
-							ImGui::Checkbox("是否窗口自适应", &auto_resize);
-							ImGui::Checkbox("不显示圆形", &bullet_text);
+							 if (ImGui::BeginTable("split", 3)) {
+								ImGui::TableNextColumn();
+								ImGui::Checkbox("不显示标题", &no_titlebar);
+								ImGui::TableNextColumn();
+								ImGui::Checkbox("不允许缩放", &no_resize);
+								ImGui::TableNextColumn();
+								ImGui::Checkbox("不允许折叠", &no_collapse);
+								ImGui::TableNextColumn();
+								ImGui::Checkbox("不显示背景", &no_background);
+								ImGui::TableNextColumn();
+								ImGui::Checkbox("窗体边框", &window_border);
+								ImGui::TableNextColumn();
+								ImGui::Checkbox("控件边框", &frame_border);
+								ImGui::TableNextColumn();
+								ImGui::Checkbox("是否窗口自适应", &auto_resize);
+								ImGui::TableNextColumn();
+								ImGui::Checkbox("不显示圆形", &bullet_text);
+								ImGui::EndTable();
+							}
+
+							 
+							ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
 							ImGui::DragFloat("窗体缩放", &ImGui::GetIO().FontGlobalScale, 0.005f, 0.5f, 1.8f, "%.2f", 1);
 							ImGui::DragInt("数据刷新(ms)", &refresh_time_data, 1, 100, 500, "%d ms");
+							ImGui::PopItemWidth();
 
-							//ImGui::EndTable();
-							ImGui::EndGroup();
+
+							//ImGui::EndGroup();
+							ImGui::TreePop();
 						}
+
+						ImGui::Separator();
+
 						if (ImGui::Button("保存配置", ImVec2(0, 0))) {
 							auto colorPlotHistogram = style.Colors[ImGuiCol_PlotHistogram];
 							colorPlotHistogramX = colorPlotHistogram.x;
@@ -910,7 +956,7 @@ namespace menu
 						}
 						ImGui::EndTabItem();
 					}
-					if (ImGui::BeginTabItem("快捷操作", 0, 0)) {
+					if (ImGui::BeginTabItem("属性修改", 0, 0)) {
 						RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 						if (ImGui::TreeNodeEx("属性修改(临时)", ImGuiTreeNodeFlags_DefaultOpen)) {
 							myText("修改项:");
