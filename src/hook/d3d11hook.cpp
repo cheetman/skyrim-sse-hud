@@ -119,17 +119,26 @@ namespace d3d11hook
 					config.MergeMode = true;
 					config.GlyphMinAdvanceX = 13.0f; 
 					static const ImWchar icon_ranges[] = { 0xf000, 0xf3ff, 0 };
-					io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\fontawesome-webfont.ttf", 18.0f, &config, icon_ranges);
+					io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\fontawesome-webfont.ttf", 16.0f, &config, icon_ranges);
+					SKSE::log::info("AddFontFromFileTTF");
 				}
 
 				ImGui_ImplWin32_Init(g_hwnd);
 				ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dContext);
+				SKSE::log::info("ImGui_ImplDX11_Init");
+			} else {
+				SKSE::log::info("g_pSwapChain->GetDevice(IID_PPV_ARGS(&g_pd3dDevice) Fail");
 			}
 		});
 
 		if (GetAsyncKeyState(VK_INSERT) & 0x1) {
+			SKSE::log::info("VK_INSERT");
 			active ? active = false : active = true;
 		}
+		//if ((GetAsyncKeyState(VK_SHIFT) & 0x8000) && (GetAsyncKeyState('Q') & 0x1)) {
+		//	active ? active = false : active = true;
+		//}
+
 		//ImGui::GetIO().WantCaptureMouse = active;
 		ImGui::GetIO().MouseDrawCursor = active;
 		//ImGui::GetIO().WantSetMousePos = true;
@@ -169,13 +178,15 @@ namespace d3d11hook
 		sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 		sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 		sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-		sd.Windowed = ((GetWindowLongPtr(g_hwnd, GWL_STYLE) & WS_POPUP) != 0) ? false : true;
+		//sd.Windowed = ((GetWindowLongPtr(g_hwnd, GWL_STYLE) & WS_POPUP) != 0) ? false : true;
+		sd.Windowed = true;
 
 		D3D_FEATURE_LEVEL featureLevel{};
 
 		const auto hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, nullptr, 0, D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice, &featureLevel, nullptr);
 
 		if (FAILED(hr)) {
+			SKSE::log::error("D3D11CreateDeviceAndSwapChain Fail {}", (int)g_hwnd);
 			return false;
 		}
 		return true;
@@ -187,7 +198,9 @@ namespace d3d11hook
 		std::call_once(D3DInit, [&]() {
 			if (TryD3D11()) {
 				if (MH_Initialize() != MH_OK) {
+					SKSE::log::error("MH_Initialize Fail");
 					return 1;
+
 				}
 
 				DWORD_PTR* pSwapChainVTable = nullptr;
@@ -195,9 +208,11 @@ namespace d3d11hook
 				pSwapChainVTable = (DWORD_PTR*)(pSwapChainVTable[0]);
 
 				if (MH_CreateHook((DWORD_PTR*)pSwapChainVTable[8], PresentHook, reinterpret_cast<void**>(&phookD3D11Present)) != MH_OK) {
+					SKSE::log::error("MH_CreateHook pSwapChainVTable Fail");
 					return 1;
 				}
 				if (MH_EnableHook((DWORD_PTR*)pSwapChainVTable[8]) != MH_OK) {
+					SKSE::log::error("MH_EnableHook pSwapChainVTable Fail");
 					return 1;
 				}
 			} else {

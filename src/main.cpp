@@ -114,6 +114,15 @@ int SehFilter(DWORD dwExceptionCode)
 //	sseimgui->render_listener(&render, 0);
 //}
 
+void __cdecl installimgui(void*);
+
+
+void delayedExecution()
+{
+	std::this_thread::sleep_for(std::chrono::seconds(3));
+	isGameLoading = false;
+}
+
 
 void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 {
@@ -124,6 +133,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 			auto messaging = SKSE::GetMessagingInterface();
 			/*		if (!messaging->RegisterListener("SSEIMGUI", ImguiMessageHandler)) {
 			}*/
+
 			break;
 		}
 	case SKSE::MessagingInterface::kPostPostLoad:
@@ -143,6 +153,8 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 			logger::info("kPostLoadGame"sv);
 			isGameLoading = false;
 			startflag = true;
+			//std::thread t(delayedExecution);
+			
 			break;
 		}
 	case SKSE::MessagingInterface::kSaveGame:
@@ -183,7 +195,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 
 void __cdecl installimgui(void*)
 {
-	Sleep(5000);
+	Sleep(20000);
 	MenuOpenCloseEvent::Register();    //Register Bethesda Menu Event
 	BSTCrosshairRefEvent::Register();  //Register Bethesda Menu Event
 	d3d11hook::Install();
@@ -195,7 +207,7 @@ void __cdecl RefreshAutoUnequipAmmo(void*)
 	while (true) {
 		Sleep(1000);
 		if (menu::auto_remove_ammo) {
-			if (startflag) {
+			if (startflag && !isGameLoading) {
 				RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 				if (player) {
 					auto ammo = player->GetCurrentAmmo();

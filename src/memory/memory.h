@@ -159,6 +159,8 @@ struct ActorInfo
 	float kMagicka = 0.0f;
 	float kStamina = 0.0f;
 	float distance = 0.0f;
+	int direction = 0;
+
 	int isSentient = 0;
 	int level = 0.0f;
 	bool isDead = false;
@@ -183,6 +185,9 @@ struct ActorInfo
 
 extern int show_npc_window_dis_meter;
 extern bool show_npc_window_dis;
+extern bool show_enemy_window;
+extern bool show_inv_window;
+extern bool show_npc_window ;
 
 extern WeaponInfo leftWeaponInfo;
 extern WeaponInfo rightWeaponInfo;

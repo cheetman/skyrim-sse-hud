@@ -54,11 +54,8 @@ namespace menu
 	static float colorPlotHistogramZ = 0;
 	static float colorPlotHistogramW = 1;
 
-	static bool show_enemy_window = false;
-	static bool show_npc_window = true;
 	//static bool show_npc_window_dis = false;
 	//static int show_npc_window_dis_meter = 30;
-	static bool show_inv_window = true;
 	static int show_inv_window_height = 15;
 	static bool show_crosshair = false;
 
@@ -267,11 +264,34 @@ namespace menu
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 				myText2("]");
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-				myText(" [%.1f米]", item.distance);
-				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				//myText(" [%.1f米]", item.distance);
+				switch (item.direction) {
+				case 1://前
+					myText(" \uf062%.0f", item.distance);
+					break;
+				case 2://左
+					myText(" \uf060%.0f", item.distance);
+					break;
+				case 3:
+					myText(" \uf063%.0f", item.distance);
+					break;
+				case 4:
+					myText(" \uf061%.0f", item.distance);
+					break;
+				//case 5://前
+				//	myText(" \uf062%.0f米", item.distance);
+				//	break;
+				//case 6://后
+				//	myText(" \uf06%.0f米", item.distance);
+				//	break;
+				default:
+					myText(" %.0f", item.distance);
+					break;
+				}
+			/*	ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 				myText(" %s", item.isTeammate ? "队友" : "");
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-				myText(" %s", item.idHostile ? "敌对" : "");
+				myText(" %s", item.idHostile ? "敌对" : "");*/
 			}
 		}
 	}
@@ -672,8 +692,10 @@ namespace menu
 
 		if (show_player_debug_window) {
 			ImGui::Begin("其他信息", nullptr, window_flags);
+			// z高度
 			myText("人物坐标: [%.0f,%.0f,%.0f]", playerInfo.Position.x, playerInfo.Position.y, playerInfo.Position.z);
 			//ImGui::SameLine(0, 0);
+			// z 是0~2Π
 			myText("人物视角: [%.2f,%.2f]", playerInfo.Angle.x, playerInfo.Angle.z);
 			ImGui::End();
 		}
@@ -724,11 +746,11 @@ namespace menu
 				if (show_npc) {
 					auto actorInfo = getNpcData();
 					buildNpcInfo(active, actorInfo, getNpcCount());
-					ImGui::Separator();
 				}
 			}
 
 			if (getEnemyCount() > 0) {
+				ImGui::Separator();
 				if (active) {
 					ImGui::Checkbox("enemy", &show_enemy);
 				} else {
@@ -739,11 +761,11 @@ namespace menu
 				if (show_enemy) {
 					auto actorInfo = getEnemy2Data();
 					buildNpcInfo(active, actorInfo, getEnemyCount());
-					ImGui::Separator();
 				}
 			}
 
 			if (getTeammateCount() > 0) {
+				ImGui::Separator();
 				if (active) {
 					ImGui::Checkbox("team", &show_teammate);
 				} else {
