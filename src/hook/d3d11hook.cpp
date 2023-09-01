@@ -132,7 +132,8 @@ namespace d3d11hook
 		});
 
 		if (GetAsyncKeyState(VK_INSERT) & 0x1) {
-			SKSE::log::info("VK_INSERT");
+			//if (GetAsyncKeyState(VK_F12) & 0x1) {
+			//SKSE::log::info("VK_INSERT");
 			active ? active = false : active = true;
 		}
 		//if ((GetAsyncKeyState(VK_SHIFT) & 0x8000) && (GetAsyncKeyState('Q') & 0x1)) {

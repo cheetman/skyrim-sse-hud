@@ -32,7 +32,7 @@ namespace menu
 	static bool flag_base_info_setting = true;
 
 	static bool show_player_info_window = true;
-	static bool show_player_mod_window = false;
+	static bool show_player_mod_window = true;
 	static bool show_player_armor_window = true;
 	static bool show_player_weapon_window = true;
 	static bool show_player_debug_window = false;
@@ -56,6 +56,7 @@ namespace menu
 
 	//static bool show_npc_window_dis = false;
 	//static int show_npc_window_dis_meter = 30;
+	extern bool show_npc_window_formid = false;
 	static int show_inv_window_height = 15;
 	static bool show_crosshair = false;
 
@@ -71,6 +72,9 @@ namespace menu
 	static int statePerMod_selectIndex = 0;
 	static float statePerMod_nowValue = 0;
 	static float statePerMod_newValue = 0;
+
+	static int getInv_nowValue = 100;
+	static int getInv_selectIndex = 0;
 
 	ImVec4 colorProgress(1.0f, 0.5f, 0.0f, 1.0f);
 
@@ -112,6 +116,20 @@ namespace menu
 		RE::ActorValue::kResistDisease,
 		RE::ActorValue::kMarksmanPowerModifier,
 		RE::ActorValue::kDestructionPowerModifier,
+	};
+
+	const char* invValues[] = {
+		"铁锭 [5ACE4]",
+		"钢锭 [5ACE5]",
+		"黑檀锭 [5AD9D]",
+		"皮带 [800E4]"
+	};
+
+	const char* invValuesCode[] = {
+		"5ACE4",
+		"5ACE5",
+		"5AD9D",
+		"800E4"
 	};
 
 	std::vector<RE::Actor*> actors;
@@ -170,7 +188,14 @@ namespace menu
 					sprintf(hp, "%.0f/%.0f", item.kHealth, item.kHealthBase);
 				}
 
-				if (ImGui::TreeNodeEx(item.formIdStr.c_str(), 0, "%s - [%d] %s [ %s ]", item.formIdStr.c_str(), item.level, item.name.c_str(), hp)) {
+				bool treeNodeExResult;
+				if (show_npc_window_formid) {
+					treeNodeExResult = ImGui::TreeNodeEx(item.formIdStr.c_str(), 0, "%s - [%d] %s [ %s ]", item.formIdStr.c_str(), item.level, item.name.c_str(), hp);
+				} else {
+					treeNodeExResult = ImGui::TreeNodeEx(item.formIdStr.c_str(), 0, "[%d] %s [ %s ]",  item.level, item.name.c_str(), hp);
+				}
+
+				if (treeNodeExResult) {
 					ImGui::PushID(i + 1000);
 					/*				char str1[16];
 					sprintf(str1, "%s%s", u8"\uf101", "传送到目标");*/
@@ -266,10 +291,10 @@ namespace menu
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 				//myText(" [%.1f米]", item.distance);
 				switch (item.direction) {
-				case 1://前
+				case 1:  //前
 					myText(" \uf062%.0f", item.distance);
 					break;
-				case 2://左
+				case 2:  //左
 					myText(" \uf060%.0f", item.distance);
 					break;
 				case 3:
@@ -288,7 +313,7 @@ namespace menu
 					myText(" %.0f", item.distance);
 					break;
 				}
-			/*	ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				/*	ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 				myText(" %s", item.isTeammate ? "队友" : "");
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 				myText(" %s", item.idHostile ? "敌对" : "");*/
@@ -334,17 +359,17 @@ namespace menu
 
 					if (ImGui::Selectable(item.name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick)) {
 						//if (ImGui::IsMouseDoubleClicked(0)) {
-							if (item.ptr->IsAmmo() || item.ptr->IsArmor() || item.ptr->IsWeapon()) {
-								RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
-								auto actorEquipManager = RE::ActorEquipManager::GetSingleton();
-								if (item.isWorn) {
-									actorEquipManager->UnequipObject(player, item.ptr, item.invExtraPtr,1);
-									item.isWorn = false;
-								} else {
-									actorEquipManager->EquipObject(player, item.ptr,item.invExtraPtr,1);
-									item.isWorn = true;
-								}
+						if (item.ptr->IsAmmo() || item.ptr->IsArmor() || item.ptr->IsWeapon()) {
+							RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
+							auto actorEquipManager = RE::ActorEquipManager::GetSingleton();
+							if (item.isWorn) {
+								actorEquipManager->UnequipObject(player, item.ptr, item.invExtraPtr, 1);
+								item.isWorn = false;
+							} else {
+								actorEquipManager->EquipObject(player, item.ptr, item.invExtraPtr, 1);
+								item.isWorn = true;
 							}
+						}
 						//}
 					}
 					ImGui::TableNextColumn();
@@ -415,7 +440,6 @@ namespace menu
 				sprintf(buf, "%d/%d", (int)playerInfo.kHealth, (int)playerInfo.kHealthBase);
 				ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colorProgress);
 				ImGui::ProgressBar(progress, ImVec2(0.f, 0.f), buf);
-				ImGui::PopStyleColor();
 
 				myText("耐力:");
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -428,6 +452,7 @@ namespace menu
 				char buf3[32];
 				sprintf(buf3, "%d/%d", (int)playerInfo.kMagicka, (int)playerInfo.kMagickaBase);
 				ImGui::ProgressBar(progress3, ImVec2(0.f, 0.f), buf3);
+				ImGui::PopStyleColor();
 
 			} else {
 				myText("生命:");
@@ -497,64 +522,14 @@ namespace menu
 			ImGui::Begin("武器", nullptr, window_flags);
 
 			if (leftWeaponInfo.isExist) {
-				if (ImGui::TreeNode(leftWeaponInfo.treeId.c_str())) {
-					myText("类型: %s", leftWeaponInfo.formTypeName.c_str());
-					myText("ID: %s", leftWeaponInfo.formID.c_str());
-					ImGui::SameLine(0, 0);
-					if (ImGui::SmallButton("卸载")) {
-						std::string commandStr = "player.unequipItem ";
-						commandStr.append(leftWeaponInfo.formID);
-
-						// 调用控制台
-						const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
-						const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
-						if (script) {
-							const auto selectedRef = RE::Console::GetSelectedRef();
-							script->SetCommand(commandStr);
-							script->CompileAndRun(selectedRef.get());
-							delete script;
-						}
-					}
-
-					switch (leftWeaponInfo.formType) {
-					case RE::FormType::Weapon:
-						{
-							myText("武器类型: %s", leftWeaponInfo.weaponTypeName.c_str());
-							myText("武器伤害: %d", leftWeaponInfo.damage);
-							myText("暴击伤害: %d", leftWeaponInfo.critDamage);
-							myText("价格: %d", leftWeaponInfo.goldValue);
-							myText("属性值: %d$", leftWeaponInfo.value);
-							myText("重量: %.1f", leftWeaponInfo.weight);
-							break;
-						}
-					case RE::FormType::Spell:
-						{
-							myText("法术类型: %s", leftWeaponInfo.castingTypeName.c_str());
-							myText("法术类型: %s", leftWeaponInfo.spellTypeName.c_str());
-							myText("花费: %.1f", leftWeaponInfo.cost);
-							myText("施法时间: %.1f", leftWeaponInfo.time);
-							break;
-						}
-
-					default:
-						break;
-					}
-
-					//myText("插槽: %s", item.equipSlotName.c_str());
-					ImGui::TreePop();
-				}
-			}
-
-			if (rightWeaponInfo.isExist) {
-				// 不显示双手武器
-				if (!rightWeaponInfo.isTwoHand) {
-					if (ImGui::TreeNode(rightWeaponInfo.treeId.c_str())) {
-						myText("类型: %s", rightWeaponInfo.formTypeName.c_str());
-						myText("ID: %s", rightWeaponInfo.formID.c_str());
+				if (active) {
+					if (ImGui::TreeNode(leftWeaponInfo.treeId.c_str())) {
+						myText("类型: %s", leftWeaponInfo.formTypeName.c_str());
+						myText("ID: %s", leftWeaponInfo.formID.c_str());
 						ImGui::SameLine(0, 0);
 						if (ImGui::SmallButton("卸载")) {
 							std::string commandStr = "player.unequipItem ";
-							commandStr.append(rightWeaponInfo.formID);
+							commandStr.append(leftWeaponInfo.formID);
 
 							// 调用控制台
 							const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
@@ -567,59 +542,121 @@ namespace menu
 							}
 						}
 
-						switch (rightWeaponInfo.formType) {
+						switch (leftWeaponInfo.formType) {
 						case RE::FormType::Weapon:
 							{
-								myText("武器类型: %s", rightWeaponInfo.weaponTypeName.c_str());
-								myText("武器伤害: %d", rightWeaponInfo.damage);
-								myText("暴击伤害: %d", rightWeaponInfo.critDamage);
-								myText("价格: %d", rightWeaponInfo.goldValue);
-								myText("属性值: %d$", rightWeaponInfo.value);
-								myText("重量: %.1f", rightWeaponInfo.weight);
+								myText("武器类型: %s", leftWeaponInfo.weaponTypeName.c_str());
+								myText("武器伤害: %d", leftWeaponInfo.damage);
+								myText("暴击伤害: %d", leftWeaponInfo.critDamage);
+								myText("价格: %d", leftWeaponInfo.goldValue);
+								myText("属性值: %d$", leftWeaponInfo.value);
+								myText("重量: %.1f", leftWeaponInfo.weight);
 								break;
 							}
 						case RE::FormType::Spell:
 							{
-								myText("法术类型: %s", rightWeaponInfo.castingTypeName.c_str());
-								myText("法术类型: %s", rightWeaponInfo.spellTypeName.c_str());
-								myText("花费: %.1f", rightWeaponInfo.cost);
-								myText("施法时间: %.1f", rightWeaponInfo.time);
+								myText("法术类型: %s", leftWeaponInfo.castingTypeName.c_str());
+								myText("法术类型: %s", leftWeaponInfo.spellTypeName.c_str());
+								myText("花费: %.1f", leftWeaponInfo.cost);
+								myText("施法时间: %.1f", leftWeaponInfo.time);
 								break;
 							}
+
 						default:
 							break;
 						}
 
+						//myText("插槽: %s", item.equipSlotName.c_str());
 						ImGui::TreePop();
+					}
+				} else {
+					myText("%s", leftWeaponInfo.treeId.c_str());
+				}
+			}
+
+			if (rightWeaponInfo.isExist) {
+				// 不显示双手武器
+				if (!rightWeaponInfo.isTwoHand) {
+					if (active) {
+						if (ImGui::TreeNode(rightWeaponInfo.treeId.c_str())) {
+							myText("类型: %s", rightWeaponInfo.formTypeName.c_str());
+							myText("ID: %s", rightWeaponInfo.formID.c_str());
+							ImGui::SameLine(0, 0);
+							if (ImGui::SmallButton("卸载")) {
+								std::string commandStr = "player.unequipItem ";
+								commandStr.append(rightWeaponInfo.formID);
+
+								// 调用控制台
+								const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
+								const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
+								if (script) {
+									const auto selectedRef = RE::Console::GetSelectedRef();
+									script->SetCommand(commandStr);
+									script->CompileAndRun(selectedRef.get());
+									delete script;
+								}
+							}
+
+							switch (rightWeaponInfo.formType) {
+							case RE::FormType::Weapon:
+								{
+									myText("武器类型: %s", rightWeaponInfo.weaponTypeName.c_str());
+									myText("武器伤害: %d", rightWeaponInfo.damage);
+									myText("暴击伤害: %d", rightWeaponInfo.critDamage);
+									myText("价格: %d", rightWeaponInfo.goldValue);
+									myText("属性值: %d$", rightWeaponInfo.value);
+									myText("重量: %.1f", rightWeaponInfo.weight);
+									break;
+								}
+							case RE::FormType::Spell:
+								{
+									myText("法术类型: %s", rightWeaponInfo.castingTypeName.c_str());
+									myText("法术类型: %s", rightWeaponInfo.spellTypeName.c_str());
+									myText("花费: %.1f", rightWeaponInfo.cost);
+									myText("施法时间: %.1f", rightWeaponInfo.time);
+									break;
+								}
+							default:
+								break;
+							}
+
+							ImGui::TreePop();
+						}
+					} else {
+						myText("%s", rightWeaponInfo.treeId.c_str());
 					}
 				}
 			}
 
 			if (ammoInfo.isExist) {
-				if (ImGui::TreeNode(ammoInfo.treeId.c_str())) {
-					myText("类型: %s", ammoInfo.formTypeName.c_str());
-					myText("ID: %s", ammoInfo.formID.c_str());
-					ImGui::SameLine(0, 0);
-					if (ImGui::SmallButton("卸载")) {
-						std::string commandStr = "player.unequipItem ";
-						commandStr.append(ammoInfo.formID);
+				if (active) {
+					if (ImGui::TreeNode(ammoInfo.treeId.c_str())) {
+						myText("类型: %s", ammoInfo.formTypeName.c_str());
+						myText("ID: %s", ammoInfo.formID.c_str());
+						ImGui::SameLine(0, 0);
+						if (ImGui::SmallButton("卸载")) {
+							std::string commandStr = "player.unequipItem ";
+							commandStr.append(ammoInfo.formID);
 
-						// 调用控制台
-						const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
-						const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
-						if (script) {
-							const auto selectedRef = RE::Console::GetSelectedRef();
-							script->SetCommand(commandStr);
-							script->CompileAndRun(selectedRef.get());
-							delete script;
+							// 调用控制台
+							const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
+							const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
+							if (script) {
+								const auto selectedRef = RE::Console::GetSelectedRef();
+								script->SetCommand(commandStr);
+								script->CompileAndRun(selectedRef.get());
+								delete script;
+							}
 						}
-					}
-					myText("伤害: %.1f", ammoInfo.damage);
-					myText("价格: %d", ammoInfo.goldValue);
-					myText("属性值: %d$", ammoInfo.value);
-					myText("重量: %.1f", ammoInfo.weight);
+						myText("伤害: %.1f", ammoInfo.damage);
+						myText("价格: %d", ammoInfo.goldValue);
+						myText("属性值: %d$", ammoInfo.value);
+						myText("重量: %.1f", ammoInfo.weight);
 
-					ImGui::TreePop();
+						ImGui::TreePop();
+					}
+				} else {
+					myText("%s", ammoInfo.treeId.c_str());
 				}
 			}
 
@@ -700,7 +737,7 @@ namespace menu
 			ImGui::End();
 		}
 
-		if (show_enemy_window) {
+		if (show_enemy_window && false) {
 			time_t now1 = time(NULL);
 			ImGui::Begin("敌人信息", nullptr, window_flags);
 			EnemyInfo* enemyInfo = getEnemyData();
@@ -783,8 +820,7 @@ namespace menu
 		}
 
 		if (show_inv_window) {
-			
-			ImGui::Begin("装备信息", nullptr, window_flags);//window_flags&(~ImGuiWindowFlags_AlwaysAutoResize)
+			ImGui::Begin("防具信息", nullptr, window_flags);  //window_flags&(~ImGuiWindowFlags_AlwaysAutoResize)
 
 			ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 			if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
@@ -846,71 +882,81 @@ namespace menu
 						if (ImGui::TreeNodeEx("HUD设置", ImGuiTreeNodeFlags_DefaultOpen)) {
 							//ImGui::BeginGroup();
 
-							ImGui::Checkbox("人物基本属性", &show_player_base_info_window);
+							if (ImGui::BeginTable("split", 2)) {
+								ImGui::TableNextColumn();
+								ImGui::Checkbox("人物基本属性", &show_player_base_info_window);
 
-							if (show_player_base_info_window) {
-								if (ImGui::TreeNodeEx("人物基本属性 - 设置", ImGuiTreeNodeFlags_DefaultOpen)) {
-									ImGui::Checkbox("显示进度条", &flag_process);
-									if (flag_process) {
-										//colorPro;
-										//ImVec4 plotHistogramColor = ImGui::GetStyleColorVec4(ImGuiCol_PlotHistogram);
-										//if (ImGui::ColorEdit4("进度条颜色", &style.Colors[ImGuiCol_PlotHistogram].x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf)) {
-										if (ImGui::ColorEdit4("进度条颜色", &colorProgress.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf))
-											;
-										//ImGui::PushStyleColor(ImGuiCol_PlotHistogram, plotHistogramColor);  // 设置新的颜色
+								if (show_player_base_info_window) {
+									if (ImGui::TreeNodeEx("设置##3", ImGuiTreeNodeFlags_DefaultOpen)) {
+										ImGui::Checkbox("显示进度条", &flag_process);
+										if (flag_process) {
+											//colorPro;
+											//ImVec4 plotHistogramColor = ImGui::GetStyleColorVec4(ImGuiCol_PlotHistogram);
+											//if (ImGui::ColorEdit4("进度条颜色", &style.Colors[ImGuiCol_PlotHistogram].x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf)) {
+											if (ImGui::ColorEdit4("进度条颜色", &colorProgress.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf))
+												;
+											//ImGui::PushStyleColor(ImGuiCol_PlotHistogram, plotHistogramColor);  // 设置新的颜色
 
-										/*	style.Colors[ImGuiCol_PlotHistogram].x = */
+											/*	style.Colors[ImGuiCol_PlotHistogram].x = */
 
-										//ImGui::ColorEdit4("进度条颜色", &style.Colors[ImGuiCol_PlotHistogram].x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+											//ImGui::ColorEdit4("进度条颜色", &style.Colors[ImGuiCol_PlotHistogram].x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+										}
+										ImGui::TreePop();
 									}
-									ImGui::TreePop();
 								}
-							}
 
-							ImGui::Checkbox("人物属性", &show_player_info_window);
-							ImGui::Checkbox("武器信息", &show_player_weapon_window);
-							ImGui::Checkbox("装备信息", &show_player_armor_window);
-							ImGui::Checkbox("人物属性加成", &show_player_mod_window);
-							ImGui::Checkbox("其他信息", &show_player_debug_window);
-							//ImGui::Checkbox("敌人信息", &show_enemy_window);
-							ImGui::Checkbox("NPC信息", &show_npc_window);
-							if (show_npc_window) {
-								if (ImGui::TreeNodeEx("NPC信息 - 设置", ImGuiTreeNodeFlags_DefaultOpen)) {
-									ImGui::Checkbox("只显示距离内NPC", &show_npc_window_dis);
-									if (show_npc_window_dis) {
-										ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::TableNextColumn();
+								ImGui::TableNextColumn();
+								ImGui::Checkbox("人物属性", &show_player_info_window);
+								ImGui::TableNextColumn();
+								ImGui::Checkbox("人物属性2", &show_player_mod_window);
+								ImGui::TableNextColumn();
+								ImGui::Checkbox("武器信息", &show_player_weapon_window);
+								ImGui::TableNextColumn();
+								ImGui::Checkbox("防具信息", &show_player_armor_window);
+								ImGui::TableNextColumn();
+								ImGui::Checkbox("其他信息", &show_player_debug_window);
+								ImGui::TableNextColumn();
+								ImGui::TableNextColumn();
+								//ImGui::Checkbox("敌人信息", &show_enemy_window);
+								ImGui::Checkbox("NPC信息", &show_npc_window);
+								if (show_npc_window) {
+									if (ImGui::TreeNodeEx("设置##1", ImGuiTreeNodeFlags_DefaultOpen)) {
+										ImGui::Checkbox("只显示距离内NPC", &show_npc_window_dis);
+										if (show_npc_window_dis) {
+											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+											ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
+											ImGui::DragInt("##距离", &show_npc_window_dis_meter, 1, 10, 100, "%d米内");
+											ImGui::PopItemWidth();
+										}
+										ImGui::Checkbox("显示FORMID", &show_npc_window_formid);
+
+										ImGui::TreePop();
+									}
+								}
+								ImGui::TableNextColumn();
+								ImGui::Checkbox("物品栏信息", &show_inv_window);
+								if (show_inv_window) {
+									if (ImGui::TreeNodeEx("设置##2", ImGuiTreeNodeFlags_DefaultOpen)) {
 										ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-										ImGui::DragInt("##距离", &show_npc_window_dis_meter, 1, 10, 100, "%d米内");
+										ImGui::DragInt("显示数据", &show_inv_window_height, 1, 15, 80, "%d条");
 										ImGui::PopItemWidth();
+										ImGui::TreePop();
 									}
+								}
 
-									ImGui::TreePop();
-								}
-							}
-							ImGui::Checkbox("#装备信息", &show_inv_window);
-							if (show_inv_window) {
-								if (ImGui::TreeNodeEx("装备信息 - 设置", ImGuiTreeNodeFlags_DefaultOpen)) {
-									ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-									ImGui::DragInt("显示数据", &show_inv_window_height, 1, 15, 80, "%d条");
-									ImGui::PopItemWidth();
-									ImGui::TreePop();
-								}
+								ImGui::EndTable();
 							}
 
+							ImGui::Separator();
 							ImGui::Checkbox("是否自动卸除箭袋", &auto_remove_ammo);
 							// 测试
 							//ImGui::Checkbox("Demo", &show_demo_window);
-			
 
-							//ImGui::EndGroup();
 							ImGui::TreePop();
-
-
 						}
 
 						ImGui::Separator();
-
-						
 
 						if (ImGui::TreeNodeEx("窗口设置", ImGuiTreeNodeFlags_DefaultOpen)) {
 							//ImGui::BeginGroup();
@@ -933,8 +979,7 @@ namespace menu
 								}
 							}
 
-
-							 if (ImGui::BeginTable("split", 3)) {
+							if (ImGui::BeginTable("split", 3)) {
 								ImGui::TableNextColumn();
 								ImGui::Checkbox("不显示标题", &no_titlebar);
 								ImGui::TableNextColumn();
@@ -954,12 +999,10 @@ namespace menu
 								ImGui::EndTable();
 							}
 
-							 
 							ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
 							ImGui::DragFloat("窗体缩放", &ImGui::GetIO().FontGlobalScale, 0.005f, 0.5f, 1.8f, "%.2f", 1);
 							ImGui::DragInt("数据刷新(ms)", &refresh_time_data, 1, 100, 500, "%d ms");
 							ImGui::PopItemWidth();
-
 
 							//ImGui::EndGroup();
 							ImGui::TreePop();
@@ -1030,6 +1073,33 @@ namespace menu
 									if (statePerMod_selectIndex >= 0) {
 										player->SetActorValue(perActorValuesIndex[statePerMod_selectIndex], statePerMod_newValue);
 									}
+								}
+							}
+							ImGui::TreePop();
+						}
+
+						if (ImGui::TreeNodeEx("常用素材获取", ImGuiTreeNodeFlags_DefaultOpen)) {
+							myText("获取项:");
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::Combo("##cbInvGet", &getInv_selectIndex, invValues, ((int)(sizeof(invValues) / sizeof(*(invValues)))), 6);
+							myText("数量:");
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::InputInt("##InvCount", &getInv_nowValue, 10, 9999);
+
+							if (ImGui::Button("确认获取", ImVec2())) {
+								std::string commandStr = "player.additem ";
+								commandStr.append(invValuesCode[getInv_selectIndex]);
+								commandStr.append(" ");
+								commandStr.append(std::to_string(getInv_nowValue));
+
+								// 调用控制台
+								const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
+								const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
+								if (script) {
+									const auto selectedRef = RE::Console::GetSelectedRef();
+									script->SetCommand(commandStr);
+									script->CompileAndRun(selectedRef.get());
+									delete script;
 								}
 							}
 							ImGui::TreePop();
@@ -1113,6 +1183,10 @@ namespace menu
 					auto const& j2 = j["EnemyInfo"];
 					show_enemy_window = j2["isShow"].get<bool>();
 				}
+				if (j.contains("NpcInfo")) {
+					auto const& j2 = j["NpcInfo"];
+					show_npc_window = j2["isShow"].get<bool>();
+				}
 
 				if (j.contains("playerBaseInfo")) {
 					auto const& j2 = j["playerBaseInfo"];
@@ -1189,7 +1263,10 @@ namespace menu
 													  } },
 									   { "DebugInfo", {
 														  { "isShow", show_player_debug_window },
-													  } }
+													  } },
+									   { "npcInfo", {
+														{ "isShow", show_npc_window },
+													} }
 
 								   } }
 

@@ -586,8 +586,8 @@ void __fastcall buildPlayerInvData(InventoryInfo inv[], int& i, RE::TESBoundObje
 int show_npc_window_dis_meter = 30;
 bool show_npc_window_dis = false;
 bool show_enemy_window = false;
-bool show_inv_window = true;
-bool show_npc_window = true;
+bool show_inv_window = false;
+bool show_npc_window = false;
 
 void __cdecl RefreshActorInfo(void*)
 {
