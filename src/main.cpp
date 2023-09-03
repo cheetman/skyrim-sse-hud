@@ -9,7 +9,7 @@
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
 {
 	settings = "data\\skse\\plugins\\sse-hud.json";
-	fontFilePath = "data\\skse\\plugins\\msyh.ttc";
+	fontFilePath = "data\\skse\\plugins\\xyght3.0-62354202.ttf";
 	//fontFilePath2 = "data\\skse\\plugins\\xyght3.0-62354202.ttf";
 
 	//MessageBox(nullptr, TEXT("测试中文."), nullptr, MB_OK);
@@ -75,53 +75,15 @@ int SehFilter(DWORD dwExceptionCode)
 	return EXCEPTION_CONTINUE_SEARCH;
 }
 
-// Table with pointers
-//imgui_api imgui;
-//
-//static ImFont* font;
-
-
-
-//static void ImguiMessageHandler(SKSE::MessagingInterface::Message* m)
-//{
-//	if (m->type != SSEIMGUI_API_VERSION)
-//		return;
-//
-//	sseimgui_api* sseimgui = reinterpret_cast<sseimgui_api*>(m->data);
-//	imgui = sseimgui->make_imgui_api();
-//
-//	//const char* font_path = "D:\\msyh.ttc";
-//	if (std::filesystem::exists(fontFilePath)) {
-//		auto io = imgui.igGetIO();
-//		//auto fonts = imgui.ImFontAtlas_ImFontAtlas();
-//		font = imgui.ImFontAtlas_AddFontFromFileTTF(io->Fonts, fontFilePath.c_str(), 20.0f, NULL, imgui.ImFontAtlas_GetGlyphRangesChineseFull(io->Fonts));
-//		imgui.ImFontAtlas_Build(io->Fonts);
-//	}
-//
-//	switch (imgui_style_index) {
-//	case 0:
-//		imgui.igStyleColorsDark(imgui.igGetStyle());
-//		break;
-//	case 1:
-//		imgui.igStyleColorsLight(imgui.igGetStyle());
-//		break;
-//	case 2:
-//		imgui.igStyleColorsClassic(imgui.igGetStyle());
-//		break;
-//	}
-//	imgui.igGetStyle()->Colors[ImGuiCol_PlotHistogram] = ImVec4(colorPlotHistogramX, colorPlotHistogramY, colorPlotHistogramZ, colorPlotHistogramW);
-//
-//	sseimgui->render_listener(&render, 0);
-//}
 
 void __cdecl installimgui(void*);
 
 
-void delayedExecution()
-{
-	std::this_thread::sleep_for(std::chrono::seconds(3));
-	isGameLoading = false;
-}
+//void delayedExecution()
+//{
+//	std::this_thread::sleep_for(std::chrono::seconds(3));
+//	isGameLoading = false;
+//}
 
 
 void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
@@ -131,9 +93,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 		{
 			logger::info("PostLoad"sv);
 			auto messaging = SKSE::GetMessagingInterface();
-			/*		if (!messaging->RegisterListener("SSEIMGUI", ImguiMessageHandler)) {
-			}*/
-
+	
 			break;
 		}
 	case SKSE::MessagingInterface::kPostPostLoad:
@@ -190,6 +150,10 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 
 			break;
 		}
+	default:
+		logger::info("??"sv);
+		break;
+
 	}
 }
 

@@ -2,6 +2,9 @@
 #include <PCH.h>
 
 extern bool isOpenCursorMenu;
+extern bool isMainMenu;
+extern bool isLoadWaitSpinner;
+extern bool isFaderMenu;
 
 class MenuOpenCloseEvent : public RE::BSTEventSink<RE::MenuOpenCloseEvent>
 {
@@ -18,6 +21,13 @@ public:
 
 		if (a_event->menuName == RE::InterfaceStrings::GetSingleton()->cursorMenu) {
 			isOpenCursorMenu = a_event->opening;
+		} else if (a_event->menuName == RE::InterfaceStrings::GetSingleton()->mainMenu) {
+			isMainMenu = a_event->opening;
+		} else if (a_event->menuName == RE::InterfaceStrings::GetSingleton()->loadWaitSpinner) {
+			isMainMenu = a_event->opening;
+		} else if (a_event->menuName == RE::InterfaceStrings::GetSingleton()->faderMenu) {
+			isFaderMenu = a_event->opening;
+			
 		}
 
 		//SKSE::log::info("{} {} !", a_event->menuName, a_event->opening ? "Open" : "Close");

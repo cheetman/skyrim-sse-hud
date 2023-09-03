@@ -240,7 +240,11 @@ namespace menu
 						ImGui::Separator();
 						for (int i2 = 0; i2 < item.inventoryCount; i2++) {
 							auto inv = item.Inventorys[i2];
-							myText("%s %s - %s %s (%d) %.1f ", u8"\uf01c", inv.formIdStr.c_str(), inv.isWorn ? "[装备中]" : "", inv.name.c_str(), inv.count, inv.weight);
+							if (show_npc_window_formid) {
+								myText("%s %s - %s %s (%d) %.1f ", u8"\uf01c", inv.formIdStr.c_str(), inv.isWorn ? "[装备中]" : "", inv.name.c_str(), inv.count, inv.weight);
+							} else {
+								myText("%s %s %s (%d) %.1f ", u8"\uf01c",  inv.isWorn ? "[装备中]" : "", inv.name.c_str(), inv.count, inv.weight);
+							}
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							ImGui::PushID(i2);
 
@@ -402,7 +406,19 @@ namespace menu
 		if (isOpenCursorMenu && !active) {
 			return;
 		}
-
+		// 当打开菜单时不显示
+		if (isMainMenu && !active) {
+			return;
+		}
+		// 当打开菜单时不显示
+		if (isLoadWaitSpinner && !active) {
+			return;
+		}
+		// 当打开菜单时不显示
+		if (isFaderMenu && !active) {
+			return;
+		}
+		
 		if (isGameLoading && !active) {
 			return;
 		}
@@ -787,7 +803,9 @@ namespace menu
 			}
 
 			if (getEnemyCount() > 0) {
-				ImGui::Separator();
+				if (getNpcCount() > 0) {
+					ImGui::Separator();
+				}
 				if (active) {
 					ImGui::Checkbox("enemy", &show_enemy);
 				} else {
@@ -802,7 +820,10 @@ namespace menu
 			}
 
 			if (getTeammateCount() > 0) {
-				ImGui::Separator();
+				if (getNpcCount() > 0 || getEnemyCount()) {
+					ImGui::Separator();
+				}
+				
 				if (active) {
 					ImGui::Checkbox("team", &show_teammate);
 				} else {
