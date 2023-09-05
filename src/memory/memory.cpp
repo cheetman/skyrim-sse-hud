@@ -3,6 +3,7 @@
 #include <utils/NameUtil.h>
 #include <utils/PlayerDataProvider.h>
 
+bool active = false;
 int refresh_time_data = 300;
 bool startflag = false;
 WeaponInfo leftWeaponInfo;
@@ -12,6 +13,7 @@ ArmorInfo wornArmos[32];
 PlayerInfo playerInfo;
 
 bool isGameLoading = false;
+
 
 void __cdecl RefreshGameInfo(void*)
 {

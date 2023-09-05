@@ -25,6 +25,7 @@ namespace menu
 	//static float heavyArmor2 = 0.0f;
 	//std::string playerRaceName = "";
 	bool auto_remove_ammo = false;
+	int hotkey = 0;
 
 	// 默认配置
 	static bool show_player_base_info_window = false;
@@ -192,7 +193,7 @@ namespace menu
 				if (show_npc_window_formid) {
 					treeNodeExResult = ImGui::TreeNodeEx(item.formIdStr.c_str(), 0, "%s - [%d] %s [ %s ]", item.formIdStr.c_str(), item.level, item.name.c_str(), hp);
 				} else {
-					treeNodeExResult = ImGui::TreeNodeEx(item.formIdStr.c_str(), 0, "[%d] %s [ %s ]",  item.level, item.name.c_str(), hp);
+					treeNodeExResult = ImGui::TreeNodeEx(item.formIdStr.c_str(), 0, "[%d] %s [ %s ]", item.level, item.name.c_str(), hp);
 				}
 
 				if (treeNodeExResult) {
@@ -243,7 +244,7 @@ namespace menu
 							if (show_npc_window_formid) {
 								myText("%s %s - %s %s (%d) %.1f ", u8"\uf01c", inv.formIdStr.c_str(), inv.isWorn ? "[装备中]" : "", inv.name.c_str(), inv.count, inv.weight);
 							} else {
-								myText("%s %s %s (%d) %.1f ", u8"\uf01c",  inv.isWorn ? "[装备中]" : "", inv.name.c_str(), inv.count, inv.weight);
+								myText("%s %s %s (%d) %.1f ", u8"\uf01c", inv.isWorn ? "[装备中]" : "", inv.name.c_str(), inv.count, inv.weight);
 							}
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							ImGui::PushID(i2);
@@ -395,7 +396,7 @@ namespace menu
 		}
 	}
 
-	void __fastcall render(int active)
+	void __fastcall render()
 	{
 		//第一次加载游戏后
 		if (!startflag && !active) {
@@ -418,7 +419,7 @@ namespace menu
 		if (isFaderMenu && !active) {
 			return;
 		}
-		
+
 		if (isGameLoading && !active) {
 			return;
 		}
@@ -753,6 +754,7 @@ namespace menu
 			ImGui::End();
 		}
 
+		// 弃用
 		if (show_enemy_window && false) {
 			time_t now1 = time(NULL);
 			ImGui::Begin("敌人信息", nullptr, window_flags);
@@ -823,7 +825,7 @@ namespace menu
 				if (getNpcCount() > 0 || getEnemyCount()) {
 					ImGui::Separator();
 				}
-				
+
 				if (active) {
 					ImGui::Checkbox("team", &show_teammate);
 				} else {
@@ -895,7 +897,7 @@ namespace menu
 				ImGui::ShowDemoWindow(&show_demo_window);
 
 			{
-				ImGui::Begin("控制台", nullptr, 0);
+				ImGui::Begin("设置菜单", nullptr, 0);
 
 				ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 				if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
@@ -1021,7 +1023,9 @@ namespace menu
 							}
 
 							ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
+
 							ImGui::DragFloat("窗体缩放", &ImGui::GetIO().FontGlobalScale, 0.005f, 0.5f, 1.8f, "%.2f", 1);
+							ImGui::Combo("窗口热键", &hotkey, "Insert\0F11\0F12\0Shift+Q\0Alt+Q\0", -1);
 							ImGui::DragInt("数据刷新(ms)", &refresh_time_data, 1, 100, 500, "%d ms");
 							ImGui::PopItemWidth();
 
@@ -1169,6 +1173,9 @@ namespace menu
 				if (j.contains("bullet_text")) {
 					bullet_text = j["bullet_text"].get<bool>();
 				}
+				if (j.contains("hotkey")) {
+					hotkey = j["hotkey"].get<int>();
+				}
 			}
 
 			if (json.contains("gameSetting")) {
@@ -1200,10 +1207,10 @@ namespace menu
 					auto const& j2 = j["playerModInfo"];
 					show_player_mod_window = j2["isShow"].get<bool>();
 				}
-				if (j.contains("EnemyInfo")) {
+				/*			if (j.contains("EnemyInfo")) {
 					auto const& j2 = j["EnemyInfo"];
 					show_enemy_window = j2["isShow"].get<bool>();
-				}
+				}*/
 				if (j.contains("NpcInfo")) {
 					auto const& j2 = j["NpcInfo"];
 					show_npc_window = j2["isShow"].get<bool>();
@@ -1248,6 +1255,7 @@ namespace menu
 									  { "window_border", window_border },
 									  { "frame_border", frame_border },
 									  { "bullet_text", bullet_text },
+									  { "hotkey", hotkey },
 
 								  } },
 
@@ -1302,5 +1310,4 @@ namespace menu
 		}
 		return true;
 	}
-
 }

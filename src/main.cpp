@@ -159,7 +159,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 
 void __cdecl installimgui(void*)
 {
-	Sleep(20000);
+	//Sleep(20000);
 	MenuOpenCloseEvent::Register();    //Register Bethesda Menu Event
 	BSTCrosshairRefEvent::Register();  //Register Bethesda Menu Event
 	d3d11hook::Install();

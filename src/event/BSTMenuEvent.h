@@ -24,7 +24,7 @@ public:
 		} else if (a_event->menuName == RE::InterfaceStrings::GetSingleton()->mainMenu) {
 			isMainMenu = a_event->opening;
 		} else if (a_event->menuName == RE::InterfaceStrings::GetSingleton()->loadWaitSpinner) {
-			isMainMenu = a_event->opening;
+			isLoadWaitSpinner = a_event->opening;
 		} else if (a_event->menuName == RE::InterfaceStrings::GetSingleton()->faderMenu) {
 			isFaderMenu = a_event->opening;
 			

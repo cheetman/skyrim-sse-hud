@@ -1,15 +1,13 @@
 #include "dinputhook.h"
-#include <dinput.h>
-#include <WinUser.h>
 #include <Windows.h>
+#include <dinput.h>
 #include <imgui.h>
-#include <hook/d3d11hook.h>
+#include <imgui/menu.h>
+#include <memory/memory.h>
 
 namespace dinputhook
 {
-
-
-	#define IM_VK_KEYPAD_ENTER (VK_RETURN + 256)
+#define IM_VK_KEYPAD_ENTER (VK_RETURN + 256)
 	static ImGuiKey ImGui_ImplWin32_VirtualKeyToImGuiKey(WPARAM wParam)
 	{
 		switch (wParam) {
@@ -333,7 +331,6 @@ namespace dinputhook
 				default:
 					continue;
 				}
-				//ModSettings::submitInput(input);
 
 				uint32_t key = MapVirtualKeyEx(scan_code, MAPVK_VSC_TO_VK_EX, GetKeyboardLayout(0));
 				switch (scan_code) {
@@ -434,11 +431,9 @@ namespace dinputhook
 					break;
 				case RE::INPUT_DEVICE::kKeyboard:
 					io.AddKeyEvent(ImGui_ImplWin32_VirtualKeyToImGuiKey(key), button->IsPressed());
-					//if (button->GetIDCode() == 199) {  // home
-					//	if (button->IsDown()) {
-					//		Renderer::flip();
-					//	}
-					//}
+
+					/*			logger::debug(std::to_string(button->GetIDCode()));
+					logger::debug(std::to_string(key));*/
 					break;
 				case RE::INPUT_DEVICE::kGamepad:
 					// not implemented yet
@@ -452,11 +447,6 @@ namespace dinputhook
 		return;
 	}
 
-
-
-
-
-
 	void DispatchInputEvent(RE::BSTEventSource<RE::InputEvent*>* a_dispatcher, RE::InputEvent** a_evns)
 	{
 		static RE::InputEvent* dummy[] = { nullptr };
@@ -464,7 +454,75 @@ namespace dinputhook
 			_DispatchInputEvent(a_dispatcher, a_evns);
 			return;
 		}
-		if (d3d11hook::active) {
+		// 在这里检查按键
+		for (auto inputEvent = *a_evns; inputEvent; inputEvent = inputEvent->next) {
+			if (inputEvent->eventType == RE::INPUT_EVENT_TYPE::kButton) {
+				auto btnEvent = inputEvent->AsButtonEvent();
+				if (btnEvent && btnEvent->IsDown()) {
+					switch (menu::hotkey) {
+					case 0:
+						{
+							if (btnEvent->GetIDCode() == 210) {
+								active ? active = false : active = true;
+								_DispatchInputEvent(a_dispatcher, dummy);
+								return;
+							}
+							break;
+						}
+					case 1:
+						{
+							if (btnEvent->GetIDCode() == 87) {
+								active ? active = false : active = true;
+								_DispatchInputEvent(a_dispatcher, dummy);
+								return;
+							}
+							break;
+						}
+					case 2:
+						{
+							if (btnEvent->GetIDCode() == 88) {
+								active ? active = false : active = true;
+								_DispatchInputEvent(a_dispatcher, dummy);
+								return;
+							}
+							break;
+						}
+					case 3:
+						{
+							if (btnEvent->GetIDCode() == 16 && GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+								active ? active = false : active = true;
+								_DispatchInputEvent(a_dispatcher, dummy);
+								return;
+							}
+							break;
+						}
+					case 4:
+						{
+							if (btnEvent->GetIDCode() == 16 && GetAsyncKeyState(VK_MENU) & 0x8000) {
+								active ? active = false : active = true;
+								_DispatchInputEvent(a_dispatcher, dummy);
+								return;
+							}
+							break;
+						}
+					default:
+						{
+							if (btnEvent->GetIDCode() == 210) {
+								active ? active = false : active = true;
+								_DispatchInputEvent(a_dispatcher, dummy);
+								return;
+							}
+
+							break;
+						}
+					}
+				
+				
+				}
+			}
+		}
+
+		if (active) {
 			ProcessEvent(a_evns);
 			_DispatchInputEvent(a_dispatcher, dummy);
 			return;
@@ -473,7 +531,6 @@ namespace dinputhook
 			return;
 		}
 	}
-
 
 	void Install()
 	{

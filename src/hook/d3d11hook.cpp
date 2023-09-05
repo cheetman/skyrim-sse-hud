@@ -3,9 +3,11 @@
 #pragma comment(lib, "d3d11.lib")
 
 #include <MinHook.h>
+#include <imgui/menu.h>
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
-#include <imgui/menu.h>
+#include <utils/utils.h>
+#include <memory/memory.h>
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -16,25 +18,21 @@ namespace d3d11hook
 	ID3D11DeviceContext* g_pd3dContext = nullptr;
 	ID3D11RenderTargetView* D3D11RenderView = nullptr;
 	HWND g_hwnd = nullptr;
-	bool active = false;
 
 	typedef HRESULT(__stdcall* D3D11PresentHook)(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags);
 	D3D11PresentHook phookD3D11Present = nullptr;
-
 
 	using WndProcFunc = std::add_pointer_t<LRESULT((__stdcall)(HWND, UINT, WPARAM, LPARAM))>;
 	WndProcFunc OldWndProc;
 
 	LRESULT __stdcall WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 	{
-
 		//LRESULT ret = 0;
 		//if (active) {
 		//	//extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
 		//	ret = ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam);
 		//}
 		//return ret;
-
 
 		//switch (uMsg) {
 		//case WM_LBUTTONDOWN:
@@ -74,18 +72,13 @@ namespace d3d11hook
 
 		//return CallWindowProc(OldWndProc, hwnd, uMsg, wParam, lParam);
 
-
-
-
 		//if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam)) {
 		//	return true;
 		//}
 		//return CallWindowProc(OldWndProc, hwnd, uMsg, wParam, lParam);
 
-
-		return OldWndProc( hwnd, uMsg, wParam, lParam);
+		return OldWndProc(hwnd, uMsg, wParam, lParam);
 	}
-
 
 	HRESULT __stdcall PresentHook(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags)
 	{
@@ -100,7 +93,6 @@ namespace d3d11hook
 				g_pd3dDevice->CreateRenderTargetView(backBuffer, nullptr, &D3D11RenderView);
 				backBuffer->Release();
 
-				
 				DXGI_SWAP_CHAIN_DESC sd;
 				pSwapChain->GetDesc(&sd);
 				auto window = sd.OutputWindow;
@@ -117,7 +109,7 @@ namespace d3d11hook
 
 					ImFontConfig config;
 					config.MergeMode = true;
-					config.GlyphMinAdvanceX = 13.0f; 
+					config.GlyphMinAdvanceX = 13.0f;
 					static const ImWchar icon_ranges[] = { 0xf000, 0xf3ff, 0 };
 					io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\fontawesome-webfont.ttf", 16.0f, &config, icon_ranges);
 					SKSE::log::info("AddFontFromFileTTF");
@@ -131,11 +123,9 @@ namespace d3d11hook
 			}
 		});
 
-		if (GetAsyncKeyState(VK_INSERT) & 0x1) {
-			//if (GetAsyncKeyState(VK_F12) & 0x1) {
-			//SKSE::log::info("VK_INSERT");
-			active ? active = false : active = true;
-		}
+		//if (GetAsyncKeyState(VK_INSERT) & 0x1) {
+		//	active ? active = false : active = true;
+		//}
 		//if ((GetAsyncKeyState(VK_SHIFT) & 0x8000) && (GetAsyncKeyState('Q') & 0x1)) {
 		//	active ? active = false : active = true;
 		//}
@@ -146,13 +136,10 @@ namespace d3d11hook
 
 		ImGui_ImplDX11_NewFrame();
 		ImGui_ImplWin32_NewFrame();
-		
-		
 
 		ImGui::NewFrame();
 
-
-		menu::render(active);
+		menu::render();
 
 		ImGui::EndFrame();
 
@@ -164,11 +151,16 @@ namespace d3d11hook
 		return phookD3D11Present(pSwapChain, SyncInterval, Flags);
 	}
 
-
-
 	bool TryD3D11()
 	{
-		g_hwnd = FindWindow(0, "Skyrim Special Edition");
+
+		while (true) {
+			g_hwnd = FindWindow(0, "Skyrim Special Edition");
+			if (g_hwnd) {
+				break;
+			}
+			Sleep(2000);
+		}
 
 		DXGI_SWAP_CHAIN_DESC sd{};
 		sd.BufferCount = 1;
@@ -193,8 +185,67 @@ namespace d3d11hook
 		return true;
 	}
 
+	//decltype(&D3D11CreateDeviceAndSwapChain) ptrD3D11CreateDeviceAndSwapChain;
+
+	//HRESULT WINAPI hk_D3D11CreateDeviceAndSwapChain(
+	//	IDXGIAdapter* pAdapter,
+	//	D3D_DRIVER_TYPE DriverType,
+	//	HMODULE Software,
+	//	UINT Flags,
+	//	const D3D_FEATURE_LEVEL* pFeatureLevels,
+	//	UINT FeatureLevels,
+	//	UINT SDKVersion,
+	//	const DXGI_SWAP_CHAIN_DESC* pSwapChainDesc,
+	//	IDXGISwapChain** ppSwapChain,
+	//	ID3D11Device** ppDevice,
+	//	D3D_FEATURE_LEVEL* pFeatureLevel,
+	//	ID3D11DeviceContext** ppImmediateContext)
+	//{
+	//	DXGI_SWAP_CHAIN_DESC sDesc;
+
+	//	sDesc = *pSwapChainDesc;
+
+	//	logger::info("Calling original D3D11CreateDeviceAndSwapChain");
+	//	HRESULT hr = (*ptrD3D11CreateDeviceAndSwapChain)(pAdapter,
+	//		DriverType,
+	//		Software,
+	//		Flags,
+	//		pFeatureLevels,
+	//		FeatureLevels,
+	//		SDKVersion,
+	//		&sDesc,
+	//		ppSwapChain,
+	//		ppDevice,
+	//		pFeatureLevel,
+	//		ppImmediateContext);
+
+	//	auto device = *ppDevice;
+	//	auto deviceContext = *ppImmediateContext;
+	//	auto swapChain = *ppSwapChain;
+
+	//	DWORD_PTR* pSwapChainVTable = nullptr;
+	//	pSwapChainVTable = (DWORD_PTR*)(swapChain);
+	//	pSwapChainVTable = (DWORD_PTR*)(pSwapChainVTable[0]);
+
+	//	if (MH_CreateHook((DWORD_PTR*)pSwapChainVTable[8], PresentHook, reinterpret_cast<void**>(&phookD3D11Present)) != MH_OK) {
+	//		SKSE::log::error("MH_CreateHook pSwapChainVTable Fail");
+	//		return 1;
+	//	}
+	//	if (MH_EnableHook((DWORD_PTR*)pSwapChainVTable[8]) != MH_OK) {
+	//		SKSE::log::error("MH_EnableHook pSwapChainVTable Fail");
+	//		return 1;
+	//	}
+	//	return hr;
+	//}
+
 	void Install()
 	{
+		//char* ptr = nullptr;
+		//auto moduleBase = (uintptr_t)GetModuleHandle(ptr);
+		//auto dllD3D11 = GetModuleHandleA("d3d11.dll");
+		//*(FARPROC*)&ptrD3D11CreateDeviceAndSwapChain = GetProcAddress(dllD3D11, "D3D11CreateDeviceAndSwapChain");
+		//Detours::IATHook(moduleBase, "d3d11.dll", "D3D11CreateDeviceAndSwapChain", (uintptr_t)hk_D3D11CreateDeviceAndSwapChain);
+
 		static std::once_flag D3DInit;
 		std::call_once(D3DInit, [&]() {
 			if (TryD3D11()) {
@@ -220,6 +271,5 @@ namespace d3d11hook
 				return 0;
 			}
 		});
-
 	}
 }

@@ -5,6 +5,7 @@
 #include <RE/A/ActorState.h>
 
 
+extern bool active;
 
 // 人物属性
 
