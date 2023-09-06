@@ -13,7 +13,7 @@ ArmorInfo wornArmos[32];
 PlayerInfo playerInfo;
 
 bool isGameLoading = false;
-
+bool show_npc_window_dead_hidden = false;
 
 void __cdecl RefreshGameInfo(void*)
 {
@@ -598,7 +598,6 @@ void __cdecl RefreshActorInfo(void*)
 		//isRefreshActorInfo = true;
 
 		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
-		auto pl = RE::ProcessLists::GetSingleton();
 
 		if (!startflag) {
 			Sleep(3000);
@@ -614,6 +613,7 @@ void __cdecl RefreshActorInfo(void*)
 			Sleep(3000);
 			continue;
 		}
+		auto pl = RE::ProcessLists::GetSingleton();
 
 		nowIndex = !nowIndex;
 
@@ -707,6 +707,11 @@ void __cdecl RefreshActorInfo(void*)
 						RefreshInventory(actor, actorInfo[nowIndex].teammateInfo, tmpTeammateCount++);
 
 					} else if (actor->IsHostileToActor(player)) {
+						if (show_npc_window_dead_hidden) {
+							if (actor->GetLifeState() == RE::ACTOR_LIFE_STATE::kDead) {
+								continue;
+							}
+						}
 						float dis = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
 						if (show_npc_window_dis) {
 							if (dis > show_npc_window_dis_meter) {
@@ -730,6 +735,11 @@ void __cdecl RefreshActorInfo(void*)
 						RefreshInventory(actor, actorInfo[nowIndex].enemyInfo, tmpEnemyCount++);
 
 					} else {
+						if (show_npc_window_dead_hidden) {
+							if (actor->GetLifeState() == RE::ACTOR_LIFE_STATE::kDead) {
+								continue;
+							}
+						}
 						float dis = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
 						if (show_npc_window_dis) {
 							if (dis > show_npc_window_dis_meter) {

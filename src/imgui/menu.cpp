@@ -59,6 +59,7 @@ namespace menu
 	//static int show_npc_window_dis_meter = 30;
 	extern bool show_npc_window_formid = false;
 	static int show_inv_window_height = 15;
+	static bool show_inv_window_active = true;
 	static bool show_crosshair = false;
 
 	// 基础属性进度条
@@ -269,7 +270,14 @@ namespace menu
 
 				//myText("%s ", item.formId.c_str());
 				//ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-				myText("[%d] %s [", item.level, item.name.c_str());
+				if (item.isInCombat) {
+					myTextColored(ImVec4(1, 1, 0, 1), "\uf071");
+		
+				} else {
+					ImGui::Text("   ");
+				}
+				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				myText2("[%d] %s [", item.level, item.name.c_str());
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 
 				if (item.lifeState == RE::ACTOR_LIFE_STATE::kDead) {
@@ -795,7 +803,7 @@ namespace menu
 					ImGui::Checkbox("npc", &show_npc);
 				} else {
 					if (show_npc) {
-						myText("npc：");
+						myText(" npc：");
 					}
 				}
 				if (show_npc) {
@@ -806,13 +814,17 @@ namespace menu
 
 			if (getEnemyCount() > 0) {
 				if (getNpcCount() > 0) {
-					ImGui::Separator();
+					if (!no_background) {
+						ImGui::Separator();
+					} else {
+						ImGui::Text(" ");
+					}
 				}
 				if (active) {
 					ImGui::Checkbox("enemy", &show_enemy);
 				} else {
 					if (show_enemy) {
-						myText("enemy：");
+						myText(" enemy：");
 					}
 				}
 				if (show_enemy) {
@@ -823,14 +835,18 @@ namespace menu
 
 			if (getTeammateCount() > 0) {
 				if (getNpcCount() > 0 || getEnemyCount()) {
-					ImGui::Separator();
+					if (!no_background) {
+						ImGui::Separator();
+					} else {
+						ImGui::Text(" ");
+					}
 				}
 
 				if (active) {
 					ImGui::Checkbox("team", &show_teammate);
 				} else {
 					if (show_teammate) {
-						myText("team：");
+						myText(" team：");
 					}
 				}
 				if (show_teammate) {
@@ -843,38 +859,42 @@ namespace menu
 		}
 
 		if (show_inv_window) {
-			ImGui::Begin("防具信息", nullptr, window_flags);  //window_flags&(~ImGuiWindowFlags_AlwaysAutoResize)
+			if (active || !show_inv_window_active) {
+				ImGui::Begin("防具信息", nullptr, window_flags);  //window_flags&(~ImGuiWindowFlags_AlwaysAutoResize)
 
-			ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
-			if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
-				if (ImGui::BeginTabItem("武器", 0, 0)) {
-					buildPlayerInvInfo(getPlayerInvWEAPCount(), getPlayerInvWEAPData());
-					ImGui::EndTabItem();
-				}
-				if (ImGui::BeginTabItem("装备", 0, 0)) {
-					buildPlayerInvInfo(getPlayerInvARMOCount(), getPlayerInvARMOData());
-					ImGui::EndTabItem();
-				}
-				if (ImGui::BeginTabItem("弹药", 0, 0)) {
-					buildPlayerInvInfo(getPlayerInvAMMOCount(), getPlayerInvAMMOData());
-					ImGui::EndTabItem();
-				}
-				if (ImGui::BeginTabItem("书", 0, 0)) {
-					buildPlayerInvInfo(getPlayerInvBOOKCount(), getPlayerInvBOOKData());
-					ImGui::EndTabItem();
-				}
-				if (ImGui::BeginTabItem("杂项", 0, 0)) {
-					buildPlayerInvInfo(getPlayerInvCount(), getPlayerInvData());
-					ImGui::EndTabItem();
+				ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+				if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
+					if (ImGui::BeginTabItem("武器", 0, 0)) {
+						buildPlayerInvInfo(getPlayerInvWEAPCount(), getPlayerInvWEAPData());
+						ImGui::EndTabItem();
+					}
+					if (ImGui::BeginTabItem("装备", 0, 0)) {
+						buildPlayerInvInfo(getPlayerInvARMOCount(), getPlayerInvARMOData());
+						ImGui::EndTabItem();
+					}
+					if (ImGui::BeginTabItem("弹药", 0, 0)) {
+						buildPlayerInvInfo(getPlayerInvAMMOCount(), getPlayerInvAMMOData());
+						ImGui::EndTabItem();
+					}
+					if (ImGui::BeginTabItem("书", 0, 0)) {
+						buildPlayerInvInfo(getPlayerInvBOOKCount(), getPlayerInvBOOKData());
+						ImGui::EndTabItem();
+					}
+					if (ImGui::BeginTabItem("杂项", 0, 0)) {
+						buildPlayerInvInfo(getPlayerInvCount(), getPlayerInvData());
+						ImGui::EndTabItem();
+					}
+
+					ImGui::EndTabBar();
 				}
 
-				ImGui::EndTabBar();
+				myText("\uf0d6 %d", getPlayerGoldCount());
+				//myText("负重：%0.1f/%0.0f", playerInfo.equippedWeight, playerInfo.carryWeight);
+
+				ImGui::End();
+
+
 			}
-
-			myText("\uf0d6 %d", getPlayerGoldCount());
-			//myText("负重：%0.1f/%0.0f", playerInfo.equippedWeight, playerInfo.carryWeight);
-
-			ImGui::End();
 		}
 
 		if (show_crosshair) {
@@ -953,6 +973,7 @@ namespace menu
 											ImGui::PopItemWidth();
 										}
 										ImGui::Checkbox("显示FORMID", &show_npc_window_formid);
+										ImGui::Checkbox("死亡不显示", &show_npc_window_dead_hidden);
 
 										ImGui::TreePop();
 									}
@@ -963,6 +984,7 @@ namespace menu
 									if (ImGui::TreeNodeEx("设置##2", ImGuiTreeNodeFlags_DefaultOpen)) {
 										ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
 										ImGui::DragInt("显示数据", &show_inv_window_height, 1, 15, 80, "%d条");
+										ImGui::Checkbox("激活菜单时显示", &show_inv_window_active);
 										ImGui::PopItemWidth();
 										ImGui::TreePop();
 									}
@@ -1293,7 +1315,7 @@ namespace menu
 									   { "DebugInfo", {
 														  { "isShow", show_player_debug_window },
 													  } },
-									   { "npcInfo", {
+									   { "NpcInfo", {
 														{ "isShow", show_npc_window },
 													} }
 

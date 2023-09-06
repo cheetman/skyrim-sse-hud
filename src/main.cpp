@@ -92,6 +92,8 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 	case SKSE::MessagingInterface::kPostLoad:
 		{
 			logger::info("PostLoad"sv);
+
+
 			auto messaging = SKSE::GetMessagingInterface();
 	
 			break;
@@ -160,10 +162,10 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 void __cdecl installimgui(void*)
 {
 	//Sleep(20000);
-	MenuOpenCloseEvent::Register();    //Register Bethesda Menu Event
-	BSTCrosshairRefEvent::Register();  //Register Bethesda Menu Event
 	d3d11hook::Install();
 	dinputhook ::Install();
+	MenuOpenCloseEvent::Register();    //Register Bethesda Menu Event
+	BSTCrosshairRefEvent::Register();  //Register Bethesda Menu Event
 }
 
 void __cdecl RefreshAutoUnequipAmmo(void*)

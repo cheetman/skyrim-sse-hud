@@ -179,13 +179,14 @@ struct ActorInfo
 
 	 int inventoryCount = 0;
 
-	InventoryInfo Inventorys[50];
+	InventoryInfo Inventorys[60];
 };
 
 
 
 extern int show_npc_window_dis_meter;
 extern bool show_npc_window_dis;
+extern bool show_npc_window_dead_hidden;
 extern bool show_enemy_window;
 extern bool show_inv_window;
 extern bool show_npc_window ;
@@ -230,8 +231,8 @@ struct Actor2Info
 	int npcCount = 0;
 	int enemyCount = 0;
 	int teammateCount = 0;
-	ActorInfo npcInfo[50];
-	ActorInfo enemyInfo[50];
+	ActorInfo npcInfo[60];
+	ActorInfo enemyInfo[60];
 	ActorInfo teammateInfo[50];
 };
 
