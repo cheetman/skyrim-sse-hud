@@ -861,6 +861,8 @@ namespace menu
 			ImGui::End();
 		}
 
+
+
 		if (show_inv_window) {
 			if (active || !show_inv_window_active) {
 				ImGui::Begin("防具信息", nullptr, window_flags);  //window_flags&(~ImGuiWindowFlags_AlwaysAutoResize)
@@ -897,6 +899,15 @@ namespace menu
 				ImGui::End();
 			}
 		}
+
+
+		if (show_items_window) {
+			ImGui::Begin("周围物品信息", nullptr, window_flags);
+
+			
+			ImGui::End();
+		}
+
 
 		if (show_crosshair) {
 			ImGui::Begin("准星信息", nullptr, window_flags);
@@ -961,6 +972,7 @@ namespace menu
 								ImGui::TableNextColumn();
 								ImGui::Checkbox("其他信息", &show_player_debug_window);
 								ImGui::TableNextColumn();
+								ImGui::Checkbox("物品信息", &show_items_window);
 								ImGui::TableNextColumn();
 								//ImGui::Checkbox("敌人信息", &show_enemy_window);
 								ImGui::Checkbox("NPC信息", &show_npc_window);
@@ -1000,29 +1012,38 @@ namespace menu
 							//ImGui::Checkbox("Demo", &show_demo_window);
 							if (ImGui::Button("测试", ImVec2())) {
 								RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
-								if (player->currentLocation) {
+								auto currentLocation = player->currentLocation;
+								if (currentLocation) {
 									auto allForms = RE::TESForm::GetAllForms();
 
 									auto& formIDs = *allForms.first;
 									int i = formIDs.size();
-									i = 1;
-									int j = 1;
+									i = 0;
+									//int j = 1;
 									for (auto elem : formIDs) {
 										auto form = elem.second;
 										if (form->Is(RE::FormType::Reference)) {
+											
 											//logger::debug(GetFormTypeName(elem.second->formType.underlying()));
 											auto reff = elem.second->AsReference();
 											if (reff) {
-												if (reff->GetCurrentLocation() == player->currentLocation) {
-													//logger::debug(StringUtil::Utf8ToGbk(reff->GetObjectTypeName()));
-													logger::debug(std::to_string(i++) + " " + FormIDToString(reff->GetFormID()) + " " + StringUtil::Utf8ToGbk(reff->GetDisplayFullName()));
-													auto bound = reff->GetBaseObject();
-													if (bound) {
-														logger::debug(GetFormTypeName(bound->formType.underlying()));
+												if (reff->GetCurrentLocation() == currentLocation) {
+													auto baseObj = reff->GetBaseObject();
+													if (baseObj) {
+														// 这些都过滤
+														if (baseObj->Is(RE::FormType::Static) || baseObj->Is(RE::FormType::Light) || baseObj->Is(RE::FormType::Furniture) || baseObj->Is(RE::FormType::IdleMarker)) {
+															continue;
+														}
+
+														logger::debug(GetFormTypeName(baseObj->formType.underlying()));
+														logger::debug(std::to_string(i) + " " + FormIDToString(reff->GetFormID()) + " " + StringUtil::Utf8ToGbk(reff->GetDisplayFullName()));
+
+														i++;
 													}
-													/*		if (reff->IsWeapon()) {
-														j++;
-													}*/
+
+
+													//logger::debug(StringUtil::Utf8ToGbk(reff->GetObjectTypeName()));
+											
 												}
 											}
 										}

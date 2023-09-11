@@ -59,7 +59,7 @@ void __cdecl RefreshGameInfo(void*)
 			} else {
 				playerInfo.location = "天际";
 			}
-			
+
 			//__try {
 			auto playerFormEditorID = player->GetFormEditorID();
 			auto playerFormID = player->GetFormID();
@@ -488,9 +488,8 @@ void RefreshInventory(RE::Actor* actor, ActorInfo* actorInfo, int tmpIndex)
 	actorInfo[tmpIndex].inventoryCount = i;
 }
 
-//bool isRefreshActorInfo = false;
-
-PlayerInventoryInfo MyInventoryInfo[2];
+PlayerInventoryInfo* MyInventoryInfo = new PlayerInventoryInfo[2];
+//PlayerInventoryInfo MyInventoryInfo[2];
 int getPlayerGoldCount()
 {
 	return MyInventoryInfo[!nowIndex].gold;
@@ -515,11 +514,6 @@ int getPlayerInvAMMOCount()
 {
 	return MyInventoryInfo[!nowIndex].inventoryAMMOCount;
 }
-
-//InventoryInfo* getPlayerInvData2()
-//{
-//	return &MyInventoryInfo[!nowIndex].inventorys[0];
-//}
 
 InventoryInfo* getPlayerInvData()
 {
@@ -596,14 +590,12 @@ bool show_npc_window_dis = false;
 bool show_enemy_window = false;
 bool show_inv_window = false;
 bool show_npc_window = false;
+bool show_items_window = false;
 
 void __cdecl RefreshActorInfo(void*)
 {
 	while (true) {
 		Sleep(500);
-		//isRefreshActorInfo = true;
-
-		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 
 		if (!startflag) {
 			Sleep(3000);
@@ -615,6 +607,7 @@ void __cdecl RefreshActorInfo(void*)
 			continue;
 		}
 
+		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 		if (!player) {
 			Sleep(3000);
 			continue;
@@ -680,11 +673,6 @@ void __cdecl RefreshActorInfo(void*)
 		}
 
 		if (show_npc_window) {
-			//auto actorCount = pl->highActorHandles.size();
-			//if (pl->highActorHandles.size() != actorCount) {
-			//	Sleep(1000);
-			//	continue;
-			//}
 			int tmpNpcCount = 0;
 			int tmpEnemyCount = 0;
 			int tmpTeammateCount = 0;
@@ -778,15 +766,82 @@ void __cdecl RefreshActorInfo(void*)
 			actorInfo[nowIndex].npcCount = tmpNpcCount;
 			actorInfo[nowIndex].enemyCount = tmpEnemyCount;
 			actorInfo[nowIndex].teammateCount = tmpTeammateCount;
-
-			//isRefreshActorInfo = false;
 		}
 	}
 }
 
-void __cdecl RefreshInventoryInfo(void*)
+Item2Info* items = new Item2Info[2];
+int nowItemIndex = 0;
+
+ItemInfo* getItems()
+{
+	return items[!nowIndex].itemInfo;
+}
+
+void __cdecl RefreshActorInfo(void*)
 {
 	while (true) {
-		Sleep(3000);
+		Sleep(500);
+
+		if (!show_items_window) {
+			Sleep(3000);
+			continue;
+		}
+
+		if (!startflag) {
+			Sleep(3000);
+			continue;
+		}
+
+		if (isGameLoading) {
+			Sleep(3000);
+			continue;
+		}
+
+		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
+		if (!player) {
+			Sleep(3000);
+			continue;
+		}
+
+		nowItemIndex = !nowItemIndex;
+
+		int tmpCount = 0;
+		auto currentLocation = player->currentLocation;
+		if (currentLocation) {
+			auto allForms = RE::TESForm::GetAllForms();
+			auto& formIDs = *allForms.first;
+			//int i = formIDs.size();
+			for (auto elem : formIDs) {
+				auto form = elem.second;
+				if (form->Is(RE::FormType::Reference)) {
+					auto reff = elem.second->AsReference();
+					if (reff) {
+						if (reff->GetCurrentLocation() == currentLocation) {
+							auto baseObj = reff->GetBaseObject();
+							if (baseObj) {
+								// 这些都过滤
+								if (baseObj->Is(RE::FormType::Static) || baseObj->Is(RE::FormType::Light) || baseObj->Is(RE::FormType::Furniture) || baseObj->Is(RE::FormType::IdleMarker)) {
+									continue;
+								}
+
+								items[nowIndex].itemInfo[tmpCount].formId = reff->GetFormID();
+								items[nowIndex].itemInfo[tmpCount].formIdStr = FormIDToString(reff->GetFormID());
+								items[nowIndex].itemInfo[tmpCount].name = reff->GetDisplayFullName();
+
+								logger::debug(GetFormTypeName(baseObj->formType.underlying()));
+								logger::debug(std::to_string(tmpCount) + " " + StringUtil::Utf8ToGbk(reff->GetDisplayFullName()));
+
+
+								tmpCount++;
+							}
+						}
+					}
+				}
+			}
+		}
+		items[nowIndex].itemCount = tmpCount;
+
+
 	}
 }

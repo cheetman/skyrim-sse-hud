@@ -190,7 +190,7 @@ extern bool show_npc_window_dis;
 extern bool show_npc_window_dead_hidden;
 extern bool show_enemy_window;
 extern bool show_inv_window;
-extern bool show_npc_window ;
+extern bool show_npc_window;
 
 extern WeaponInfo leftWeaponInfo;
 extern WeaponInfo rightWeaponInfo;
@@ -256,3 +256,23 @@ struct PlayerInventoryInfo
 
 	
 extern bool isGameLoading;
+
+
+
+extern bool show_items_window;
+
+struct ItemInfo
+{
+	int gold = 0;
+	std::string formIdStr = "";
+	RE::FormID formId = 0;
+	std::string name = "";
+};
+
+
+
+struct Item2Info
+{
+	int itemCount = 0;
+	ItemInfo itemInfo[1000];
+};
