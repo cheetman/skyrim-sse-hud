@@ -53,7 +53,13 @@ void __cdecl RefreshGameInfo(void*)
 			playerInfo.Angle = player->GetAngle();
 			playerInfo.Position = player->GetPosition();
 			playerInfo.name = player->GetName();
-
+			if (player->currentLocation) {
+				auto locationName = player->currentLocation->GetFullName();
+				playerInfo.location = locationName;
+			} else {
+				playerInfo.location = "天际";
+			}
+			
 			//__try {
 			auto playerFormEditorID = player->GetFormEditorID();
 			auto playerFormID = player->GetFormID();

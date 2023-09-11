@@ -53,6 +53,7 @@ struct PlayerInfo
 	float carryWeight = 0.0f;
 
 	
+	std::string location = "";  // 位置
 };
 
 

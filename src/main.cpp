@@ -210,7 +210,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 {
 	logger::info("SKSEPlugin_Load"sv);
 #ifndef NDEBUG
-	MessageBoxA(nullptr, "SKSEPlugin_Load", nullptr, MB_OK);
+	//MessageBoxA(nullptr, "SKSEPlugin_Load", nullptr, MB_OK);
 	Sleep(1000);
 #endif
 

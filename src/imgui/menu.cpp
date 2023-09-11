@@ -5,6 +5,8 @@
 #include <imgui/menu.h>
 #include <memory/memory.h>
 #include <nlohmann/json.hpp>
+#include <utils/GeneralUtil.h>
+#include <utils/NameUtil.h>
 
 std::filesystem::path settings = "";
 std::string fontFilePath = "";
@@ -272,7 +274,7 @@ namespace menu
 				//ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
 				if (item.isInCombat) {
 					myTextColored(ImVec4(1, 1, 0, 1), "\uf071");
-		
+
 				} else {
 					ImGui::Text("   ");
 				}
@@ -754,11 +756,12 @@ namespace menu
 
 		if (show_player_debug_window) {
 			ImGui::Begin("其他信息", nullptr, window_flags);
+			myText("当前位置: %s", playerInfo.location.c_str());
 			// z高度
-			myText("人物坐标: [%.0f,%.0f,%.0f]", playerInfo.Position.x, playerInfo.Position.y, playerInfo.Position.z);
+			myText("当前坐标: [%.0f,%.0f,%.0f]", playerInfo.Position.x, playerInfo.Position.y, playerInfo.Position.z);
 			//ImGui::SameLine(0, 0);
 			// z 是0~2Π
-			myText("人物视角: [%.2f,%.2f]", playerInfo.Angle.x, playerInfo.Angle.z);
+			myText("当前视角: [%.2f,%.2f]", playerInfo.Angle.x, playerInfo.Angle.z);
 			ImGui::End();
 		}
 
@@ -892,8 +895,6 @@ namespace menu
 				//myText("负重：%0.1f/%0.0f", playerInfo.equippedWeight, playerInfo.carryWeight);
 
 				ImGui::End();
-
-
 			}
 		}
 
@@ -997,7 +998,95 @@ namespace menu
 							ImGui::Checkbox("是否自动卸除箭袋", &auto_remove_ammo);
 							// 测试
 							//ImGui::Checkbox("Demo", &show_demo_window);
+							if (ImGui::Button("测试", ImVec2())) {
+								RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
+								if (player->currentLocation) {
+									auto allForms = RE::TESForm::GetAllForms();
 
+									auto& formIDs = *allForms.first;
+									int i = formIDs.size();
+									i = 1;
+									int j = 1;
+									for (auto elem : formIDs) {
+										auto form = elem.second;
+										if (form->Is(RE::FormType::Reference)) {
+											//logger::debug(GetFormTypeName(elem.second->formType.underlying()));
+											auto reff = elem.second->AsReference();
+											if (reff) {
+												if (reff->GetCurrentLocation() == player->currentLocation) {
+													//logger::debug(StringUtil::Utf8ToGbk(reff->GetObjectTypeName()));
+													logger::debug(std::to_string(i++) + " " + FormIDToString(reff->GetFormID()) + " " + StringUtil::Utf8ToGbk(reff->GetDisplayFullName()));
+													auto bound = reff->GetBaseObject();
+													if (bound) {
+														logger::debug(GetFormTypeName(bound->formType.underlying()));
+													}
+													/*		if (reff->IsWeapon()) {
+														j++;
+													}*/
+												}
+											}
+										}
+									}
+									int d = 0;
+								}
+
+								//player->GetWorldspace()
+
+								/*					logger::debug(StringUtil::Utf8ToGbk(player->GetEditorLocation1()->GetName()));
+								logger::debug(StringUtil::Utf8ToGbk(player->GetEditorLocation1()->GetFullName()));*/
+								//if (player->currentLocation) {
+								//	//logger::debug(StringUtil::Utf8ToGbk(player->currentLocation->GetName()));
+								//	logger::debug(StringUtil::Utf8ToGbk(player->currentLocation->GetFullName()));
+								//} else {
+								//	logger::debug("空Location");
+								//}
+
+								/*		logger::debug(StringUtil::Utf8ToGbk(player->editorLocation->GetName()));
+								logger::debug(StringUtil::Utf8ToGbk(player->editorLocation->GetFullName()));*/
+								/*	auto pl = RE::ProcessLists::GetSingleton();
+								auto fff = pl->tempShouldMoves;
+								for (auto elem : fff) {
+									logger::debug(StringUtil::Utf8ToGbk(elem.get().get()->GetDisplayFullName()));
+								}
+
+							*/
+
+								//RE::TESDataHandler* dataHandler = RE::TESDataHandler::GetSingleton();
+								//auto dd = dataHandler->GetFormArray<RE::TESObjectWEAP>();
+								//for (auto elem : dd) {
+								//	logger::debug(StringUtil::Utf8ToGbk(elem->GetFullName()));
+								//	if (elem->GetOnLocalMap()) {
+								//		logger::debug(StringUtil::Utf8ToGbk(elem->GetFullName()));
+								//	}
+								//}
+
+								//auto world = player->GetWorldspace();
+
+								//for (auto it : world->mobilePersistentRefs) {
+								//	auto obj = it.get();
+								//	logger::debug(GetFormTypeName(obj->formType.underlying()));
+								//	logger::debug(StringUtil::Utf8ToGbk(obj->GetName()));
+								//	//logger::debug(StringUtil::Utf8ToGbk(obj->GetObjectTypeName()));
+								//	logger::debug(StringUtil::Utf8ToGbk(obj->GetDisplayFullName()));
+								//}
+
+								/*		for (auto it = world->mobilePersistentRefs.begin(); it != world->mobilePersistentRefs.end(); ++it) {
+									auto obj = it->get();
+									logger::debug(GetFormTypeName(obj->formType.underlying()));
+									logger::debug(StringUtil::Utf8ToGbk(obj->GetName()));
+									logger::debug(StringUtil::Utf8ToGbk(obj->GetObjectTypeName()));
+									logger::debug(StringUtil::Utf8ToGbk(obj->GetDisplayFullName()));
+								}*/
+
+								/*	for (auto it = world->fixedPersistentRefMap.begin(); it != world->fixedPersistentRefMap.end(); ++it) {
+									auto first = (*it).first;
+									auto arr = (*it).second;
+									for (auto it2 = arr.begin(); it2 != arr.end(); ++it2) {
+										auto obj = it2->get();
+										logger::debug(StringUtil::Utf8ToGbk(obj->GetDisplayFullName()));
+									}
+								}*/
+							}
 							ImGui::TreePop();
 						}
 
