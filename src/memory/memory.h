@@ -202,6 +202,7 @@ extern bool startflag;
 //extern bool isRefreshActorInfo;
 void __cdecl RefreshGameInfo(void*);
 void __cdecl RefreshActorInfo(void*);
+void __cdecl RefreshItemInfo(void*);
 
 
 
@@ -264,15 +265,39 @@ extern bool show_items_window;
 struct ItemInfo
 {
 	int gold = 0;
-	std::string formIdStr = "";
+	float weight = 0;
 	RE::FormID formId = 0;
+	std::string formIdStr = "";
+	RE::FormID baseFormId = 0;
+	std::string baseFormIdStr = "";
+	std::string formTypeStr = "";
+
+	
 	std::string name = "";
+	bool isCrime = false;
 };
 
 
 
-struct Item2Info
+struct Item2Info					
 {
 	int itemCount = 0;
+	int itemCountWEAP = 0;
+	int itemCountARMO = 0;
+	int itemCountAMMO = 0;
+	int itemCountBOOK = 0;
+	int itemCountALCH = 0;
+	int itemCountMISC = 0;
+	int itemCountCONT = 0;
 	ItemInfo itemInfo[1000];
+	ItemInfo itemInfoWEAP[1000];
+	ItemInfo itemInfoARMO[1000];
+	ItemInfo itemInfoAMMO[1000];
+	ItemInfo itemInfoBOOK[1000];
+	ItemInfo itemInfoALCH[1000];
+	ItemInfo itemInfoMISC[1000];
+	ItemInfo itemInfoCONT[1000];
 };
+
+int getItemCount();
+ItemInfo* getItems();

@@ -1,4 +1,5 @@
 #include "memory.h"
+#include <unordered_set>
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
 #include <utils/PlayerDataProvider.h>
@@ -773,15 +774,35 @@ void __cdecl RefreshActorInfo(void*)
 Item2Info* items = new Item2Info[2];
 int nowItemIndex = 0;
 
+std::unordered_set<int> excludeFormIds;
+
 ItemInfo* getItems()
 {
-	return items[!nowIndex].itemInfo;
+	return items[!nowItemIndex].itemInfo;
 }
 
-void __cdecl RefreshActorInfo(void*)
+int getItemCount()
 {
+	return items[!nowItemIndex].itemCount;
+}
+
+void __cdecl RefreshItemInfo(void*)
+{
+	excludeFormIds.insert(0x000319E3);  // 酒杯
+	excludeFormIds.insert(0x00012FE6);  // 鼎
+	excludeFormIds.insert(0x00012FE7);  // 筐
+	excludeFormIds.insert(0x00012FE8);  // 筐
+	excludeFormIds.insert(0x00012FEA);  // 筐
+	excludeFormIds.insert(0x00012FEC);  // 筐
+	excludeFormIds.insert(0x000318FA);  // 铸铁锅
+	excludeFormIds.insert(0x000318FB);  // 铸铁锅
+	excludeFormIds.insert(0x00012FDF);  // 桶
+	excludeFormIds.insert(0x00031941);  // 木盘子
+	excludeFormIds.insert(0x0003199A);  // 木碗
+	excludeFormIds.insert(0x000319E5);  // 木杓
+
 	while (true) {
-		Sleep(500);
+		Sleep(2000);
 
 		if (!show_items_window) {
 			Sleep(3000);
@@ -807,6 +828,13 @@ void __cdecl RefreshActorInfo(void*)
 		nowItemIndex = !nowItemIndex;
 
 		int tmpCount = 0;
+		int tmpCountWEAP = 0;
+		int tmpCountARMO = 0;
+		int tmpCountAMMO = 0;
+		int tmpCountBOOK = 0;
+		int tmpCountALCH = 0;
+		int tmpCountMISC = 0;
+		int tmpCountCONT = 0;
 		auto currentLocation = player->currentLocation;
 		if (currentLocation) {
 			auto allForms = RE::TESForm::GetAllForms();
@@ -821,27 +849,63 @@ void __cdecl RefreshActorInfo(void*)
 							auto baseObj = reff->GetBaseObject();
 							if (baseObj) {
 								// 这些都过滤
-								if (baseObj->Is(RE::FormType::Static) || baseObj->Is(RE::FormType::Light) || baseObj->Is(RE::FormType::Furniture) || baseObj->Is(RE::FormType::IdleMarker)) {
+						/*		if (baseObj->Is(RE::FormType::Static) || baseObj->Is(RE::FormType::Furniture) || baseObj->Is(RE::FormType::Tree) || baseObj->Is(RE::FormType::IdleMarker) || baseObj->Is(RE::FormType::Light) || baseObj->Is(RE::FormType::MovableStatic) || baseObj->Is(RE::FormType::Door)) {
 									continue;
+								}*/
+
+								switch (baseObj->GetFormType()) {
+								case RE::FormType::Weapon:
+
+									if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
+										continue;
+									}
+									break;
+								case RE::FormType::Static:
+								case RE::FormType::Furniture:
+								case RE::FormType::Tree:
+								case RE::FormType::IdleMarker:
+								case RE::FormType::Light:
+								case RE::FormType::MovableStatic:
+								case RE::FormType::Door:
+								case RE::FormType::Activator:
+									continue;
+								default:
+
+									if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
+										continue;
+									}
+									items[nowItemIndex].itemInfo[tmpCount].baseFormId = baseObj->GetFormID();
+									items[nowItemIndex].itemInfo[tmpCount].baseFormIdStr = FormIDToString(baseObj->GetFormID());
+									items[nowItemIndex].itemInfo[tmpCount].formId = reff->GetFormID();
+									items[nowItemIndex].itemInfo[tmpCount].formIdStr = FormIDToString(reff->GetFormID());
+									items[nowItemIndex].itemInfo[tmpCount].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+									items[nowItemIndex].itemInfo[tmpCount].name = reff->GetDisplayFullName();
+									items[nowItemIndex].itemInfo[tmpCount].weight = reff->GetWeight();
+									items[nowItemIndex].itemInfo[tmpCount].gold = baseObj->GetGoldValue();
+									//items[nowItemIndex].itemInfo[tmpCount].lockLevel = reff->GetLockLevel();
+									items[nowItemIndex].itemInfo[tmpCount].isCrime = reff->IsCrimeToActivate();
+									//items[nowItemIndex].itemInfo[tmpCount].isCrime = reff->IsCrimeToActivate();
+
+									logger::debug(GetFormTypeName(baseObj->formType.underlying()));
+									logger::debug(std::to_string(tmpCount) + " " + StringUtil::Utf8ToGbk(reff->GetDisplayFullName()));
+									logger::debug(std::to_string(baseObj->GetFormID()) + " " + FormIDToString(baseObj->GetFormID()));
+
+									tmpCount++;
 								}
 
-								items[nowIndex].itemInfo[tmpCount].formId = reff->GetFormID();
-								items[nowIndex].itemInfo[tmpCount].formIdStr = FormIDToString(reff->GetFormID());
-								items[nowIndex].itemInfo[tmpCount].name = reff->GetDisplayFullName();
-
-								logger::debug(GetFormTypeName(baseObj->formType.underlying()));
-								logger::debug(std::to_string(tmpCount) + " " + StringUtil::Utf8ToGbk(reff->GetDisplayFullName()));
-
-
-								tmpCount++;
 							}
 						}
 					}
 				}
 			}
 		}
-		items[nowIndex].itemCount = tmpCount;
-
-
+		items[nowItemIndex].itemCount = tmpCount;
+		items[nowItemIndex].itemCountWEAP = tmpCountWEAP;
+		items[nowItemIndex].itemCountARMO = tmpCountARMO;
+		items[nowItemIndex].itemCountAMMO = tmpCountAMMO;
+		items[nowItemIndex].itemCountBOOK = tmpCountBOOK;
+		items[nowItemIndex].itemCountALCH = tmpCountALCH;
+		items[nowItemIndex].itemCountMISC = tmpCountMISC;
+		items[nowItemIndex].itemCountCONT = tmpCountCONT;
 	}
 }

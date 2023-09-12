@@ -231,8 +231,9 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	_beginthread(RefreshGameInfo, 0, NULL);
 	_beginthread(RefreshAutoUnequipAmmo, 0, NULL);
 	_beginthread(RefreshActorInfo, 0, NULL);
+	_beginthread(RefreshItemInfo, 0, NULL);
 	_beginthread(installimgui, 0, NULL);
-
+	
 	return true;
 	//RE::BSRenderManager::GetSingleton();
 }

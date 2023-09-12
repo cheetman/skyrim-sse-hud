@@ -252,9 +252,6 @@ namespace menu
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							ImGui::PushID(i2);
 
-							/*			char str3[16]; 
-							sprintf(str3, "%s%s", u8"\uf019", "获取");*/
-
 							if (ImGui::SmallButton(" \uf019 ")) {
 								auto player = RE::PlayerCharacter::GetSingleton();
 								item.ptr->RemoveItem(inv.ptr, 1, RE::ITEM_REMOVE_REASON::kSelling, 0, player);
@@ -861,8 +858,6 @@ namespace menu
 			ImGui::End();
 		}
 
-
-
 		if (show_inv_window) {
 			if (active || !show_inv_window_active) {
 				ImGui::Begin("防具信息", nullptr, window_flags);  //window_flags&(~ImGuiWindowFlags_AlwaysAutoResize)
@@ -900,14 +895,22 @@ namespace menu
 			}
 		}
 
-
 		if (show_items_window) {
 			ImGui::Begin("周围物品信息", nullptr, window_flags);
 
-			
+			int count = getItemCount();
+			auto items = getItems();
+			for (int i = 0; i < count; i++) {
+				auto item = items[i];
+				if (item.isCrime) {
+					myTextColored(ImVec4(1, 0, 0, 1), " %s %d %0.1f %d", item.name.c_str(), item.gold, item.weight, item.isCrime);
+				} else {
+					myText(" %s %d %0.1f %d", item.name.c_str(), item.gold, item.weight, item.isCrime);
+				}
+			}
+
 			ImGui::End();
 		}
-
 
 		if (show_crosshair) {
 			ImGui::Begin("准星信息", nullptr, window_flags);
@@ -1023,7 +1026,6 @@ namespace menu
 									for (auto elem : formIDs) {
 										auto form = elem.second;
 										if (form->Is(RE::FormType::Reference)) {
-											
 											//logger::debug(GetFormTypeName(elem.second->formType.underlying()));
 											auto reff = elem.second->AsReference();
 											if (reff) {
@@ -1041,9 +1043,7 @@ namespace menu
 														i++;
 													}
 
-
 													//logger::debug(StringUtil::Utf8ToGbk(reff->GetObjectTypeName()));
-											
 												}
 											}
 										}
