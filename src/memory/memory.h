@@ -188,6 +188,7 @@ struct ActorInfo
 
 extern int show_npc_window_dis_meter;
 extern bool show_npc_window_dis;
+extern bool show_npc_window_direction;
 extern bool show_npc_window_dead_hidden;
 extern bool show_enemy_window;
 extern bool show_inv_window;
@@ -222,6 +223,7 @@ int getPlayerInvARMOCount();
 int getPlayerInvAMMOCount();
 int getPlayerInvALCHCount();
 int getPlayerInvFOODCount();
+int getPlayerInvINGRCount();
 int getPlayerGoldCount();
 
 InventoryInfo* getPlayerInvData();
@@ -231,6 +233,7 @@ InventoryInfo* getPlayerInvWEAPData();
 InventoryInfo* getPlayerInvAMMOData();
 InventoryInfo* getPlayerInvALCHData();
 InventoryInfo* getPlayerInvFOODData();
+InventoryInfo* getPlayerInvINGRData();
 InventoryInfo* getPlayerInvData(int);
 
 struct Actor2Info
@@ -251,6 +254,7 @@ struct PlayerInventoryInfo
 	int inventoryAMMOCount = 0;
 	int inventoryALCHCount = 0;
 	int inventoryFOODCount = 0;
+	int inventoryINGRCount = 0;
 	int inventoryCount = 0;
 	int gold = 0;
 	InventoryInfo inventorysARMO[300];
@@ -259,6 +263,7 @@ struct PlayerInventoryInfo
 	InventoryInfo inventorysAMMO[100];
 	InventoryInfo inventorysALCH[300];
 	InventoryInfo inventorysFOOD[300];
+	InventoryInfo inventorysINGR[300];
 	InventoryInfo inventorys[300];
 };
 
@@ -270,11 +275,20 @@ extern bool isGameLoading;
 
 
 extern bool show_items_window;
+extern bool show_items_window_settings;
+extern bool show_items_window_formid;
+extern bool show_items_window_auto_flor;
+extern bool show_items_window_auto_food;
+extern bool show_items_window_auto_ingr;
+extern bool show_items_window_auto_alch;
+extern bool show_items_window_direction;
 
-struct ItemInvInfo
+ struct ItemInvInfo
 {
-	RE::InventoryEntryData* ptr;
+	std::string name = "";
 	int count;
+	RE::TESBoundObject* ptr;
+	RE::InventoryEntryData* ptr2;
 };
 
 struct ItemInfo

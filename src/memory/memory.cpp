@@ -461,6 +461,17 @@ bool compareForItem(const ItemInfo& info1, const ItemInfo& info2)
 	}
 }
 
+bool compareForItemCONT(const ItemInfo& info1, const ItemInfo& info2)
+{
+	if (info1.invCount != info2.invCount) {
+		return info1.invCount > info2.invCount;
+	} else {
+		return info1.baseFormId < info2.baseFormId;
+	}
+}
+
+
+
 void RefreshInventory(RE::Actor* actor, ActorInfo* actorInfo, int tmpIndex)
 {
 	int i = 0;
@@ -533,6 +544,10 @@ int getPlayerInvALCHCount()
 {
 	return MyInventoryInfo[!nowIndex].inventoryALCHCount;
 }
+int getPlayerInvINGRCount()
+{
+	return MyInventoryInfo[!nowIndex].inventoryINGRCount;
+}
 
 InventoryInfo* getPlayerInvData()
 {
@@ -561,6 +576,10 @@ InventoryInfo* getPlayerInvFOODData()
 InventoryInfo* getPlayerInvALCHData()
 {
 	return &MyInventoryInfo[!nowIndex].inventorysALCH[0];
+}
+InventoryInfo* getPlayerInvINGRData()
+{
+	return &MyInventoryInfo[!nowIndex].inventorysINGR[0];
 }
 
 InventoryInfo* getPlayerInvData(int i)
@@ -614,10 +633,21 @@ void __fastcall buildPlayerInvData(InventoryInfo inv[], int& i, RE::TESBoundObje
 
 int show_npc_window_dis_meter = 30;
 bool show_npc_window_dis = false;
+bool show_npc_window_direction = false;
 bool show_enemy_window = false;
 bool show_inv_window = false;
 bool show_npc_window = false;
 bool show_items_window = false;
+bool show_items_window_settings = false;
+bool show_items_window_formid = false;
+bool show_items_window_direction = false;
+bool show_items_window_auto_flor = false;
+bool show_items_window_auto_food = false;
+bool show_items_window_auto_ingr = false;
+bool show_items_window_auto_alch = false;
+
+
+
 
 void __cdecl RefreshActorInfo(void*)
 {
@@ -651,6 +681,9 @@ void __cdecl RefreshActorInfo(void*)
 				MyInventoryInfo[nowIndex].inventoryBOOKCount = 0;
 				MyInventoryInfo[nowIndex].inventoryWEAPCount = 0;
 				MyInventoryInfo[nowIndex].inventoryAMMOCount = 0;
+				MyInventoryInfo[nowIndex].inventoryALCHCount = 0;
+				MyInventoryInfo[nowIndex].inventoryFOODCount = 0;
+				MyInventoryInfo[nowIndex].inventoryINGRCount = 0;
 				MyInventoryInfo[nowIndex].inventoryCount = 0;
 				MyInventoryInfo[nowIndex].gold = 0;
 
@@ -678,6 +711,8 @@ void __cdecl RefreshActorInfo(void*)
 								} else {
 									buildPlayerInvData(MyInventoryInfo[nowIndex].inventorysALCH, MyInventoryInfo[nowIndex].inventoryALCHCount, item, entry.get(), count);
 								}
+							} else if (item->GetFormType() == RE::FormType::Ingredient) {
+								buildPlayerInvData(MyInventoryInfo[nowIndex].inventorysINGR, MyInventoryInfo[nowIndex].inventoryINGRCount, item, entry.get(), count);
 							} else {
 								buildPlayerInvData(MyInventoryInfo[nowIndex].inventorys, MyInventoryInfo[nowIndex].inventoryCount, item, entry.get(), count);
 							}
@@ -699,6 +734,15 @@ void __cdecl RefreshActorInfo(void*)
 				}
 				if (MyInventoryInfo[nowIndex].inventoryAMMOCount > 1) {
 					std::sort(MyInventoryInfo[nowIndex].inventorysAMMO, MyInventoryInfo[nowIndex].inventorysAMMO + MyInventoryInfo[nowIndex].inventoryAMMOCount, compareForInventory);
+				}
+				if (MyInventoryInfo[nowIndex].inventoryALCHCount > 1) {
+					std::sort(MyInventoryInfo[nowIndex].inventorysALCH, MyInventoryInfo[nowIndex].inventorysALCH + MyInventoryInfo[nowIndex].inventoryALCHCount, compareForInventory);
+				}
+				if (MyInventoryInfo[nowIndex].inventoryFOODCount > 1) {
+					std::sort(MyInventoryInfo[nowIndex].inventorysFOOD, MyInventoryInfo[nowIndex].inventorysFOOD + MyInventoryInfo[nowIndex].inventoryFOODCount, compareForInventory);
+				}
+				if (MyInventoryInfo[nowIndex].inventoryINGRCount > 1) {
+					std::sort(MyInventoryInfo[nowIndex].inventorysINGR, MyInventoryInfo[nowIndex].inventorysINGR + MyInventoryInfo[nowIndex].inventoryINGRCount, compareForInventory);
 				}
 
 				// 双缓冲可以不用
@@ -725,9 +769,11 @@ void __cdecl RefreshActorInfo(void*)
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].isSentient = IsSentient2(actor);
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
-						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].distance = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
-						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].direction = calculateDirection(actor->GetPosition(), player->GetPosition(), player->GetAngle());
 
+						if (show_npc_window_direction) {
+							actorInfo[nowIndex].teammateInfo[tmpTeammateCount].distance = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
+							actorInfo[nowIndex].teammateInfo[tmpTeammateCount].direction = calculateDirection(actor->GetPosition(), player->GetPosition(), player->GetAngle());
+						}
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].lifeState = actor->GetLifeState();
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].isInCombat = actor->IsInCombat();
 
@@ -746,8 +792,10 @@ void __cdecl RefreshActorInfo(void*)
 								continue;
 							}
 						}
-						actorInfo[nowIndex].enemyInfo[tmpEnemyCount].distance = dis;
-						actorInfo[nowIndex].enemyInfo[tmpEnemyCount].direction = calculateDirection(actor->GetPosition(), player->GetPosition(), player->GetAngle());
+						if (show_npc_window_direction) {
+							actorInfo[nowIndex].enemyInfo[tmpEnemyCount].distance = dis;
+							actorInfo[nowIndex].enemyInfo[tmpEnemyCount].direction = calculateDirection(actor->GetPosition(), player->GetPosition(), player->GetAngle());
+						}
 						actorInfo[nowIndex].enemyInfo[tmpEnemyCount].formId = actor->GetFormID();
 						actorInfo[nowIndex].enemyInfo[tmpEnemyCount].formIdStr = FormIDToString(actor->GetFormID());
 						actorInfo[nowIndex].enemyInfo[tmpEnemyCount].ptr = actor;
@@ -774,7 +822,11 @@ void __cdecl RefreshActorInfo(void*)
 								continue;
 							}
 						}
-						actorInfo[nowIndex].npcInfo[tmpNpcCount].distance = dis;
+
+						if (show_npc_window_direction) {
+							actorInfo[nowIndex].npcInfo[tmpNpcCount].distance = dis;
+							actorInfo[nowIndex].npcInfo[tmpNpcCount].direction = calculateDirection(actor->GetPosition(), player->GetPosition(), player->GetAngle());
+						}
 						actorInfo[nowIndex].npcInfo[tmpNpcCount].formId = actor->GetFormID();
 						actorInfo[nowIndex].npcInfo[tmpNpcCount].formIdStr = FormIDToString(actor->GetFormID());
 						actorInfo[nowIndex].npcInfo[tmpNpcCount].ptr = actor;
@@ -784,7 +836,6 @@ void __cdecl RefreshActorInfo(void*)
 						actorInfo[nowIndex].npcInfo[tmpNpcCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
 						actorInfo[nowIndex].npcInfo[tmpNpcCount].isSentient = IsSentient2(actor);
 						actorInfo[nowIndex].npcInfo[tmpNpcCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
-						actorInfo[nowIndex].npcInfo[tmpNpcCount].direction = calculateDirection(actor->GetPosition(), player->GetPosition(), player->GetAngle());
 						actorInfo[nowIndex].npcInfo[tmpNpcCount].lifeState = actor->GetLifeState();
 						actorInfo[nowIndex].npcInfo[tmpNpcCount].isInCombat = actor->IsInCombat();
 
@@ -993,6 +1044,7 @@ void __cdecl RefreshItemInfo(void*)
 		int tmpCountMISC = 0;
 		int tmpCountCONT = 0;
 		int tmpCountFLOR = 0;
+		int tmpCountFOOD = 0;
 		auto currentLocation = player->currentLocation;
 		if (currentLocation) {
 			auto allForms = RE::TESForm::GetAllForms();
@@ -1116,27 +1168,48 @@ void __cdecl RefreshItemInfo(void*)
 
 									break;
 								case RE::FormType::AlchemyItem:
+									{
+										if (reff->IsMarkedForDeletion()) {
+											continue;
+										}
+										if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
+											continue;
+										}
+										auto name = reff->GetDisplayFullName();
+										if (strlen(name) == 0) {
+											continue;
+										}
+										auto alchemyItem = baseObj->As<RE::AlchemyItem>();
+										if (alchemyItem->IsFood()) {
+											items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].ptr = reff;
+											items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].baseFormId = baseObj->GetFormID();
+											items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].baseFormIdStr = FormIDToString(baseObj->GetFormID());
+											items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].formId = reff->GetFormID();
+											items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].formIdStr = FormIDToString(reff->GetFormID());
+											items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+											items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].name = name;
+											items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].weight = reff->GetWeight();
+											items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].gold = baseObj->GetGoldValue();
+											items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].isCrime = reff->IsCrimeToActivate();
 
-									if (reff->IsMarkedForDeletion()) {
-										continue;
+											tmpCountFOOD++;
+										} else {
+											items[nowItemIndex].itemInfoALCH[tmpCountALCH].ptr = reff;
+											items[nowItemIndex].itemInfoALCH[tmpCountALCH].baseFormId = baseObj->GetFormID();
+											items[nowItemIndex].itemInfoALCH[tmpCountALCH].baseFormIdStr = FormIDToString(baseObj->GetFormID());
+											items[nowItemIndex].itemInfoALCH[tmpCountALCH].formId = reff->GetFormID();
+											items[nowItemIndex].itemInfoALCH[tmpCountALCH].formIdStr = FormIDToString(reff->GetFormID());
+											items[nowItemIndex].itemInfoALCH[tmpCountALCH].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+											items[nowItemIndex].itemInfoALCH[tmpCountALCH].name = name;
+											items[nowItemIndex].itemInfoALCH[tmpCountALCH].weight = reff->GetWeight();
+											items[nowItemIndex].itemInfoALCH[tmpCountALCH].gold = baseObj->GetGoldValue();
+											items[nowItemIndex].itemInfoALCH[tmpCountALCH].isCrime = reff->IsCrimeToActivate();
+
+											tmpCountALCH++;
+										}
+
+										break;
 									}
-									if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
-										continue;
-									}
-									items[nowItemIndex].itemInfoALCH[tmpCountALCH].ptr = reff;
-									items[nowItemIndex].itemInfoALCH[tmpCountALCH].baseFormId = baseObj->GetFormID();
-									items[nowItemIndex].itemInfoALCH[tmpCountALCH].baseFormIdStr = FormIDToString(baseObj->GetFormID());
-									items[nowItemIndex].itemInfoALCH[tmpCountALCH].formId = reff->GetFormID();
-									items[nowItemIndex].itemInfoALCH[tmpCountALCH].formIdStr = FormIDToString(reff->GetFormID());
-									items[nowItemIndex].itemInfoALCH[tmpCountALCH].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
-									items[nowItemIndex].itemInfoALCH[tmpCountALCH].name = reff->GetDisplayFullName();
-									items[nowItemIndex].itemInfoALCH[tmpCountALCH].weight = reff->GetWeight();
-									items[nowItemIndex].itemInfoALCH[tmpCountALCH].gold = baseObj->GetGoldValue();
-									items[nowItemIndex].itemInfoALCH[tmpCountALCH].isCrime = reff->IsCrimeToActivate();
-
-									tmpCountALCH++;
-
-									break;
 								case RE::FormType::Ingredient:
 
 									if (reff->IsMarkedForDeletion()) {
@@ -1210,7 +1283,9 @@ void __cdecl RefreshItemInfo(void*)
 										for (auto& [obj, data] : inv) {
 											auto& [count, entry] = data;
 											if (count > 0 && entry) {
-												items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].ptr = entry.get();
+												items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].ptr = obj;
+												//items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].ptr2 = entry.get();
+												items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].name = obj->GetName();
 												items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount++].count = count;
 												if (tmpInvCount == 200) {
 													break;
@@ -1246,7 +1321,7 @@ void __cdecl RefreshItemInfo(void*)
 											int tmpInvCount = 0;
 										}
 
-							/*			int tmpInvCount = 0;
+										/*			int tmpInvCount = 0;
 										auto inv = reff->GetInventory(CanDisplay);
 										for (auto& [obj, data] : inv) {
 											auto& [count, entry] = data;
@@ -1321,8 +1396,9 @@ void __cdecl RefreshItemInfo(void*)
 		std::sort(items[nowItemIndex].itemInfoALCH, items[nowItemIndex].itemInfoALCH + tmpCountALCH, compareForItem);
 		std::sort(items[nowItemIndex].itemInfoINGR, items[nowItemIndex].itemInfoINGR + tmpCountINGR, compareForItem);
 		std::sort(items[nowItemIndex].itemInfoMISC, items[nowItemIndex].itemInfoMISC + tmpCountMISC, compareForItem);
-		std::sort(items[nowItemIndex].itemInfoCONT, items[nowItemIndex].itemInfoCONT + tmpCountCONT, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoCONT, items[nowItemIndex].itemInfoCONT + tmpCountCONT, compareForItemCONT);
 		std::sort(items[nowItemIndex].itemInfoFLOR, items[nowItemIndex].itemInfoFLOR + tmpCountFLOR, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoFOOD, items[nowItemIndex].itemInfoFOOD + tmpCountFOOD, compareForItem);
 
 		items[nowItemIndex].itemCount = tmpCount;
 		items[nowItemIndex].itemCountWEAP = tmpCountWEAP;
@@ -1334,5 +1410,6 @@ void __cdecl RefreshItemInfo(void*)
 		items[nowItemIndex].itemCountMISC = tmpCountMISC;
 		items[nowItemIndex].itemCountCONT = tmpCountCONT;
 		items[nowItemIndex].itemCountFLOR = tmpCountFLOR;
+		items[nowItemIndex].itemCountFOOD = tmpCountFOOD;
 	}
 }
