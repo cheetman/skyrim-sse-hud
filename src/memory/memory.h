@@ -6,8 +6,9 @@
 
 
 extern bool active;
+extern bool activeItems;
 
-// 人物属性
+	// 人物属性
 
 struct PlayerInfo
 {
@@ -219,6 +220,8 @@ int getPlayerInvBOOKCount();
 int getPlayerInvWEAPCount();
 int getPlayerInvARMOCount();
 int getPlayerInvAMMOCount();
+int getPlayerInvALCHCount();
+int getPlayerInvFOODCount();
 int getPlayerGoldCount();
 
 InventoryInfo* getPlayerInvData();
@@ -226,6 +229,8 @@ InventoryInfo* getPlayerInvARMOData();
 InventoryInfo* getPlayerInvBOOKData();
 InventoryInfo* getPlayerInvWEAPData();
 InventoryInfo* getPlayerInvAMMOData();
+InventoryInfo* getPlayerInvALCHData();
+InventoryInfo* getPlayerInvFOODData();
 InventoryInfo* getPlayerInvData(int);
 
 struct Actor2Info
@@ -244,16 +249,20 @@ struct PlayerInventoryInfo
 	int inventoryWEAPCount = 0;
 	int inventoryBOOKCount = 0;
 	int inventoryAMMOCount = 0;
+	int inventoryALCHCount = 0;
+	int inventoryFOODCount = 0;
 	int inventoryCount = 0;
 	int gold = 0;
 	InventoryInfo inventorysARMO[300];
 	InventoryInfo inventorysWEAP[300];
 	InventoryInfo inventorysBOOK[300];
 	InventoryInfo inventorysAMMO[100];
+	InventoryInfo inventorysALCH[300];
+	InventoryInfo inventorysFOOD[300];
 	InventoryInfo inventorys[300];
 };
 
-	// 临时
+// 临时
 
 	
 extern bool isGameLoading;
@@ -261,6 +270,12 @@ extern bool isGameLoading;
 
 
 extern bool show_items_window;
+
+struct ItemInvInfo
+{
+	RE::InventoryEntryData* ptr;
+	int count;
+};
 
 struct ItemInfo
 {
@@ -271,10 +286,17 @@ struct ItemInfo
 	RE::FormID baseFormId = 0;
 	std::string baseFormIdStr = "";
 	std::string formTypeStr = "";
-
 	
 	std::string name = "";
 	bool isCrime = false;
+	RE::TESObjectREFR* ptr = nullptr;
+	RE::LOCK_LEVEL lockLevel;
+	bool isDeleted = false;
+	bool isHarvested = false;
+
+	
+	int invCount = 0;
+	ItemInvInfo invs[200];
 };
 
 
@@ -287,17 +309,44 @@ struct Item2Info
 	int itemCountAMMO = 0;
 	int itemCountBOOK = 0;
 	int itemCountALCH = 0;
+	int itemCountINGR = 0;
 	int itemCountMISC = 0;
 	int itemCountCONT = 0;
+	int itemCountFLOR = 0;
+	int itemCountFOOD = 0;
 	ItemInfo itemInfo[1000];
 	ItemInfo itemInfoWEAP[1000];
 	ItemInfo itemInfoARMO[1000];
 	ItemInfo itemInfoAMMO[1000];
 	ItemInfo itemInfoBOOK[1000];
 	ItemInfo itemInfoALCH[1000];
+	ItemInfo itemInfoINGR[1000];
 	ItemInfo itemInfoMISC[1000];
 	ItemInfo itemInfoCONT[1000];
+	ItemInfo itemInfoFLOR[1000];
+	ItemInfo itemInfoFOOD[1000];
+	
 };
 
 int getItemCount();
+int getItemCountWEAP();
+int getItemCountARMO();
+int getItemCountAMMO();
+int getItemCountBOOK();
+int getItemCountINGR();
+int getItemCountALCH();
+int getItemCountMISC();
+int getItemCountCONT();
+int getItemCountFLOR();
+int getItemCountFOOD();
 ItemInfo* getItems();
+ItemInfo* getItemsWEAP();
+ItemInfo* getItemsARMO();
+ItemInfo* getItemsAMMO();
+ItemInfo* getItemsBOOK();
+ItemInfo* getItemsINGR();
+ItemInfo* getItemsALCH();
+ItemInfo* getItemsMISC();
+ItemInfo* getItemsCONT();
+ItemInfo* getItemsFLOR();
+ItemInfo* getItemsFOOD();

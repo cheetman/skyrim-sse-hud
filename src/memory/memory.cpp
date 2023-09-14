@@ -5,6 +5,7 @@
 #include <utils/PlayerDataProvider.h>
 
 bool active = false;
+bool activeItems = false;
 int refresh_time_data = 300;
 bool startflag = false;
 WeaponInfo leftWeaponInfo;
@@ -451,6 +452,15 @@ bool compareForInventory(const InventoryInfo& info1, const InventoryInfo& info2)
 	}
 }
 
+bool compareForItem(const ItemInfo& info1, const ItemInfo& info2)
+{
+	if (info1.gold != info2.gold) {
+		return info1.gold > info2.gold;
+	} else {
+		return info1.baseFormId < info2.baseFormId;
+	}
+}
+
 void RefreshInventory(RE::Actor* actor, ActorInfo* actorInfo, int tmpIndex)
 {
 	int i = 0;
@@ -515,6 +525,14 @@ int getPlayerInvAMMOCount()
 {
 	return MyInventoryInfo[!nowIndex].inventoryAMMOCount;
 }
+int getPlayerInvFOODCount()
+{
+	return MyInventoryInfo[!nowIndex].inventoryFOODCount;
+}
+int getPlayerInvALCHCount()
+{
+	return MyInventoryInfo[!nowIndex].inventoryALCHCount;
+}
 
 InventoryInfo* getPlayerInvData()
 {
@@ -535,6 +553,14 @@ InventoryInfo* getPlayerInvBOOKData()
 InventoryInfo* getPlayerInvAMMOData()
 {
 	return &MyInventoryInfo[!nowIndex].inventorysAMMO[0];
+}
+InventoryInfo* getPlayerInvFOODData()
+{
+	return &MyInventoryInfo[!nowIndex].inventorysFOOD[0];
+}
+InventoryInfo* getPlayerInvALCHData()
+{
+	return &MyInventoryInfo[!nowIndex].inventorysALCH[0];
 }
 
 InventoryInfo* getPlayerInvData(int i)
@@ -645,6 +671,13 @@ void __cdecl RefreshActorInfo(void*)
 								buildPlayerInvData(MyInventoryInfo[nowIndex].inventorysAMMO, MyInventoryInfo[nowIndex].inventoryAMMOCount, item, entry.get(), count);
 							} else if (item->IsBook()) {
 								buildPlayerInvData(MyInventoryInfo[nowIndex].inventorysBOOK, MyInventoryInfo[nowIndex].inventoryBOOKCount, item, entry.get(), count);
+							} else if (item->GetFormType() == RE::FormType::AlchemyItem) {
+								auto alchemyItem = item->As<RE::AlchemyItem>();
+								if (alchemyItem->IsFood()) {
+									buildPlayerInvData(MyInventoryInfo[nowIndex].inventorysFOOD, MyInventoryInfo[nowIndex].inventoryFOODCount, item, entry.get(), count);
+								} else {
+									buildPlayerInvData(MyInventoryInfo[nowIndex].inventorysALCH, MyInventoryInfo[nowIndex].inventoryALCHCount, item, entry.get(), count);
+								}
 							} else {
 								buildPlayerInvData(MyInventoryInfo[nowIndex].inventorys, MyInventoryInfo[nowIndex].inventoryCount, item, entry.get(), count);
 							}
@@ -757,12 +790,12 @@ void __cdecl RefreshActorInfo(void*)
 
 						RefreshInventory(actor, actorInfo[nowIndex].npcInfo, tmpNpcCount++);
 					}
-
-					std::sort(actorInfo[nowIndex].teammateInfo, actorInfo[nowIndex].teammateInfo + tmpTeammateCount, compareByLevel);
-					std::sort(actorInfo[nowIndex].enemyInfo, actorInfo[nowIndex].enemyInfo + tmpEnemyCount, compareByLevel);
-					std::sort(actorInfo[nowIndex].npcInfo, actorInfo[nowIndex].npcInfo + tmpNpcCount, compareByLevel);
 				}
 			}
+
+			std::sort(actorInfo[nowIndex].teammateInfo, actorInfo[nowIndex].teammateInfo + tmpTeammateCount, compareByLevel);
+			std::sort(actorInfo[nowIndex].enemyInfo, actorInfo[nowIndex].enemyInfo + tmpEnemyCount, compareByLevel);
+			std::sort(actorInfo[nowIndex].npcInfo, actorInfo[nowIndex].npcInfo + tmpNpcCount, compareByLevel);
 
 			actorInfo[nowIndex].npcCount = tmpNpcCount;
 			actorInfo[nowIndex].enemyCount = tmpEnemyCount;
@@ -780,10 +813,129 @@ ItemInfo* getItems()
 {
 	return items[!nowItemIndex].itemInfo;
 }
+ItemInfo* getItemsWEAP()
+{
+	return items[!nowItemIndex].itemInfoWEAP;
+}
+ItemInfo* getItemsARMO()
+{
+	return items[!nowItemIndex].itemInfoARMO;
+}
+ItemInfo* getItemsAMMO()
+{
+	return items[!nowItemIndex].itemInfoAMMO;
+}
+ItemInfo* getItemsBOOK()
+{
+	return items[!nowItemIndex].itemInfoBOOK;
+}
+ItemInfo* getItemsALCH()
+{
+	return items[!nowItemIndex].itemInfoALCH;
+}
+ItemInfo* getItemsFOOD()
+{
+	return items[!nowItemIndex].itemInfoFOOD;
+}
+ItemInfo* getItemsINGR()
+{
+	return items[!nowItemIndex].itemInfoINGR;
+}
+ItemInfo* getItemsMISC()
+{
+	return items[!nowItemIndex].itemInfoMISC;
+}
+ItemInfo* getItemsCONT()
+{
+	return items[!nowItemIndex].itemInfoCONT;
+}
+ItemInfo* getItemsFLOR()
+{
+	return items[!nowItemIndex].itemInfoFLOR;
+}
 
 int getItemCount()
 {
 	return items[!nowItemIndex].itemCount;
+}
+int getItemCountWEAP()
+{
+	return items[!nowItemIndex].itemCountWEAP;
+}
+int getItemCountARMO()
+{
+	return items[!nowItemIndex].itemCountARMO;
+}
+int getItemCountAMMO()
+{
+	return items[!nowItemIndex].itemCountAMMO;
+}
+int getItemCountBOOK()
+{
+	return items[!nowItemIndex].itemCountBOOK;
+}
+int getItemCountALCH()
+{
+	return items[!nowItemIndex].itemCountALCH;
+}
+int getItemCountFOOD()
+{
+	return items[!nowItemIndex].itemCountFOOD;
+}
+int getItemCountINGR()
+{
+	return items[!nowItemIndex].itemCountINGR;
+}
+int getItemCountMISC()
+{
+	return items[!nowItemIndex].itemCountMISC;
+}
+int getItemCountCONT()
+{
+	return items[!nowItemIndex].itemCountCONT;
+}
+int getItemCountFLOR()
+{
+	return items[!nowItemIndex].itemCountFLOR;
+}
+
+[[nodiscard]] static inline bool CanDisplay(const RE::TESBoundObject& a_object)
+{
+	switch (a_object.GetFormType()) {
+	case RE::FormType::Scroll:
+	case RE::FormType::Armor:
+	case RE::FormType::Book:
+	case RE::FormType::Ingredient:
+	case RE::FormType::Misc:
+	case RE::FormType::Weapon:
+	case RE::FormType::Ammo:
+	case RE::FormType::KeyMaster:
+	case RE::FormType::AlchemyItem:
+	case RE::FormType::Note:
+	case RE::FormType::SoulGem:
+		break;
+	case RE::FormType::Light:
+		{
+			auto& light = static_cast<const RE::TESObjectLIGH&>(a_object);
+			if (!light.CanBeCarried()) {
+				return false;
+			}
+		}
+		break;
+	default:
+		return false;
+	}
+
+	if (!a_object.GetPlayable()) {
+		return false;
+	}
+
+	auto name = a_object.GetName();
+	if (!name || name[0] == '\0') {
+		return false;
+	}
+
+	return true;
 }
 
 void __cdecl RefreshItemInfo(void*)
@@ -792,20 +944,24 @@ void __cdecl RefreshItemInfo(void*)
 	excludeFormIds.insert(0x00012FE6);  // 鼎
 	excludeFormIds.insert(0x00012FE7);  // 筐
 	excludeFormIds.insert(0x00012FE8);  // 筐
+	excludeFormIds.insert(0x00012FE9);  // 筐
 	excludeFormIds.insert(0x00012FEA);  // 筐
+	excludeFormIds.insert(0x00012FEB);  // 筐
 	excludeFormIds.insert(0x00012FEC);  // 筐
 	excludeFormIds.insert(0x000318FA);  // 铸铁锅
 	excludeFormIds.insert(0x000318FB);  // 铸铁锅
+	excludeFormIds.insert(0x000318EC);  // 油灯
 	excludeFormIds.insert(0x00012FDF);  // 桶
 	excludeFormIds.insert(0x00031941);  // 木盘子
 	excludeFormIds.insert(0x0003199A);  // 木碗
 	excludeFormIds.insert(0x000319E5);  // 木杓
+	excludeFormIds.insert(0x0006717F);  // 扫帚
 
 	while (true) {
-		Sleep(2000);
+		Sleep(1000);
 
-		if (!show_items_window) {
-			Sleep(3000);
+		if (!activeItems) {
+			Sleep(2000);
 			continue;
 		}
 
@@ -833,8 +989,10 @@ void __cdecl RefreshItemInfo(void*)
 		int tmpCountAMMO = 0;
 		int tmpCountBOOK = 0;
 		int tmpCountALCH = 0;
+		int tmpCountINGR = 0;
 		int tmpCountMISC = 0;
 		int tmpCountCONT = 0;
+		int tmpCountFLOR = 0;
 		auto currentLocation = player->currentLocation;
 		if (currentLocation) {
 			auto allForms = RE::TESForm::GetAllForms();
@@ -849,17 +1007,263 @@ void __cdecl RefreshItemInfo(void*)
 							auto baseObj = reff->GetBaseObject();
 							if (baseObj) {
 								// 这些都过滤
-						/*		if (baseObj->Is(RE::FormType::Static) || baseObj->Is(RE::FormType::Furniture) || baseObj->Is(RE::FormType::Tree) || baseObj->Is(RE::FormType::IdleMarker) || baseObj->Is(RE::FormType::Light) || baseObj->Is(RE::FormType::MovableStatic) || baseObj->Is(RE::FormType::Door)) {
+								/*		if (baseObj->Is(RE::FormType::Static) || baseObj->Is(RE::FormType::Furniture) || baseObj->Is(RE::FormType::Tree) || baseObj->Is(RE::FormType::IdleMarker) || baseObj->Is(RE::FormType::Light) || baseObj->Is(RE::FormType::MovableStatic) || baseObj->Is(RE::FormType::Door)) {
 									continue;
 								}*/
 
 								switch (baseObj->GetFormType()) {
 								case RE::FormType::Weapon:
-
+									if (reff->IsMarkedForDeletion()) {
+										continue;
+									}
 									if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
 										continue;
 									}
+									items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].ptr = reff;
+									items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].baseFormId = baseObj->GetFormID();
+									items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].baseFormIdStr = FormIDToString(baseObj->GetFormID());
+									items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].formId = reff->GetFormID();
+									items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].formIdStr = FormIDToString(reff->GetFormID());
+									items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+									items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].name = reff->GetDisplayFullName();
+									items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].weight = reff->GetWeight();
+									items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].gold = baseObj->GetGoldValue();
+									items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].isCrime = reff->IsCrimeToActivate();
+
+									/*		logger::debug(GetFormTypeName(baseObj->formType.underlying()));
+									logger::debug(std::to_string(tmpCountWEAP) + " " + StringUtil::Utf8ToGbk(reff->GetDisplayFullName()));
+									logger::debug(std::to_string(baseObj->GetFormID()) + " " + FormIDToString(baseObj->GetFormID()));*/
+
+									tmpCountWEAP++;
+
 									break;
+								case RE::FormType::Armor:
+
+									if (reff->IsMarkedForDeletion()) {
+										continue;
+									}
+									if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
+										continue;
+									}
+									items[nowItemIndex].itemInfoARMO[tmpCountARMO].ptr = reff;
+									items[nowItemIndex].itemInfoARMO[tmpCountARMO].baseFormId = baseObj->GetFormID();
+									items[nowItemIndex].itemInfoARMO[tmpCountARMO].baseFormIdStr = FormIDToString(baseObj->GetFormID());
+									items[nowItemIndex].itemInfoARMO[tmpCountARMO].formId = reff->GetFormID();
+									items[nowItemIndex].itemInfoARMO[tmpCountARMO].formIdStr = FormIDToString(reff->GetFormID());
+									items[nowItemIndex].itemInfoARMO[tmpCountARMO].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+									items[nowItemIndex].itemInfoARMO[tmpCountARMO].name = reff->GetDisplayFullName();
+									items[nowItemIndex].itemInfoARMO[tmpCountARMO].weight = reff->GetWeight();
+									items[nowItemIndex].itemInfoARMO[tmpCountARMO].gold = baseObj->GetGoldValue();
+									items[nowItemIndex].itemInfoARMO[tmpCountARMO].isCrime = reff->IsCrimeToActivate();
+
+									/*					logger::debug(GetFormTypeName(baseObj->formType.underlying()));
+									logger::debug(std::to_string(tmpCountARMO) + " " + StringUtil::Utf8ToGbk(reff->GetDisplayFullName()));
+									logger::debug(std::to_string(baseObj->GetFormID()) + " " + FormIDToString(baseObj->GetFormID()));*/
+
+									tmpCountARMO++;
+
+									break;
+								case RE::FormType::Ammo:
+
+									if (reff->IsMarkedForDeletion()) {
+										continue;
+									}
+									if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
+										continue;
+									}
+									items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].ptr = reff;
+									items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].baseFormId = baseObj->GetFormID();
+									items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].baseFormIdStr = FormIDToString(baseObj->GetFormID());
+									items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].formId = reff->GetFormID();
+									items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].formIdStr = FormIDToString(reff->GetFormID());
+									items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+									items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].name = reff->GetDisplayFullName();
+									items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].weight = reff->GetWeight();
+									items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].gold = baseObj->GetGoldValue();
+									items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].isCrime = reff->IsCrimeToActivate();
+
+									/*			logger::debug(GetFormTypeName(baseObj->formType.underlying()));
+									logger::debug(std::to_string(tmpCountAMMO) + " " + StringUtil::Utf8ToGbk(reff->GetDisplayFullName()));
+									logger::debug(std::to_string(baseObj->GetFormID()) + " " + FormIDToString(baseObj->GetFormID()));*/
+
+									tmpCountAMMO++;
+
+									break;
+								case RE::FormType::Book:
+
+									if (reff->IsMarkedForDeletion()) {
+										continue;
+									}
+									if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
+										continue;
+									}
+									items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].ptr = reff;
+									items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].baseFormId = baseObj->GetFormID();
+									items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].baseFormIdStr = FormIDToString(baseObj->GetFormID());
+									items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].formId = reff->GetFormID();
+									items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].formIdStr = FormIDToString(reff->GetFormID());
+									items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+									items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].name = reff->GetDisplayFullName();
+									items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].weight = reff->GetWeight();
+									items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].gold = baseObj->GetGoldValue();
+									items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].isCrime = reff->IsCrimeToActivate();
+
+									/*		logger::debug(GetFormTypeName(baseObj->formType.underlying()));
+									logger::debug(std::to_string(tmpCountBOOK) + " " + StringUtil::Utf8ToGbk(reff->GetDisplayFullName()));
+									logger::debug(std::to_string(baseObj->GetFormID()) + " " + FormIDToString(baseObj->GetFormID()));*/
+
+									tmpCountBOOK++;
+
+									break;
+								case RE::FormType::AlchemyItem:
+
+									if (reff->IsMarkedForDeletion()) {
+										continue;
+									}
+									if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
+										continue;
+									}
+									items[nowItemIndex].itemInfoALCH[tmpCountALCH].ptr = reff;
+									items[nowItemIndex].itemInfoALCH[tmpCountALCH].baseFormId = baseObj->GetFormID();
+									items[nowItemIndex].itemInfoALCH[tmpCountALCH].baseFormIdStr = FormIDToString(baseObj->GetFormID());
+									items[nowItemIndex].itemInfoALCH[tmpCountALCH].formId = reff->GetFormID();
+									items[nowItemIndex].itemInfoALCH[tmpCountALCH].formIdStr = FormIDToString(reff->GetFormID());
+									items[nowItemIndex].itemInfoALCH[tmpCountALCH].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+									items[nowItemIndex].itemInfoALCH[tmpCountALCH].name = reff->GetDisplayFullName();
+									items[nowItemIndex].itemInfoALCH[tmpCountALCH].weight = reff->GetWeight();
+									items[nowItemIndex].itemInfoALCH[tmpCountALCH].gold = baseObj->GetGoldValue();
+									items[nowItemIndex].itemInfoALCH[tmpCountALCH].isCrime = reff->IsCrimeToActivate();
+
+									tmpCountALCH++;
+
+									break;
+								case RE::FormType::Ingredient:
+
+									if (reff->IsMarkedForDeletion()) {
+										continue;
+									}
+									if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
+										continue;
+									}
+									items[nowItemIndex].itemInfoINGR[tmpCountINGR].ptr = reff;
+									items[nowItemIndex].itemInfoINGR[tmpCountINGR].baseFormId = baseObj->GetFormID();
+									items[nowItemIndex].itemInfoINGR[tmpCountINGR].baseFormIdStr = FormIDToString(baseObj->GetFormID());
+									items[nowItemIndex].itemInfoINGR[tmpCountINGR].formId = reff->GetFormID();
+									items[nowItemIndex].itemInfoINGR[tmpCountINGR].formIdStr = FormIDToString(reff->GetFormID());
+									items[nowItemIndex].itemInfoINGR[tmpCountINGR].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+									items[nowItemIndex].itemInfoINGR[tmpCountINGR].name = reff->GetDisplayFullName();
+									items[nowItemIndex].itemInfoINGR[tmpCountINGR].weight = reff->GetWeight();
+									items[nowItemIndex].itemInfoINGR[tmpCountINGR].gold = baseObj->GetGoldValue();
+									items[nowItemIndex].itemInfoINGR[tmpCountINGR].isCrime = reff->IsCrimeToActivate();
+
+									tmpCountINGR++;
+									break;
+								case RE::FormType::Misc:
+									{
+										if (reff->IsMarkedForDeletion()) {
+											continue;
+										}
+										if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
+											continue;
+										}
+										auto name = reff->GetDisplayFullName();
+										if (strlen(name) == 0) {
+											continue;
+										}
+										items[nowItemIndex].itemInfoMISC[tmpCountMISC].ptr = reff;
+										items[nowItemIndex].itemInfoMISC[tmpCountMISC].baseFormId = baseObj->GetFormID();
+										items[nowItemIndex].itemInfoMISC[tmpCountMISC].baseFormIdStr = FormIDToString(baseObj->GetFormID());
+										items[nowItemIndex].itemInfoMISC[tmpCountMISC].formId = reff->GetFormID();
+										items[nowItemIndex].itemInfoMISC[tmpCountMISC].formIdStr = FormIDToString(reff->GetFormID());
+										items[nowItemIndex].itemInfoMISC[tmpCountMISC].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+										items[nowItemIndex].itemInfoMISC[tmpCountMISC].name = name;
+										items[nowItemIndex].itemInfoMISC[tmpCountMISC].weight = reff->GetWeight();
+										items[nowItemIndex].itemInfoMISC[tmpCountMISC].gold = baseObj->GetGoldValue();
+										items[nowItemIndex].itemInfoMISC[tmpCountMISC].isCrime = reff->IsCrimeToActivate();
+
+										tmpCountMISC++;
+
+										break;
+									}
+								case RE::FormType::Container:
+									{
+										if (reff->IsMarkedForDeletion()) {
+											continue;
+										}
+										if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
+											continue;
+										}
+										items[nowItemIndex].itemInfoCONT[tmpCountCONT].ptr = reff;
+										items[nowItemIndex].itemInfoCONT[tmpCountCONT].baseFormId = baseObj->GetFormID();
+										items[nowItemIndex].itemInfoCONT[tmpCountCONT].baseFormIdStr = FormIDToString(baseObj->GetFormID());
+										items[nowItemIndex].itemInfoCONT[tmpCountCONT].formId = reff->GetFormID();
+										items[nowItemIndex].itemInfoCONT[tmpCountCONT].formIdStr = FormIDToString(reff->GetFormID());
+										items[nowItemIndex].itemInfoCONT[tmpCountCONT].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+										items[nowItemIndex].itemInfoCONT[tmpCountCONT].name = reff->GetDisplayFullName();
+										items[nowItemIndex].itemInfoCONT[tmpCountCONT].weight = reff->GetWeight();
+										items[nowItemIndex].itemInfoCONT[tmpCountCONT].gold = baseObj->GetGoldValue();
+										items[nowItemIndex].itemInfoCONT[tmpCountCONT].isCrime = reff->IsCrimeToActivate();
+										items[nowItemIndex].itemInfoCONT[tmpCountCONT].lockLevel = reff->GetLockLevel();
+
+										int tmpInvCount = 0;
+										auto inv = reff->GetInventory(CanDisplay);
+										for (auto& [obj, data] : inv) {
+											auto& [count, entry] = data;
+											if (count > 0 && entry) {
+												items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].ptr = entry.get();
+												items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount++].count = count;
+												if (tmpInvCount == 200) {
+													break;
+												}
+											}
+										}
+										items[nowItemIndex].itemInfoCONT[tmpCountCONT].invCount = tmpInvCount;
+
+										tmpCountCONT++;
+
+										break;
+									}
+								case RE::FormType::Flora:
+									{
+										if (reff->IsMarkedForDeletion()) {
+											continue;
+										}
+										if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
+											continue;
+										}
+										items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].ptr = reff;
+										items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].baseFormId = baseObj->GetFormID();
+										items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].baseFormIdStr = FormIDToString(baseObj->GetFormID());
+										items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].formId = reff->GetFormID();
+										items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].formIdStr = FormIDToString(reff->GetFormID());
+										items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+										items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].name = reff->GetDisplayFullName();
+										items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].weight = reff->GetWeight();
+										items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].gold = baseObj->GetGoldValue();
+										items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].isCrime = reff->IsCrimeToActivate();
+										items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].isHarvested = (reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested);
+										if (reff->HasContainer()) {
+											int tmpInvCount = 0;
+										}
+
+							/*			int tmpInvCount = 0;
+										auto inv = reff->GetInventory(CanDisplay);
+										for (auto& [obj, data] : inv) {
+											auto& [count, entry] = data;
+											if (count > 0 && entry) {
+												items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].invs[tmpInvCount].ptr = entry.get();
+												items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].invs[tmpInvCount++].count = count;
+												if (tmpInvCount == 200) {
+													break;
+												}
+											}
+										}
+										items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].invCount = tmpInvCount;*/
+
+										tmpCountFLOR++;
+
+										break;
+									}
 								case RE::FormType::Static:
 								case RE::FormType::Furniture:
 								case RE::FormType::Tree:
@@ -868,12 +1272,23 @@ void __cdecl RefreshItemInfo(void*)
 								case RE::FormType::MovableStatic:
 								case RE::FormType::Door:
 								case RE::FormType::Activator:
+								case RE::FormType::TextureSet:
+								case RE::FormType::Sound:
+								case RE::FormType::Explosion:
+								case RE::FormType::AcousticSpace:  // 升学空间
 									continue;
 								default:
+
+									if (reff->IsMarkedForDeletion()) { /*
+										logger::debug(StringUtil::Utf8ToGbk(reff->GetDisplayFullName()) + " " + GetFormTypeName(baseObj->formType.underlying()));
+										logger::debug(std::to_string(baseObj->GetFormID()) + " " + FormIDToString(baseObj->GetFormID()));*/
+										continue;
+									}
 
 									if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
 										continue;
 									}
+									items[nowItemIndex].itemInfo[tmpCount].ptr = reff;
 									items[nowItemIndex].itemInfo[tmpCount].baseFormId = baseObj->GetFormID();
 									items[nowItemIndex].itemInfo[tmpCount].baseFormIdStr = FormIDToString(baseObj->GetFormID());
 									items[nowItemIndex].itemInfo[tmpCount].formId = reff->GetFormID();
@@ -884,28 +1299,40 @@ void __cdecl RefreshItemInfo(void*)
 									items[nowItemIndex].itemInfo[tmpCount].gold = baseObj->GetGoldValue();
 									//items[nowItemIndex].itemInfo[tmpCount].lockLevel = reff->GetLockLevel();
 									items[nowItemIndex].itemInfo[tmpCount].isCrime = reff->IsCrimeToActivate();
-									//items[nowItemIndex].itemInfo[tmpCount].isCrime = reff->IsCrimeToActivate();
 
-									logger::debug(GetFormTypeName(baseObj->formType.underlying()));
-									logger::debug(std::to_string(tmpCount) + " " + StringUtil::Utf8ToGbk(reff->GetDisplayFullName()));
-									logger::debug(std::to_string(baseObj->GetFormID()) + " " + FormIDToString(baseObj->GetFormID()));
+									//logger::debug(GetFormTypeName(baseObj->formType.underlying()));
+									//logger::debug(std::to_string(tmpCount) + " " + StringUtil::Utf8ToGbk(reff->GetDisplayFullName()));
+									//logger::debug(std::to_string(baseObj->GetFormID()) + " " + FormIDToString(baseObj->GetFormID()));
 
 									tmpCount++;
 								}
-
 							}
 						}
 					}
 				}
 			}
 		}
+
+		std::sort(items[nowItemIndex].itemInfo, items[nowItemIndex].itemInfo + tmpCount, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoWEAP, items[nowItemIndex].itemInfoWEAP + tmpCountWEAP, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoARMO, items[nowItemIndex].itemInfoARMO + tmpCountARMO, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoAMMO, items[nowItemIndex].itemInfoAMMO + tmpCountAMMO, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoBOOK, items[nowItemIndex].itemInfoBOOK + tmpCountBOOK, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoALCH, items[nowItemIndex].itemInfoALCH + tmpCountALCH, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoINGR, items[nowItemIndex].itemInfoINGR + tmpCountINGR, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoMISC, items[nowItemIndex].itemInfoMISC + tmpCountMISC, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoCONT, items[nowItemIndex].itemInfoCONT + tmpCountCONT, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoFLOR, items[nowItemIndex].itemInfoFLOR + tmpCountFLOR, compareForItem);
+
 		items[nowItemIndex].itemCount = tmpCount;
 		items[nowItemIndex].itemCountWEAP = tmpCountWEAP;
 		items[nowItemIndex].itemCountARMO = tmpCountARMO;
 		items[nowItemIndex].itemCountAMMO = tmpCountAMMO;
 		items[nowItemIndex].itemCountBOOK = tmpCountBOOK;
 		items[nowItemIndex].itemCountALCH = tmpCountALCH;
+		items[nowItemIndex].itemCountINGR = tmpCountINGR;
 		items[nowItemIndex].itemCountMISC = tmpCountMISC;
 		items[nowItemIndex].itemCountCONT = tmpCountCONT;
+		items[nowItemIndex].itemCountFLOR = tmpCountFLOR;
 	}
 }

@@ -459,6 +459,21 @@ namespace dinputhook
 			if (inputEvent->eventType == RE::INPUT_EVENT_TYPE::kButton) {
 				auto btnEvent = inputEvent->AsButtonEvent();
 				if (btnEvent && btnEvent->IsDown()) {
+
+					if (btnEvent->GetIDCode() == 1) {
+						if (activeItems || active) {
+							activeItems = active = false;
+							_DispatchInputEvent(a_dispatcher, dummy);
+							return;
+						}
+					}
+
+					if (btnEvent->GetIDCode() == 16 && GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+						activeItems ? activeItems = false : activeItems = true;
+						_DispatchInputEvent(a_dispatcher, dummy);
+						return;
+					}
+
 					switch (menu::hotkey) {
 					case 0:
 						{
@@ -522,7 +537,7 @@ namespace dinputhook
 			}
 		}
 
-		if (active) {
+		if (active || activeItems) {
 			ProcessEvent(a_evns);
 			_DispatchInputEvent(a_dispatcher, dummy);
 			return;

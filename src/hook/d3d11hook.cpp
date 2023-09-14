@@ -131,7 +131,7 @@ namespace d3d11hook
 		//}
 
 		//ImGui::GetIO().WantCaptureMouse = active;
-		ImGui::GetIO().MouseDrawCursor = active;
+		ImGui::GetIO().MouseDrawCursor = active || activeItems;
 		//ImGui::GetIO().WantSetMousePos = true;
 
 		ImGui_ImplDX11_NewFrame();
