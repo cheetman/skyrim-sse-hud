@@ -1,18 +1,20 @@
 #include <event/BSTCrosshairRefEvent.h>
 #include <event/BSTMenuEvent.h>
 #include <hook/hudhook.h>
-#include <imgui.h>
-#include <imgui/menu.h>
+#include <imgui/imgui.h>
+#include <menu/menu.h>
 #include <memory/memory.h>
 #include <nlohmann/json.hpp>
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
+#include <fonts/IconsMaterialDesignIcons.h>
 
 std::filesystem::path settings = "";
 std::string fontFilePath = "";
 
 namespace menu
 {
+	//ImFont* font2 = nullptr;
 	//static float health = 0.0f;
 	//static float kMagicka = 0.0f;
 	//static float kStamina = 0.0f;
@@ -756,6 +758,8 @@ namespace menu
 		// 载入字体
 		//imgui.igPushFont(font);
 
+		//ImGui::PushFont(font2);
+
 		auto style = ImGui::GetStyle();
 		style.WindowBorderSize = window_border ? 1.0f : 0.0f;
 		style.FrameBorderSize = frame_border ? 1.0f : 0.0f;
@@ -904,7 +908,7 @@ namespace menu
 						ImGui::TreePop();
 					}
 				} else {
-					myText("%s", leftWeaponInfo.treeId.c_str());
+					myText("\uF04E5"  " %s", leftWeaponInfo.treeId.c_str());
 				}
 			}
 
@@ -957,7 +961,7 @@ namespace menu
 							ImGui::TreePop();
 						}
 					} else {
-						myText("%s", rightWeaponInfo.treeId.c_str());
+						myText("\uF04E5" " %s", rightWeaponInfo.treeId.c_str());
 					}
 				}
 			}
@@ -1170,27 +1174,37 @@ namespace menu
 
 		if (show_inv_window) {
 			if (active || !show_inv_window_active) {
+
+				
+				//static ImFont* font = ImGui::GetIO().Fonts->AddFontFromFileTTF("data\\skse\\plugins\\materialdesignicons-webfont.ttf", 14);
+
 				ImGui::Begin("防具信息", nullptr, window_flags);  //window_flags&(~ImGuiWindowFlags_AlwaysAutoResize)
 
 				ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 				if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
-					if (ImGui::BeginTabItem("武器", 0, 0)) {
+					//if (ImGui::BeginTabItem("\uF04E5"  " 武器", 0, 0)) {
+
+			/*		ImGui::Text(ICON_MDI_ABUGIDA_DEVANAGARI "  Paint");
+					ImGui::Text("\U000F132A" "  Paint");*/
+
+					if (ImGui::BeginTabItem("\U000F04E5" " 武器", 0, 0)) {
 						buildPlayerInvInfo(getPlayerInvWEAPCount(), getPlayerInvWEAPData());
 						ImGui::EndTabItem();
 					}
-					if (ImGui::BeginTabItem("装备", 0, 0)) {
+					if (ImGui::BeginTabItem("\xef\x86\x86" "装备", 0, 0)) {
 						buildPlayerInvInfo(getPlayerInvARMOCount(), getPlayerInvARMOData());
 						ImGui::EndTabItem();
 					}
-					if (ImGui::BeginTabItem("弹药", 0, 0)) {
+					if (ImGui::BeginTabItem(ICON_MDI_ACCOUNT_ARROW_RIGHT_OUTLINE  "弹药", 0, 0)) {
 						buildPlayerInvInfo(getPlayerInvAMMOCount(), getPlayerInvAMMOData());
 						ImGui::EndTabItem();
 					}
-					if (ImGui::BeginTabItem("材料", 0, 0)) {
+					if (ImGui::BeginTabItem(ICON_MDI_ACCOUNT_SWITCH_OUTLINE  "材料", 0, 0)) {
 						buildPlayerInvInfo(getPlayerInvINGRCount(), getPlayerInvINGRData());
 						ImGui::EndTabItem();
 					}
-					if (ImGui::BeginTabItem("药水", 0, 0)) {
+
+					if (ImGui::BeginTabItem("\U000004E5" "药水", 0, 0)) {
 						buildPlayerInvInfo(getPlayerInvALCHCount(), getPlayerInvALCHData());
 						ImGui::EndTabItem();
 					}
@@ -1224,7 +1238,7 @@ namespace menu
 			if (ImGui::BeginTable("tableItem", 5)) {
 				if (getItemCountWEAP() > 0) {
 					ImGui::TableNextColumn();
-					myText("武器：");
+					myText("\uF04E5" " 武器");
 					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 					if (ImGui::Button("全部获取##41")) {
 						RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();

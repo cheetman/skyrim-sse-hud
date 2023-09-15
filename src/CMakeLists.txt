@@ -19,14 +19,16 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/hook/dinputhook.cpp"
 	"${SOURCE_DIR}/memory/memory.h"
 	"${SOURCE_DIR}/memory/memory.cpp"
-	"${SOURCE_DIR}/imgui/menu.h"
-	"${SOURCE_DIR}/imgui/menu.cpp"
+	"${SOURCE_DIR}/menu/menu.h"
+	"${SOURCE_DIR}/menu/menu.cpp"
 	"${SOURCE_DIR}/utils/NameUtil.h"
 	"${SOURCE_DIR}/utils/NameUtil.cpp"
 	"${SOURCE_DIR}/utils/PlayerDataProvider.h"
 	"${SOURCE_DIR}/utils/utils.h"
 	"${SOURCE_DIR}/utils/GeneralUtil.h"
 	"${SOURCE_DIR}/utils/GeneralUtil.cpp"
+	"${SOURCE_DIR}/utils/Detours.cpp"
+	"${SOURCE_DIR}/fonts/IconsMaterialDesignIcons.h"
 	"${SOURCE_DIR}/nlohmann/adl_serializer.hpp"
 	"${SOURCE_DIR}/nlohmann/json.hpp"
 	"${SOURCE_DIR}/nlohmann/json_fwd.hpp"
@@ -59,6 +61,21 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/nlohmann/detail/output/binary_writer.hpp" 
 	"${SOURCE_DIR}/nlohmann/detail/output/output_adapters.hpp" 
 	"${SOURCE_DIR}/nlohmann/detail/output/serializer.hpp" 
+	"${SOURCE_DIR}/imgui/imgui.cpp"
+	"${SOURCE_DIR}/imgui/imgui_demo.cpp"
+	"${SOURCE_DIR}/imgui/imgui_draw.cpp"
+	"${SOURCE_DIR}/imgui/imgui_impl_dx11.cpp"
+	"${SOURCE_DIR}/imgui/imgui_impl_win32.cpp"
+	"${SOURCE_DIR}/imgui/imgui_tables.cpp"
+	"${SOURCE_DIR}/imgui/imgui_widgets.cpp"
+	"${SOURCE_DIR}/imgui/imconfig.h"
+	"${SOURCE_DIR}/imgui/imgui.h"
+	"${SOURCE_DIR}/imgui/imgui_impl_dx11.h"
+	"${SOURCE_DIR}/imgui/imgui_impl_win32.h"
+	"${SOURCE_DIR}/imgui/imgui_internal.h"
+	"${SOURCE_DIR}/imgui/imstb_rectpack.h"
+	"${SOURCE_DIR}/imgui/imstb_textedit.h"
+	"${SOURCE_DIR}/imgui/imstb_truetype.h"
 )
 
 source_group(TREE "${ROOT_DIR}" FILES ${SOURCE_FILES})
@@ -129,14 +146,14 @@ target_include_directories(
 add_subdirectory("${ROOT_DIR}/external/CommonLibSSE" CommonLibSSE)
 
 
-find_package(imgui REQUIRED)
+#find_package(imgui REQUIRED)
 find_package(minhook CONFIG REQUIRED)
 
 target_link_libraries(
 	"${PROJECT_NAME}"
 	PRIVATE
 		CommonLibSSE::CommonLibSSE
-		imgui::imgui
+		#imgui::imgui
 		minhook::minhook
 )
 

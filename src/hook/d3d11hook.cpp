@@ -3,11 +3,14 @@
 #pragma comment(lib, "d3d11.lib")
 
 #include <MinHook.h>
-#include <imgui/menu.h>
-#include <imgui_impl_dx11.h>
-#include <imgui_impl_win32.h>
+#include <menu/menu.h>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_dx11.h>
+#include <imgui/imgui_impl_win32.h>
 #include <utils/utils.h>
 #include <memory/memory.h>
+#include <fonts/IconsMaterialDesignIcons.h>
+
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -103,16 +106,41 @@ namespace d3d11hook
 				ImGuiIO& io = ImGui::GetIO();
 				io.ConfigFlags = ImGuiConfigFlags_NoMouseCursorChange;
 				if (std::filesystem::exists(fontFilePath)) {
-					//io.Fonts->AddFontFromFileTTF(fontFilePath.c_str(), 20.0f, NULL, io.Fonts->GetGlyphRangesDefault());
-					io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\xyght3.0-62354202.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesChineseFull());
-					//io.Fonts->AddFontFromFileTTF(fontFilePath.c_str(), 20.0f, NULL, io.Fonts->GetGlyphRangesChineseFull());
+					float baseFontSize = 18.0f;
+
+					/*ImFontConfig config3;
+					config3.MergeMode = true;*/
+					//io.Fonts->AddFontDefault();
+					io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\xyght3.0-62354202.ttf", baseFontSize, 0, io.Fonts->GetGlyphRangesChineseFull());
+					
+					float iconFontSize = baseFontSize * 2.0f / 3.0f; 
 
 					ImFontConfig config;
 					config.MergeMode = true;
-					config.GlyphMinAdvanceX = 13.0f;
+					config.GlyphMinAdvanceX = iconFontSize;
 					static const ImWchar icon_ranges[] = { 0xf000, 0xf3ff, 0 };
-					io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\fontawesome-webfont.ttf", 16.0f, &config, icon_ranges);
+					io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\fontawesome-webfont.ttf", iconFontSize, &config, icon_ranges);
 					SKSE::log::info("AddFontFromFileTTF");
+
+					/*io.Fonts*/
+					ImFontConfig config2;
+					config2.MergeMode = true;
+					config2.PixelSnapH = true; 
+					config2.GlyphMinAdvanceX = iconFontSize;
+					static const ImWchar icon_ranges2[] = { static_cast<ImWchar>(ICON_MIN_MDI), static_cast<ImWchar>(ICON_MAX_MDI), static_cast<ImWchar>(0) };
+					io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\materialdesignicons-webfont.ttf", iconFontSize, &config2, icon_ranges2);
+				
+					//io.Fonts->Build();
+				/*	ImFontConfig config2;
+					config2.MergeMode = true;
+					config2.PixelSnapH = true; 
+					config2.GlyphMinAdvanceX = iconFontSize;
+					static const ImWchar icon_ranges2[] = { static_cast<ImWchar>(ICON_MIN_MDI), static_cast<ImWchar>(ICON_MAX_MDI), static_cast<ImWchar>(0) };
+
+					menu::font2 = io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\materialdesignicons-webfont.ttf", iconFontSize, &config2, icon_ranges2);
+					*///menu::font2 = io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\materialdesignicons-webfont.ttf",15);
+					
+					//io.Fonts->Build();
 				}
 
 				ImGui_ImplWin32_Init(g_hwnd);

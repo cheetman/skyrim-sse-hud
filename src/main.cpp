@@ -3,7 +3,7 @@
 #include <hook/dinputhook.h>
 #include <hook/hudhook.h>
 #include <memory/memory.h>
-#include <imgui/menu.h>
+#include <menu/menu.h>
 
 
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)

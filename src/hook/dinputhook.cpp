@@ -1,8 +1,8 @@
 #include "dinputhook.h"
 #include <Windows.h>
 #include <dinput.h>
-#include <imgui.h>
-#include <imgui/menu.h>
+#include <imgui/imgui.h>
+#include <menu/menu.h>
 #include <memory/memory.h>
 
 namespace dinputhook
