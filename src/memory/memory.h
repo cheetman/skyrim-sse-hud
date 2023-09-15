@@ -289,6 +289,7 @@ extern bool show_items_window_direction;
 	int count;
 	RE::TESBoundObject* ptr;
 	RE::InventoryEntryData* ptr2;
+	bool isCrime;
 };
 
 struct ItemInfo

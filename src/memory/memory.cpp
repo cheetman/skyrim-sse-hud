@@ -1284,8 +1284,13 @@ void __cdecl RefreshItemInfo(void*)
 											auto& [count, entry] = data;
 											if (count > 0 && entry) {
 												items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].ptr = obj;
+												//entry.get()->IsOwnedBy(player,true)
 												//items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].ptr2 = entry.get();
 												items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].name = obj->GetName();
+												//WouldBeStealing
+												bool stealing = player->WouldBeStealing(reff);
+												
+												items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].isCrime = !entry.get()->IsOwnedBy(player, !stealing);
 												items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount++].count = count;
 												if (tmpInvCount == 200) {
 													break;
