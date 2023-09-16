@@ -1,15 +1,14 @@
 #pragma once
-#include <string>
+#include <RE/A/ActorState.h>
 #include <RE/F/FormTypes.h>
 #include <RE/N/NiPoint3.h>
-#include <RE/A/ActorState.h>
+#include <string>
 #include <unordered_set>
-
 
 extern bool active;
 extern bool activeItems;
 
-	// 人物属性
+// 人物属性
 
 struct PlayerInfo
 {
@@ -54,10 +53,8 @@ struct PlayerInfo
 	float equippedWeight = 0.0f;
 	float carryWeight = 0.0f;
 
-	
 	std::string location = "";  // 位置
 };
-
 
 extern PlayerInfo playerInfo;
 
@@ -81,7 +78,6 @@ struct ArmorInfo
 	float armorRating = 0;           // 装备等级
 	float weight = 0;                // 重量
 };
-
 
 extern ArmorInfo wornArmos[32];
 
@@ -109,7 +105,7 @@ struct WeaponInfo
 	float cost = 0;                    // 法术消耗
 	float time = 0;                    // 施法时间
 	bool isTwoHand = false;            // 是否占用双手
-} ;
+};
 
 struct InventoryInfo
 {
@@ -171,21 +167,18 @@ struct ActorInfo
 	bool isTeammate = false;
 	bool idHostile = false;
 	bool isInCombat = false;
-	
+
 	float kHealthBase = 0.0f;
 	float kMagickaBase = 0.0f;
 	float kStaminaBase = 0.0f;
 	time_t updateTime = 0;
-	
-	RE::ACTOR_LIFE_STATE lifeState = RE::ACTOR_LIFE_STATE::kAlive;
-	
 
-	 int inventoryCount = 0;
+	RE::ACTOR_LIFE_STATE lifeState = RE::ACTOR_LIFE_STATE::kAlive;
+
+	int inventoryCount = 0;
 
 	InventoryInfo Inventorys[60];
 };
-
-
 
 extern int show_npc_window_dis_meter;
 extern bool show_npc_window_dis;
@@ -207,15 +200,12 @@ void __cdecl RefreshGameInfo(void*);
 void __cdecl RefreshActorInfo(void*);
 void __cdecl RefreshItemInfo(void*);
 
-
-
 ActorInfo* getTeammateData();
 ActorInfo* getNpcData();
 ActorInfo* getEnemy2Data();
 int getTeammateCount();
 int getNpcCount();
 int getEnemyCount();
-
 
 int getPlayerInvCount();
 int getPlayerInvBOOKCount();
@@ -270,10 +260,7 @@ struct PlayerInventoryInfo
 
 // 临时
 
-	
 extern bool isGameLoading;
-
-
 
 extern bool show_items_window;
 extern bool show_items_window_settings;
@@ -283,17 +270,21 @@ extern bool show_items_window_auto_flor;
 extern bool show_items_window_auto_food;
 extern bool show_items_window_auto_ingr;
 extern bool show_items_window_auto_alch;
+extern bool show_items_window_auto_misc;
 extern bool show_items_window_direction;
 extern bool show_items_window_ignore;
 extern int show_items_window_auto_dis;
+extern int show_items_window_auto_dis_skyrim;
 
- struct ItemInvInfo
+struct ItemInvInfo
 {
 	std::string name = "";
 	int count;
 	RE::TESBoundObject* ptr;
 	RE::InventoryEntryData* ptr2;
 	bool isCrime;
+	bool isEnchanted;
+	
 };
 
 struct ItemInfo
@@ -305,21 +296,21 @@ struct ItemInfo
 	RE::FormID baseFormId = 0;
 	std::string baseFormIdStr = "";
 	std::string formTypeStr = "";
-	
+
 	std::string name = "";
 	bool isCrime = false;
 	RE::TESObjectREFR* ptr = nullptr;
 	RE::LOCK_LEVEL lockLevel;
 	bool isDeleted = false;
 	bool isHarvested = false;
-
+	bool isEnchanted = false;
 	
+
 	int invCount = 0;
 	ItemInvInfo invs[200];
 	float distance = 0.0f;
 	int direction = 0;
 };
-
 
 struct ExcludeForms
 {
@@ -333,11 +324,8 @@ struct ExcludeForms
 		return formId < other.formId;
 	}
 };
-	
 
-
-
-struct Item2Info					
+struct Item2Info
 {
 	int itemCount = 0;
 	int itemCountWEAP = 0;
@@ -350,6 +338,8 @@ struct Item2Info
 	int itemCountCONT = 0;
 	int itemCountFLOR = 0;
 	int itemCountFOOD = 0;
+	int itemCountKEYM = 0;
+
 	ItemInfo itemInfo[1000];
 	ItemInfo itemInfoWEAP[1000];
 	ItemInfo itemInfoARMO[1000];
@@ -361,7 +351,7 @@ struct Item2Info
 	ItemInfo itemInfoCONT[1000];
 	ItemInfo itemInfoFLOR[1000];
 	ItemInfo itemInfoFOOD[1000];
-	
+	ItemInfo itemInfoKEYM[1000];
 };
 
 int getItemCount();
@@ -375,6 +365,7 @@ int getItemCountMISC();
 int getItemCountCONT();
 int getItemCountFLOR();
 int getItemCountFOOD();
+int getItemCountKEYM();
 ItemInfo* getItems();
 ItemInfo* getItemsWEAP();
 ItemInfo* getItemsARMO();
@@ -386,6 +377,7 @@ ItemInfo* getItemsMISC();
 ItemInfo* getItemsCONT();
 ItemInfo* getItemsFLOR();
 ItemInfo* getItemsFOOD();
+ItemInfo* getItemsKEYM();
 
 extern std::unordered_set<int> excludeFormIds;
 extern std::vector<ExcludeForms> excludeForms;

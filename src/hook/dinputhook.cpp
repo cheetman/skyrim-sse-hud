@@ -4,6 +4,7 @@
 #include <imgui/imgui.h>
 #include <menu/menu.h>
 #include <memory/memory.h>
+#include <event/BSTMenuEvent.h>
 
 namespace dinputhook
 {
@@ -469,6 +470,14 @@ namespace dinputhook
 					}
 
 					if (btnEvent->GetIDCode() == 16 && GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+
+						if (!activeItems) {
+							if (isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu) {
+								_DispatchInputEvent(a_dispatcher, a_evns);
+								return;
+							}
+						}
+
 						activeItems ? activeItems = false : activeItems = true;
 						_DispatchInputEvent(a_dispatcher, dummy);
 						return;
