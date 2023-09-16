@@ -3,6 +3,7 @@
 #include <RE/F/FormTypes.h>
 #include <RE/N/NiPoint3.h>
 #include <RE/A/ActorState.h>
+#include <unordered_set>
 
 
 extern bool active;
@@ -277,11 +278,14 @@ extern bool isGameLoading;
 extern bool show_items_window;
 extern bool show_items_window_settings;
 extern bool show_items_window_formid;
+extern bool show_items_window_auto_ammo;
 extern bool show_items_window_auto_flor;
 extern bool show_items_window_auto_food;
 extern bool show_items_window_auto_ingr;
 extern bool show_items_window_auto_alch;
 extern bool show_items_window_direction;
+extern bool show_items_window_ignore;
+extern int show_items_window_auto_dis;
 
  struct ItemInvInfo
 {
@@ -312,7 +316,24 @@ struct ItemInfo
 	
 	int invCount = 0;
 	ItemInvInfo invs[200];
+	float distance = 0.0f;
+	int direction = 0;
 };
+
+
+struct ExcludeForms
+{
+	RE::FormID formId = 0;
+	std::string name = "";
+	std::string formTypeStr = "";
+	//std::string formIdStr = "";
+
+	bool operator<(const ExcludeForms& other) const
+	{
+		return formId < other.formId;
+	}
+};
+	
 
 
 
@@ -365,3 +386,7 @@ ItemInfo* getItemsMISC();
 ItemInfo* getItemsCONT();
 ItemInfo* getItemsFLOR();
 ItemInfo* getItemsFOOD();
+
+extern std::unordered_set<int> excludeFormIds;
+extern std::vector<ExcludeForms> excludeForms;
+extern std::unordered_set<RE::TESObjectREFR*> deleteREFRs;
