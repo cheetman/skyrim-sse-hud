@@ -469,19 +469,6 @@ namespace dinputhook
 						}
 					}
 
-					if (btnEvent->GetIDCode() == 16 && GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-
-						if (!activeItems) {
-							if (isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu) {
-								_DispatchInputEvent(a_dispatcher, a_evns);
-								return;
-							}
-						}
-
-						activeItems ? activeItems = false : activeItems = true;
-						_DispatchInputEvent(a_dispatcher, dummy);
-						return;
-					}
 
 					switch (menu::hotkey) {
 					case 0:
@@ -537,6 +524,93 @@ namespace dinputhook
 								return;
 							}
 
+							break;
+						}
+					}
+
+					switch (menu::hotkey2) {
+					case 0:
+						{
+							if (btnEvent->GetIDCode() == 210) {
+								if (!activeItems) {
+									if (isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu) {
+										_DispatchInputEvent(a_dispatcher, a_evns);
+										return;
+									}
+								}
+
+								activeItems ? activeItems = false : activeItems = true;
+								_DispatchInputEvent(a_dispatcher, dummy);
+								return;
+							}
+							break;
+						}
+					case 1:
+						{
+							if (btnEvent->GetIDCode() == 87) {
+								if (!activeItems) {
+									if (isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu) {
+										_DispatchInputEvent(a_dispatcher, a_evns);
+										return;
+									}
+								}
+
+								activeItems ? activeItems = false : activeItems = true;
+								_DispatchInputEvent(a_dispatcher, dummy);
+								return;
+							}
+							break;
+						}
+					case 2:
+						{
+							if (btnEvent->GetIDCode() == 88) {
+								if (!activeItems) {
+									if (isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu) {
+										_DispatchInputEvent(a_dispatcher, a_evns);
+										return;
+									}
+								}
+
+								activeItems ? activeItems = false : activeItems = true;
+								_DispatchInputEvent(a_dispatcher, dummy);
+								return;
+							}
+							break;
+						}
+					case 3:
+						{
+							if (btnEvent->GetIDCode() == 16 && GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+								if (!activeItems) {
+									if (isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu) {
+										_DispatchInputEvent(a_dispatcher, a_evns);
+										return;
+									}
+								}
+
+								activeItems ? activeItems = false : activeItems = true;
+								_DispatchInputEvent(a_dispatcher, dummy);
+								return;
+							}
+							break;
+						}
+					case 4:
+						{
+							if (btnEvent->GetIDCode() == 16 && GetAsyncKeyState(VK_MENU) & 0x8000) {
+								if (!activeItems) {
+									if (isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu) {
+										_DispatchInputEvent(a_dispatcher, a_evns);
+										return;
+									}
+								}
+
+								activeItems ? activeItems = false : activeItems = true;
+								_DispatchInputEvent(a_dispatcher, dummy);
+								return;
+							}
+							break;
+						}
+					default:
+						{
 							break;
 						}
 					}

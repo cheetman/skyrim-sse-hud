@@ -30,6 +30,8 @@ namespace menu
 	//std::string playerRaceName = "";
 	bool auto_remove_ammo = false;
 	int hotkey = 0;
+	int hotkey2 = 3;
+	
 
 	// 默认配置
 	static bool show_player_base_info_window = false;
@@ -185,6 +187,7 @@ namespace menu
 	static bool show_npc = true;
 	static bool show_enemy = true;
 	static bool show_teammate = true;
+	static bool show_horse = true;
 
 	void __fastcall buildNpcInfo(int active, ActorInfo* actorInfo, int actorCount)
 	{
@@ -501,6 +504,9 @@ namespace menu
 							script->SetCommand(commandStr);
 							script->CompileAndRun(selectedRef.get());
 							delete script;
+							if (activeItems) {
+								activeItems = false;
+							}
 						}
 					}
 				}
@@ -523,6 +529,19 @@ namespace menu
 						auto flora = item.ptr->GetBaseObject()->As<RE::TESFlora>();
 						if (flora) {
 							flora->Activate(item.ptr, player, 0, flora->produceItem, 1);
+						}
+					}
+				}
+			}
+		}
+		else if (formType == RE::FormType::Tree) {
+			for (int i = 0; i < count; i++) {
+				ItemInfo item = items[i];
+				if (!item.isCrime) {
+					if (!(item.ptr->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
+						auto tree = item.ptr->GetBaseObject()->As<RE::TESObjectTREE>();
+						if (tree) {
+							tree->Activate(item.ptr, player, 0, tree->produceItem, 1);
 						}
 					}
 				}
@@ -564,6 +583,8 @@ namespace menu
 		int columnCount = 3;
 		switch (formType) {
 		case RE::FormType::Flora:
+		case RE::FormType::Tree:
+		case RE::FormType::Activator:
 		case RE::FormType::KeyMaster:
 			columnCount = 1;
 			break;
@@ -592,6 +613,8 @@ namespace menu
 			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_1);
 			switch (formType) {
 			case RE::FormType::Flora:
+			case RE::FormType::Tree:
+			case RE::FormType::Activator:
 			case RE::FormType::KeyMaster:
 				break;
 			default:
@@ -600,6 +623,8 @@ namespace menu
 			}
 			switch (formType) {
 			case RE::FormType::Flora:
+			case RE::FormType::Tree:
+			case RE::FormType::Activator:
 			case RE::FormType::Ammo:
 			case RE::FormType::None:
 			case RE::FormType::KeyMaster:
@@ -645,7 +670,7 @@ namespace menu
 					ImGui::PushID(item.formId + 0x1000000);
 					ImGui::TableNextRow();
 					ImGui::TableNextColumn();
-					if (formType == RE::FormType::Flora && item.isHarvested) {
+					if (item.isHarvested && (formType == RE::FormType::Flora || formType == RE::FormType::Tree)) {
 						myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "%s[已收获]", item.name.c_str());
 					} else if (item.isCrime) {
 						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
@@ -685,6 +710,23 @@ namespace menu
 											flora->Activate(item.ptr, player, 0, flora->produceItem, 1);
 										}
 									}
+								}
+								else if (formType == RE::FormType::Tree) {
+									if (!(item.ptr->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
+										auto tree = item.ptr->GetBaseObject()->As<RE::TESObjectTREE>();
+										if (tree) {
+											auto player = RE::PlayerCharacter::GetSingleton();
+											tree->Activate(item.ptr, player, 0, tree->produceItem, 1);
+										}
+									}
+								} else if (formType == RE::FormType::Activator) {
+									if (!(item.ptr->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
+										auto acti = item.ptr->GetBaseObject()->As<RE::TESObjectACTI>();
+										if (acti) {
+											auto player = RE::PlayerCharacter::GetSingleton();
+											acti->Activate(item.ptr, player, 0, acti, 1);
+										}
+									}
 								} else {
 									if (!item.isDeleted) {
 										if (!item.ptr->IsMarkedForDeletion()) {
@@ -711,6 +753,8 @@ namespace menu
 					}
 					switch (formType) {
 					case RE::FormType::Flora:
+					case RE::FormType::Tree:
+					case RE::FormType::Activator:
 					case RE::FormType::KeyMaster:
 						break;
 					default:
@@ -720,6 +764,8 @@ namespace menu
 					}
 					switch (formType) {
 					case RE::FormType::Flora:
+					case RE::FormType::Tree:
+					case RE::FormType::Activator:
 					case RE::FormType::KeyMaster:
 					case RE::FormType::Ammo:
 					case RE::FormType::None:
@@ -794,6 +840,9 @@ namespace menu
 								script->SetCommand(commandStr);
 								script->CompileAndRun(selectedRef.get());
 								delete script;
+							}
+							if (activeItems) {
+								activeItems = false;
 							}
 						}
 					}
@@ -983,15 +1032,15 @@ namespace menu
 			//myText2("Health:%d", (int)health);
 			//myText2("Magicka:%d", (int)kMagicka);
 			//myText2("Stamina:%d", (int)kStamina);
-			myText("伤害: %s", playerInfo.DamageStr.c_str());
+			ImGui::Text(ICON_MDI_SWORD "伤害: %s", playerInfo.DamageStr.c_str());
 			//myText("防御: %s", playerInfo.DamageResist.c_str());
-			myText("防御: %.2f", playerInfo.kDamageResist);
-			myText("毒抗: %.1f%%", playerInfo.kPoisonResist);
-			myText("火抗: %.1f%%", playerInfo.kResistFire);
-			myText("雷抗: %.1f%%", playerInfo.kResistShock);
-			myText("冰抗: %.1f%%", playerInfo.kResistFrost);
-			myText("法抗: %.1f%%", playerInfo.kResistMagic);
-			myText("抗疾病: %.1f%%", playerInfo.kResistDisease);
+			ImGui::Text(ICON_MDI_SHIELD_HALF_FULL "防御: %.2f", playerInfo.kDamageResist);
+			ImGui::Text(ICON_MDI_WATER "毒抗: %.1f%%", playerInfo.kPoisonResist);
+			ImGui::Text(ICON_MDI_FIRE  "火抗: %.1f%%", playerInfo.kResistFire);
+			ImGui::Text(ICON_MDI_LIGHTNING_BOLT_OUTLINE "雷抗: %.1f%%", playerInfo.kResistShock);
+			ImGui::Text(ICON_MDI_SNOWFLAKE "冰抗: %.1f%%", playerInfo.kResistFrost);
+			ImGui::Text(ICON_MDI_MAGIC_STAFF "法抗: %.1f%%", playerInfo.kResistMagic);
+			ImGui::Text(ICON_MDI_PILL "抗疾病: %.1f%%", playerInfo.kResistDisease);
 			//myText2("criticalChance:%d", (int)kCriticalChance);
 			//myText2("armor:%d", (int)kDamageResist);
 			ImGui::End();
@@ -1000,18 +1049,18 @@ namespace menu
 		if (show_player_mod_window) {
 			ImGui::Begin("属性加成", nullptr, window_flags);
 
-			myText("单手: %.1f%%", playerInfo.kOneHandedModifier);
-			myText("双手: %.1f%%", playerInfo.kTwoHandedModifier);
-			myText("弓箭: %.1f%%", playerInfo.kMarksmanModifier);
-			myText("锻造: %.1f%%", playerInfo.kSmithingModifier);
-			myText("锻造(power): %.1f%%", playerInfo.kSmithingPowerModifier);
-			myText("锻造(skill): %.1f%%", playerInfo.kSmithingSkillAdvance);
-			myText("炼金: %.1f%%", playerInfo.kAlchemyModifier);
-			myText("炼金(power): %.1f%%", playerInfo.kAlchemyPowerModifier);
-			myText("炼金(skill): %.1f%%", playerInfo.kAlchemySkillAdvance);
-			myText("附魔: %.1f%%", playerInfo.kEnchantingModifier);
-			myText("附魔(power): %.1f%%", playerInfo.kEnchantingPowerModifier);
-			myText("附魔(skill): %.1f%%", playerInfo.kEnchantingSkillAdvance);
+			ImGui::Text(ICON_MDI_AXE "单手: %.1f%%", playerInfo.kOneHandedModifier);
+			ImGui::Text(ICON_MDI_AXE_BATTLE "双手: %.1f%%", playerInfo.kTwoHandedModifier);
+			ImGui::Text(ICON_MDI_BOW_ARROW "弓箭: %.1f%%", playerInfo.kMarksmanModifier);
+			ImGui::Text(ICON_MDI_ANVIL "锻造: %.1f%%", playerInfo.kSmithingModifier);
+			ImGui::Text(ICON_MDI_ANVIL "锻造(power): %.1f%%", playerInfo.kSmithingPowerModifier);
+			ImGui::Text(ICON_MDI_ANVIL "锻造(skill): %.1f%%", playerInfo.kSmithingSkillAdvance);
+			ImGui::Text(ICON_MDI_BOWL_OUTLINE "炼金: %.1f%%", playerInfo.kAlchemyModifier);
+			ImGui::Text(ICON_MDI_BOWL_OUTLINE "炼金(power): %.1f%%", playerInfo.kAlchemyPowerModifier);
+			ImGui::Text(ICON_MDI_BOWL_OUTLINE "炼金(skill): %.1f%%", playerInfo.kAlchemySkillAdvance);
+			ImGui::Text(ICON_MDI_FLASH "附魔: %.1f%%", playerInfo.kEnchantingModifier);
+			ImGui::Text(ICON_MDI_FLASH "附魔(power): %.1f%%", playerInfo.kEnchantingPowerModifier);
+			ImGui::Text(ICON_MDI_FLASH "附魔(skill): %.1f%%", playerInfo.kEnchantingSkillAdvance);
 			ImGui::End();
 		}
 
@@ -1285,8 +1334,29 @@ namespace menu
 				}
 			}
 
-			if (getEnemyCount() > 0) {
+			if (getHorseCount() > 0) {
 				if (getNpcCount() > 0) {
+					if (!no_background) {
+						ImGui::Separator();
+					} else {
+						ImGui::Text(" ");
+					}
+				}
+				if (active) {
+					ImGui::Checkbox(ICON_MDI_HORSE_VARIANT " horse", &show_horse);
+				} else {
+					if (show_horse) {
+						ImGui::Text(ICON_MDI_HORSE_VARIANT " horse");
+					}
+				}
+				if (show_horse) {
+					auto actorInfo = getHorseData();
+					buildNpcInfo(active, actorInfo, getHorseCount());
+				}
+			}
+
+			if (getEnemyCount() > 0) {
+				if (getNpcCount() || getHorseCount()) {
 					if (!no_background) {
 						ImGui::Separator();
 					} else {
@@ -1307,7 +1377,7 @@ namespace menu
 			}
 
 			if (getTeammateCount() > 0) {
-				if (getNpcCount() > 0 || getEnemyCount()) {
+				if (getNpcCount() || getEnemyCount() || getHorseCount()) {
 					if (!no_background) {
 						ImGui::Separator();
 					} else {
@@ -1316,10 +1386,10 @@ namespace menu
 				}
 
 				if (active) {
-					ImGui::Checkbox(ICON_MDI_SHIELD_ACCOUNT " team", &show_teammate);
+					ImGui::Checkbox(ICON_MDI_SHIELD_ACCOUNT_OUTLINE " team", &show_teammate);
 				} else {
 					if (show_teammate) {
-						ImGui::Text(ICON_MDI_SHIELD_ACCOUNT " team");
+						ImGui::Text(ICON_MDI_SHIELD_ACCOUNT_OUTLINE " team");
 					}
 				}
 				if (show_teammate) {
@@ -1456,14 +1526,6 @@ namespace menu
 					}
 					buildItemInfo(getItemCountFOOD(), getItemsFOOD(), RE::FormType::PluginInfo);  // 临时用PluginInfo
 				}
-				if (getItemCountCONT() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text(ICON_MDI_ARCHIVE_OUTLINE " 箱子(%d)", getItemCountCONT());
-					/*	ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-					if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##46")) {
-					}*/
-					buildItemCONTInfo(getItemCountCONT(), getItemsCONT(), RE::FormType::Container);
-				}
 				if (getItemCountARMO() > 0) {
 					ImGui::TableNextColumn();
 					ImGui::Text(ICON_MDI_SHIELD " 装备(%d)", getItemCountARMO());
@@ -1485,6 +1547,19 @@ namespace menu
 						ImGui::Checkbox("自动拾取##48", &show_items_window_auto_ingr);
 					}
 					buildItemInfo(getItemCountINGR(), getItemsINGR(), RE::FormType::Ingredient);
+				}
+				if (getItemCountSGEM() > 0) {
+					ImGui::TableNextColumn();
+					ImGui::Text(ICON_MDI_CARDS_DIAMOND " 灵魂石(%d)", getItemCountSGEM());
+					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+					if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##53")) {
+						takeAllItem(getItemCountSGEM(), getItemsSGEM(), RE::FormType::SoulGem);
+					}
+					if (show_items_window_settings) {
+						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+						ImGui::Checkbox("自动拾取##48", &show_items_window_auto_sgem);
+					}
+					buildItemInfo(getItemCountSGEM(), getItemsSGEM(), RE::FormType::SoulGem);
 				}
 				if (getItemCountKEYM() > 0) {
 					ImGui::TableNextColumn();
@@ -1524,6 +1599,34 @@ namespace menu
 						ImGui::Checkbox("自动收获##50", &show_items_window_auto_flor);
 					}
 					buildItemInfo(getItemCountFLOR(), getItemsFLOR(), RE::FormType::Flora);
+				}
+				if (getItemCountTREE() > 0) {
+					ImGui::TableNextColumn();
+					ImGui::Text(ICON_MDI_FLOWER_TULIP_OUTLINE " 植物(%d)", getItemCountTREE());
+					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+					if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##53")) {
+						takeAllItem(getItemCountTREE(), getItemsTREE(), RE::FormType::Tree);
+					}
+					if (show_items_window_settings) {
+						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+						ImGui::Checkbox("自动收获##53", &show_items_window_auto_tree);
+					}
+					buildItemInfo(getItemCountTREE(), getItemsTREE(), RE::FormType::Tree);
+				}
+				if (getItemCountACTI() > 0) {
+					ImGui::TableNextColumn();
+					ImGui::Text(ICON_MDI_COGS " 可互动(%d)", getItemCountACTI());
+				
+
+					buildItemInfo(getItemCountACTI(), getItemsACTI(), RE::FormType::Activator);
+				}
+				if (getItemCountCONT() > 0) {
+					ImGui::TableNextColumn();
+					ImGui::Text(ICON_MDI_ARCHIVE_OUTLINE " 箱子(%d)", getItemCountCONT());
+					/*	ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+					if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##46")) {
+					}*/
+					buildItemCONTInfo(getItemCountCONT(), getItemsCONT(), RE::FormType::Container);
 				}
 				if (getItemCount() > 0) {
 					ImGui::TableNextColumn();
@@ -1667,7 +1770,7 @@ namespace menu
 								ImGui::TableNextColumn();
 								ImGui::Checkbox("其他信息", &show_player_debug_window);
 								ImGui::TableNextColumn();
-								ImGui::Checkbox("物品信息", &show_items_window);
+								ImGui::Checkbox("物品信息(预留)", &show_items_window);
 								ImGui::TableNextColumn();
 								//ImGui::Checkbox("敌人信息", &show_enemy_window);
 								ImGui::Checkbox("NPC信息", &show_npc_window);
@@ -1851,6 +1954,7 @@ namespace menu
 
 							ImGui::DragFloat("窗体缩放", &ImGui::GetIO().FontGlobalScale, 0.005f, 0.5f, 1.8f, "%.2f", 1);
 							ImGui::Combo("窗口热键", &hotkey, "Insert\0F11\0F12\0Shift+Q\0Alt+Q\0", -1);
+							ImGui::Combo("物品菜单热键", &hotkey2, "Insert\0F11\0F12\0Shift+Q\0Alt+Q\0", -1);
 							ImGui::DragInt("数据刷新(ms)", &refresh_time_data, 1, 100, 500, "%d ms");
 							ImGui::PopItemWidth();
 
@@ -1970,8 +2074,8 @@ namespace menu
 			for (auto item : deleteREFRs) {
 				player2->PickUpObject(item, 1);
 				//sprintf(buf, "%s 已自动拾取", item->GetDisplayFullName());
-				char buf[32];
-				snprintf(buf, 32, "%s 已自动拾取", item->GetDisplayFullName());
+				char buf[40];
+				snprintf(buf, 40, "%s 已自动拾取", item->GetDisplayFullName());
 				RE::DebugNotification(buf, NULL, false);
 			}
 			deleteREFRs.clear();
@@ -2008,6 +2112,9 @@ namespace menu
 				}
 				if (j.contains("hotkey")) {
 					hotkey = j["hotkey"].get<int>();
+				}
+				if (j.contains("hotkey2")) {
+					hotkey2 = j["hotkey2"].get<int>();
 				}
 			}
 
@@ -2047,6 +2154,44 @@ namespace menu
 				if (j.contains("NpcInfo")) {
 					auto const& j2 = j["NpcInfo"];
 					show_npc_window = j2["isShow"].get<bool>();
+
+					if (j2.contains("show_npc_window_dis")) {
+						show_npc_window_dis = j2["show_npc_window_dis"].get<bool>();
+					}
+					if (j2.contains("show_npc_window_direction")) {
+						show_npc_window_direction = j2["show_npc_window_direction"].get<bool>();
+					}
+					if (j2.contains("show_npc_window_dead_hidden")) {
+						show_npc_window_dead_hidden = j2["show_npc_window_dead_hidden"].get<bool>();
+					}
+
+					if (j2.contains("show_npc")) {
+						show_npc = j2["show_npc"].get<bool>();
+					}
+					if (j2.contains("show_enemy")) {
+						show_enemy = j2["show_enemy"].get<bool>();
+					}
+					if (j2.contains("show_teammate")) {
+						show_teammate = j2["show_teammate"].get<bool>();
+					}
+					if (j2.contains("show_horse")) {
+						show_horse = j2["show_horse"].get<bool>();
+					}
+					
+
+				}
+				if (j.contains("ItemMenuInfo")) {
+					auto const& j2 = j["ItemMenuInfo"];
+
+					if (j2.contains("show_items_window_auto_dis")) {
+						show_items_window_auto_dis = j2["show_items_window_auto_dis"].get<int>();
+					}
+					if (j2.contains("show_items_window_auto_dis_skyrim")) {
+						show_items_window_auto_dis_skyrim = j2["show_items_window_auto_dis_skyrim"].get<int>();
+					}
+					if (j2.contains("show_items_window_direction")) {
+						show_items_window_direction = j2["show_items_window_direction"].get<bool>();
+					}
 				}
 
 				if (j.contains("playerBaseInfo")) {
@@ -2089,6 +2234,7 @@ namespace menu
 									  { "frame_border", frame_border },
 									  { "bullet_text", bullet_text },
 									  { "hotkey", hotkey },
+									  { "hotkey2", hotkey2 },
 
 								  } },
 
@@ -2128,6 +2274,18 @@ namespace menu
 													  } },
 									   { "NpcInfo", {
 														{ "isShow", show_npc_window },
+														{ "show_npc_window_dis", show_npc_window_dis },
+														{ "show_npc_window_dead_hidden", show_npc_window_dead_hidden },
+														{ "show_npc_window_direction", show_npc_window_direction },
+														{ "show_enemy", show_enemy },
+														{ "show_teammate", show_teammate },
+														{ "show_npc", show_npc },
+														{ "show_horse", show_horse },
+													} },
+									   { "ItemMenuInfo", {
+															 { "show_items_window_auto_dis", show_items_window_auto_dis },
+															 { "show_items_window_auto_dis_skyrim", show_items_window_auto_dis_skyrim },
+															 { "show_items_window_direction", show_items_window_direction },
 													} }
 
 								   } }

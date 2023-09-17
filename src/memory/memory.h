@@ -177,7 +177,7 @@ struct ActorInfo
 
 	int inventoryCount = 0;
 
-	InventoryInfo Inventorys[60];
+	InventoryInfo Inventorys[100];
 };
 
 extern int show_npc_window_dis_meter;
@@ -202,9 +202,11 @@ void __cdecl RefreshItemInfo(void*);
 
 ActorInfo* getTeammateData();
 ActorInfo* getNpcData();
+ActorInfo* getHorseData();
 ActorInfo* getEnemy2Data();
 int getTeammateCount();
 int getNpcCount();
+int getHorseCount();
 int getEnemyCount();
 
 int getPlayerInvCount();
@@ -232,9 +234,11 @@ struct Actor2Info
 	int npcCount = 0;
 	int enemyCount = 0;
 	int teammateCount = 0;
-	ActorInfo npcInfo[60];
-	ActorInfo enemyInfo[60];
-	ActorInfo teammateInfo[50];
+	int horseCount = 0;
+	ActorInfo npcInfo[100];
+	ActorInfo enemyInfo[100];
+	ActorInfo teammateInfo[100];
+	ActorInfo horseInfo[100];
 };
 
 struct PlayerInventoryInfo
@@ -271,7 +275,10 @@ extern bool show_items_window_auto_food;
 extern bool show_items_window_auto_ingr;
 extern bool show_items_window_auto_alch;
 extern bool show_items_window_auto_misc;
-extern bool show_items_window_direction;
+extern bool show_items_window_auto_tree;
+extern bool show_items_window_auto_sgem;
+
+ extern bool show_items_window_direction;
 extern bool show_items_window_ignore;
 extern int show_items_window_auto_dis;
 extern int show_items_window_auto_dis_skyrim;
@@ -339,6 +346,9 @@ struct Item2Info
 	int itemCountFLOR = 0;
 	int itemCountFOOD = 0;
 	int itemCountKEYM = 0;
+	int itemCountTREE = 0;
+	int itemCountSGEM = 0;
+	int itemCountACTI = 0;
 
 	ItemInfo itemInfo[1000];
 	ItemInfo itemInfoWEAP[1000];
@@ -352,6 +362,9 @@ struct Item2Info
 	ItemInfo itemInfoFLOR[1000];
 	ItemInfo itemInfoFOOD[1000];
 	ItemInfo itemInfoKEYM[1000];
+	ItemInfo itemInfoTREE[1000];
+	ItemInfo itemInfoSGEM[1000];
+	ItemInfo itemInfoACTI[1000];
 };
 
 int getItemCount();
@@ -366,6 +379,9 @@ int getItemCountCONT();
 int getItemCountFLOR();
 int getItemCountFOOD();
 int getItemCountKEYM();
+int getItemCountTREE();
+int getItemCountSGEM();
+int getItemCountACTI();
 ItemInfo* getItems();
 ItemInfo* getItemsWEAP();
 ItemInfo* getItemsARMO();
@@ -378,6 +394,9 @@ ItemInfo* getItemsCONT();
 ItemInfo* getItemsFLOR();
 ItemInfo* getItemsFOOD();
 ItemInfo* getItemsKEYM();
+ItemInfo* getItemsTREE();
+ItemInfo* getItemsSGEM();
+ItemInfo* getItemsACTI();
 
 extern std::unordered_set<int> excludeFormIds;
 extern std::vector<ExcludeForms> excludeForms;

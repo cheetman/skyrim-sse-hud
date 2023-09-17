@@ -11,6 +11,7 @@ namespace menu
 {
 	extern bool auto_remove_ammo;
 	extern int hotkey;
+	extern int hotkey2;
 	bool save_settings();
 	bool load_settings();
 	void __fastcall render();

@@ -1,9 +1,9 @@
 #include "memory.h"
+#include <event/BSTMenuEvent.h>
 #include <unordered_set>
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
 #include <utils/PlayerDataProvider.h>
-#include <event/BSTMenuEvent.h>
 
 bool active = false;
 bool activeItems = false;
@@ -354,12 +354,17 @@ void __cdecl RefreshGameInfo(void*)
 	}
 }
 
-Actor2Info actorInfo[2];
+Actor2Info* actorInfo = new Actor2Info[2];
+//Actor2Info actorInfo[2];
 int nowIndex = 0;
 
 ActorInfo* getNpcData()
 {
 	return &actorInfo[!nowIndex].npcInfo[0];
+}
+ActorInfo* getHorseData()
+{
+	return &actorInfo[!nowIndex].horseInfo[0];
 }
 ActorInfo* getEnemy2Data()
 {
@@ -377,6 +382,10 @@ int getNpcCount()
 int getEnemyCount()
 {
 	return actorInfo[!nowIndex].enemyCount;
+}
+int getHorseCount()
+{
+	return actorInfo[!nowIndex].horseCount;
 }
 int getTeammateCount()
 {
@@ -643,10 +652,14 @@ bool show_items_window_direction = false;
 bool show_items_window_ignore = true;
 bool show_items_window_auto_ammo = false;
 bool show_items_window_auto_flor = false;
+bool show_items_window_auto_tree = false;
+bool show_items_window_auto_acti = false;
+
 bool show_items_window_auto_food = false;
 bool show_items_window_auto_ingr = false;
 bool show_items_window_auto_alch = false;
 bool show_items_window_auto_misc = false;
+bool show_items_window_auto_sgem = false;
 int show_items_window_auto_dis = 2;
 int show_items_window_auto_dis_skyrim = 100;
 
@@ -755,6 +768,7 @@ void __cdecl RefreshActorInfo(void*)
 			int tmpNpcCount = 0;
 			int tmpEnemyCount = 0;
 			int tmpTeammateCount = 0;
+			int tmpHorseCount = 0;
 
 			for (auto& handle : pl->highActorHandles) {
 				//for (int i = 0; i < actorCount; i++) {
@@ -811,7 +825,38 @@ void __cdecl RefreshActorInfo(void*)
 
 						RefreshInventory(actor, actorInfo[nowIndex].enemyInfo, tmpEnemyCount++);
 
-					} else {
+					} else if (actor->IsHorse()) {
+						if (show_npc_window_dead_hidden) {
+							if (actor->GetLifeState() == RE::ACTOR_LIFE_STATE::kDead) {
+								continue;
+							}
+						}
+						float dis = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
+						if (show_npc_window_dis) {
+							if (dis > show_npc_window_dis_meter) {
+								continue;
+							}
+						}
+						if (show_npc_window_direction) {
+							actorInfo[nowIndex].horseInfo[tmpHorseCount].distance = dis;
+							actorInfo[nowIndex].horseInfo[tmpHorseCount].direction = calculateDirection(actor->GetPosition(), player->GetPosition(), player->GetAngle());
+						}
+						actorInfo[nowIndex].horseInfo[tmpHorseCount].formId = actor->GetFormID();
+						actorInfo[nowIndex].horseInfo[tmpHorseCount].formIdStr = FormIDToString(actor->GetFormID());
+						actorInfo[nowIndex].horseInfo[tmpHorseCount].ptr = actor;
+						actorInfo[nowIndex].horseInfo[tmpHorseCount].level = actor->GetLevel();
+						actorInfo[nowIndex].horseInfo[tmpHorseCount].name = actor->GetDisplayFullName();
+						actorInfo[nowIndex].horseInfo[tmpHorseCount].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth);
+						actorInfo[nowIndex].horseInfo[tmpHorseCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
+						actorInfo[nowIndex].horseInfo[tmpHorseCount].isSentient = IsSentient2(actor);
+						actorInfo[nowIndex].horseInfo[tmpHorseCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
+						actorInfo[nowIndex].horseInfo[tmpHorseCount].lifeState = actor->GetLifeState();
+						actorInfo[nowIndex].horseInfo[tmpHorseCount].isInCombat = actor->IsInCombat();
+
+						RefreshInventory(actor, actorInfo[nowIndex].horseInfo, tmpHorseCount++);
+
+					}
+					else {
 						if (show_npc_window_dead_hidden) {
 							if (actor->GetLifeState() == RE::ACTOR_LIFE_STATE::kDead) {
 								continue;
@@ -847,8 +892,10 @@ void __cdecl RefreshActorInfo(void*)
 
 			std::sort(actorInfo[nowIndex].teammateInfo, actorInfo[nowIndex].teammateInfo + tmpTeammateCount, compareByLevel);
 			std::sort(actorInfo[nowIndex].enemyInfo, actorInfo[nowIndex].enemyInfo + tmpEnemyCount, compareByLevel);
+			std::sort(actorInfo[nowIndex].horseInfo, actorInfo[nowIndex].horseInfo + tmpHorseCount, compareByLevel);
 			std::sort(actorInfo[nowIndex].npcInfo, actorInfo[nowIndex].npcInfo + tmpNpcCount, compareByLevel);
 
+			actorInfo[nowIndex].horseCount = tmpHorseCount;
 			actorInfo[nowIndex].npcCount = tmpNpcCount;
 			actorInfo[nowIndex].enemyCount = tmpEnemyCount;
 			actorInfo[nowIndex].teammateCount = tmpTeammateCount;
@@ -912,6 +959,18 @@ ItemInfo* getItemsKEYM()
 {
 	return items[!nowItemIndex].itemInfoKEYM;
 }
+ItemInfo* getItemsTREE()
+{
+	return items[!nowItemIndex].itemInfoTREE;
+}
+ItemInfo* getItemsSGEM()
+{
+	return items[!nowItemIndex].itemInfoSGEM;
+}
+ItemInfo* getItemsACTI()
+{
+	return items[!nowItemIndex].itemInfoACTI;
+}
 
 int getItemCount()
 {
@@ -960,6 +1019,18 @@ int getItemCountFLOR()
 int getItemCountKEYM()
 {
 	return items[!nowItemIndex].itemCountKEYM;
+}
+int getItemCountTREE()
+{
+	return items[!nowItemIndex].itemCountTREE;
+}
+int getItemCountSGEM()
+{
+	return items[!nowItemIndex].itemCountSGEM;
+}
+int getItemCountACTI()
+{
+	return items[!nowItemIndex].itemCountACTI;
 }
 
 [[nodiscard]] static inline bool CanDisplay(const RE::TESBoundObject& a_object)
@@ -1049,13 +1120,7 @@ void __cdecl RefreshItemInfo(void*)
 	while (true) {
 		Sleep(1000);
 
-		if (!activeItems && !show_items_window 
-			&& !show_items_window_auto_ammo
-			&& !show_items_window_auto_flor 
-			&& !show_items_window_auto_food
-			&& !show_items_window_auto_ingr
-			&& !show_items_window_auto_alch
-			&& !show_items_window_auto_misc) {
+		if (!activeItems && !show_items_window && !show_items_window_auto_ammo && !show_items_window_auto_flor && !show_items_window_auto_food && !show_items_window_auto_ingr && !show_items_window_auto_alch && !show_items_window_auto_misc) {
 			Sleep(2000);
 			continue;
 		}
@@ -1073,8 +1138,6 @@ void __cdecl RefreshItemInfo(void*)
 		if (isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu) {
 			continue;
 		}
-
-
 
 		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 		if (!player) {
@@ -1109,6 +1172,9 @@ void __cdecl RefreshItemInfo(void*)
 		int tmpCountFLOR = 0;
 		int tmpCountFOOD = 0;
 		int tmpCountKEYM = 0;
+		int tmpCountTREE = 0;
+		int tmpCountSGEM = 0;
+		int tmpCountACTI = 0;
 		auto currentLocation = player->currentLocation;
 		//if (currentLocation) {
 		const auto& [map, lock] = RE::TESForm::GetAllForms();
@@ -1238,6 +1304,10 @@ void __cdecl RefreshItemInfo(void*)
 												continue;
 											}
 										}
+										auto name = reff->GetDisplayFullName();
+										if (strlen(name) == 0) {
+											continue;
+										}
 
 										float distance = 0;
 										if (show_items_window_auto_ammo || show_items_window_direction || !currentLocation) {
@@ -1275,7 +1345,7 @@ void __cdecl RefreshItemInfo(void*)
 										items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].formId = reff->GetFormID();
 										items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].formIdStr = FormIDToString(reff->GetFormID());
 										items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
-										items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].name = reff->GetDisplayFullName();
+										items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].name = name;
 										items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].weight = reff->GetWeight();
 										items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].gold = baseObj->GetGoldValue();
 										items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].isCrime = reff->IsCrimeToActivate();
@@ -1618,6 +1688,13 @@ void __cdecl RefreshItemInfo(void*)
 											}
 										}
 
+										auto flora = baseObj->As<RE::TESFlora>();
+										if (flora) {
+											if (!flora->produceItem) {
+												continue;
+											}
+										}
+
 										float distance = 0;
 										if (show_items_window_direction || show_items_window_auto_flor || !currentLocation) {
 											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
@@ -1639,9 +1716,6 @@ void __cdecl RefreshItemInfo(void*)
 										items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].weight = reff->GetWeight();
 										items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].gold = baseObj->GetGoldValue();
 										items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].isCrime = reff->IsCrimeToActivate();
-										/*if (reff->HasContainer()) {
-											int tmpInvCount = 0;
-										}*/
 
 										if (show_items_window_direction) {
 											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].distance = distance;
@@ -1653,9 +1727,11 @@ void __cdecl RefreshItemInfo(void*)
 											if (distance < show_items_window_auto_dis) {
 												if (!reff->IsCrimeToActivate()) {
 													if (!(reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
-														auto flora = baseObj->As<RE::TESFlora>();
 														if (flora) {
 															flora->Activate(reff, player, 0, flora->produceItem, 1);
+															char buf[40];
+															snprintf(buf, 40, "%s 已自动收获", reff->GetDisplayFullName());
+															RE::DebugNotification(buf, NULL, false);
 														}
 													}
 												}
@@ -1665,6 +1741,79 @@ void __cdecl RefreshItemInfo(void*)
 										items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].isHarvested = (reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested);
 
 										tmpCountFLOR++;
+
+										break;
+									}
+								case RE::FormType::Tree:
+									{
+										if (reff->IsMarkedForDeletion()) {
+											continue;
+										}
+
+										auto name = reff->GetDisplayFullName();
+										if (strlen(name) == 0) {
+											continue;
+										}
+
+										if (show_items_window_ignore) {
+											if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
+												continue;
+											}
+										}
+
+										auto tree = baseObj->As<RE::TESObjectTREE>();
+										if (tree) {
+											if (!tree->produceItem) {
+												continue;
+											}
+										}
+
+										float distance = 0;
+										if (show_items_window_direction || show_items_window_auto_tree || !currentLocation) {
+											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+										}
+
+										if (!currentLocation) {
+											if (distance > show_items_window_auto_dis_skyrim) {
+												continue;
+											}
+										}
+
+										items[nowItemIndex].itemInfoTREE[tmpCountTREE].ptr = reff;
+										items[nowItemIndex].itemInfoTREE[tmpCountTREE].baseFormId = baseObj->GetFormID();
+										items[nowItemIndex].itemInfoTREE[tmpCountTREE].baseFormIdStr = FormIDToString(baseObj->GetFormID());
+										items[nowItemIndex].itemInfoTREE[tmpCountTREE].formId = reff->GetFormID();
+										items[nowItemIndex].itemInfoTREE[tmpCountTREE].formIdStr = FormIDToString(reff->GetFormID());
+										items[nowItemIndex].itemInfoTREE[tmpCountTREE].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+										items[nowItemIndex].itemInfoTREE[tmpCountTREE].name = reff->GetDisplayFullName();
+										items[nowItemIndex].itemInfoTREE[tmpCountTREE].weight = reff->GetWeight();
+										items[nowItemIndex].itemInfoTREE[tmpCountTREE].gold = baseObj->GetGoldValue();
+										items[nowItemIndex].itemInfoTREE[tmpCountTREE].isCrime = reff->IsCrimeToActivate();
+
+										if (show_items_window_direction) {
+											items[nowItemIndex].itemInfoTREE[tmpCountTREE].distance = distance;
+											items[nowItemIndex].itemInfoTREE[tmpCountTREE].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+										}
+
+										// 自动拾取
+										if (show_items_window_auto_tree) {
+											if (distance < show_items_window_auto_dis) {
+												if (!reff->IsCrimeToActivate()) {
+													if (!(reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
+														if (tree) {
+															tree->Activate(reff, player, 0, tree->produceItem, 1);
+															char buf[40];
+															snprintf(buf, 40, "%s 已自动收获", reff->GetDisplayFullName());
+															RE::DebugNotification(buf, NULL, false);
+														}
+													}
+												}
+											}
+										}
+
+										items[nowItemIndex].itemInfoTREE[tmpCountTREE].isHarvested = (reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested);
+
+										tmpCountTREE++;
 
 										break;
 									}
@@ -1709,15 +1858,136 @@ void __cdecl RefreshItemInfo(void*)
 										tmpCountKEYM++;
 										break;
 									}
+								case RE::FormType::Activator:
+									{
+										if (reff->IsMarkedForDeletion()) {
+											continue;
+										}
+
+										auto name = reff->GetDisplayFullName();
+										if (strlen(name) == 0) {
+											continue;
+										}
+
+										if (show_items_window_ignore) {
+											if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
+												continue;
+											}
+										}
+
+										float distance = 0;
+										if (show_items_window_direction || show_items_window_auto_acti || !currentLocation) {
+											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+										}
+
+										if (!currentLocation) {
+											if (distance > show_items_window_auto_dis_skyrim) {
+												continue;
+											}
+										}
+
+										items[nowItemIndex].itemInfoACTI[tmpCountACTI].ptr = reff;
+										items[nowItemIndex].itemInfoACTI[tmpCountACTI].baseFormId = baseObj->GetFormID();
+										items[nowItemIndex].itemInfoACTI[tmpCountACTI].baseFormIdStr = FormIDToString(baseObj->GetFormID());
+										items[nowItemIndex].itemInfoACTI[tmpCountACTI].formId = reff->GetFormID();
+										items[nowItemIndex].itemInfoACTI[tmpCountACTI].formIdStr = FormIDToString(reff->GetFormID());
+										items[nowItemIndex].itemInfoACTI[tmpCountACTI].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+										items[nowItemIndex].itemInfoACTI[tmpCountACTI].name = reff->GetDisplayFullName();
+										items[nowItemIndex].itemInfoACTI[tmpCountACTI].weight = reff->GetWeight();
+										items[nowItemIndex].itemInfoACTI[tmpCountACTI].gold = baseObj->GetGoldValue();
+										items[nowItemIndex].itemInfoACTI[tmpCountACTI].isCrime = reff->IsCrimeToActivate();
+
+										if (show_items_window_direction) {
+											items[nowItemIndex].itemInfoACTI[tmpCountACTI].distance = distance;
+											items[nowItemIndex].itemInfoACTI[tmpCountACTI].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+										}
+
+										// 自动拾取
+										/*	if (show_items_window_auto_flor) {
+											if (distance < show_items_window_auto_dis) {
+												if (!reff->IsCrimeToActivate()) {
+													if (!(reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
+														auto flora = baseObj->As<RE::TESFlora>();
+														if (flora) {
+															flora->Activate(reff, player, 0, flora->produceItem, 1);
+														}
+													}
+												}
+											}
+										}*/
+
+										items[nowItemIndex].itemInfoACTI[tmpCountACTI].isHarvested = (reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested);
+
+										tmpCountACTI++;
+
+										break;
+									}
 								case RE::FormType::SoulGem:
+									{
+										if (reff->IsMarkedForDeletion()) {
+											continue;
+										}
+										if (show_items_window_ignore) {
+											if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
+												continue;
+											}
+										}
+										auto name = reff->GetDisplayFullName();
+										if (strlen(name) == 0) {
+											continue;
+										}
+
+										float distance = 0;
+										if (show_items_window_auto_sgem || show_items_window_direction || !currentLocation) {
+											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+										}
+
+										if (!currentLocation) {
+											if (distance > show_items_window_auto_dis_skyrim) {
+												continue;
+											}
+										}
+
+										// 自动拾取
+										if (show_items_window_auto_sgem) {
+											if (distance < show_items_window_auto_dis) {
+												if (!reff->IsCrimeToActivate()) {
+													if (!reff->IsMarkedForDeletion()) {
+														if (!isDeleteExist) {
+															deleteREFRs.insert(reff);
+														}
+														continue;
+													}
+												}
+											}
+										}
+
+										if (show_items_window_direction) {
+											items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].distance = distance;
+											items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+										}
+
+										items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].ptr = reff;
+										items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].baseFormId = baseObj->GetFormID();
+										items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].baseFormIdStr = FormIDToString(baseObj->GetFormID());
+										items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].formId = reff->GetFormID();
+										items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].formIdStr = FormIDToString(reff->GetFormID());
+										items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+										items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].name = name;
+										items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].weight = reff->GetWeight();
+										items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].gold = baseObj->GetGoldValue();
+										items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].isCrime = reff->IsCrimeToActivate();
+
+										tmpCountSGEM++;
+
+										break;
+									}
 								case RE::FormType::Static:
 								case RE::FormType::Furniture:
-								case RE::FormType::Tree:
 								case RE::FormType::IdleMarker:
 								case RE::FormType::Light:
 								case RE::FormType::MovableStatic:
 								case RE::FormType::Door:
-								case RE::FormType::Activator:
 								case RE::FormType::TextureSet:
 								case RE::FormType::Sound:
 								case RE::FormType::Explosion:
@@ -1794,6 +2064,9 @@ void __cdecl RefreshItemInfo(void*)
 		std::sort(items[nowItemIndex].itemInfoFLOR, items[nowItemIndex].itemInfoFLOR + tmpCountFLOR, compareForItem);
 		std::sort(items[nowItemIndex].itemInfoFOOD, items[nowItemIndex].itemInfoFOOD + tmpCountFOOD, compareForItem);
 		std::sort(items[nowItemIndex].itemInfoKEYM, items[nowItemIndex].itemInfoKEYM + tmpCountKEYM, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoTREE, items[nowItemIndex].itemInfoTREE + tmpCountTREE, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoSGEM, items[nowItemIndex].itemInfoSGEM + tmpCountSGEM, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoACTI, items[nowItemIndex].itemInfoACTI + tmpCountACTI, compareForItem);
 
 		items[nowItemIndex].itemCount = tmpCount;
 		items[nowItemIndex].itemCountWEAP = tmpCountWEAP;
@@ -1807,6 +2080,9 @@ void __cdecl RefreshItemInfo(void*)
 		items[nowItemIndex].itemCountFLOR = tmpCountFLOR;
 		items[nowItemIndex].itemCountFOOD = tmpCountFOOD;
 		items[nowItemIndex].itemCountKEYM = tmpCountKEYM;
+		items[nowItemIndex].itemCountTREE = tmpCountTREE;
+		items[nowItemIndex].itemCountSGEM = tmpCountSGEM;
+		items[nowItemIndex].itemCountACTI = tmpCountACTI;
 
 		// 自动拾取
 		//if (deleteREFRs.size() > 0) {
