@@ -27,7 +27,7 @@ public:
 		auto ScriptEventSource = RE::ScriptEventSourceHolder::GetSingleton();
 
 		if (!ScriptEventSource) {
-			SKSE::log::info("ScriptEventSource not found!");
+			SKSE::log::warn("ScriptEventSource not found!");
 			return false;
 		}
 

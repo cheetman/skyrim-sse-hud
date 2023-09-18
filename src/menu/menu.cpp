@@ -29,9 +29,10 @@ namespace menu
 	//static float heavyArmor2 = 0.0f;
 	//std::string playerRaceName = "";
 	bool auto_remove_ammo = false;
+	bool remember_last_ammo = false;
 	int hotkey = 0;
 	int hotkey2 = 3;
-	
+	float font_scale = 1;
 
 	// 默认配置
 	static bool show_player_base_info_window = false;
@@ -533,8 +534,7 @@ namespace menu
 					}
 				}
 			}
-		}
-		else if (formType == RE::FormType::Tree) {
+		} else if (formType == RE::FormType::Tree) {
 			for (int i = 0; i < count; i++) {
 				ItemInfo item = items[i];
 				if (!item.isCrime) {
@@ -710,8 +710,7 @@ namespace menu
 											flora->Activate(item.ptr, player, 0, flora->produceItem, 1);
 										}
 									}
-								}
-								else if (formType == RE::FormType::Tree) {
+								} else if (formType == RE::FormType::Tree) {
 									if (!(item.ptr->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
 										auto tree = item.ptr->GetBaseObject()->As<RE::TESObjectTREE>();
 										if (tree) {
@@ -1036,7 +1035,7 @@ namespace menu
 			//myText("防御: %s", playerInfo.DamageResist.c_str());
 			ImGui::Text(ICON_MDI_SHIELD_HALF_FULL "防御: %.2f", playerInfo.kDamageResist);
 			ImGui::Text(ICON_MDI_WATER "毒抗: %.1f%%", playerInfo.kPoisonResist);
-			ImGui::Text(ICON_MDI_FIRE  "火抗: %.1f%%", playerInfo.kResistFire);
+			ImGui::Text(ICON_MDI_FIRE "火抗: %.1f%%", playerInfo.kResistFire);
 			ImGui::Text(ICON_MDI_LIGHTNING_BOLT_OUTLINE "雷抗: %.1f%%", playerInfo.kResistShock);
 			ImGui::Text(ICON_MDI_SNOWFLAKE "冰抗: %.1f%%", playerInfo.kResistFrost);
 			ImGui::Text(ICON_MDI_MAGIC_STAFF "法抗: %.1f%%", playerInfo.kResistMagic);
@@ -1386,10 +1385,10 @@ namespace menu
 				}
 
 				if (active) {
-					ImGui::Checkbox(ICON_MDI_SHIELD_ACCOUNT_OUTLINE " team", &show_teammate);
+					ImGui::Checkbox(ICON_MDI_SHIELD_ACCOUNT " team", &show_teammate);
 				} else {
 					if (show_teammate) {
-						ImGui::Text(ICON_MDI_SHIELD_ACCOUNT_OUTLINE " team");
+						ImGui::Text(ICON_MDI_SHIELD_ACCOUNT " team");
 					}
 				}
 				if (show_teammate) {
@@ -1557,7 +1556,7 @@ namespace menu
 					}
 					if (show_items_window_settings) {
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##48", &show_items_window_auto_sgem);
+						ImGui::Checkbox("自动拾取##53", &show_items_window_auto_sgem);
 					}
 					buildItemInfo(getItemCountSGEM(), getItemsSGEM(), RE::FormType::SoulGem);
 				}
@@ -1616,7 +1615,6 @@ namespace menu
 				if (getItemCountACTI() > 0) {
 					ImGui::TableNextColumn();
 					ImGui::Text(ICON_MDI_COGS " 可互动(%d)", getItemCountACTI());
-				
 
 					buildItemInfo(getItemCountACTI(), getItemsACTI(), RE::FormType::Activator);
 				}
@@ -1807,103 +1805,20 @@ namespace menu
 
 							ImGui::Separator();
 							ImGui::Checkbox("是否自动卸除箭袋", &auto_remove_ammo);
+							if (auto_remove_ammo) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Checkbox("是否记住弓箭类型", &remember_last_ammo);
+							}
 							// 测试
-							//ImGui::Checkbox("Demo", &show_demo_window);
-							//if (ImGui::Button("测试", ImVec2())) {
-							//	RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
-							//	auto currentLocation = player->currentLocation;
-							//	if (currentLocation) {
-							//		auto allForms = RE::TESForm::GetAllForms();
+							ImGui::Checkbox("Demo", &show_demo_window);
+							if (ImGui::Button("测试", ImVec2())) {
+								RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
+								auto currentLocation = player->currentLocation;
+								// 输出类型
+								logger::debug(StringUtil::Utf8ToGbk(GetFormTypeName(currentLocation->formType.underlying()).c_str()));
 
-							//		auto& formIDs = *allForms.first;
-							//		int i = formIDs.size();
-							//		i = 0;
-							//		//int j = 1;
-							//		for (auto elem : formIDs) {
-							//			auto form = elem.second;
-							//			if (form->Is(RE::FormType::Reference)) {
-							//				//logger::debug(GetFormTypeName(elem.second->formType.underlying()));
-							//				auto reff = elem.second->AsReference();
-							//				if (reff) {
-							//					if (reff->GetCurrentLocation() == currentLocation) {
-							//						auto baseObj = reff->GetBaseObject();
-							//						if (baseObj) {
-							//							// 这些都过滤
-							//							if (baseObj->Is(RE::FormType::Static) || baseObj->Is(RE::FormType::Light) || baseObj->Is(RE::FormType::Furniture) || baseObj->Is(RE::FormType::IdleMarker)) {
-							//								continue;
-							//							}
 
-							//							logger::debug(GetFormTypeName(baseObj->formType.underlying()));
-							//							logger::debug(std::to_string(i) + " " + FormIDToString(reff->GetFormID()) + " " + StringUtil::Utf8ToGbk(reff->GetDisplayFullName()));
-
-							//							i++;
-							//						}
-
-							//						//logger::debug(StringUtil::Utf8ToGbk(reff->GetObjectTypeName()));
-							//					}
-							//				}
-							//			}
-							//		}
-							//		int d = 0;
-							//	}
-
-							//	//player->GetWorldspace()
-
-							//	/*					logger::debug(StringUtil::Utf8ToGbk(player->GetEditorLocation1()->GetName()));
-							//	logger::debug(StringUtil::Utf8ToGbk(player->GetEditorLocation1()->GetFullName()));*/
-							//	//if (player->currentLocation) {
-							//	//	//logger::debug(StringUtil::Utf8ToGbk(player->currentLocation->GetName()));
-							//	//	logger::debug(StringUtil::Utf8ToGbk(player->currentLocation->GetFullName()));
-							//	//} else {
-							//	//	logger::debug("空Location");
-							//	//}
-
-							//	/*		logger::debug(StringUtil::Utf8ToGbk(player->editorLocation->GetName()));
-							//	logger::debug(StringUtil::Utf8ToGbk(player->editorLocation->GetFullName()));*/
-							//	/*	auto pl = RE::ProcessLists::GetSingleton();
-							//	auto fff = pl->tempShouldMoves;
-							//	for (auto elem : fff) {
-							//		logger::debug(StringUtil::Utf8ToGbk(elem.get().get()->GetDisplayFullName()));
-							//	}
-
-							//*/
-
-							//	//RE::TESDataHandler* dataHandler = RE::TESDataHandler::GetSingleton();
-							//	//auto dd = dataHandler->GetFormArray<RE::TESObjectWEAP>();
-							//	//for (auto elem : dd) {
-							//	//	logger::debug(StringUtil::Utf8ToGbk(elem->GetFullName()));
-							//	//	if (elem->GetOnLocalMap()) {
-							//	//		logger::debug(StringUtil::Utf8ToGbk(elem->GetFullName()));
-							//	//	}
-							//	//}
-
-							//	//auto world = player->GetWorldspace();
-
-							//	//for (auto it : world->mobilePersistentRefs) {
-							//	//	auto obj = it.get();
-							//	//	logger::debug(GetFormTypeName(obj->formType.underlying()));
-							//	//	logger::debug(StringUtil::Utf8ToGbk(obj->GetName()));
-							//	//	//logger::debug(StringUtil::Utf8ToGbk(obj->GetObjectTypeName()));
-							//	//	logger::debug(StringUtil::Utf8ToGbk(obj->GetDisplayFullName()));
-							//	//}
-
-							//	/*		for (auto it = world->mobilePersistentRefs.begin(); it != world->mobilePersistentRefs.end(); ++it) {
-							//		auto obj = it->get();
-							//		logger::debug(GetFormTypeName(obj->formType.underlying()));
-							//		logger::debug(StringUtil::Utf8ToGbk(obj->GetName()));
-							//		logger::debug(StringUtil::Utf8ToGbk(obj->GetObjectTypeName()));
-							//		logger::debug(StringUtil::Utf8ToGbk(obj->GetDisplayFullName()));
-							//	}*/
-
-							//	/*	for (auto it = world->fixedPersistentRefMap.begin(); it != world->fixedPersistentRefMap.end(); ++it) {
-							//		auto first = (*it).first;
-							//		auto arr = (*it).second;
-							//		for (auto it2 = arr.begin(); it2 != arr.end(); ++it2) {
-							//			auto obj = it2->get();
-							//			logger::debug(StringUtil::Utf8ToGbk(obj->GetDisplayFullName()));
-							//		}
-							//	}*/
-							//}
+							}
 							ImGui::TreePop();
 						}
 
@@ -2116,12 +2031,18 @@ namespace menu
 				if (j.contains("hotkey2")) {
 					hotkey2 = j["hotkey2"].get<int>();
 				}
+				if (j.contains("font_scale")) {
+					font_scale = j["font_scale"].get<float>();
+				}
 			}
 
 			if (json.contains("gameSetting")) {
 				auto const& j = json["gameSetting"];
 				if (j.contains("auto_remove_ammo")) {
 					auto_remove_ammo = j["auto_remove_ammo"].get<bool>();
+				}
+				if (j.contains("remember_last_ammo")) {
+					remember_last_ammo = j["remember_last_ammo"].get<bool>();
 				}
 			}
 
@@ -2177,8 +2098,6 @@ namespace menu
 					if (j2.contains("show_horse")) {
 						show_horse = j2["show_horse"].get<bool>();
 					}
-					
-
 				}
 				if (j.contains("ItemMenuInfo")) {
 					auto const& j2 = j["ItemMenuInfo"];
@@ -2191,6 +2110,30 @@ namespace menu
 					}
 					if (j2.contains("show_items_window_direction")) {
 						show_items_window_direction = j2["show_items_window_direction"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_ammo")) {
+						show_items_window_auto_ammo = j2["show_items_window_auto_ammo"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_flor")) {
+						show_items_window_auto_flor = j2["show_items_window_auto_flor"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_tree")) {
+						show_items_window_auto_tree = j2["show_items_window_auto_tree"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_food")) {
+						show_items_window_auto_food = j2["show_items_window_auto_food"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_ingr")) {
+						show_items_window_auto_ingr = j2["show_items_window_auto_ingr"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_alch")) {
+						show_items_window_auto_alch = j2["show_items_window_auto_alch"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_misc")) {
+						show_items_window_auto_misc = j2["show_items_window_auto_misc"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_sgem")) {
+						show_items_window_auto_sgem = j2["show_items_window_auto_sgem"].get<bool>();
 					}
 				}
 
@@ -2208,6 +2151,47 @@ namespace menu
 						}
 					}
 				}
+			}
+
+			if (json.contains("excludeFormIDs")) {
+				for (auto const& j : json["excludeFormIDs"]) {
+					excludeFormIds.insert(j.get<int>());  // 酒杯
+				}
+
+			} else {
+				// 默认值
+				excludeFormIds.insert(0x000319E3);  // 酒杯
+				excludeFormIds.insert(0x00012FE6);  // 鼎
+				excludeFormIds.insert(0x00012FE7);  // 筐
+				excludeFormIds.insert(0x00012FE8);  // 筐
+				excludeFormIds.insert(0x00012FE9);  // 筐
+				excludeFormIds.insert(0x00012FEA);  // 筐
+				excludeFormIds.insert(0x00012FEB);  // 筐
+				excludeFormIds.insert(0x00012FEC);  // 筐
+				excludeFormIds.insert(0x000318FA);  // 铸铁锅
+				excludeFormIds.insert(0x000318FB);  // 铸铁锅
+				excludeFormIds.insert(0x000318EC);  // 油灯
+				excludeFormIds.insert(0x00012FDF);  // 桶
+				excludeFormIds.insert(0x000747FB);  // 桶
+				excludeFormIds.insert(0x000747FE);  // 桶
+				excludeFormIds.insert(0x00031941);  // 木盘子
+				excludeFormIds.insert(0x000B9BD0);  // 盘子
+				excludeFormIds.insert(0x000E2617);  // 盘子
+				excludeFormIds.insert(0x000E2618);  // 盘子
+				excludeFormIds.insert(0x0003199A);  // 木碗
+				excludeFormIds.insert(0x000319E5);  // 木杓
+				excludeFormIds.insert(0x0006717F);  // 扫帚
+				excludeFormIds.insert(0x000AF5FD);  // 头骨
+				excludeFormIds.insert(0x000B9BD8);  // 碗
+				excludeFormIds.insert(0x000B9BCC);  // 碗
+				excludeFormIds.insert(0x00098627);  // 碗
+				excludeFormIds.insert(0x00098626);  // 碗
+				excludeFormIds.insert(0x00098623);  // 水壶
+				excludeFormIds.insert(0x00098621);  // 高脚杯
+				excludeFormIds.insert(0x000B9BDE);  // 水壶
+				excludeFormIds.insert(0x000B9BD6);  // 水壶
+				excludeFormIds.insert(0x00044E70);  // 漏壶
+				excludeFormIds.insert(0x000B9BDA);  // 高脚杯
 			}
 		} catch (std::exception const& ex) {
 			//log() << "Unable to save settings file: " << ex.what() << std::endl;
@@ -2235,11 +2219,13 @@ namespace menu
 									  { "bullet_text", bullet_text },
 									  { "hotkey", hotkey },
 									  { "hotkey2", hotkey2 },
+									  { "font_scale", ImGui::GetIO().FontGlobalScale },
 
 								  } },
 
 				{ "gameSetting", {
 									 { "auto_remove_ammo", auto_remove_ammo },
+									 { "remember_last_ammo", remember_last_ammo },
 								 } },
 				{ "windowSetting", {
 
@@ -2286,11 +2272,27 @@ namespace menu
 															 { "show_items_window_auto_dis", show_items_window_auto_dis },
 															 { "show_items_window_auto_dis_skyrim", show_items_window_auto_dis_skyrim },
 															 { "show_items_window_direction", show_items_window_direction },
-													} }
+															 { "show_items_window_auto_ammo", show_items_window_auto_ammo },
+															 { "show_items_window_auto_flor", show_items_window_auto_flor },
+															 { "show_items_window_auto_tree", show_items_window_auto_tree },
+															 { "show_items_window_auto_food", show_items_window_auto_food },
+															 { "show_items_window_auto_ingr", show_items_window_auto_ingr },
+															 { "show_items_window_auto_alch", show_items_window_auto_alch },
+															 { "show_items_window_auto_misc", show_items_window_auto_misc },
+															 { "show_items_window_auto_sgem", show_items_window_auto_sgem },
+														 } }
 
 								   } }
 
 			};
+
+			// 忽略项目
+			nlohmann::json arr = nlohmann::json::array();
+
+			for (auto id : excludeFormIds) {
+				arr.push_back(id);
+			}
+			json["excludeFormIDs"] = arr;
 
 			std::ofstream o(settings);
 			o << std::setw(4) << json << std::endl;

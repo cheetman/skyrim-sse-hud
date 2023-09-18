@@ -653,8 +653,7 @@ bool show_items_window_ignore = true;
 bool show_items_window_auto_ammo = false;
 bool show_items_window_auto_flor = false;
 bool show_items_window_auto_tree = false;
-bool show_items_window_auto_acti = false;
-
+//bool show_items_window_auto_acti = false;
 bool show_items_window_auto_food = false;
 bool show_items_window_auto_ingr = false;
 bool show_items_window_auto_alch = false;
@@ -1084,54 +1083,23 @@ int getItemCountACTI()
 
 void __cdecl RefreshItemInfo(void*)
 {
-	excludeFormIds.insert(0x000319E3);  // 酒杯
-	excludeFormIds.insert(0x00012FE6);  // 鼎
-	excludeFormIds.insert(0x00012FE7);  // 筐
-	excludeFormIds.insert(0x00012FE8);  // 筐
-	excludeFormIds.insert(0x00012FE9);  // 筐
-	excludeFormIds.insert(0x00012FEA);  // 筐
-	excludeFormIds.insert(0x00012FEB);  // 筐
-	excludeFormIds.insert(0x00012FEC);  // 筐
-	excludeFormIds.insert(0x000318FA);  // 铸铁锅
-	excludeFormIds.insert(0x000318FB);  // 铸铁锅
-	excludeFormIds.insert(0x000318EC);  // 油灯
-	excludeFormIds.insert(0x00012FDF);  // 桶
-	excludeFormIds.insert(0x000747FB);  // 桶
-	excludeFormIds.insert(0x000747FE);  // 桶
-	excludeFormIds.insert(0x00031941);  // 木盘子
-	excludeFormIds.insert(0x000B9BD0);  // 盘子
-	excludeFormIds.insert(0x000E2617);  // 盘子
-	excludeFormIds.insert(0x000E2618);  // 盘子
-	excludeFormIds.insert(0x0003199A);  // 木碗
-	excludeFormIds.insert(0x000319E5);  // 木杓
-	excludeFormIds.insert(0x0006717F);  // 扫帚
-	excludeFormIds.insert(0x000AF5FD);  // 头骨
-	excludeFormIds.insert(0x000B9BD8);  // 碗
-	excludeFormIds.insert(0x000B9BCC);  // 碗
-	excludeFormIds.insert(0x00098627);  // 碗
-	excludeFormIds.insert(0x00098626);  // 碗
-	excludeFormIds.insert(0x00098623);  // 水壶
-	excludeFormIds.insert(0x00098621);  // 高脚杯
-	excludeFormIds.insert(0x000B9BDE);  // 水壶
-	excludeFormIds.insert(0x000B9BD6);  // 水壶
-	excludeFormIds.insert(0x00044E70);  // 漏壶
-	excludeFormIds.insert(0x000B9BDA);  // 高脚杯
+	
 
 	while (true) {
 		Sleep(1000);
 
 		if (!activeItems && !show_items_window && !show_items_window_auto_ammo && !show_items_window_auto_flor && !show_items_window_auto_food && !show_items_window_auto_ingr && !show_items_window_auto_alch && !show_items_window_auto_misc) {
-			Sleep(2000);
+			Sleep(1000);
 			continue;
 		}
 
 		if (!startflag) {
-			Sleep(3000);
+			Sleep(1000);
 			continue;
 		}
 
 		if (isGameLoading) {
-			Sleep(3000);
+			Sleep(1000);
 			continue;
 		}
 
@@ -1876,7 +1844,7 @@ void __cdecl RefreshItemInfo(void*)
 										}
 
 										float distance = 0;
-										if (show_items_window_direction || show_items_window_auto_acti || !currentLocation) {
+										if (show_items_window_direction  || !currentLocation) {
 											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 										}
 

@@ -11,6 +11,7 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/event/BSTScriptEvent.h"
 	"${SOURCE_DIR}/event/BSTCrosshairRefEvent.h"
 	"${SOURCE_DIR}/event/BSTCrosshairRefEvent.cpp"
+	"${SOURCE_DIR}/event/BSTEquipEvent.h"
 	"${SOURCE_DIR}/hook/d3d11hook.h"
 	"${SOURCE_DIR}/hook/d3d11hook.cpp"
 	"${SOURCE_DIR}/hook/hudhook.h"

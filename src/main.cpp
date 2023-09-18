@@ -4,6 +4,7 @@
 #include <hook/hudhook.h>
 #include <memory/memory.h>
 #include <menu/menu.h>
+#include <event/BSTEquipEvent.h>
 
 
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
@@ -164,16 +165,22 @@ void __cdecl installimgui(void*)
 	//Sleep(20000);
 	d3d11hook::Install();
 	dinputhook ::Install();
-	MenuOpenCloseEvent::Register();    //Register Bethesda Menu Event
-	BSTCrosshairRefEvent::Register();  //Register Bethesda Menu Event
+	MenuOpenCloseEvent::Register();
+	EquipEvent::Register();    
+	//BSTCrosshairRefEvent::Register();  
 }
 
 void __cdecl RefreshAutoUnequipAmmo(void*)
 {
+	return;
 	while (true) {
 		Sleep(1000);
 		if (menu::auto_remove_ammo) {
 			if (startflag && !isGameLoading) {
+				// 追加判断
+				if (isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu) {
+					continue;
+				}
 				RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 				if (player) {
 					auto ammo = player->GetCurrentAmmo();
@@ -229,7 +236,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	//hookInstall();
 
 	_beginthread(RefreshGameInfo, 0, NULL);
-	_beginthread(RefreshAutoUnequipAmmo, 0, NULL);
+	//_beginthread(RefreshAutoUnequipAmmo, 0, NULL);
 	_beginthread(RefreshActorInfo, 0, NULL);
 	_beginthread(RefreshItemInfo, 0, NULL);
 	_beginthread(installimgui, 0, NULL);

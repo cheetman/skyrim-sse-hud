@@ -350,21 +350,21 @@ struct Item2Info
 	int itemCountSGEM = 0;
 	int itemCountACTI = 0;
 
-	ItemInfo itemInfo[1000];
-	ItemInfo itemInfoWEAP[1000];
-	ItemInfo itemInfoARMO[1000];
-	ItemInfo itemInfoAMMO[1000];
-	ItemInfo itemInfoBOOK[1000];
-	ItemInfo itemInfoALCH[1000];
-	ItemInfo itemInfoINGR[1000];
-	ItemInfo itemInfoMISC[1000];
-	ItemInfo itemInfoCONT[1000];
-	ItemInfo itemInfoFLOR[1000];
-	ItemInfo itemInfoFOOD[1000];
-	ItemInfo itemInfoKEYM[1000];
-	ItemInfo itemInfoTREE[1000];
-	ItemInfo itemInfoSGEM[1000];
-	ItemInfo itemInfoACTI[1000];
+	ItemInfo itemInfo[3000];
+	ItemInfo itemInfoWEAP[3000];
+	ItemInfo itemInfoARMO[3000];
+	ItemInfo itemInfoAMMO[3000];
+	ItemInfo itemInfoBOOK[3000];
+	ItemInfo itemInfoALCH[3000];
+	ItemInfo itemInfoINGR[3000];
+	ItemInfo itemInfoMISC[3000];
+	ItemInfo itemInfoCONT[3000];
+	ItemInfo itemInfoFLOR[3000];
+	ItemInfo itemInfoFOOD[3000];
+	ItemInfo itemInfoKEYM[3000];
+	ItemInfo itemInfoTREE[3000];
+	ItemInfo itemInfoSGEM[3000];
+	ItemInfo itemInfoACTI[3000];
 };
 
 int getItemCount();

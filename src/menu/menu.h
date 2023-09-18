@@ -10,8 +10,10 @@ extern std::string fontFilePath;
 namespace menu
 {
 	extern bool auto_remove_ammo;
+	extern bool remember_last_ammo;
 	extern int hotkey;
 	extern int hotkey2;
+	extern float font_scale;
 	bool save_settings();
 	bool load_settings();
 	void __fastcall render();
