@@ -30,7 +30,7 @@ namespace menu
 	//std::string playerRaceName = "";
 	bool auto_remove_ammo = false;
 	bool remember_last_ammo = false;
-	int hotkey = 0;
+	int hotkey = 2;
 	int hotkey2 = 3;
 	float font_scale = 1;
 
@@ -39,10 +39,10 @@ namespace menu
 	static bool flag_process = false;
 	static bool flag_base_info_setting = true;
 
-	static bool show_player_info_window = true;
-	static bool show_player_mod_window = true;
-	static bool show_player_armor_window = true;
-	static bool show_player_weapon_window = true;
+	static bool show_player_info_window = false;
+	static bool show_player_mod_window = false;
+	static bool show_player_armor_window = false;
+	static bool show_player_weapon_window = false;
 	static bool show_player_debug_window = false;
 	static bool no_titlebar = true;
 	static bool no_resize = false;
@@ -198,7 +198,7 @@ namespace menu
 
 				char hp[16] = "已死亡";
 				if (item.lifeState != RE::ACTOR_LIFE_STATE::kDead) {
-					sprintf(hp, "%.0f/%.0f", item.kHealth, item.kHealthBase);
+					snprintf(hp, 16 ,"%.0f/%.0f", item.kHealth, item.kHealthBase);
 				}
 
 				bool treeNodeExResult;
@@ -255,11 +255,11 @@ namespace menu
 						for (int i2 = 0; i2 < item.inventoryCount; i2++) {
 							auto inv = item.Inventorys[i2];
 
-							char buf[50];
+							char buf[60];
 							if (show_npc_window_formid) {
-								sprintf(buf, "%s %s - %s %s (%d) %.1f ", u8"\uf01c", inv.formIdStr.c_str(), inv.isWorn ? "[装备中]" : "", inv.name.c_str(), inv.count, inv.weight);
+								snprintf(buf, 60 ,"%s %s - %s %s (%d) %.1f ", u8"\uf01c", inv.formIdStr.c_str(), inv.isWorn ? "[装备中]" : "", inv.name.c_str(), inv.count, inv.weight);
 							} else {
-								sprintf(buf, "%s %s %s (%d) %.1f ", u8"\uf01c", inv.isWorn ? "[装备中]" : "", inv.name.c_str(), inv.count, inv.weight);
+								snprintf(buf, 60, "%s %s %s (%d) %.1f ", u8"\uf01c", inv.isWorn ? "[装备中]" : "", inv.name.c_str(), inv.count, inv.weight);
 							}
 							if (ImGui::Selectable(buf, false)) {
 								auto player = RE::PlayerCharacter::GetSingleton();
@@ -405,12 +405,12 @@ namespace menu
 					if (openFlag) {
 						for (int i2 = 0; i2 < item.invCount; i2++) {
 							auto inv = item.invs[i2];
-							char buf[32];
+							char buf[80];
 
 							if (inv.count > 1) {
-								sprintf(buf, item.isEnchanted ? "%s" ICON_MDI_FLASH " (%d)" : "%s (%d)", inv.name.c_str(), inv.count);
+								snprintf(buf, 80, item.isEnchanted ? "%s" ICON_MDI_FLASH " (%d)" : "%s (%d)", inv.name.c_str(), inv.count);
 							} else {
-								sprintf(buf, item.isEnchanted ? "%s" ICON_MDI_FLASH : "%s", inv.name.c_str());
+								snprintf(buf, 80, item.isEnchanted ? "%s" ICON_MDI_FLASH : "%s", inv.name.c_str());
 							}
 
 							if (inv.isCrime) {
@@ -962,10 +962,7 @@ namespace menu
 		if (auto_resize)
 			window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
 
-		// 载入字体
-		//imgui.igPushFont(font);
 
-		//ImGui::PushFont(font2);
 
 		auto style = ImGui::GetStyle();
 		style.WindowBorderSize = window_border ? 1.0f : 0.0f;
@@ -1274,12 +1271,12 @@ namespace menu
 
 		if (show_player_debug_window) {
 			ImGui::Begin("其他信息", nullptr, window_flags);
-			myText("当前位置: %s", playerInfo.location.c_str());
+			ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS "位置: %s", playerInfo.location.c_str());
 			// z高度
-			myText("当前坐标: [%.0f,%.0f,%.0f]", playerInfo.Position.x, playerInfo.Position.y, playerInfo.Position.z);
+			ImGui::Text(ICON_MDI_AXIS_ARROW "坐标: [%.0f,%.0f,%.0f]", playerInfo.Position.x, playerInfo.Position.y, playerInfo.Position.z);
 			//ImGui::SameLine(0, 0);
 			// z 是0~2Π
-			myText("当前视角: [%.2f,%.2f]", playerInfo.Angle.x, playerInfo.Angle.z);
+			ImGui::Text(ICON_MDI_ANGLE_ACUTE "视角: [%.2f,%.2f]", playerInfo.Angle.x, playerInfo.Angle.z);
 			ImGui::End();
 		}
 

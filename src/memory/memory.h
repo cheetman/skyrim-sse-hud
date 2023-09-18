@@ -282,6 +282,7 @@ extern bool show_items_window_auto_sgem;
 extern bool show_items_window_ignore;
 extern int show_items_window_auto_dis;
 extern int show_items_window_auto_dis_skyrim;
+extern int show_items_window_array_max_length;
 
 struct ItemInvInfo
 {

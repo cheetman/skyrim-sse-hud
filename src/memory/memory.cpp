@@ -642,6 +642,7 @@ void __fastcall buildPlayerInvData(InventoryInfo inv[], int& i, RE::TESBoundObje
 int show_npc_window_dis_meter = 30;
 bool show_npc_window_dis = false;
 bool show_npc_window_direction = false;
+int show_npc_window_array_max_length = 98;
 bool show_enemy_window = false;
 bool show_inv_window = false;
 bool show_npc_window = false;
@@ -661,6 +662,7 @@ bool show_items_window_auto_misc = false;
 bool show_items_window_auto_sgem = false;
 int show_items_window_auto_dis = 2;
 int show_items_window_auto_dis_skyrim = 100;
+int show_items_window_array_max_length = 2998;
 
 void __cdecl RefreshActorInfo(void*)
 {
@@ -774,6 +776,13 @@ void __cdecl RefreshActorInfo(void*)
 				auto actor = handle.get().get();
 				if (actor) {
 					if (actor->IsPlayerTeammate()) {
+
+						if (tmpTeammateCount > show_npc_window_array_max_length) {
+							continue;
+						}
+
+						
+
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].formId = actor->GetFormID();
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].formIdStr = FormIDToString(actor->GetFormID());
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].ptr = actor;
@@ -795,6 +804,13 @@ void __cdecl RefreshActorInfo(void*)
 						RefreshInventory(actor, actorInfo[nowIndex].teammateInfo, tmpTeammateCount++);
 
 					} else if (actor->IsHostileToActor(player)) {
+
+						
+						if (tmpEnemyCount > show_npc_window_array_max_length) {
+							continue;
+						}
+
+
 						if (show_npc_window_dead_hidden) {
 							if (actor->GetLifeState() == RE::ACTOR_LIFE_STATE::kDead) {
 								continue;
@@ -825,6 +841,11 @@ void __cdecl RefreshActorInfo(void*)
 						RefreshInventory(actor, actorInfo[nowIndex].enemyInfo, tmpEnemyCount++);
 
 					} else if (actor->IsHorse()) {
+
+						if (tmpHorseCount > show_npc_window_array_max_length) {
+							continue;
+						}
+
 						if (show_npc_window_dead_hidden) {
 							if (actor->GetLifeState() == RE::ACTOR_LIFE_STATE::kDead) {
 								continue;
@@ -854,8 +875,11 @@ void __cdecl RefreshActorInfo(void*)
 
 						RefreshInventory(actor, actorInfo[nowIndex].horseInfo, tmpHorseCount++);
 
-					}
-					else {
+					} else {
+						if (tmpNpcCount > show_npc_window_array_max_length) {
+							continue;
+						}
+
 						if (show_npc_window_dead_hidden) {
 							if (actor->GetLifeState() == RE::ACTOR_LIFE_STATE::kDead) {
 								continue;
@@ -1083,8 +1107,6 @@ int getItemCountACTI()
 
 void __cdecl RefreshItemInfo(void*)
 {
-	
-
 	while (true) {
 		Sleep(1000);
 
@@ -1169,6 +1191,10 @@ void __cdecl RefreshItemInfo(void*)
 								switch (baseObj->GetFormType()) {
 								case RE::FormType::Weapon:
 									{
+										if (tmpCountWEAP > show_items_window_array_max_length) {
+											continue;
+										}
+
 										if (reff->IsMarkedForDeletion()) {
 											continue;
 										}
@@ -1216,6 +1242,9 @@ void __cdecl RefreshItemInfo(void*)
 									}
 								case RE::FormType::Armor:
 									{
+										if (tmpCountARMO > show_items_window_array_max_length) {
+											continue;
+										}
 										if (reff->IsMarkedForDeletion()) {
 											continue;
 										}
@@ -1264,6 +1293,10 @@ void __cdecl RefreshItemInfo(void*)
 									}
 								case RE::FormType::Ammo:
 									{
+										if (tmpCountAMMO > show_items_window_array_max_length) {
+											continue;
+										}
+
 										if (reff->IsMarkedForDeletion()) {
 											continue;
 										}
@@ -1324,6 +1357,10 @@ void __cdecl RefreshItemInfo(void*)
 									}
 								case RE::FormType::Book:
 									{
+										if (tmpCountBOOK > show_items_window_array_max_length) {
+											continue;
+										}
+
 										if (reff->IsMarkedForDeletion()) {
 											continue;
 										}
@@ -1366,6 +1403,10 @@ void __cdecl RefreshItemInfo(void*)
 									}
 								case RE::FormType::AlchemyItem:
 									{
+										if (tmpCountFOOD > show_items_window_array_max_length) {
+											continue;
+										}
+
 										if (reff->IsMarkedForDeletion()) {
 											continue;
 										}
@@ -1470,6 +1511,10 @@ void __cdecl RefreshItemInfo(void*)
 									}
 								case RE::FormType::Ingredient:
 									{
+										if (tmpCountINGR > show_items_window_array_max_length) {
+											continue;
+										}
+
 										if (reff->IsMarkedForDeletion()) {
 											continue;
 										}
@@ -1524,6 +1569,10 @@ void __cdecl RefreshItemInfo(void*)
 									}
 								case RE::FormType::Misc:
 									{
+										if (tmpCountMISC > show_items_window_array_max_length) {
+											continue;
+										}
+
 										if (reff->IsMarkedForDeletion()) {
 											continue;
 										}
@@ -1584,6 +1633,10 @@ void __cdecl RefreshItemInfo(void*)
 									}
 								case RE::FormType::Container:
 									{
+										if (tmpCountCONT > show_items_window_array_max_length) {
+											continue;
+										}
+
 										if (reff->IsMarkedForDeletion()) {
 											continue;
 										}
@@ -1647,6 +1700,10 @@ void __cdecl RefreshItemInfo(void*)
 									}
 								case RE::FormType::Flora:
 									{
+										if (tmpCountFLOR > show_items_window_array_max_length) {
+											continue;
+										}
+
 										if (reff->IsMarkedForDeletion()) {
 											continue;
 										}
@@ -1714,6 +1771,10 @@ void __cdecl RefreshItemInfo(void*)
 									}
 								case RE::FormType::Tree:
 									{
+										if (tmpCountTREE > show_items_window_array_max_length) {
+											continue;
+										}
+
 										if (reff->IsMarkedForDeletion()) {
 											continue;
 										}
@@ -1787,6 +1848,10 @@ void __cdecl RefreshItemInfo(void*)
 									}
 								case RE::FormType::KeyMaster:
 									{
+										if (tmpCountKEYM > show_items_window_array_max_length) {
+											continue;
+										}
+
 										if (reff->IsMarkedForDeletion()) {
 											continue;
 										}
@@ -1828,6 +1893,10 @@ void __cdecl RefreshItemInfo(void*)
 									}
 								case RE::FormType::Activator:
 									{
+										if (tmpCountACTI > show_items_window_array_max_length) {
+											continue;
+										}
+
 										if (reff->IsMarkedForDeletion()) {
 											continue;
 										}
@@ -1844,7 +1913,7 @@ void __cdecl RefreshItemInfo(void*)
 										}
 
 										float distance = 0;
-										if (show_items_window_direction  || !currentLocation) {
+										if (show_items_window_direction || !currentLocation) {
 											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 										}
 
@@ -1892,6 +1961,10 @@ void __cdecl RefreshItemInfo(void*)
 									}
 								case RE::FormType::SoulGem:
 									{
+										if (tmpCountSGEM > show_items_window_array_max_length) {
+											continue;
+										}
+
 										if (reff->IsMarkedForDeletion()) {
 											continue;
 										}
@@ -1964,6 +2037,10 @@ void __cdecl RefreshItemInfo(void*)
 									continue;
 								default:
 									{
+										if (tmpCount > show_items_window_array_max_length) {
+											continue;
+										}
+
 										if (reff->IsMarkedForDeletion()) { /*
 										logger::debug(StringUtil::Utf8ToGbk(reff->GetDisplayFullName()) + " " + GetFormTypeName(baseObj->formType.underlying()));
 										logger::debug(std::to_string(baseObj->GetFormID()) + " " + FormIDToString(baseObj->GetFormID()));*/
