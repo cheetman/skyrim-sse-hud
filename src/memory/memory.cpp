@@ -20,8 +20,6 @@ bool show_npc_window_dead_hidden = false;
 
 void __cdecl RefreshGameInfo(void*)
 {
-	//auto game_hwnd = FindWindowA(NULL, "Skyrim Special Edition");
-	Sleep(10000);
 
 	// 标记装备槽是否主要
 	//wornArmos[1].isMainSlotAlert =
@@ -651,6 +649,7 @@ bool show_items_window_settings = false;
 bool show_items_window_formid = false;
 bool show_items_window_direction = false;
 bool show_items_window_ignore = true;
+bool show_items_window_auto_ignore = true;
 bool show_items_window_auto_ammo = false;
 bool show_items_window_auto_flor = false;
 bool show_items_window_auto_tree = false;
@@ -660,6 +659,8 @@ bool show_items_window_auto_ingr = false;
 bool show_items_window_auto_alch = false;
 bool show_items_window_auto_misc = false;
 bool show_items_window_auto_sgem = false;
+bool show_items_window_auto = true;  //暂时用不到
+//bool show_items_window_auto_setting = true;
 int show_items_window_auto_dis = 2;
 int show_items_window_auto_dis_skyrim = 100;
 int show_items_window_array_max_length = 2998;
@@ -776,12 +777,9 @@ void __cdecl RefreshActorInfo(void*)
 				auto actor = handle.get().get();
 				if (actor) {
 					if (actor->IsPlayerTeammate()) {
-
 						if (tmpTeammateCount > show_npc_window_array_max_length) {
 							continue;
 						}
-
-						
 
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].formId = actor->GetFormID();
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].formIdStr = FormIDToString(actor->GetFormID());
@@ -804,12 +802,9 @@ void __cdecl RefreshActorInfo(void*)
 						RefreshInventory(actor, actorInfo[nowIndex].teammateInfo, tmpTeammateCount++);
 
 					} else if (actor->IsHostileToActor(player)) {
-
-						
 						if (tmpEnemyCount > show_npc_window_array_max_length) {
 							continue;
 						}
-
 
 						if (show_npc_window_dead_hidden) {
 							if (actor->GetLifeState() == RE::ACTOR_LIFE_STATE::kDead) {
@@ -841,7 +836,6 @@ void __cdecl RefreshActorInfo(void*)
 						RefreshInventory(actor, actorInfo[nowIndex].enemyInfo, tmpEnemyCount++);
 
 					} else if (actor->IsHorse()) {
-
 						if (tmpHorseCount > show_npc_window_array_max_length) {
 							continue;
 						}
@@ -931,8 +925,10 @@ int nowItemIndex = 0;
 
 std::unordered_set<int> excludeFormIds;
 std::vector<ExcludeForms> excludeForms;
-bool excludeFormsInitFlag = true;
+std::unordered_set<int> excludeLocationFormIds;
+std::vector<ExcludeForms> excludeLocationForms;
 std::unordered_set<RE::TESObjectREFR*> deleteREFRs;
+bool excludeFormsInitFlag = true;
 
 ItemInfo* getItems()
 {
@@ -1095,22 +1091,127 @@ int getItemCountACTI()
 	return true;
 }
 
-//void __cdecl myThreadFunction(void*)
-//{
-//	Sleep(100);
-//	RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
-//	for (auto item : deleteREFRs) {
-//		player->PickUpObject(item, 1);
-//	}
-//	deleteREFRs.clear();
-//}
+bool __fastcall autoTake(RE::TESObjectREFR* reff, RE::PlayerCharacter* player, bool autoFlag, int distance, bool isDeleteExist)
+{
+	// 自动拾取
+	if (autoFlag) {
+		if (distance < show_items_window_auto_dis) {
+			if (!reff->IsCrimeToActivate()) {
+				if (!reff->IsMarkedForDeletion()) {
+					if (show_items_window_auto_ignore) {
+						// 判断地点忽略
+						int formID = 0;
+						if (player->currentLocation) {
+							formID = player->currentLocation->GetFormID();
+						}
+						if (excludeLocationFormIds.find(formID) == excludeLocationFormIds.end()) {
+							if (!isDeleteExist) {
+								deleteREFRs.insert(reff);
+							}
+							return true;
+						}
+					} else {
+						if (!isDeleteExist) {
+							deleteREFRs.insert(reff);
+						}
+						return true;
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+bool __fastcall autoHarvest(RE::TESObjectREFR* reff, RE::PlayerCharacter* player, bool autoFlag, int distance, RE::TESFlora* flora)
+{
+	// 自动拾取
+	if (autoFlag) {
+		if (distance < show_items_window_auto_dis) {
+			if (!reff->IsCrimeToActivate()) {
+				if (!(reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
+					if (show_items_window_auto_ignore) {
+						// 判断地点忽略
+						int formID = 0;
+						if (player->currentLocation) {
+							formID = player->currentLocation->GetFormID();
+						}
+						if (excludeLocationFormIds.find(formID) == excludeLocationFormIds.end()) {
+							if (flora) {
+								flora->Activate(reff, player, 0, flora->produceItem, 1);
+								char buf[40];
+								snprintf(buf, 40, "%s 已自动收获", reff->GetDisplayFullName());
+								RE::DebugNotification(buf, NULL, false);
+							}
+						}
+					} else {
+						if (flora) {
+							flora->Activate(reff, player, 0, flora->produceItem, 1);
+							char buf[40];
+							snprintf(buf, 40, "%s 已自动收获", reff->GetDisplayFullName());
+							RE::DebugNotification(buf, NULL, false);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+bool __fastcall autoHarvest(RE::TESObjectREFR* reff, RE::PlayerCharacter* player, bool autoFlag, int distance, RE::TESObjectTREE* tree)
+{
+	// 自动拾取
+	if (autoFlag) {
+		if (distance < show_items_window_auto_dis) {
+			if (!reff->IsCrimeToActivate()) {
+				if (!(reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
+					if (show_items_window_auto_ignore) {
+						// 判断地点忽略
+						int formID = 0;
+						if (player->currentLocation) {
+							formID = player->currentLocation->GetFormID();
+						}
+						if (excludeLocationFormIds.find(formID) == excludeLocationFormIds.end()) {
+							if (tree) {
+								tree->Activate(reff, player, 0, tree->produceItem, 1);
+								char buf[40];
+								snprintf(buf, 40, "%s 已自动收获", reff->GetDisplayFullName());
+								RE::DebugNotification(buf, NULL, false);
+							}
+						}
+					} else {
+						if (tree) {
+							tree->Activate(reff, player, 0, tree->produceItem, 1);
+							char buf[40];
+							snprintf(buf, 40, "%s 已自动收获", reff->GetDisplayFullName());
+							RE::DebugNotification(buf, NULL, false);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
 
 void __cdecl RefreshItemInfo(void*)
 {
 	while (true) {
 		Sleep(1000);
 
-		if (!activeItems && !show_items_window && !show_items_window_auto_ammo && !show_items_window_auto_flor && !show_items_window_auto_food && !show_items_window_auto_ingr && !show_items_window_auto_alch && !show_items_window_auto_misc) {
+		if (!activeItems && !show_items_window 
+			&& !show_items_window_auto_ammo 
+			&& !show_items_window_auto_flor 
+			&& !show_items_window_auto_food 
+			&& !show_items_window_auto_ingr 
+			&& !show_items_window_auto_alch 
+			&& !show_items_window_auto_misc 
+			&& !show_items_window_auto_tree 
+			&& !show_items_window_auto_sgem) {
 			Sleep(1000);
 			continue;
 		}
@@ -1142,6 +1243,17 @@ void __cdecl RefreshItemInfo(void*)
 				auto form = RE::TESForm::LookupByID(id);
 				if (form) {
 					excludeForms.push_back({ form->GetFormID(), form->GetName(), "" });
+				}
+			}
+
+			for (auto id : excludeLocationFormIds) {
+				if (id == 0) {
+					excludeLocationForms.push_back({ 0, "天际", "" });
+					continue;
+				}
+				auto form = RE::TESForm::LookupByID(id);
+				if (form) {
+					excludeLocationForms.push_back({ form->GetFormID(), form->GetName(), "" });
 				}
 			}
 		}
@@ -1311,7 +1423,7 @@ void __cdecl RefreshItemInfo(void*)
 										}
 
 										float distance = 0;
-										if (show_items_window_auto_ammo || show_items_window_direction || !currentLocation) {
+										if ((show_items_window_auto && show_items_window_auto_ammo) || show_items_window_direction || !currentLocation) {
 											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 										}
 
@@ -1321,18 +1433,9 @@ void __cdecl RefreshItemInfo(void*)
 											}
 										}
 
-										// 自动拾取
-										if (show_items_window_auto_ammo) {
-											if (distance < show_items_window_auto_dis) {
-												if (!reff->IsCrimeToActivate()) {
-													if (!reff->IsMarkedForDeletion()) {
-														if (!isDeleteExist) {
-															deleteREFRs.insert(reff);
-														}
-														continue;
-													}
-												}
-											}
+										// 自动拾取判断
+										if (autoTake(reff, player, show_items_window_auto_ammo, distance, isDeleteExist)) {
+											continue;
 										}
 
 										if (show_items_window_direction) {
@@ -1422,7 +1525,7 @@ void __cdecl RefreshItemInfo(void*)
 										auto alchemyItem = baseObj->As<RE::AlchemyItem>();
 										if (alchemyItem->IsFood()) {
 											float distance = 0;
-											if (show_items_window_auto_food || show_items_window_direction || !currentLocation) {
+											if ((show_items_window_auto && show_items_window_auto_food) || show_items_window_direction || !currentLocation) {
 												distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 											}
 											if (!currentLocation) {
@@ -1431,18 +1534,9 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
-											// 自动拾取
-											if (show_items_window_auto_food) {
-												if (distance < show_items_window_auto_dis) {
-													if (!reff->IsCrimeToActivate()) {
-														if (!reff->IsMarkedForDeletion()) {
-															if (!isDeleteExist) {
-																deleteREFRs.insert(reff);
-															}
-															continue;
-														}
-													}
-												}
+											// 自动拾取判断
+											if (autoTake(reff, player, show_items_window_auto_food, distance, isDeleteExist)) {
+												continue;
 											}
 
 											if (show_items_window_direction) {
@@ -1464,7 +1558,7 @@ void __cdecl RefreshItemInfo(void*)
 											tmpCountFOOD++;
 										} else {
 											float distance = 0;
-											if (show_items_window_auto_alch || show_items_window_direction || !currentLocation) {
+											if ((show_items_window_auto && show_items_window_auto_alch) || show_items_window_direction || !currentLocation) {
 												distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 											}
 
@@ -1474,18 +1568,9 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
-											// 自动拾取
-											if (show_items_window_auto_alch) {
-												if (distance < show_items_window_auto_dis) {
-													if (!reff->IsCrimeToActivate()) {
-														if (!reff->IsMarkedForDeletion()) {
-															if (!isDeleteExist) {
-																deleteREFRs.insert(reff);
-															}
-															continue;
-														}
-													}
-												}
+											// 自动拾取判断
+											if (autoTake(reff, player, show_items_window_auto_alch, distance, isDeleteExist)) {
+												continue;
 											}
 
 											if (show_items_window_direction) {
@@ -1525,7 +1610,7 @@ void __cdecl RefreshItemInfo(void*)
 										}
 
 										float distance = 0;
-										if (show_items_window_auto_ingr || show_items_window_direction || !currentLocation) {
+										if ((show_items_window_auto && show_items_window_auto_ingr) || show_items_window_direction || !currentLocation) {
 											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 										}
 										if (!currentLocation) {
@@ -1534,18 +1619,9 @@ void __cdecl RefreshItemInfo(void*)
 											}
 										}
 
-										// 自动拾取
-										if (show_items_window_auto_ingr) {
-											if (distance < show_items_window_auto_dis) {
-												if (!reff->IsCrimeToActivate()) {
-													if (!reff->IsMarkedForDeletion()) {
-														if (!isDeleteExist) {
-															deleteREFRs.insert(reff);
-														}
-														continue;
-													}
-												}
-											}
+										// 自动拾取判断
+										if (autoTake(reff, player, show_items_window_auto_ingr, distance, isDeleteExist)) {
+											continue;
 										}
 
 										if (show_items_window_direction) {
@@ -1587,7 +1663,7 @@ void __cdecl RefreshItemInfo(void*)
 										}
 
 										float distance = 0;
-										if (show_items_window_auto_misc || show_items_window_direction || !currentLocation) {
+										if ((show_items_window_auto && show_items_window_auto_misc) || show_items_window_direction || !currentLocation) {
 											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 										}
 
@@ -1597,18 +1673,9 @@ void __cdecl RefreshItemInfo(void*)
 											}
 										}
 
-										// 自动拾取
-										if (show_items_window_auto_misc) {
-											if (distance < show_items_window_auto_dis) {
-												if (!reff->IsCrimeToActivate()) {
-													if (!reff->IsMarkedForDeletion()) {
-														if (!isDeleteExist) {
-															deleteREFRs.insert(reff);
-														}
-														continue;
-													}
-												}
-											}
+										// 自动拾取判断
+										if (autoTake(reff, player, show_items_window_auto_misc, distance, isDeleteExist)) {
+											continue;
 										}
 
 										if (show_items_window_direction) {
@@ -1721,7 +1788,7 @@ void __cdecl RefreshItemInfo(void*)
 										}
 
 										float distance = 0;
-										if (show_items_window_direction || show_items_window_auto_flor || !currentLocation) {
+										if (show_items_window_direction || (show_items_window_auto && show_items_window_auto_flor) || !currentLocation) {
 											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 										}
 
@@ -1747,21 +1814,36 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 										}
 
-										// 自动拾取
-										if (show_items_window_auto_flor) {
-											if (distance < show_items_window_auto_dis) {
-												if (!reff->IsCrimeToActivate()) {
-													if (!(reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
-														if (flora) {
-															flora->Activate(reff, player, 0, flora->produceItem, 1);
-															char buf[40];
-															snprintf(buf, 40, "%s 已自动收获", reff->GetDisplayFullName());
-															RE::DebugNotification(buf, NULL, false);
-														}
-													}
-												}
-											}
+										// 自动拾取判断
+										if (autoHarvest(reff, player, show_items_window_auto_flor, distance, flora)) {
+											continue;
 										}
+
+										//// 自动拾取
+										//if ((show_items_window_auto && show_items_window_auto_flor)) {
+										//	if (show_items_window_auto_ignore) {
+										//		// 判断地点忽略
+										//		int formID = 0;
+										//		if (player->currentLocation) {
+										//			formID = player->currentLocation->GetFormID();
+										//		}
+										//		if (excludeLocationFormIds.find(formID) != excludeLocationFormIds.end()) {
+										//			continue;
+										//		}
+										//	}
+										//	if (distance < show_items_window_auto_dis) {
+										//		if (!reff->IsCrimeToActivate()) {
+										//			if (!(reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
+										//				if (flora) {
+										//					flora->Activate(reff, player, 0, flora->produceItem, 1);
+										//					char buf[40];
+										//					snprintf(buf, 40, "%s 已自动收获", reff->GetDisplayFullName());
+										//					RE::DebugNotification(buf, NULL, false);
+										//				}
+										//			}
+										//		}
+										//	}
+										//}
 
 										items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].isHarvested = (reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested);
 
@@ -1798,7 +1880,7 @@ void __cdecl RefreshItemInfo(void*)
 										}
 
 										float distance = 0;
-										if (show_items_window_direction || show_items_window_auto_tree || !currentLocation) {
+										if (show_items_window_direction || (show_items_window_auto && show_items_window_auto_tree) || !currentLocation) {
 											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 										}
 
@@ -1824,21 +1906,37 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoTREE[tmpCountTREE].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 										}
 
-										// 自动拾取
-										if (show_items_window_auto_tree) {
-											if (distance < show_items_window_auto_dis) {
-												if (!reff->IsCrimeToActivate()) {
-													if (!(reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
-														if (tree) {
-															tree->Activate(reff, player, 0, tree->produceItem, 1);
-															char buf[40];
-															snprintf(buf, 40, "%s 已自动收获", reff->GetDisplayFullName());
-															RE::DebugNotification(buf, NULL, false);
-														}
-													}
-												}
-											}
+										
+										// 自动拾取判断
+										if (autoHarvest(reff, player, show_items_window_auto_tree, distance, tree)) {
+											continue;
 										}
+
+										//// 自动拾取
+										//if ((show_items_window_auto && show_items_window_auto_tree)) {
+										//	if (show_items_window_auto_ignore) {
+										//		// 判断地点忽略
+										//		int formID = 0;
+										//		if (player->currentLocation) {
+										//			formID = player->currentLocation->GetFormID();
+										//		}
+										//		if (excludeLocationFormIds.find(formID) != excludeLocationFormIds.end()) {
+										//			continue;
+										//		}
+										//	}
+										//	if (distance < show_items_window_auto_dis) {
+										//		if (!reff->IsCrimeToActivate()) {
+										//			if (!(reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
+										//				if (tree) {
+										//					tree->Activate(reff, player, 0, tree->produceItem, 1);
+										//					char buf[40];
+										//					snprintf(buf, 40, "%s 已自动收获", reff->GetDisplayFullName());
+										//					RE::DebugNotification(buf, NULL, false);
+										//				}
+										//			}
+										//		}
+										//	}
+										//}
 
 										items[nowItemIndex].itemInfoTREE[tmpCountTREE].isHarvested = (reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested);
 
@@ -1939,19 +2037,6 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 										}
 
-										// 自动拾取
-										/*	if (show_items_window_auto_flor) {
-											if (distance < show_items_window_auto_dis) {
-												if (!reff->IsCrimeToActivate()) {
-													if (!(reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
-														auto flora = baseObj->As<RE::TESFlora>();
-														if (flora) {
-															flora->Activate(reff, player, 0, flora->produceItem, 1);
-														}
-													}
-												}
-											}
-										}*/
 
 										items[nowItemIndex].itemInfoACTI[tmpCountACTI].isHarvested = (reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested);
 
@@ -1979,7 +2064,7 @@ void __cdecl RefreshItemInfo(void*)
 										}
 
 										float distance = 0;
-										if (show_items_window_auto_sgem || show_items_window_direction || !currentLocation) {
+										if ((show_items_window_auto && show_items_window_auto_sgem) || show_items_window_direction || !currentLocation) {
 											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 										}
 
@@ -1989,18 +2074,10 @@ void __cdecl RefreshItemInfo(void*)
 											}
 										}
 
-										// 自动拾取
-										if (show_items_window_auto_sgem) {
-											if (distance < show_items_window_auto_dis) {
-												if (!reff->IsCrimeToActivate()) {
-													if (!reff->IsMarkedForDeletion()) {
-														if (!isDeleteExist) {
-															deleteREFRs.insert(reff);
-														}
-														continue;
-													}
-												}
-											}
+										
+										// 自动拾取判断
+										if (autoTake(reff, player, show_items_window_auto_sgem, distance, isDeleteExist)) {
+											continue;
 										}
 
 										if (show_items_window_direction) {

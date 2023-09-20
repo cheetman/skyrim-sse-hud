@@ -632,6 +632,7 @@ namespace dinputhook
 
 	void Install()
 	{
+		SKSE::log::info("dinputhook ::Install()");
 		auto& trampoline = SKSE::GetTrampoline();
 		REL::Relocation<uintptr_t> caller{ REL::ID(67315) };
 		_DispatchInputEvent = trampoline.write_call<5>(caller.address() + 0x7B, DispatchInputEvent);

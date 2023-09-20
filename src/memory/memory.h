@@ -277,9 +277,13 @@ extern bool show_items_window_auto_alch;
 extern bool show_items_window_auto_misc;
 extern bool show_items_window_auto_tree;
 extern bool show_items_window_auto_sgem;
+extern bool show_items_window_auto;
+//extern bool show_items_window_auto_setting;
 
- extern bool show_items_window_direction;
+
+extern bool show_items_window_direction;
 extern bool show_items_window_ignore;
+extern bool show_items_window_auto_ignore;
 extern int show_items_window_auto_dis;
 extern int show_items_window_auto_dis_skyrim;
 extern int show_items_window_array_max_length;
@@ -292,7 +296,6 @@ struct ItemInvInfo
 	RE::InventoryEntryData* ptr2;
 	bool isCrime;
 	bool isEnchanted;
-	
 };
 
 struct ItemInfo
@@ -312,7 +315,6 @@ struct ItemInfo
 	bool isDeleted = false;
 	bool isHarvested = false;
 	bool isEnchanted = false;
-	
 
 	int invCount = 0;
 	ItemInvInfo invs[200];
@@ -400,5 +402,7 @@ ItemInfo* getItemsSGEM();
 ItemInfo* getItemsACTI();
 
 extern std::unordered_set<int> excludeFormIds;
+extern std::unordered_set<int> excludeLocationFormIds;
 extern std::vector<ExcludeForms> excludeForms;
+extern std::vector<ExcludeForms> excludeLocationForms;
 extern std::unordered_set<RE::TESObjectREFR*> deleteREFRs;

@@ -1,5 +1,6 @@
 #pragma once
 #include <PCH.h>
+#include <windows.h>
 
 extern bool isOpenCursorMenu;
 extern bool isMainMenu;
@@ -40,8 +41,13 @@ public:
 		static MenuOpenCloseEvent singleton;
 
 		auto ui = RE::UI::GetSingleton();
-		if (!ui)
-			return false;
+		while (!ui) {
+			ui = RE::UI::GetSingleton();
+			Sleep(1000);
+		}
+		//if (!ui)
+
+		//	return false;
 
 		ui->AddEventSink(&singleton);
 		SKSE::log::info("Register {}", typeid(singleton).name());
