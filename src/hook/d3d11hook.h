@@ -4,7 +4,7 @@
 namespace d3d11hook
 {
 
-	void Install();
+	void Install(int);
 
 
 }

@@ -277,7 +277,9 @@ extern bool show_items_window_auto_alch;
 extern bool show_items_window_auto_misc;
 extern bool show_items_window_auto_tree;
 extern bool show_items_window_auto_sgem;
-extern bool show_items_window_auto;
+extern bool show_items_window_auto_achr;
+
+ extern bool show_items_window_auto;
 //extern bool show_items_window_auto_setting;
 
 
@@ -286,7 +288,8 @@ extern bool show_items_window_ignore;
 extern bool show_items_window_auto_ignore;
 extern int show_items_window_auto_dis;
 extern int show_items_window_auto_dis_skyrim;
-extern int show_items_window_array_max_length;
+extern int show_items_window_auto_dis_local;
+ extern int show_items_window_array_max_length;
 
 struct ItemInvInfo
 {
@@ -322,6 +325,8 @@ struct ItemInfo
 	int direction = 0;
 };
 
+
+
 struct ExcludeForms
 {
 	RE::FormID formId = 0;
@@ -353,6 +358,8 @@ struct Item2Info
 	int itemCountSGEM = 0;
 	int itemCountACTI = 0;
 
+	int itemCountACHR = 0;
+
 	ItemInfo itemInfo[3000];
 	ItemInfo itemInfoWEAP[3000];
 	ItemInfo itemInfoARMO[3000];
@@ -368,6 +375,8 @@ struct Item2Info
 	ItemInfo itemInfoTREE[3000];
 	ItemInfo itemInfoSGEM[3000];
 	ItemInfo itemInfoACTI[3000];
+
+	ItemInfo itemInfoACHR[3000];
 };
 
 int getItemCount();
@@ -385,6 +394,8 @@ int getItemCountKEYM();
 int getItemCountTREE();
 int getItemCountSGEM();
 int getItemCountACTI();
+
+int getItemCountACHR();
 ItemInfo* getItems();
 ItemInfo* getItemsWEAP();
 ItemInfo* getItemsARMO();
@@ -400,6 +411,8 @@ ItemInfo* getItemsKEYM();
 ItemInfo* getItemsTREE();
 ItemInfo* getItemsSGEM();
 ItemInfo* getItemsACTI();
+
+ItemInfo* getItemsACHR();
 
 extern std::unordered_set<int> excludeFormIds;
 extern std::unordered_set<int> excludeLocationFormIds;

@@ -97,6 +97,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 
 			auto messaging = SKSE::GetMessagingInterface();
 	
+			
 			break;
 		}
 	case SKSE::MessagingInterface::kPostPostLoad:
@@ -162,55 +163,55 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 
 void __cdecl installimgui(void*)
 {
-	//Sleep(20000);
-	d3d11hook::Install();
+	d3d11hook::Install(3);
 	dinputhook ::Install();
+	
 	MenuOpenCloseEvent::Register();
-	EquipEvent::Register();    
+	EquipEvent::Register();
 	//BSTCrosshairRefEvent::Register();  
 }
 
 void __cdecl RefreshAutoUnequipAmmo(void*)
 {
 	return;
-	while (true) {
-		Sleep(1000);
-		if (menu::auto_remove_ammo) {
-			if (startflag && !isGameLoading) {
-				// 追加判断
-				if (isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu) {
-					continue;
-				}
-				RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
-				if (player) {
-					auto ammo = player->GetCurrentAmmo();
-					if (ammo) {
-						// 武器信息
-						auto weapon = player->GetEquippedObject(true);
-						if (weapon && weapon->IsWeapon()) {
-							auto item = weapon->As<RE::TESObjectWEAP>();
-							if (item->GetWeaponType() == RE::WEAPON_TYPE::kBow || item->GetWeaponType() == RE::WEAPON_TYPE::kCrossbow) {
-								continue;
-							}
-						}
+	//while (true) {
+	//	Sleep(1000);
+	//	if (menu::auto_remove_ammo) {
+	//		if (startflag && !isGameLoading) {
+	//			// 追加判断
+	//			if (isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu) {
+	//				continue;
+	//			}
+	//			RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
+	//			if (player) {
+	//				auto ammo = player->GetCurrentAmmo();
+	//				if (ammo) {
+	//					// 武器信息
+	//					auto weapon = player->GetEquippedObject(true);
+	//					if (weapon && weapon->IsWeapon()) {
+	//						auto item = weapon->As<RE::TESObjectWEAP>();
+	//						if (item->GetWeaponType() == RE::WEAPON_TYPE::kBow || item->GetWeaponType() == RE::WEAPON_TYPE::kCrossbow) {
+	//							continue;
+	//						}
+	//					}
 
-						std::string commandStr = "player.unequipItem ";
-						commandStr.append(FormIDToString(ammo->GetFormID()));
+	//					std::string commandStr = "player.unequipItem ";
+	//					commandStr.append(FormIDToString(ammo->GetFormID()));
 
-						// 调用控制台
-						const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
-						const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
-						if (script) {
-							const auto selectedRef = RE::Console::GetSelectedRef();
-							script->SetCommand(commandStr);
-							script->CompileAndRun(selectedRef.get());
-							delete script;
-						}
-					}
-				}
-			}
-		}
-	}
+	//					// 调用控制台
+	//					const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
+	//					const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
+	//					if (script) {
+	//						const auto selectedRef = RE::Console::GetSelectedRef();
+	//						script->SetCommand(commandStr);
+	//						script->CompileAndRun(selectedRef.get());
+	//						delete script;
+	//					}
+	//				}
+	//			}
+	//		}
+	//	}
+	//}
 }
 
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_skse)
@@ -229,17 +230,19 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 		logger::critical("Could not register MessageHandler"sv);
 		return false;
 	}
+
+	SKSE::AllocTrampoline(1 << 6);
+
 	logger::info("registered listener"sv);
 
 	// 测试
-	SKSE::AllocTrampoline(1 << 6);
-	//hookInstall();
 
 	_beginthread(RefreshGameInfo, 0, NULL);
-	//_beginthread(RefreshAutoUnequipAmmo, 0, NULL);
 	_beginthread(RefreshActorInfo, 0, NULL);
 	_beginthread(RefreshItemInfo, 0, NULL);
 	_beginthread(installimgui, 0, NULL);
+
+	
 	
 	return true;
 	//RE::BSRenderManager::GetSingleton();

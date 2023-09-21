@@ -4,6 +4,7 @@
 
 #include <MinHook.h>
 #include <fonts/IconsMaterialDesignIcons.h>
+#include <hook/BSRenderManager.h>
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_dx11.h>
 #include <imgui/imgui_impl_win32.h>
@@ -130,14 +131,17 @@ namespace d3d11hook
 					io.FontGlobalScale = menu::font_scale;
 				}
 
-				ImGui_ImplWin32_Init(g_hwnd);
-				ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dContext);
+				if (!ImGui_ImplWin32_Init(g_hwnd)) {
+					SKSE::log::warn("ImGui_ImplWin32_Init fail");
+				}
+				if (!ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dContext)) {
+					SKSE::log::warn("ImGui_ImplDX11_Init fail");
+				}
 				SKSE::log::info("ImGui_ImplDX11_Init");
 			} else {
 				SKSE::log::info("g_pSwapChain->GetDevice(IID_PPV_ARGS(&g_pd3dDevice) Fail");
 			}
 		});
-
 
 		//ImGui::GetIO().WantCaptureMouse = active;
 		ImGui::GetIO().MouseDrawCursor = active || activeItems;
@@ -241,7 +245,6 @@ namespace d3d11hook
 		g_pd3dContext->OMSetRenderTargets(1, &D3D11RenderView, nullptr);
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
-
 		const auto result = RealDXGISwapChainPresent(This, SyncInterval, Flags);
 		//if (result == DXGI_ERROR_DEVICE_REMOVED || result == DXGI_ERROR_DEVICE_RESET) {
 
@@ -277,7 +280,6 @@ namespace d3d11hook
 		sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 		//sd.Windowed = true;
 
-		
 		sd.BufferDesc.Width = 1;
 		sd.BufferDesc.Height = 1;
 		sd.BufferDesc.RefreshRate.Numerator = 0;
@@ -312,11 +314,19 @@ namespace d3d11hook
 		ID3D11DeviceContext** ppImmediateContext)
 	{
 		SKSE::log::info("hk_D3D11CreateDeviceAndSwapChain start");
-			const auto result = (*ptrD3D11CreateDeviceAndSwapChain)(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, pSwapChainDesc, ppSwapChain, ppDevice, pFeatureLevel, ppImmediateContext);
+		const auto result = (*ptrD3D11CreateDeviceAndSwapChain)(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, pSwapChainDesc, ppSwapChain, ppDevice, pFeatureLevel, ppImmediateContext);
 		//const auto result = RealD3D11CreateDeviceAndSwapChain(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, pSwapChainDesc, ppSwapChain, ppDevice, pFeatureLevel, ppImmediateContext);
 
+		// 测试
+		//auto manager = RE::BSRenderManager::GetSingleton();
+		//if (!manager) {
+		//	logger::critical("Failed to retrieve BSRenderManager");
+		//}
+
+		// reinterpret_cast<IDXGISwapChain*>(manager->swapChain);
+
 		if (RealDXGISwapChainPresent == nullptr && ppSwapChain) {
-				SKSE::log::info("HookDXGISwapChainPresent ready");
+			SKSE::log::info("HookDXGISwapChainPresent ready");
 #pragma warning(suppress: 6001)
 			auto pVTable = **reinterpret_cast<uintptr_t***>(ppSwapChain);
 
@@ -328,18 +338,6 @@ namespace d3d11hook
 		}
 
 		return result;
-
-
-
-
-
-
-
-
-
-
-
-
 
 		DXGI_SWAP_CHAIN_DESC sDesc;
 
@@ -372,7 +370,6 @@ namespace d3d11hook
 		auto pVTable = **reinterpret_cast<uintptr_t***>(ppSwapChain);
 		D3D11PresentHook presentFunc = reinterpret_cast<D3D11PresentHook>(pVTable[8]);
 
-
 		if (MH_CreateHook(presentFunc, &PresentHook, reinterpret_cast<void**>(&phookD3D11Present)) != MH_OK) {
 			SKSE::log::error("MH_CreateHook pSwapChainVTable Fail");
 			return 1;
@@ -391,69 +388,117 @@ namespace d3d11hook
 		return hr;
 	}
 
-	
-//struct RendererInitOSData
-//	{
-//		HWND hWnd;
-//		HINSTANCE hInstance;
-//		WNDPROC pWndProc;
-//		HICON hIcon;
-//		const char* pClassName;
-//		uint32_t uiAdapter;
-//		int bCreateSwapChainRenderTarget;
-//	};
-//
-//
-//	using TRendererInit = void(void*, RendererInitOSData*, void*, void*);
-//	static TRendererInit* RealRendererInit = nullptr;
-//	static WNDPROC RealWndProc = nullptr;
-//	void HookRendererInit(void* apThis, RendererInitOSData* apOSData, void* apFBData, void* apOut)
-//	{
-//		RealWndProc = apOSData->pWndProc;
-//		//apOSData->pWndProc = HookWndProc;
-//		RealRendererInit(apThis, apOSData, apFBData, apOut);
-//	}
+	//struct RendererInitOSData
+	//	{
+	//		HWND hWnd;
+	//		HINSTANCE hInstance;
+	//		WNDPROC pWndProc;
+	//		HICON hIcon;
+	//		const char* pClassName;
+	//		uint32_t uiAdapter;
+	//		int bCreateSwapChainRenderTarget;
+	//	};
+	//
+	//
+	//	using TRendererInit = void(void*, RendererInitOSData*, void*, void*);
+	//	static TRendererInit* RealRendererInit = nullptr;
+	//	static WNDPROC RealWndProc = nullptr;
+	//	void HookRendererInit(void* apThis, RendererInitOSData* apOSData, void* apFBData, void* apOut)
+	//	{
+	//		RealWndProc = apOSData->pWndProc;
+	//		//apOSData->pWndProc = HookWndProc;
+	//		RealRendererInit(apThis, apOSData, apFBData, apOut);
+	//	}
 
-	void Install()
+	decltype(&D3D11CreateDeviceAndSwapChain) pD3D11CreateDeviceAndSwapChain = nullptr;
+
+	void Install(int type)
 	{
+		//HMODULE hD3D11 = GetModuleHandleA("d3d11.dll");
+		//pD3D11CreateDeviceAndSwapChain = reinterpret_cast<decltype(&D3D11CreateDeviceAndSwapChain)>(
+		//	GetProcAddress(hD3D11, "D3D11CreateDeviceAndSwapChain"));
+		//if (MH_Initialize() != MH_OK) {
+		//	SKSE::log::error("MH_Initialize Fail");
+		//	return ;
+		//}
+		//if (MH_CreateHook(
+		//	pD3D11CreateDeviceAndSwapChain,
+		//	&hk_D3D11CreateDeviceAndSwapChain,
+		//	reinterpret_cast<LPVOID*>(&pD3D11CreateDeviceAndSwapChain)) != MH_OK) {
+		//	SKSE::log::error("MH_CreateHook Fail");
+		//	return;
+		//}
+
+		//if (MH_EnableHook(MH_ALL_HOOKS) != MH_OK) {
+		//	SKSE::log::error("MH_EnableHook Fail");
+		//	return;
+		//}
+		//MH_EnableHook(MH_ALL_HOOKS);
+
 		//Sleep(1000);
-		char* ptr = nullptr;
-		auto moduleBase = (uintptr_t)GetModuleHandle(ptr);
-		auto dllD3D11 = GetModuleHandleA("d3d11.dll");
-		*(FARPROC*)&ptrD3D11CreateDeviceAndSwapChain = GetProcAddress(dllD3D11, "D3D11CreateDeviceAndSwapChain");
-		SKSE::log::info("GetProcAddress: " + std::to_string( (int)ptrD3D11CreateDeviceAndSwapChain));
-		Detours::IATHook(moduleBase, "d3d11.dll", "D3D11CreateDeviceAndSwapChain", (uintptr_t)hk_D3D11CreateDeviceAndSwapChain);
 
-
-
-	/*	return;
-		static std::once_flag D3DInit;
-		std::call_once(D3DInit, [&]() {
-			if (TryD3D11()) {
-				SKSE::log::info("MH_Initialize");
-				if (MH_Initialize() != MH_OK) {
-					SKSE::log::error("MH_Initialize Fail");
-					return 1;
-				}
-
-				DWORD_PTR* pSwapChainVTable = nullptr;
-				pSwapChainVTable = (DWORD_PTR*)(g_pSwapChain);
-				pSwapChainVTable = (DWORD_PTR*)(pSwapChainVTable[0]);
-
-				SKSE::log::info("MH_CreateHook pSwapChainVTable start");
-				if (MH_CreateHook((DWORD_PTR*)pSwapChainVTable[8], PresentHook, reinterpret_cast<void**>(&phookD3D11Present)) != MH_OK) {
-					SKSE::log::error("MH_CreateHook pSwapChainVTable Fail");
-					return 1;
-				}
-				SKSE::log::info("MH_CreateHook pSwapChainVTable success");
-				if (MH_EnableHook((DWORD_PTR*)pSwapChainVTable[8]) != MH_OK) {
-					SKSE::log::error("MH_EnableHook pSwapChainVTable Fail");
-					return 1;
-				}
-				SKSE::log::info("MH_EnableHook pSwapChainVTable success");
-			} else {
-				return 0;
+		if (type == 1) {
+			char* ptr = nullptr;
+			auto moduleBase = (uintptr_t)GetModuleHandle(ptr);
+			auto dllD3D11 = GetModuleHandleA("d3d11.dll");
+			*(FARPROC*)&ptrD3D11CreateDeviceAndSwapChain = GetProcAddress(dllD3D11, "D3D11CreateDeviceAndSwapChain");
+			SKSE::log::info("GetProcAddress: " + std::to_string((int)ptrD3D11CreateDeviceAndSwapChain));
+			Detours::IATHook(moduleBase, "d3d11.dll", "D3D11CreateDeviceAndSwapChain", (uintptr_t)hk_D3D11CreateDeviceAndSwapChain);
+		} else if (type == 3) {
+			// 测试
+			auto manager = RE::BSRenderManager::GetSingleton();
+			if (!manager) {
+				logger::critical("Failed to retrieve BSRenderManager");
 			}
-		});*/
+			IDXGISwapChain* pswapchain = nullptr;
+
+			while (!pswapchain) {
+				pswapchain = reinterpret_cast<IDXGISwapChain*>(manager->swapChain);
+				Sleep(1000);
+			}
+
+
+			if (RealDXGISwapChainPresent == nullptr && pswapchain) {
+				SKSE::log::info("HookDXGISwapChainPresent ready");
+#pragma warning(suppress: 6001)
+				auto pVTable = *reinterpret_cast<uintptr_t**>(pswapchain);
+
+				RealDXGISwapChainPresent = reinterpret_cast<TDXGISwapChainPresent>(pVTable[8]);
+
+				auto pHook = &HookDXGISwapChainPresent;
+				REL::safe_write(reinterpret_cast<uintptr_t>(&pVTable[8]), &pHook, sizeof(uintptr_t));
+				SKSE::log::info("HookDXGISwapChainPresent over");
+			}
+
+		} else {
+			static std::once_flag D3DInit;
+			std::call_once(D3DInit, [&]() {
+				if (TryD3D11()) {
+					SKSE::log::info("MH_Initialize");
+					if (MH_Initialize() != MH_OK) {
+						SKSE::log::error("MH_Initialize Fail");
+						return 1;
+					}
+
+					DWORD_PTR* pSwapChainVTable = nullptr;
+					pSwapChainVTable = (DWORD_PTR*)(g_pSwapChain);
+					pSwapChainVTable = (DWORD_PTR*)(pSwapChainVTable[0]);
+
+					SKSE::log::info("MH_CreateHook pSwapChainVTable start");
+					if (MH_CreateHook((DWORD_PTR*)pSwapChainVTable[8], PresentHook, reinterpret_cast<void**>(&phookD3D11Present)) != MH_OK) {
+						SKSE::log::error("MH_CreateHook pSwapChainVTable Fail");
+						return 1;
+					}
+					SKSE::log::info("MH_CreateHook pSwapChainVTable success");
+					if (MH_EnableHook((DWORD_PTR*)pSwapChainVTable[8]) != MH_OK) {
+						SKSE::log::error("MH_EnableHook pSwapChainVTable Fail");
+						return 1;
+					}
+					SKSE::log::info("MH_EnableHook pSwapChainVTable success");
+				} else {
+					return 0;
+				}
+			});
+		}
 	}
 }

@@ -519,6 +519,176 @@ namespace menu
 		}
 	}
 
+	void __fastcall buildItemACHRInfo(int count, ItemInfo* items, RE::FormType formType)
+	{
+		static ImGuiTableFlags flagsItem =
+			ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
+
+		const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+
+		int columnCount = 3;
+
+		if (show_items_window_direction) {
+			columnCount++;
+		}
+		if (show_items_window_formid) {
+			columnCount++;
+		}
+		if (show_items_window_settings) {
+			columnCount++;
+		}
+		if (ImGui::BeginTable("tableItemACHR", columnCount, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 15, TEXT_BASE_HEIGHT * show_inv_window_height), 0.0f)) {
+			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60, PlayerInfoColumnID_1);
+			ImGui::TableSetupColumn("类型", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_2);
+			ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 30, PlayerInfoColumnID_3);
+
+			if (show_items_window_direction) {
+				ImGui::TableSetupColumn("方位", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_7);
+			}
+			if (show_items_window_formid) {
+				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_4);
+			}
+
+			if (show_items_window_settings) {
+				ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_5);
+			}
+
+			ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
+			ImGui::TableHeadersRow();
+
+			for (int row_n = 0; row_n < count; row_n++) {
+				ItemInfo item = items[row_n];
+				ImGui::PushID(item.formId + 0x1000000);
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				if (item.invCount > 0) {
+					if (item.isCrime) {
+						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+					} else {
+					}
+					auto openFlag = ImGui::TreeNode(item.formIdStr.c_str(), "%s", item.name.c_str());
+
+					if (item.isCrime) {
+						ImGui::PopStyleColor();
+					} else {
+					}
+
+					if (openFlag) {
+						for (int i2 = 0; i2 < item.invCount; i2++) {
+							auto inv = item.invs[i2];
+							char buf[80];
+
+							if (inv.count > 1) {
+								snprintf(buf, 80, item.isEnchanted ? "%s" ICON_MDI_FLASH " (%d)" : "%s (%d)", inv.name.c_str(), inv.count);
+							} else {
+								snprintf(buf, 80, item.isEnchanted ? "%s" ICON_MDI_FLASH : "%s", inv.name.c_str());
+							}
+
+							if (inv.isCrime) {
+								ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+								if (ImGui::Selectable(buf, false)) {
+									auto player = RE::PlayerCharacter::GetSingleton();
+									item.ptr->RemoveItem(inv.ptr, inv.count, RE::ITEM_REMOVE_REASON::kSteal, 0, player);
+								}
+								ImGui::PopStyleColor();
+							} else {
+								ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.8f, 0.8f, 1.0f));
+								if (ImGui::Selectable(buf, false)) {
+									auto player = RE::PlayerCharacter::GetSingleton();
+									item.ptr->RemoveItem(inv.ptr, inv.count, RE::ITEM_REMOVE_REASON::kRemove, 0, player);
+								}
+								ImGui::PopStyleColor();
+							}
+						}
+						ImGui::TreePop();
+					}
+
+				} else {
+					myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "%s[空]", item.name.c_str());
+				}
+
+				ImGui::TableNextColumn();
+				switch (item.lockLevel) {
+				case RE::LOCK_LEVEL::kVeryEasy:
+					ImGui::Text("新手锁");
+					break;
+				case RE::LOCK_LEVEL::kEasy:
+					ImGui::Text("熟练锁");
+					break;
+				case RE::LOCK_LEVEL::kAverage:
+					ImGui::Text("老手锁");
+					break;
+				case RE::LOCK_LEVEL::kHard:
+					ImGui::Text("专家锁");
+					break;
+				case RE::LOCK_LEVEL::kVeryHard:
+					ImGui::Text("大师锁");
+					break;
+				case RE::LOCK_LEVEL::kRequiresKey:
+					ImGui::Text("加密锁");
+					break;
+				case RE::LOCK_LEVEL::kUnlocked:
+				default:
+					ImGui::Text("-");
+					break;
+				}
+
+				ImGui::TableNextColumn();
+				ImGui::Text("%d", item.invCount);
+
+				if (show_items_window_direction) {
+					ImGui::TableNextColumn();
+					switch (item.direction) {
+					case 1:  //前
+						myText(" \uf062%.0f", item.distance);
+						break;
+					case 2:  //左
+						myText(" \uf060%.0f", item.distance);
+						break;
+					case 3:
+						myText(" \uf063%.0f", item.distance);
+						break;
+					case 4:
+						myText(" \uf061%.0f", item.distance);
+						break;
+					default:
+						myText(" %.0f", item.distance);
+						break;
+					}
+				}
+
+				if (show_items_window_formid) {
+					ImGui::TableNextColumn();
+					ImGui::Text("%s", item.baseFormIdStr.c_str());
+				}
+
+				if (show_items_window_settings) {
+					ImGui::TableNextColumn();
+					if (ImGui::SmallButton("\uf101")) {
+						std::string commandStr = "player.moveto ";
+						commandStr.append(item.formIdStr);
+
+						// 调用控制台
+						const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
+						const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
+						if (script) {
+							const auto selectedRef = RE::Console::GetSelectedRef();
+							script->SetCommand(commandStr);
+							script->CompileAndRun(selectedRef.get());
+							delete script;
+							if (activeItems) {
+								activeItems = false;
+							}
+						}
+					}
+				}
+
+				ImGui::PopID();
+			}
+			ImGui::EndTable();
+		}
+	}
+
 	void __fastcall takeAllItem(int count, ItemInfo* items, RE::FormType formType)
 	{
 		auto player = RE::PlayerCharacter::GetSingleton();
@@ -994,7 +1164,7 @@ namespace menu
 					myTextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "%.1f / %.0f ", playerInfo.kStamina, playerInfo.kStaminaBase);
 				}
 				ImGui::End();
-				ImGui::Begin( "魔法", nullptr, window_flags);
+				ImGui::Begin("魔法", nullptr, window_flags);
 
 				ImGui::Text(ICON_MDI_STAR_FOUR_POINTS_OUTLINE "魔法:");
 				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
@@ -1627,10 +1797,6 @@ namespace menu
 					if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##52")) {
 						takeAllItem(getItemCountKEYM(), getItemsKEYM(), RE::FormType::KeyMaster);
 					}
-					/*	if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##48", &show_items_window_auto_ingr);
-					}*/
 					buildItemInfo(getItemCountKEYM(), getItemsKEYM(), RE::FormType::KeyMaster);
 				}
 				if (getItemCountMISC() > 0) {
@@ -1693,6 +1859,21 @@ namespace menu
 
 					buildItemInfo(getItemCountACTI(), getItemsACTI(), RE::FormType::Activator);
 				}
+				if (getItemCountACHR() > 0) {
+					ImGui::TableNextColumn();
+					ImGui::Text(ICON_MDI_HUMAN_MALE " 尸体(%d)", getItemCountACHR());
+
+					if (show_items_window_settings) {
+						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+						ImGui::Checkbox("自动拾取##62", &show_items_window_auto_achr);
+					} else {
+						if (show_items_window_auto_tree) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::Text(ICON_MDI_AUTORENEW);
+						}
+					}
+					buildItemACHRInfo(getItemCountACHR(), getItemsACHR(), RE::FormType::ActorCharacter);
+				}
 				if (getItemCountCONT() > 0) {
 					ImGui::TableNextColumn();
 					ImGui::Text(ICON_MDI_ARCHIVE_OUTLINE " 箱子(%d)", getItemCountCONT());
@@ -1725,7 +1906,8 @@ namespace menu
 						}
 
 						ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-						ImGui::DragInt("天际显示范围", &show_items_window_auto_dis_skyrim, 1, 20, 10000, "%d米");
+						ImGui::DragInt("扫描范围(本地)", &show_items_window_auto_dis_local, 1, 10, 2000, "%d米");
+						ImGui::DragInt("扫描范围(天际)", &show_items_window_auto_dis_skyrim, 1, 20, 10000, "%d米");
 						ImGui::PopItemWidth();
 
 						ImGui::Checkbox("忽略项目", &show_items_window_ignore);
@@ -1775,19 +1957,6 @@ namespace menu
 								}
 							}
 						}
-
-						//ImGui::Checkbox("自动拾取", &show_items_window_auto_setting);
-
-						/*bool enable = show_items_window_auto_ammo || show_items_window_auto_flor || show_items_window_auto_tree || show_items_window_auto_food || show_items_window_auto_ingr || show_items_window_auto_alch || show_items_window_auto_misc || show_items_window_auto_sgem;
-						if (enable) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text("[已启用]");
-						} else {
-
-						}*/
-
-						//if (show_items_window_auto_setting) {
-						//ImGui::Checkbox("启用", &show_items_window_auto);
 
 						if (ImGui::TreeNodeEx(ICON_MDI_AUTORENEW "自动拾取", ImGuiTreeNodeFlags_DefaultOpen)) {
 							ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
@@ -1868,6 +2037,7 @@ namespace menu
 									}
 								}
 							}
+							ImGui::TreePop();
 						}
 
 						ImGui::EndChild();
@@ -1880,17 +2050,17 @@ namespace menu
 			ImGui::End();
 		}
 
-		if (show_crosshair) {
-			ImGui::Begin("准星信息", nullptr, window_flags);
-			RE::TESObjectREFR* _cachedRef = BSTCrosshairRefEvent::GetSingleton()->GetCrosshairReference();
-			if (_cachedRef) {
-				logger::debug("准星");
-				logger::debug(StringUtil::Utf8ToGbk(_cachedRef->GetDisplayFullName()));
-				logger::debug(_cachedRef->GetFormID());
-			}
+		//if (show_crosshair) {
+		//	ImGui::Begin("准星信息", nullptr, window_flags);
+		//	RE::TESObjectREFR* _cachedRef = BSTCrosshairRefEvent::GetSingleton()->GetCrosshairReference();
+		//	if (_cachedRef) {
+		//		logger::debug("准星");
+		//		logger::debug(StringUtil::Utf8ToGbk(_cachedRef->GetDisplayFullName()));
+		//		logger::debug(_cachedRef->GetFormID());
+		//	}
 
-			ImGui::End();
-		}
+		//	ImGui::End();
+		//}
 
 		if (active) {
 			static bool show_demo_window = false;
@@ -2277,6 +2447,10 @@ namespace menu
 					if (j2.contains("show_items_window_auto_dis_skyrim")) {
 						show_items_window_auto_dis_skyrim = j2["show_items_window_auto_dis_skyrim"].get<int>();
 					}
+					if (j2.contains("show_items_window_auto_dis_local")) {
+						show_items_window_auto_dis_local = j2["show_items_window_auto_dis_local"].get<int>();
+					}
+					
 					if (j2.contains("show_items_window_direction")) {
 						show_items_window_direction = j2["show_items_window_direction"].get<bool>();
 					}
@@ -2489,6 +2663,7 @@ namespace menu
 									   { "ItemMenuInfo", {
 															 { "show_items_window_auto_dis", show_items_window_auto_dis },
 															 { "show_items_window_auto_dis_skyrim", show_items_window_auto_dis_skyrim },
+															 { "show_items_window_auto_dis_local", show_items_window_auto_dis_local },
 															 { "show_items_window_direction", show_items_window_direction },
 															 { "show_items_window_auto_ammo", show_items_window_auto_ammo },
 															 { "show_items_window_auto_flor", show_items_window_auto_flor },

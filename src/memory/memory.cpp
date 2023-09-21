@@ -20,7 +20,6 @@ bool show_npc_window_dead_hidden = false;
 
 void __cdecl RefreshGameInfo(void*)
 {
-
 	// 标记装备槽是否主要
 	//wornArmos[1].isMainSlotAlert =
 	wornArmos[2].isMainSlotAlert = wornArmos[3].isMainSlotAlert = wornArmos[5].isMainSlotAlert = wornArmos[6].isMainSlotAlert = wornArmos[7].isMainSlotAlert = true;
@@ -653,6 +652,7 @@ bool show_items_window_auto_ignore = true;
 bool show_items_window_auto_ammo = false;
 bool show_items_window_auto_flor = false;
 bool show_items_window_auto_tree = false;
+bool show_items_window_auto_achr = false;
 //bool show_items_window_auto_acti = false;
 bool show_items_window_auto_food = false;
 bool show_items_window_auto_ingr = false;
@@ -663,6 +663,7 @@ bool show_items_window_auto = true;  //暂时用不到
 //bool show_items_window_auto_setting = true;
 int show_items_window_auto_dis = 2;
 int show_items_window_auto_dis_skyrim = 100;
+int show_items_window_auto_dis_local = 160;
 int show_items_window_array_max_length = 2998;
 
 void __cdecl RefreshActorInfo(void*)
@@ -990,6 +991,10 @@ ItemInfo* getItemsACTI()
 {
 	return items[!nowItemIndex].itemInfoACTI;
 }
+ItemInfo* getItemsACHR()
+{
+	return items[!nowItemIndex].itemInfoACHR;
+}
 
 int getItemCount()
 {
@@ -1050,6 +1055,10 @@ int getItemCountSGEM()
 int getItemCountACTI()
 {
 	return items[!nowItemIndex].itemCountACTI;
+}
+int getItemCountACHR()
+{
+	return items[!nowItemIndex].itemCountACHR;
 }
 
 [[nodiscard]] static inline bool CanDisplay(const RE::TESBoundObject& a_object)
@@ -1203,15 +1212,7 @@ void __cdecl RefreshItemInfo(void*)
 	while (true) {
 		Sleep(1000);
 
-		if (!activeItems && !show_items_window 
-			&& !show_items_window_auto_ammo 
-			&& !show_items_window_auto_flor 
-			&& !show_items_window_auto_food 
-			&& !show_items_window_auto_ingr 
-			&& !show_items_window_auto_alch 
-			&& !show_items_window_auto_misc 
-			&& !show_items_window_auto_tree 
-			&& !show_items_window_auto_sgem) {
+		if (!activeItems && !show_items_window && !show_items_window_auto_ammo && !show_items_window_auto_flor && !show_items_window_auto_food && !show_items_window_auto_ingr && !show_items_window_auto_alch && !show_items_window_auto_misc && !show_items_window_auto_tree && !show_items_window_auto_sgem) {
 			Sleep(1000);
 			continue;
 		}
@@ -1277,8 +1278,9 @@ void __cdecl RefreshItemInfo(void*)
 		int tmpCountTREE = 0;
 		int tmpCountSGEM = 0;
 		int tmpCountACTI = 0;
+		int tmpCountACHR = 0;
+
 		auto currentLocation = player->currentLocation;
-		//if (currentLocation) {
 		const auto& [map, lock] = RE::TESForm::GetAllForms();
 		//const RE::BSReadLockGuard locker{ lock };
 		if (!map) {
@@ -1289,17 +1291,92 @@ void __cdecl RefreshItemInfo(void*)
 		for (auto& [id, form] : *map) {
 			//auto form = elem.second;
 			if (form) {
-				if (form->Is(RE::FormType::Reference)) {
+				if (form->Is(RE::FormType::ActorCharacter)) {
+					auto actor = form->As<RE::Actor>();
+					if (actor && actor->IsDead() && !actor->IsSummoned()) {
+						if (actor->GetCurrentLocation() == currentLocation) {
+							if (tmpCountACHR > show_items_window_array_max_length) {
+								continue;
+							}
+
+							if (actor->IsMarkedForDeletion()) {
+								continue;
+							}
+							auto name = actor->GetDisplayFullName();
+							if (strlen(name) == 0) {
+								continue;
+							}
+							float distance = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
+
+							if (!currentLocation) {
+								if (distance > show_items_window_auto_dis_skyrim) {
+									continue;
+								}
+							} else {
+								if (distance > show_items_window_auto_dis_local) {
+									continue;
+								}
+							}
+
+							items[nowItemIndex].itemInfoACHR[tmpCountACHR].ptr = actor;
+							items[nowItemIndex].itemInfoACHR[tmpCountACHR].baseFormId = actor->GetFormID();
+							items[nowItemIndex].itemInfoACHR[tmpCountACHR].baseFormIdStr = FormIDToString(actor->GetFormID());
+							items[nowItemIndex].itemInfoACHR[tmpCountACHR].formId = actor->GetFormID();
+							items[nowItemIndex].itemInfoACHR[tmpCountACHR].formIdStr = FormIDToString(actor->GetFormID());
+							items[nowItemIndex].itemInfoACHR[tmpCountACHR].formTypeStr = GetFormTypeName(actor->formType.underlying());
+							items[nowItemIndex].itemInfoACHR[tmpCountACHR].name = name;
+							//items[nowItemIndex].itemInfoACHR[tmpCountACHR].weight = actor->GetWeight();
+							//items[nowItemIndex].itemInfoACHR[tmpCountACHR].gold = actor->GetGoldValue();
+							items[nowItemIndex].itemInfoACHR[tmpCountACHR].isCrime = actor->IsCrimeToActivate();
+							//items[nowItemIndex].itemInfoACHR[tmpCountACHR].isEnchanted = actor->IsEnchanted();
+
+							if (show_items_window_direction) {
+								items[nowItemIndex].itemInfoACHR[tmpCountACHR].distance = distance;
+								items[nowItemIndex].itemInfoACHR[tmpCountACHR].direction = calculateDirection(actor->GetPosition(), player->GetPosition(), player->GetAngle());
+							}
+
+							int tmpInvCount = 0;
+							auto inv = actor->GetInventory(CanDisplay);
+							for (auto& [obj, data] : inv) {
+								auto& [count, entry] = data;
+								if (count > 0 && entry) {
+									// 自动拾取
+									if (show_items_window_auto_achr && distance < show_items_window_auto_dis) {
+										switch (obj->GetFormType()) {
+										case RE::FormType::Ammo:
+											break;
+
+										default:
+											actor->RemoveItem(obj, count, RE::ITEM_REMOVE_REASON::kRemove, 0, player);
+											continue;
+										}
+
+										//player->PlayPickUpSound(obj, true, false);
+									}
+									items[nowItemIndex].itemInfoACHR[tmpCountACHR].invs[tmpInvCount].ptr = obj;
+									items[nowItemIndex].itemInfoACHR[tmpCountACHR].invs[tmpInvCount].name = obj->GetName();
+									bool stealing = player->WouldBeStealing(actor);
+									items[nowItemIndex].itemInfoACHR[tmpCountACHR].invs[tmpInvCount].isCrime = !entry.get()->IsOwnedBy(player, !stealing);
+									items[nowItemIndex].itemInfoACHR[tmpCountACHR].invs[tmpInvCount].isEnchanted = entry.get()->IsEnchanted();
+									items[nowItemIndex].itemInfoACHR[tmpCountACHR].invs[tmpInvCount++].count = count;
+									if (tmpInvCount == 200) {
+										break;
+									}
+								}
+							}
+							items[nowItemIndex].itemInfoACHR[tmpCountACHR].invCount = tmpInvCount;
+
+							tmpCountACHR++;
+						}
+					}
+				}
+
+				else if (form->Is(RE::FormType::Reference)) {
 					auto reff = form->AsReference();
 					if (reff) {
 						if (reff->GetCurrentLocation() == currentLocation) {
 							auto baseObj = reff->GetBaseObject();
 							if (baseObj) {
-								// 这些都过滤
-								/*		if (baseObj->Is(RE::FormType::Static) || baseObj->Is(RE::FormType::Furniture) || baseObj->Is(RE::FormType::Tree) || baseObj->Is(RE::FormType::IdleMarker) || baseObj->Is(RE::FormType::Light) || baseObj->Is(RE::FormType::MovableStatic) || baseObj->Is(RE::FormType::Door)) {
-									continue;
-								}*/
-
 								switch (baseObj->GetFormType()) {
 								case RE::FormType::Weapon:
 									{
@@ -1320,13 +1397,14 @@ void __cdecl RefreshItemInfo(void*)
 											continue;
 										}
 
-										float distance = 0;
-										if (show_items_window_direction || !currentLocation) {
-											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
-										}
+										float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 										if (!currentLocation) {
 											if (distance > show_items_window_auto_dis_skyrim) {
+												continue;
+											}
+										} else {
+											if (distance > show_items_window_auto_dis_local) {
 												continue;
 											}
 										}
@@ -1372,13 +1450,14 @@ void __cdecl RefreshItemInfo(void*)
 											continue;
 										}
 
-										float distance = 0;
-										if (show_items_window_direction || !currentLocation) {
-											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
-										}
+										float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 										if (!currentLocation) {
 											if (distance > show_items_window_auto_dis_skyrim) {
+												continue;
+											}
+										} else {
+											if (distance > show_items_window_auto_dis_local) {
 												continue;
 											}
 										}
@@ -1422,13 +1501,14 @@ void __cdecl RefreshItemInfo(void*)
 											continue;
 										}
 
-										float distance = 0;
-										if ((show_items_window_auto && show_items_window_auto_ammo) || show_items_window_direction || !currentLocation) {
-											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
-										}
+										float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 										if (!currentLocation) {
 											if (distance > show_items_window_auto_dis_skyrim) {
+												continue;
+											}
+										} else {
+											if (distance > show_items_window_auto_dis_local) {
 												continue;
 											}
 										}
@@ -1473,13 +1553,14 @@ void __cdecl RefreshItemInfo(void*)
 											}
 										}
 
-										float distance = 0;
-										if (show_items_window_direction || !currentLocation) {
-											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
-										}
+										float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 										if (!currentLocation) {
 											if (distance > show_items_window_auto_dis_skyrim) {
+												continue;
+											}
+										} else {
+											if (distance > show_items_window_auto_dis_local) {
 												continue;
 											}
 										}
@@ -1524,12 +1605,14 @@ void __cdecl RefreshItemInfo(void*)
 										}
 										auto alchemyItem = baseObj->As<RE::AlchemyItem>();
 										if (alchemyItem->IsFood()) {
-											float distance = 0;
-											if ((show_items_window_auto && show_items_window_auto_food) || show_items_window_direction || !currentLocation) {
-												distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
-											}
+											float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+
 											if (!currentLocation) {
 												if (distance > show_items_window_auto_dis_skyrim) {
+													continue;
+												}
+											} else {
+												if (distance > show_items_window_auto_dis_local) {
 													continue;
 												}
 											}
@@ -1557,13 +1640,14 @@ void __cdecl RefreshItemInfo(void*)
 
 											tmpCountFOOD++;
 										} else {
-											float distance = 0;
-											if ((show_items_window_auto && show_items_window_auto_alch) || show_items_window_direction || !currentLocation) {
-												distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
-											}
+											float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 											if (!currentLocation) {
 												if (distance > show_items_window_auto_dis_skyrim) {
+													continue;
+												}
+											} else {
+												if (distance > show_items_window_auto_dis_local) {
 													continue;
 												}
 											}
@@ -1609,12 +1693,14 @@ void __cdecl RefreshItemInfo(void*)
 											}
 										}
 
-										float distance = 0;
-										if ((show_items_window_auto && show_items_window_auto_ingr) || show_items_window_direction || !currentLocation) {
-											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
-										}
+										float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+
 										if (!currentLocation) {
 											if (distance > show_items_window_auto_dis_skyrim) {
+												continue;
+											}
+										} else {
+											if (distance > show_items_window_auto_dis_local) {
 												continue;
 											}
 										}
@@ -1662,13 +1748,14 @@ void __cdecl RefreshItemInfo(void*)
 											continue;
 										}
 
-										float distance = 0;
-										if ((show_items_window_auto && show_items_window_auto_misc) || show_items_window_direction || !currentLocation) {
-											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
-										}
+										float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 										if (!currentLocation) {
 											if (distance > show_items_window_auto_dis_skyrim) {
+												continue;
+											}
+										} else {
+											if (distance > show_items_window_auto_dis_local) {
 												continue;
 											}
 										}
@@ -1713,13 +1800,14 @@ void __cdecl RefreshItemInfo(void*)
 											}
 										}
 
-										float distance = 0;
-										if (show_items_window_direction || !currentLocation) {
-											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
-										}
+										float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 										if (!currentLocation) {
 											if (distance > show_items_window_auto_dis_skyrim) {
+												continue;
+											}
+										} else {
+											if (distance > show_items_window_auto_dis_local) {
 												continue;
 											}
 										}
@@ -1787,13 +1875,14 @@ void __cdecl RefreshItemInfo(void*)
 											}
 										}
 
-										float distance = 0;
-										if (show_items_window_direction || (show_items_window_auto && show_items_window_auto_flor) || !currentLocation) {
-											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
-										}
+										float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 										if (!currentLocation) {
 											if (distance > show_items_window_auto_dis_skyrim) {
+												continue;
+											}
+										} else {
+											if (distance > show_items_window_auto_dis_local) {
 												continue;
 											}
 										}
@@ -1879,13 +1968,14 @@ void __cdecl RefreshItemInfo(void*)
 											}
 										}
 
-										float distance = 0;
-										if (show_items_window_direction || (show_items_window_auto && show_items_window_auto_tree) || !currentLocation) {
-											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
-										}
+										float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 										if (!currentLocation) {
 											if (distance > show_items_window_auto_dis_skyrim) {
+												continue;
+											}
+										} else {
+											if (distance > show_items_window_auto_dis_local) {
 												continue;
 											}
 										}
@@ -1906,7 +1996,6 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoTREE[tmpCountTREE].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 										}
 
-										
 										// 自动拾取判断
 										if (autoHarvest(reff, player, show_items_window_auto_tree, distance, tree)) {
 											continue;
@@ -1959,13 +2048,14 @@ void __cdecl RefreshItemInfo(void*)
 											}
 										}
 
-										float distance = 0;
-										if (show_items_window_direction || !currentLocation) {
-											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
-										}
+										float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 										if (!currentLocation) {
 											if (distance > show_items_window_auto_dis_skyrim) {
+												continue;
+											}
+										} else {
+											if (distance > show_items_window_auto_dis_local) {
 												continue;
 											}
 										}
@@ -2010,13 +2100,14 @@ void __cdecl RefreshItemInfo(void*)
 											}
 										}
 
-										float distance = 0;
-										if (show_items_window_direction || !currentLocation) {
-											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
-										}
+										float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 										if (!currentLocation) {
 											if (distance > show_items_window_auto_dis_skyrim) {
+												continue;
+											}
+										} else {
+											if (distance > show_items_window_auto_dis_local) {
 												continue;
 											}
 										}
@@ -2036,7 +2127,6 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].distance = distance;
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 										}
-
 
 										items[nowItemIndex].itemInfoACTI[tmpCountACTI].isHarvested = (reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested);
 
@@ -2063,18 +2153,18 @@ void __cdecl RefreshItemInfo(void*)
 											continue;
 										}
 
-										float distance = 0;
-										if ((show_items_window_auto && show_items_window_auto_sgem) || show_items_window_direction || !currentLocation) {
-											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
-										}
+										float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 										if (!currentLocation) {
 											if (distance > show_items_window_auto_dis_skyrim) {
 												continue;
 											}
+										} else {
+											if (distance > show_items_window_auto_dis_local) {
+												continue;
+											}
 										}
 
-										
 										// 自动拾取判断
 										if (autoTake(reff, player, show_items_window_auto_sgem, distance, isDeleteExist)) {
 											continue;
@@ -2111,6 +2201,7 @@ void __cdecl RefreshItemInfo(void*)
 								case RE::FormType::Explosion:
 								case RE::FormType::AcousticSpace:  // 升学空间
 								case RE::FormType::TalkingActivator:
+								case RE::FormType::Apparatus:  // 设备 暂时去掉
 									continue;
 								default:
 									{
@@ -2130,13 +2221,14 @@ void __cdecl RefreshItemInfo(void*)
 											}
 										}
 
-										float distance = 0;
-										if (show_items_window_direction || !currentLocation) {
-											distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
-										}
+										float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 										if (!currentLocation) {
 											if (distance > show_items_window_auto_dis_skyrim) {
+												continue;
+											}
+										} else {
+											if (distance > show_items_window_auto_dis_local) {
 												continue;
 											}
 										}
@@ -2190,6 +2282,8 @@ void __cdecl RefreshItemInfo(void*)
 		std::sort(items[nowItemIndex].itemInfoSGEM, items[nowItemIndex].itemInfoSGEM + tmpCountSGEM, compareForItem);
 		std::sort(items[nowItemIndex].itemInfoACTI, items[nowItemIndex].itemInfoACTI + tmpCountACTI, compareForItem);
 
+		std::sort(items[nowItemIndex].itemInfoACHR, items[nowItemIndex].itemInfoACHR + tmpCountACHR, compareForItem);
+
 		items[nowItemIndex].itemCount = tmpCount;
 		items[nowItemIndex].itemCountWEAP = tmpCountWEAP;
 		items[nowItemIndex].itemCountARMO = tmpCountARMO;
@@ -2206,11 +2300,6 @@ void __cdecl RefreshItemInfo(void*)
 		items[nowItemIndex].itemCountSGEM = tmpCountSGEM;
 		items[nowItemIndex].itemCountACTI = tmpCountACTI;
 
-		// 自动拾取
-		//if (deleteREFRs.size() > 0) {
-		//	_beginthread(myThreadFunction, 0, NULL);
-		//	//std::thread myThread(myThreadFunction);
-		//	//myThread.join();
-		//}
+		items[nowItemIndex].itemCountACHR = tmpCountACHR;
 	}
 }

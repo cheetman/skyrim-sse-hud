@@ -17,6 +17,8 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/hook/hudhook.h"
 	"${SOURCE_DIR}/hook/hudhook.cpp"
 	"${SOURCE_DIR}/hook/dinputhook.h"
+	"${SOURCE_DIR}/hook/BSRenderManager.h"
+
 	"${SOURCE_DIR}/hook/dinputhook.cpp"
 	"${SOURCE_DIR}/memory/memory.h"
 	"${SOURCE_DIR}/memory/memory.cpp"
