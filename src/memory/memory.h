@@ -278,10 +278,17 @@ extern bool show_items_window_auto_misc;
 extern bool show_items_window_auto_tree;
 extern bool show_items_window_auto_sgem;
 extern bool show_items_window_auto_achr;
-
- extern bool show_items_window_auto;
+extern bool show_items_window_auto_achr_ingr;
+extern bool show_items_window_auto_achr_food;
+extern bool show_items_window_auto_achr_alch;
+extern bool show_items_window_auto_achr_sgem;
+extern bool show_items_window_auto_achr_ammo;
+extern bool show_items_window_auto_achr_misc;
+extern bool show_items_window_auto_achr_gold;
+extern bool show_items_window_auto_achr_scrl;
+extern bool show_items_window_auto_achr_keym;
+//extern bool show_items_window_auto;
 //extern bool show_items_window_auto_setting;
-
 
 extern bool show_items_window_direction;
 extern bool show_items_window_ignore;
@@ -289,7 +296,7 @@ extern bool show_items_window_auto_ignore;
 extern int show_items_window_auto_dis;
 extern int show_items_window_auto_dis_skyrim;
 extern int show_items_window_auto_dis_local;
- extern int show_items_window_array_max_length;
+extern int show_items_window_array_max_length;
 
 struct ItemInvInfo
 {
@@ -324,8 +331,6 @@ struct ItemInfo
 	float distance = 0.0f;
 	int direction = 0;
 };
-
-
 
 struct ExcludeForms
 {

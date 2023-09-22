@@ -1895,7 +1895,7 @@ namespace menu
 						ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
 
 						//ImGui::BeginChild("ChildL", ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, 260), false, window_flags);
-						ImGui::BeginChild("childItemsSetting", ImVec2(ImGui::GetTextLineHeightWithSpacing() * 15, ImGui::GetTextLineHeightWithSpacing() * show_inv_window_height), false, window_flags);
+						ImGui::BeginChild("childItemsSetting", ImVec2(ImGui::GetTextLineHeightWithSpacing() * 15, ImGui::GetTextLineHeightWithSpacing() * (14.5f)), true, window_flags);
 
 						if (ImGui::BeginTable("tableItemsSetting", 2)) {
 							ImGui::TableNextColumn();
@@ -1963,6 +1963,34 @@ namespace menu
 							ImGui::DragInt("拾取范围", &show_items_window_auto_dis, 1, 1, 100, "%d米");
 							ImGui::PopItemWidth();
 
+
+							if (ImGui::TreeNodeEx(ICON_MDI_HUMAN_MALE "尸体拾取类型", ImGuiTreeNodeFlags_DefaultOpen)) {
+								if (ImGui::BeginTable("tableItemsSettingACHR", 3)) {
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(ICON_MDI_ARROW_PROJECTILE "弹药", &show_items_window_auto_achr_ammo);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE "药水", &show_items_window_auto_achr_alch);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(ICON_MDI_FOOD_DRUMSTICK "食物", &show_items_window_auto_achr_food);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(ICON_MDI_SOURCE_BRANCH "材料", &show_items_window_auto_achr_ingr);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(ICON_MDI_CARDS_DIAMOND "灵魂石", &show_items_window_auto_achr_sgem);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(ICON_MDI_CASH "金钱", &show_items_window_auto_achr_gold);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(ICON_MDI_SCRIPT_TEXT "卷轴", &show_items_window_auto_achr_scrl);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(ICON_MDI_KEY "钥匙", &show_items_window_auto_achr_keym);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(ICON_MDI_PACKAGE_VARIANT_CLOSED "杂项", &show_items_window_auto_achr_misc);
+									ImGui::EndTable();
+								}
+
+								ImGui::TreePop();
+							}
+
+							
 							ImGui::Checkbox("地点过滤", &show_items_window_auto_ignore);
 							if (show_items_window_auto_ignore) {
 								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1993,7 +2021,7 @@ namespace menu
 									ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
 
 								const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
-								if (ImGui::BeginTable("tableItemLocationIngore", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 8), 0.0f)) {
+								if (ImGui::BeginTable("tableItemLocationIngore", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
 									ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_1);
 									ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60, PlayerInfoColumnID_2);
 									ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 40, PlayerInfoColumnID_3);
@@ -2037,6 +2065,7 @@ namespace menu
 									}
 								}
 							}
+
 							ImGui::TreePop();
 						}
 
@@ -2450,7 +2479,7 @@ namespace menu
 					if (j2.contains("show_items_window_auto_dis_local")) {
 						show_items_window_auto_dis_local = j2["show_items_window_auto_dis_local"].get<int>();
 					}
-					
+
 					if (j2.contains("show_items_window_direction")) {
 						show_items_window_direction = j2["show_items_window_direction"].get<bool>();
 					}
@@ -2478,9 +2507,36 @@ namespace menu
 					if (j2.contains("show_items_window_auto_sgem")) {
 						show_items_window_auto_sgem = j2["show_items_window_auto_sgem"].get<bool>();
 					}
-					/*	if (j2.contains("show_items_window_auto_ignore")) {
-						show_items_window_auto_ignore = j2["show_items_window_auto_ignore"].get<bool>();
-					}*/
+					if (j2.contains("show_items_window_auto_achr_ingr")) {
+						show_items_window_auto_achr_ingr = j2["show_items_window_auto_achr_ingr"].get<bool>();
+					}
+
+					if (j2.contains("show_items_window_auto_achr_food")) {
+						show_items_window_auto_achr_food = j2["show_items_window_auto_achr_food"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_achr_alch")) {
+						show_items_window_auto_achr_alch = j2["show_items_window_auto_achr_alch"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_achr_ammo")) {
+						show_items_window_auto_achr_ammo = j2["show_items_window_auto_achr_ammo"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_achr_scrl")) {
+						show_items_window_auto_achr_scrl = j2["show_items_window_auto_achr_scrl"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_achr_keym")) {
+						show_items_window_auto_achr_keym = j2["show_items_window_auto_achr_keym"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_achr_misc")) {
+						show_items_window_auto_achr_misc = j2["show_items_window_auto_achr_misc"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_achr_gold")) {
+						show_items_window_auto_achr_gold = j2["show_items_window_auto_achr_gold"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_achr_sgem")) {
+						show_items_window_auto_achr_sgem = j2["show_items_window_auto_achr_sgem"].get<bool>();
+					}
+
+					
 				}
 
 				if (j.contains("playerBaseInfo")) {
@@ -2674,6 +2730,15 @@ namespace menu
 															 { "show_items_window_auto_misc", show_items_window_auto_misc },
 															 { "show_items_window_auto_sgem", show_items_window_auto_sgem },
 															 { "show_items_window_auto_ignore", show_items_window_auto_ignore },
+															 { "show_items_window_auto_achr_ingr", show_items_window_auto_achr_ingr },
+															 { "show_items_window_auto_achr_food", show_items_window_auto_achr_food },
+															 { "show_items_window_auto_achr_alch", show_items_window_auto_achr_alch },
+															 { "show_items_window_auto_achr_sgem", show_items_window_auto_achr_sgem },
+															 { "show_items_window_auto_achr_ammo", show_items_window_auto_achr_ammo },
+															 { "show_items_window_auto_achr_misc", show_items_window_auto_achr_misc },
+															 { "show_items_window_auto_achr_gold", show_items_window_auto_achr_gold },
+															 { "show_items_window_auto_achr_scrl", show_items_window_auto_achr_scrl },
+															 { "show_items_window_auto_achr_keym", show_items_window_auto_achr_keym },
 
 														 } }
 

@@ -659,7 +659,17 @@ bool show_items_window_auto_ingr = false;
 bool show_items_window_auto_alch = false;
 bool show_items_window_auto_misc = false;
 bool show_items_window_auto_sgem = false;
-bool show_items_window_auto = true;  //暂时用不到
+bool show_items_window_auto_achr_ingr = false;
+bool show_items_window_auto_achr_food = false;
+bool show_items_window_auto_achr_alch = false;
+bool show_items_window_auto_achr_sgem = false;
+bool show_items_window_auto_achr_ammo = false;
+bool show_items_window_auto_achr_scrl = false;
+bool show_items_window_auto_achr_keym = false;
+bool show_items_window_auto_achr_misc = false;
+bool show_items_window_auto_achr_gold = false;
+
+//bool show_items_window_auto = true;  //暂时用不到
 //bool show_items_window_auto_setting = true;
 int show_items_window_auto_dis = 2;
 int show_items_window_auto_dis_skyrim = 100;
@@ -1207,6 +1217,21 @@ bool __fastcall autoHarvest(RE::TESObjectREFR* reff, RE::PlayerCharacter* player
 	return false;
 }
 
+bool __fastcall autoTakeForACHR(RE::Actor* actor, RE::TESBoundObject* obj, int count, RE::PlayerCharacter* player)
+{
+	if (show_items_window_ignore) {
+		if (excludeFormIds.find(obj->GetFormID()) != excludeFormIds.end()) {
+			return false;
+		}
+	}
+	actor->RemoveItem(obj, count, RE::ITEM_REMOVE_REASON::kRemove, 0, player);
+	char buf[80];
+	snprintf(buf, 80, "%s 从%s尸体自动拾取", obj->GetName(), actor->GetDisplayFullName());
+	RE::DebugNotification(buf, NULL, false);
+	player->PlayPickUpSound(obj, true, false);
+	return true;
+}
+
 void __cdecl RefreshItemInfo(void*)
 {
 	while (true) {
@@ -1344,14 +1369,81 @@ void __cdecl RefreshItemInfo(void*)
 									if (show_items_window_auto_achr && distance < show_items_window_auto_dis) {
 										switch (obj->GetFormType()) {
 										case RE::FormType::Ammo:
+											if (show_items_window_auto_achr_ammo) {
+												if (autoTakeForACHR(actor, obj, count, player)) {
+													continue;
+												}
+											}
 											break;
+										case RE::FormType::Scroll:
+											if (show_items_window_auto_achr_scrl) {
+												if (autoTakeForACHR(actor, obj, count, player)) {
+													continue;
+												}
+											}
+											break;
+										case RE::FormType::Misc:
+											{
+												if (obj->IsGold()) {
+													if (show_items_window_auto_achr_gold) {
+														if (autoTakeForACHR(actor, obj, count, player)) {
+															continue;
+														}
+													}
 
+												} else {
+													if (show_items_window_auto_achr_misc) {
+														if (autoTakeForACHR(actor, obj, count, player)) {
+															continue;
+														}
+													}
+												}
+												break;
+											}
+
+										case RE::FormType::KeyMaster:
+											if (show_items_window_auto_achr_keym) {
+												if (autoTakeForACHR(actor, obj, count, player)) {
+													continue;
+												}
+											}
+											break;
+										case RE::FormType::AlchemyItem:
+											{
+												auto alchemyItem = obj->As<RE::AlchemyItem>();
+												if (alchemyItem->IsFood()) {
+													if (show_items_window_auto_achr_food) {
+														if (autoTakeForACHR(actor, obj, count, player)) {
+															continue;
+														}
+													}
+
+												} else {
+													if (show_items_window_auto_achr_alch) {
+														if (autoTakeForACHR(actor, obj, count, player)) {
+															continue;
+														}
+													}
+												}
+												break;
+											}
+										case RE::FormType::SoulGem:
+											if (show_items_window_auto_achr_sgem) {
+												if (autoTakeForACHR(actor, obj, count, player)) {
+													continue;
+												}
+											}
+											break;
+										case RE::FormType::Ingredient:
+											if (show_items_window_auto_achr_ingr) {
+												if (autoTakeForACHR(actor, obj, count, player)) {
+													continue;
+												}
+											}
+											break;
 										default:
-											actor->RemoveItem(obj, count, RE::ITEM_REMOVE_REASON::kRemove, 0, player);
-											continue;
+											break;
 										}
-
-										//player->PlayPickUpSound(obj, true, false);
 									}
 									items[nowItemIndex].itemInfoACHR[tmpCountACHR].invs[tmpInvCount].ptr = obj;
 									items[nowItemIndex].itemInfoACHR[tmpCountACHR].invs[tmpInvCount].name = obj->GetName();
