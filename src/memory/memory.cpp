@@ -652,13 +652,14 @@ bool show_items_window_auto_ignore = true;
 bool show_items_window_auto_ammo = false;
 bool show_items_window_auto_flor = false;
 bool show_items_window_auto_tree = false;
-bool show_items_window_auto_achr = false;
 //bool show_items_window_auto_acti = false;
 bool show_items_window_auto_food = false;
 bool show_items_window_auto_ingr = false;
 bool show_items_window_auto_alch = false;
 bool show_items_window_auto_misc = false;
 bool show_items_window_auto_sgem = false;
+bool show_items_window_auto_achr = false;
+bool show_items_window_auto_cont = false;
 bool show_items_window_auto_achr_ingr = false;
 bool show_items_window_auto_achr_food = false;
 bool show_items_window_auto_achr_alch = false;
@@ -668,6 +669,15 @@ bool show_items_window_auto_achr_scrl = false;
 bool show_items_window_auto_achr_keym = false;
 bool show_items_window_auto_achr_misc = false;
 bool show_items_window_auto_achr_gold = false;
+bool show_items_window_auto_cont_ingr = false;
+bool show_items_window_auto_cont_food = false;
+bool show_items_window_auto_cont_alch = false;
+bool show_items_window_auto_cont_sgem = false;
+bool show_items_window_auto_cont_ammo = false;
+bool show_items_window_auto_cont_scrl = false;
+bool show_items_window_auto_cont_keym = false;
+bool show_items_window_auto_cont_misc = false;
+bool show_items_window_auto_cont_gold = false;
 
 //bool show_items_window_auto = true;  //暂时用不到
 //bool show_items_window_auto_setting = true;
@@ -934,10 +944,12 @@ void __cdecl RefreshActorInfo(void*)
 Item2Info* items = new Item2Info[2];
 int nowItemIndex = 0;
 
+std::unordered_set<int> autoContFormIds;
+std::vector<IncludeForm> autoContForms;
 std::unordered_set<int> excludeFormIds;
-std::vector<ExcludeForms> excludeForms;
+std::vector<ExcludeForm> excludeForms;
 std::unordered_set<int> excludeLocationFormIds;
-std::vector<ExcludeForms> excludeLocationForms;
+std::vector<ExcludeForm> excludeLocationForms;
 std::unordered_set<RE::TESObjectREFR*> deleteREFRs;
 bool excludeFormsInitFlag = true;
 
@@ -1224,6 +1236,7 @@ bool __fastcall autoTakeForACHR(RE::Actor* actor, RE::TESBoundObject* obj, int c
 			return false;
 		}
 	}
+
 	actor->RemoveItem(obj, count, RE::ITEM_REMOVE_REASON::kRemove, 0, player);
 	char buf[80];
 	snprintf(buf, 80, "%s 从%s尸体自动拾取", obj->GetName(), actor->GetDisplayFullName());
@@ -1311,6 +1324,21 @@ void __cdecl RefreshItemInfo(void*)
 		if (!map) {
 			continue;
 		}
+
+		bool autoPick = true;
+		// 地点忽略结果
+		if (show_items_window_auto_ignore) {
+			// 判断地点忽略
+			int formID = 0;
+			if (player->currentLocation) {
+				formID = player->currentLocation->GetFormID();
+			}
+			// 不存在
+			if (excludeLocationFormIds.find(formID) != excludeLocationFormIds.end()) {
+				autoPick = false;
+			}
+		}
+
 		//auto& formIDs = *allForms.first;
 		//for (auto elem : formIDs) {
 		for (auto& [id, form] : *map) {
@@ -1319,6 +1347,10 @@ void __cdecl RefreshItemInfo(void*)
 				if (form->Is(RE::FormType::ActorCharacter)) {
 					auto actor = form->As<RE::Actor>();
 					if (actor && actor->IsDead() && !actor->IsSummoned()) {
+						// 排除自己
+						if (actor->IsPlayerRef()) {
+							continue;
+						}
 						if (actor->GetCurrentLocation() == currentLocation) {
 							if (tmpCountACHR > show_items_window_array_max_length) {
 								continue;
@@ -1366,7 +1398,8 @@ void __cdecl RefreshItemInfo(void*)
 								auto& [count, entry] = data;
 								if (count > 0 && entry) {
 									// 自动拾取
-									if (show_items_window_auto_achr && distance < show_items_window_auto_dis) {
+
+									if (show_items_window_auto_achr && distance < show_items_window_auto_dis && autoPick) {
 										switch (obj->GetFormType()) {
 										case RE::FormType::Ammo:
 											if (show_items_window_auto_achr_ammo) {
@@ -1797,7 +1830,6 @@ void __cdecl RefreshItemInfo(void*)
 											}
 										}
 
-										// 自动拾取判断
 										if (autoTake(reff, player, show_items_window_auto_ingr, distance, isDeleteExist)) {
 											continue;
 										}
@@ -1919,6 +1951,17 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoCONT[tmpCountCONT].distance = distance;
 											items[nowItemIndex].itemInfoCONT[tmpCountCONT].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 										}
+
+										if (show_items_window_auto_cont) {
+											if (autoContFormIds.find(baseObj->GetFormID()) != autoContFormIds.end()) {
+												items[nowItemIndex].itemInfoCONT[tmpCountCONT].isAuto = true;
+											} else {
+												items[nowItemIndex].itemInfoCONT[tmpCountCONT].isAuto = false;
+											}
+										} else {
+											items[nowItemIndex].itemInfoCONT[tmpCountCONT].isAuto = false;
+										}
+
 										int tmpInvCount = 0;
 										auto inv = reff->GetInventory(CanDisplay);
 										for (auto& [obj, data] : inv) {

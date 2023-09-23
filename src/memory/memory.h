@@ -278,6 +278,7 @@ extern bool show_items_window_auto_misc;
 extern bool show_items_window_auto_tree;
 extern bool show_items_window_auto_sgem;
 extern bool show_items_window_auto_achr;
+extern bool show_items_window_auto_cont;
 extern bool show_items_window_auto_achr_ingr;
 extern bool show_items_window_auto_achr_food;
 extern bool show_items_window_auto_achr_alch;
@@ -287,6 +288,15 @@ extern bool show_items_window_auto_achr_misc;
 extern bool show_items_window_auto_achr_gold;
 extern bool show_items_window_auto_achr_scrl;
 extern bool show_items_window_auto_achr_keym;
+extern bool show_items_window_auto_cont_ingr;
+extern bool show_items_window_auto_cont_food;
+extern bool show_items_window_auto_cont_alch;
+extern bool show_items_window_auto_cont_sgem;
+extern bool show_items_window_auto_cont_ammo;
+extern bool show_items_window_auto_cont_misc;
+extern bool show_items_window_auto_cont_gold;
+extern bool show_items_window_auto_cont_scrl;
+extern bool show_items_window_auto_cont_keym;
 //extern bool show_items_window_auto;
 //extern bool show_items_window_auto_setting;
 
@@ -330,20 +340,36 @@ struct ItemInfo
 	ItemInvInfo invs[200];
 	float distance = 0.0f;
 	int direction = 0;
+	bool isAuto = false;
 };
 
-struct ExcludeForms
+struct ExcludeForm
 {
 	RE::FormID formId = 0;
 	std::string name = "";
 	std::string formTypeStr = "";
 	//std::string formIdStr = "";
 
-	bool operator<(const ExcludeForms& other) const
+	bool operator<(const ExcludeForm& other) const
 	{
 		return formId < other.formId;
 	}
 };
+
+
+struct IncludeForm
+{
+	RE::FormID formId = 0;
+	std::string name = "";
+	std::string formTypeStr = "";
+	//std::string formIdStr = "";
+
+	bool operator<(const IncludeForm& other) const
+	{
+		return formId < other.formId;
+	}
+};
+
 
 struct Item2Info
 {
@@ -419,8 +445,10 @@ ItemInfo* getItemsACTI();
 
 ItemInfo* getItemsACHR();
 
+extern std::unordered_set<int> autoContFormIds;
+extern std::vector<IncludeForm> autoContForms;
 extern std::unordered_set<int> excludeFormIds;
 extern std::unordered_set<int> excludeLocationFormIds;
-extern std::vector<ExcludeForms> excludeForms;
-extern std::vector<ExcludeForms> excludeLocationForms;
+extern std::vector<ExcludeForm> excludeForms;
+extern std::vector<ExcludeForm> excludeLocationForms;
 extern std::unordered_set<RE::TESObjectREFR*> deleteREFRs;
