@@ -470,10 +470,10 @@ bool compareForItem(const ItemInfo& info1, const ItemInfo& info2)
 
 bool compareForItemCONT(const ItemInfo& info1, const ItemInfo& info2)
 {
-	if (info1.invCount != info2.invCount) {
-		return info1.invCount > info2.invCount;
+	if (info1.baseFormId != info2.baseFormId) {
+		return info1.baseFormId > info2.baseFormId;
 	} else {
-		return info1.baseFormId < info2.baseFormId;
+		return info1.invCount > info2.invCount;
 	}
 }
 
@@ -1238,8 +1238,32 @@ bool __fastcall autoTakeForACHR(RE::Actor* actor, RE::TESBoundObject* obj, int c
 	}
 
 	actor->RemoveItem(obj, count, RE::ITEM_REMOVE_REASON::kRemove, 0, player);
-	char buf[80];
-	snprintf(buf, 80, "%s 从%s尸体自动拾取", obj->GetName(), actor->GetDisplayFullName());
+	char buf[90];
+	if (count > 1) {
+		snprintf(buf, 80, "%s(%d) 从%s尸体自动拾取", obj->GetName(), count,actor->GetDisplayFullName());
+	} else {
+		snprintf(buf, 80, "%s 从%s尸体自动拾取", obj->GetName(), actor->GetDisplayFullName());
+	}
+	RE::DebugNotification(buf, NULL, false);
+	player->PlayPickUpSound(obj, true, false);
+	return true;
+}
+
+bool __fastcall autoTakeForCONT(RE::TESObjectREFR* reff, RE::TESBoundObject* obj, int count, RE::PlayerCharacter* player)
+{
+	if (show_items_window_ignore) {
+		if (excludeFormIds.find(obj->GetFormID()) != excludeFormIds.end()) {
+			return false;
+		}
+	}
+
+	reff->RemoveItem(obj, count, RE::ITEM_REMOVE_REASON::kRemove, 0, player);
+	char buf[90];
+	if (count > 1) {
+		snprintf(buf, 80, "%s(%d) 从%s自动拾取", obj->GetName(), count, reff->GetDisplayFullName());
+	} else {
+		snprintf(buf, 80, "%s 从%s自动拾取", obj->GetName(), reff->GetDisplayFullName());
+	}
 	RE::DebugNotification(buf, NULL, false);
 	player->PlayPickUpSound(obj, true, false);
 	return true;
@@ -1250,7 +1274,17 @@ void __cdecl RefreshItemInfo(void*)
 	while (true) {
 		Sleep(1000);
 
-		if (!activeItems && !show_items_window && !show_items_window_auto_ammo && !show_items_window_auto_flor && !show_items_window_auto_food && !show_items_window_auto_ingr && !show_items_window_auto_alch && !show_items_window_auto_misc && !show_items_window_auto_tree && !show_items_window_auto_sgem) {
+		if (!activeItems && !show_items_window 
+			&& !show_items_window_auto_ammo 
+			&& !show_items_window_auto_flor 
+			&& !show_items_window_auto_food 
+			&& !show_items_window_auto_ingr 
+			&& !show_items_window_auto_alch 
+			&& !show_items_window_auto_misc 
+			&& !show_items_window_auto_tree 
+			&& !show_items_window_auto_sgem 
+			&& !show_items_window_auto_achr 
+			&& !show_items_window_auto_cont) {
 			Sleep(1000);
 			continue;
 		}
@@ -1282,6 +1316,13 @@ void __cdecl RefreshItemInfo(void*)
 				auto form = RE::TESForm::LookupByID(id);
 				if (form) {
 					excludeForms.push_back({ form->GetFormID(), form->GetName(), "" });
+				}
+			}
+
+			for (auto id : autoContFormIds) {
+				auto form = RE::TESForm::LookupByID(id);
+				if (form) {
+					autoContForms.push_back({ form->GetFormID(), form->GetName(), "" });
 				}
 			}
 
@@ -1945,40 +1986,137 @@ void __cdecl RefreshItemInfo(void*)
 										items[nowItemIndex].itemInfoCONT[tmpCountCONT].name = reff->GetDisplayFullName();
 										items[nowItemIndex].itemInfoCONT[tmpCountCONT].weight = reff->GetWeight();
 										items[nowItemIndex].itemInfoCONT[tmpCountCONT].gold = baseObj->GetGoldValue();
-										items[nowItemIndex].itemInfoCONT[tmpCountCONT].isCrime = reff->IsCrimeToActivate();
+										bool isCrime = reff->IsCrimeToActivate();
+										items[nowItemIndex].itemInfoCONT[tmpCountCONT].isCrime = isCrime;
 										items[nowItemIndex].itemInfoCONT[tmpCountCONT].lockLevel = reff->GetLockLevel();
 										if (show_items_window_direction) {
 											items[nowItemIndex].itemInfoCONT[tmpCountCONT].distance = distance;
 											items[nowItemIndex].itemInfoCONT[tmpCountCONT].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 										}
 
-										if (show_items_window_auto_cont) {
-											if (autoContFormIds.find(baseObj->GetFormID()) != autoContFormIds.end()) {
-												items[nowItemIndex].itemInfoCONT[tmpCountCONT].isAuto = true;
-											} else {
-												items[nowItemIndex].itemInfoCONT[tmpCountCONT].isAuto = false;
-											}
-										} else {
-											items[nowItemIndex].itemInfoCONT[tmpCountCONT].isAuto = false;
-										}
-
 										int tmpInvCount = 0;
 										auto inv = reff->GetInventory(CanDisplay);
-										for (auto& [obj, data] : inv) {
-											auto& [count, entry] = data;
-											if (count > 0 && entry) {
-												items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].ptr = obj;
-												//entry.get()->IsOwnedBy(player,true)
-												//items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].ptr2 = entry.get();
-												items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].name = obj->GetName();
-												//WouldBeStealing
-												bool stealing = player->WouldBeStealing(reff);
 
-												items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].isCrime = !entry.get()->IsOwnedBy(player, !stealing);
-												items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].isEnchanted = entry.get()->IsEnchanted();
-												items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount++].count = count;
-												if (tmpInvCount == 200) {
-													break;
+										// 自动拾取条件1
+										bool auto1 = false;
+										if (show_items_window_auto_cont) {
+											if (autoContFormIds.find(baseObj->GetFormID()) != autoContFormIds.end()) {
+												auto1 = true;
+											}
+										}
+										items[nowItemIndex].itemInfoCONT[tmpCountCONT].isAuto = auto1;
+										// 满足自动拾取(加上距离条件和地点条件)
+										if (auto1 && distance < show_items_window_auto_dis && autoPick && !isCrime) {
+											for (auto& [obj, data] : inv) {
+												auto& [count, entry] = data;
+												if (count > 0 && entry) {
+													bool stealing = player->WouldBeStealing(reff);
+													bool isCrimeInv = !entry.get()->IsOwnedBy(player, !stealing);
+													// 并且不犯罪 判断是否拾取
+													if (!isCrimeInv) {
+														switch (obj->GetFormType()) {
+														case RE::FormType::Ammo:
+															if (show_items_window_auto_cont_ammo) {
+																if (autoTakeForCONT(reff, obj, count, player)) {
+																	continue;
+																}
+															}
+															break;
+														case RE::FormType::Scroll:
+															if (show_items_window_auto_cont_scrl) {
+																if (autoTakeForCONT(reff, obj, count, player)) {
+																	continue;
+																}
+															}
+															break;
+														case RE::FormType::Misc:
+															{
+																if (obj->IsGold()) {
+																	if (show_items_window_auto_cont_gold) {
+																		if (autoTakeForCONT(reff, obj, count, player)) {
+																			continue;
+																		}
+																	}
+
+																} else {
+																	if (show_items_window_auto_cont_misc) {
+																		if (autoTakeForCONT(reff, obj, count, player)) {
+																			continue;
+																		}
+																	}
+																}
+																break;
+															}
+
+														case RE::FormType::KeyMaster:
+															if (show_items_window_auto_cont_keym) {
+																if (autoTakeForCONT(reff, obj, count, player)) {
+																	continue;
+																}
+															}
+															break;
+														case RE::FormType::AlchemyItem:
+															{
+																auto alchemyItem = obj->As<RE::AlchemyItem>();
+																if (alchemyItem->IsFood()) {
+																	if (show_items_window_auto_cont_food) {
+																		if (autoTakeForCONT(reff, obj, count, player)) {
+																			continue;
+																		}
+																	}
+
+																} else {
+																	if (show_items_window_auto_cont_alch) {
+																		if (autoTakeForCONT(reff, obj, count, player)) {
+																			continue;
+																		}
+																	}
+																}
+																break;
+															}
+														case RE::FormType::SoulGem:
+															if (show_items_window_auto_cont_sgem) {
+																if (autoTakeForCONT(reff, obj, count, player)) {
+																	continue;
+																}
+															}
+															break;
+														case RE::FormType::Ingredient:
+															if (show_items_window_auto_cont_ingr) {
+																if (autoTakeForCONT(reff, obj, count, player)) {
+																	continue;
+																}
+															}
+															break;
+														default:
+															break;
+														}
+													}
+
+													items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].ptr = obj;
+													items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].name = obj->GetName();
+													items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].isCrime = isCrimeInv;
+													items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].isEnchanted = entry.get()->IsEnchanted();
+													items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount++].count = count;
+
+													if (tmpInvCount == 200) {
+														break;
+													}
+												}
+											}
+										} else {
+											for (auto& [obj, data] : inv) {
+												auto& [count, entry] = data;
+												if (count > 0 && entry) {
+													items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].ptr = obj;
+													items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].name = obj->GetName();
+													bool stealing = player->WouldBeStealing(reff);
+													items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].isCrime = !entry.get()->IsOwnedBy(player, !stealing);
+													items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].isEnchanted = entry.get()->IsEnchanted();
+													items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount++].count = count;
+													if (tmpInvCount == 200) {
+														break;
+													}
 												}
 											}
 										}
