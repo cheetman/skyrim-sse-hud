@@ -163,7 +163,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 
 void __cdecl installimgui(void*)
 {
-	d3d11hook::Install(3);
+	d3d11hook::Install(1);
 	dinputhook ::Install();
 	
 	MenuOpenCloseEvent::Register();
