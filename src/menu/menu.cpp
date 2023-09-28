@@ -1521,7 +1521,7 @@ namespace menu
 			ImGui::Begin("其他信息", nullptr, window_flags);
 			ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " 位置: %s", playerInfo.location.c_str());
 			// z高度
-			ImGui::Text(ICON_MDI_AXIS_ARROW " 坐标: [%.0f,%.0f,%.0f]", playerInfo.Position.x, playerInfo.Position.y, playerInfo.Position.z);
+			ImGui::Text(ICON_MDI_AXIS_ARROW " 坐标: [%.1f,%.1f,%.1f]", playerInfo.Position.x / 100.0f, playerInfo.Position.y / 100.0f, playerInfo.Position.z / 100.0f);
 			//ImGui::SameLine(0, 0);
 			// z 是0~2Π
 			ImGui::Text(ICON_MDI_ANGLE_ACUTE " 视角: [%.2f,%.2f]", playerInfo.Angle.x, playerInfo.Angle.z);
