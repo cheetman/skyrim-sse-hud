@@ -218,7 +218,7 @@ namespace menu
 
 				if (treeNodeExResult) {
 					ImGui::PushID(i + 1000);
-					if (ImGui::SmallButton("\uf101传送到目标")) {
+					if (ImGui::SmallButton("\uf101 传送玩家")) {
 						std::string commandStr = "player.moveto ";
 						commandStr.append(item.formIdStr);
 
@@ -235,8 +235,9 @@ namespace menu
 					ImGui::PopID();
 
 					if (item.lifeState != RE::ACTOR_LIFE_STATE::kDead) {
+						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 						ImGui::PushID(i + 2000);
-						if (ImGui::SmallButton("\uf100传送到玩家")) {
+						if (ImGui::SmallButton("\uf100 传送目标")) {
 							std::string commandStr = "moveto player";
 							//commandStr.append(item.formId);
 							//commandStr.append("moveto player");
@@ -259,11 +260,11 @@ namespace menu
 						for (int i2 = 0; i2 < item.inventoryCount; i2++) {
 							auto inv = item.Inventorys[i2];
 
-							char buf[60];
+							char buf[80];
 							if (show_npc_window_formid) {
-								snprintf(buf, 60, "%s %s - %s %s (%d) %.1f ", u8"\uf01c", inv.formIdStr.c_str(), inv.isWorn ? "[装备中]" : "", inv.name.c_str(), inv.count, inv.weight);
+								snprintf(buf, 80, "%s %s - %s %s (%d) %.1f ", u8"\uf01c", inv.formIdStr.c_str(), inv.isWorn ? "[装备中]" : "", inv.name.c_str(), inv.count, inv.weight);
 							} else {
-								snprintf(buf, 60, "%s %s %s (%d) %.1f ", u8"\uf01c", inv.isWorn ? "[装备中]" : "", inv.name.c_str(), inv.count, inv.weight);
+								snprintf(buf, 80, "%s %s %s (%d) %.1f ", u8"\uf01c", inv.isWorn ? "[装备中]" : "", inv.name.c_str(), inv.count, inv.weight);
 							}
 							if (ImGui::Selectable(buf, false)) {
 								auto player = RE::PlayerCharacter::GetSingleton();

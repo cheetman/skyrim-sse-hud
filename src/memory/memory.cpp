@@ -798,6 +798,7 @@ void __cdecl RefreshActorInfo(void*)
 				auto actor = handle.get().get();
 				if (actor) {
 					if (actor->IsPlayerTeammate()) {
+) {
 						if (tmpTeammateCount > show_npc_window_array_max_length) {
 							continue;
 						}
@@ -1753,9 +1754,6 @@ void __cdecl RefreshItemInfo(void*)
 									}
 								case RE::FormType::AlchemyItem:
 									{
-										if (tmpCountFOOD > show_items_window_array_max_length) {
-											continue;
-										}
 
 										if (reff->IsMarkedForDeletion()) {
 											continue;
@@ -1771,6 +1769,11 @@ void __cdecl RefreshItemInfo(void*)
 										}
 										auto alchemyItem = baseObj->As<RE::AlchemyItem>();
 										if (alchemyItem->IsFood()) {
+
+											if (tmpCountFOOD > show_items_window_array_max_length) {
+												continue;
+											}
+
 											float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 											if (!currentLocation) {
@@ -1806,6 +1809,10 @@ void __cdecl RefreshItemInfo(void*)
 
 											tmpCountFOOD++;
 										} else {
+											if (tmpCountALCH > show_items_window_array_max_length) {
+												continue;
+											}
+
 											float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 											if (!currentLocation) {
