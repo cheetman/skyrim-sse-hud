@@ -84,6 +84,8 @@ namespace d3d11hook
 				if (!ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dContext)) {
 					SKSE::log::warn("ImGui_ImplDX11_Init fail");
 				}
+
+				menu::initStyle();
 				SKSE::log::info("ImGui_ImplDX11_Init");
 			} else {
 				SKSE::log::info("g_pSwapChain->GetDevice(IID_PPV_ARGS(&g_pd3dDevice) Fail");

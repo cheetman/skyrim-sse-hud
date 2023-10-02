@@ -14,9 +14,11 @@ namespace menu
 	extern int hotkey;
 	extern int hotkey2;
 	extern float font_scale;
+	extern int imgui_style_index;
 	bool save_settings();
 	bool load_settings();
 	void __fastcall render();
 
+	void initStyle();
 	//extern ImFont* font2;
 }

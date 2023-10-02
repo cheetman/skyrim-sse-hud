@@ -649,6 +649,7 @@ bool show_items_window_formid = false;
 bool show_items_window_direction = false;
 bool show_items_window_ignore = true;
 bool show_items_window_auto_ignore = true;
+bool show_items_window_auto_notification = true;
 bool show_items_window_auto_ammo = false;
 bool show_items_window_auto_flor = false;
 bool show_items_window_auto_tree = false;
@@ -709,6 +710,7 @@ void __cdecl RefreshActorInfo(void*)
 		auto pl = RE::ProcessLists::GetSingleton();
 
 		nowIndex = !nowIndex;
+		Sleep(100);
 
 		{
 			if (show_inv_window) {
@@ -1172,17 +1174,22 @@ bool __fastcall autoHarvest(RE::TESObjectREFR* reff, RE::PlayerCharacter* player
 						if (excludeLocationFormIds.find(formID) == excludeLocationFormIds.end()) {
 							if (flora) {
 								flora->Activate(reff, player, 0, flora->produceItem, 1);
-								char buf[40];
-								snprintf(buf, 40, "%s 已自动收获", reff->GetDisplayFullName());
-								RE::DebugNotification(buf, NULL, false);
+								if (show_items_window_auto_notification) {
+									char buf[40];
+									snprintf(buf, 40, "%s 已自动收获", reff->GetDisplayFullName());
+									RE::DebugNotification(buf, NULL, false);
+								}
 							}
 						}
 					} else {
 						if (flora) {
 							flora->Activate(reff, player, 0, flora->produceItem, 1);
-							char buf[40];
-							snprintf(buf, 40, "%s 已自动收获", reff->GetDisplayFullName());
-							RE::DebugNotification(buf, NULL, false);
+
+							if (show_items_window_auto_notification) {
+								char buf[40];
+								snprintf(buf, 40, "%s 已自动收获", reff->GetDisplayFullName());
+								RE::DebugNotification(buf, NULL, false);
+							}
 						}
 					}
 				}
@@ -1209,17 +1216,23 @@ bool __fastcall autoHarvest(RE::TESObjectREFR* reff, RE::PlayerCharacter* player
 						if (excludeLocationFormIds.find(formID) == excludeLocationFormIds.end()) {
 							if (tree) {
 								tree->Activate(reff, player, 0, tree->produceItem, 1);
-								char buf[40];
-								snprintf(buf, 40, "%s 已自动收获", reff->GetDisplayFullName());
-								RE::DebugNotification(buf, NULL, false);
+
+								if (show_items_window_auto_notification) {
+									char buf[40];
+									snprintf(buf, 40, "%s 已自动收获", reff->GetDisplayFullName());
+									RE::DebugNotification(buf, NULL, false);
+								}
 							}
 						}
 					} else {
 						if (tree) {
 							tree->Activate(reff, player, 0, tree->produceItem, 1);
-							char buf[40];
-							snprintf(buf, 40, "%s 已自动收获", reff->GetDisplayFullName());
-							RE::DebugNotification(buf, NULL, false);
+
+							if (show_items_window_auto_notification) {
+								char buf[40];
+								snprintf(buf, 40, "%s 已自动收获", reff->GetDisplayFullName());
+								RE::DebugNotification(buf, NULL, false);
+							}
 						}
 					}
 				}
@@ -1239,13 +1252,16 @@ bool __fastcall autoTakeForACHR(RE::Actor* actor, RE::TESBoundObject* obj, int c
 	}
 
 	actor->RemoveItem(obj, count, RE::ITEM_REMOVE_REASON::kRemove, 0, player);
-	char buf[90];
-	if (count > 1) {
-		snprintf(buf, 80, "%s(%d) 从%s尸体自动拾取", obj->GetName(), count,actor->GetDisplayFullName());
-	} else {
-		snprintf(buf, 80, "%s 从%s尸体自动拾取", obj->GetName(), actor->GetDisplayFullName());
+
+	if (show_items_window_auto_notification) {
+		char buf[90];
+		if (count > 1) {
+			snprintf(buf, 80, "%s(%d) 从%s尸体自动拾取", obj->GetName(), count, actor->GetDisplayFullName());
+		} else {
+			snprintf(buf, 80, "%s 从%s尸体自动拾取", obj->GetName(), actor->GetDisplayFullName());
+		}
+		RE::DebugNotification(buf, NULL, false);
 	}
-	RE::DebugNotification(buf, NULL, false);
 	player->PlayPickUpSound(obj, true, false);
 	return true;
 }
@@ -1259,13 +1275,16 @@ bool __fastcall autoTakeForCONT(RE::TESObjectREFR* reff, RE::TESBoundObject* obj
 	}
 
 	reff->RemoveItem(obj, count, RE::ITEM_REMOVE_REASON::kRemove, 0, player);
-	char buf[90];
-	if (count > 1) {
-		snprintf(buf, 80, "%s(%d) 从%s自动拾取", obj->GetName(), count, reff->GetDisplayFullName());
-	} else {
-		snprintf(buf, 80, "%s 从%s自动拾取", obj->GetName(), reff->GetDisplayFullName());
+
+	if (show_items_window_auto_notification) {
+		char buf[90];
+		if (count > 1) {
+			snprintf(buf, 80, "%s(%d) 从%s自动拾取", obj->GetName(), count, reff->GetDisplayFullName());
+		} else {
+			snprintf(buf, 80, "%s 从%s自动拾取", obj->GetName(), reff->GetDisplayFullName());
+		}
+		RE::DebugNotification(buf, NULL, false);
 	}
-	RE::DebugNotification(buf, NULL, false);
 	player->PlayPickUpSound(obj, true, false);
 	return true;
 }
@@ -1342,6 +1361,7 @@ void __cdecl RefreshItemInfo(void*)
 		bool isDeleteExist = deleteREFRs.size() > 0;
 
 		nowItemIndex = !nowItemIndex;
+		Sleep(100);
 
 		int tmpCount = 0;
 		int tmpCountWEAP = 0;
