@@ -46,6 +46,17 @@ namespace d3d11hook
 				DXGI_SWAP_CHAIN_DESC sd;
 				This->GetDesc(&sd);
 				auto window = sd.OutputWindow;
+				RECT rect;
+				/*::GetWindowRect(window, &oldRect);
+				screenWidth = (oldRect.right - oldRect.left);
+				screenHeight = (oldRect.bottom - oldRect.top);*/
+
+				GetClientRect(window, &rect);
+				screenWidth = rect.right - rect.left;
+				screenHeight = rect.bottom - rect.top;
+
+				/*screenWidth = GetSystemMetrics(SM_CXFULLSCREEN);
+				screenHeight = GetSystemMetrics(SM_CYFULLSCREEN);*/
 
 				//OldWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(window, GWLP_WNDPROC, (LONG_PTR)WndProc));
 
@@ -120,11 +131,8 @@ namespace d3d11hook
 		//return orgD3D11Present(pSwapChain, SyncInterval, Flags);
 	}
 
-
-
 	bool TryCreateDeviceAndSwapChain()
 	{
-
 		HWND hwnd = 0;
 		while (true) {
 			SKSE::log::info("FindWindow..");
@@ -167,7 +175,6 @@ namespace d3d11hook
 		}
 		return true;
 	}
-
 
 	HRESULT WINAPI newD3D11CreateDeviceAndSwapChain(
 		IDXGIAdapter* pAdapter,

@@ -297,8 +297,8 @@ extern bool show_items_window_auto_cont_misc;
 extern bool show_items_window_auto_cont_gold;
 extern bool show_items_window_auto_cont_scrl;
 extern bool show_items_window_auto_cont_keym;
-//extern bool show_items_window_auto;
-//extern bool show_items_window_auto_setting;
+extern bool show_items_window_auto_notification;
+
 
 extern bool show_items_window_direction;
 extern bool show_items_window_ignore;
@@ -452,3 +452,25 @@ extern std::unordered_set<int> excludeLocationFormIds;
 extern std::vector<ExcludeForm> excludeForms;
 extern std::vector<ExcludeForm> excludeLocationForms;
 extern std::unordered_set<RE::TESObjectREFR*> deleteREFRs;
+
+//extern std::vector<ItemInfo> tracks;
+extern std::unordered_set<RE::TESObjectREFR*> trackPtrs;
+extern std::unordered_set<RE::Actor*> trackActorPtrs;
+
+extern int screenWidth ;
+extern int screenHeight ;
+//extern RECT oldRect;
+
+
+//void test()
+//{
+//	//RE::NiPointer<RE::NiCamera> camera = ddd();
+//	//RE::NiCamera* ca = camera.get();
+//	//float x;
+//	//float y;
+//	//float z;
+//	//ca->WorldPtToScreenPt3(ca->worldToCam, ca->port, 0, x, y, z, 1e-5f);
+//}
+
+
+float calculateDistance(const RE::NiPoint3& p1, const RE::NiPoint3& p2);

@@ -1,6 +1,7 @@
 #pragma once
 #include <PCH.h>
 #include <windows.h>
+#include <memory/memory.h>
 
 extern bool isOpenCursorMenu;
 extern bool isMainMenu;
@@ -24,6 +25,14 @@ public:
 			isOpenCursorMenu = a_event->opening;
 		} else if (a_event->menuName == RE::InterfaceStrings::GetSingleton()->mainMenu) {
 			isMainMenu = a_event->opening;
+			if (isMainMenu) {
+				if (trackPtrs.size() > 0) {
+					trackPtrs.clear();
+				}
+				if (trackActorPtrs.size() > 0) {
+					trackActorPtrs.clear();
+				}
+			}
 		} else if (a_event->menuName == RE::InterfaceStrings::GetSingleton()->loadWaitSpinner) {
 			isLoadWaitSpinner = a_event->opening;
 		} else if (a_event->menuName == RE::InterfaceStrings::GetSingleton()->faderMenu) {
@@ -45,6 +54,10 @@ public:
 			ui = RE::UI::GetSingleton();
 			Sleep(1000);
 		}
+
+		/*auto deviceManager = RE::BSInputDeviceManager::GetSingleton();
+		deviceManager->AddEventSink(InputEventHandler::GetSingleton());*/
+		// 
 		//if (!ui)
 
 		//	return false;

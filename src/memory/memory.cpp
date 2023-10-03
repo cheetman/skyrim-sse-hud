@@ -18,6 +18,21 @@ PlayerInfo playerInfo;
 bool isGameLoading = false;
 bool show_npc_window_dead_hidden = false;
 
+int screenWidth = 0;
+int screenHeight = 0;
+//RECT oldRect;
+
+//#define POINTER_SKYRIMSE(className, variableName, ...) static VersionDbPtr<className> variableName(__VA_ARGS__)
+//
+//static float (*CameraWorldToCam)[4][4] = nullptr;
+//static const RE::NiRect<float>* CameraPort = nullptr;
+//bool WorldPtToScreenPt3(const RE::NiPoint3& aWorldPt, RE::NiPoint3& aScreenPt)
+//{
+//	return RE::NiCamera::WorldPtToScreenPt3(reinterpret_cast<float*>(CameraWorldToCam), CameraPort, &aWorldPt, &aScreenPt.x, &aScreenPt.y, &aScreenPt.z, 1e-5f);
+//}
+
+
+
 void __cdecl RefreshGameInfo(void*)
 {
 	// 标记装备槽是否主要
@@ -49,6 +64,7 @@ void __cdecl RefreshGameInfo(void*)
 		}
 
 		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
+
 		if (player) {
 			playerInfo.Angle = player->GetAngle();
 			playerInfo.Position = player->GetPosition();
@@ -800,7 +816,6 @@ void __cdecl RefreshActorInfo(void*)
 				auto actor = handle.get().get();
 				if (actor) {
 					if (actor->IsPlayerTeammate()) {
-) {
 						if (tmpTeammateCount > show_npc_window_array_max_length) {
 							continue;
 						}
@@ -954,6 +969,10 @@ std::vector<ExcludeForm> excludeForms;
 std::unordered_set<int> excludeLocationFormIds;
 std::vector<ExcludeForm> excludeLocationForms;
 std::unordered_set<RE::TESObjectREFR*> deleteREFRs;
+
+//std::vector<ItemInfo> tracks;
+std::unordered_set<RE::TESObjectREFR*> trackPtrs;
+std::unordered_set<RE::Actor*> trackActorPtrs;
 bool excludeFormsInitFlag = true;
 
 ItemInfo* getItems()
@@ -1294,17 +1313,7 @@ void __cdecl RefreshItemInfo(void*)
 	while (true) {
 		Sleep(1000);
 
-		if (!activeItems && !show_items_window 
-			&& !show_items_window_auto_ammo 
-			&& !show_items_window_auto_flor 
-			&& !show_items_window_auto_food 
-			&& !show_items_window_auto_ingr 
-			&& !show_items_window_auto_alch 
-			&& !show_items_window_auto_misc 
-			&& !show_items_window_auto_tree 
-			&& !show_items_window_auto_sgem 
-			&& !show_items_window_auto_achr 
-			&& !show_items_window_auto_cont) {
+		if (!activeItems && !show_items_window && !show_items_window_auto_ammo && !show_items_window_auto_flor && !show_items_window_auto_food && !show_items_window_auto_ingr && !show_items_window_auto_alch && !show_items_window_auto_misc && !show_items_window_auto_tree && !show_items_window_auto_sgem && !show_items_window_auto_achr && !show_items_window_auto_cont) {
 			Sleep(1000);
 			continue;
 		}
@@ -1774,7 +1783,6 @@ void __cdecl RefreshItemInfo(void*)
 									}
 								case RE::FormType::AlchemyItem:
 									{
-
 										if (reff->IsMarkedForDeletion()) {
 											continue;
 										}
@@ -1789,7 +1797,6 @@ void __cdecl RefreshItemInfo(void*)
 										}
 										auto alchemyItem = baseObj->As<RE::AlchemyItem>();
 										if (alchemyItem->IsFood()) {
-
 											if (tmpCountFOOD > show_items_window_array_max_length) {
 												continue;
 											}

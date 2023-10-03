@@ -14,6 +14,24 @@ std::string fontFilePath = "";
 
 namespace menu
 {
+	int trackX1 = 0;
+	int trackY1 = 0;
+	int trackX2 = 0;
+	int trackY2 = 0;
+
+	RE::NiPointer<RE::NiCamera> testCamera()
+	{
+		RE::PlayerCamera* camera = RE::PlayerCamera::GetSingleton();
+		if (camera->cameraRoot->children.size() == 0)
+			return nullptr;
+		for (auto& entry : camera->cameraRoot->children) {
+			auto asCamera = skyrim_cast<RE::NiCamera*>(entry.get());
+			if (asCamera)
+				return RE::NiPointer<RE::NiCamera>(asCamera);
+		}
+		return nullptr;
+	};
+
 	void initStyle()
 	{
 		switch (imgui_style_index) {
@@ -189,7 +207,7 @@ namespace menu
 	static bool no_collapse = false;
 	static bool no_background = false;
 	static bool auto_resize = true;
-	int imgui_style_index = 2;
+	int imgui_style_index = 4;
 
 	// 20220428 追加
 	static bool window_border = true;
@@ -391,6 +409,18 @@ namespace menu
 							}
 						}
 						ImGui::PopID();
+					}
+
+					if (trackActorPtrs.find(item.ptr) == trackActorPtrs.end()) {
+						auto player = RE::PlayerCharacter::GetSingleton();
+						if (item.ptr->GetCurrentLocation() == player->currentLocation) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::PushID(i + 3000);
+							if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS " 位置标记")) {
+								trackActorPtrs.insert(item.ptr);
+							}
+							ImGui::PopID();
+						}
 					}
 
 					if (item.inventoryCount > 0) {
@@ -960,9 +990,9 @@ namespace menu
 		if (show_items_window_formid) {
 			columnCount++;
 		}
-		if (show_items_window_settings) {
+		//if (show_items_window_settings) {
 			columnCount++;
-		}
+		//}
 		if (show_items_window_direction) {
 			columnCount++;
 		}
@@ -1015,9 +1045,9 @@ namespace menu
 			if (show_items_window_formid) {
 				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_4);
 			}
-			if (show_items_window_settings) {
+			//if (show_items_window_settings) {
 				ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_6);
-			}
+			//}
 			ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
 			ImGui::TableHeadersRow();
 
@@ -1169,8 +1199,8 @@ namespace menu
 						ImGui::Text("%s", item.baseFormIdStr.c_str());
 					}
 
+					ImGui::TableNextColumn();
 					if (show_items_window_settings) {
-						ImGui::TableNextColumn();
 						if (ImGui::SmallButton(ICON_MDI_EYE_REMOVE_OUTLINE)) {
 							bool exist = false;
 							for (const auto& excludeForm : excludeForms) {
@@ -1187,6 +1217,11 @@ namespace menu
 
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 						if (ImGui::SmallButton("\uf101")) {
+							/*	char buf[80];
+							snprintf(buf, 80, "%0.2f, %0.2f, %0.2f", x * screenWidth, y * screenHeight, z);
+							RE::DebugNotification(buf, NULL, false);*/
+
+							//return;
 							std::string commandStr = "player.moveto ";
 							commandStr.append(item.formIdStr);
 
@@ -1202,6 +1237,15 @@ namespace menu
 							if (activeItems) {
 								activeItems = false;
 							}
+						}
+					}
+
+					if (trackPtrs.find(item.ptr) == trackPtrs.end()) {
+						if (show_items_window_settings) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+						}
+						if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
+							trackPtrs.insert(item.ptr);
 						}
 					}
 
@@ -1324,6 +1368,88 @@ namespace menu
 		auto style = ImGui::GetStyle();
 		style.WindowBorderSize = window_border ? 1.0f : 0.0f;
 		style.FrameBorderSize = frame_border ? 1.0f : 0.0f;
+
+		if (trackPtrs.size() > 0 || trackActorPtrs.size() > 0) {
+			if (!(isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu)) {
+				RE::NiPointer<RE::NiCamera> camera = testCamera();
+				RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
+				if (camera) {
+					RE::NiCamera* ca = camera.get();
+					if (ca) {
+						//ImU32 color = IM_COL32(255, 0, 0, 255);  // 红色
+						/*ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+					ImGui::SetNextWindowPos(ImVec2(0, 0));*/
+						//ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+						for (const auto& ptr : trackPtrs) {
+							float x1;
+							float y1;
+							float z1;
+							if (ptr->IsDeleted() || player->currentLocation != ptr->GetCurrentLocation()) {
+								trackPtrs.erase(ptr);
+								break;
+							}
+							auto p = ptr->GetPosition();
+							bool result = ca->WorldPtToScreenPt3(ca->worldToCam, ca->port, p, x1, y1, z1, 1e-5f);
+							if (!result) {
+								int i = 1;
+							}
+							if (x1 > 0 && y1 > 0 && z1 > 0) {
+								trackX1 = x1 * screenWidth;
+								trackY1 = screenHeight - y1 * screenHeight;
+								if (trackX1 > 0 && trackX1 < screenWidth && trackY1 > 0 && trackY1 < screenHeight) {
+									ImGui::SetNextWindowPos(ImVec2(trackX1 - 40, trackY1));
+
+									char buf[32];
+									snprintf(buf, 32, "%p", ptr);
+									ImGui::Begin(buf, nullptr,
+										ImGuiWindowFlags_NoTitleBar 
+										| ImGuiWindowFlags_NoResize 
+										| ImGuiWindowFlags_NoMove 
+										| ImGuiWindowFlags_NoCollapse 
+										| ImGuiWindowFlags_NoBackground 
+										| ImGuiWindowFlags_NoScrollbar 
+										| ImGuiWindowFlags_AlwaysAutoResize);
+
+									ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %0.1fm", calculateDistance(ptr->GetPosition(), player->GetPosition()) / 100.0f);
+									ImGui::End();
+								}
+							}
+						}
+
+						for (const auto& ptr : trackActorPtrs) {
+							float x1;
+							float y1;
+							float z1;
+							if (ptr->IsDeleted() || player->currentLocation != ptr->GetCurrentLocation()) {
+								trackActorPtrs.erase(ptr);
+								break;
+							}
+							auto p = ptr->GetPosition();
+							bool result = ca->WorldPtToScreenPt3(ca->worldToCam, ca->port, p, x1, y1, z1, 1e-5f);
+							if (!result) {
+								int i = 1;
+							}
+							if (x1 > 0 && y1 > 0 && z1 > 0) {
+								trackX1 = x1 * screenWidth;
+								trackY1 = screenHeight - y1 * screenHeight;
+								if (trackX1 > 0 && trackX1 < screenWidth && trackY1 > 0 && trackY1 < screenHeight) {
+									ImGui::SetNextWindowPos(ImVec2(trackX1 - 40, trackY1));
+
+									char buf[32];
+									snprintf(buf, 32, "%p", ptr);
+									ImGui::Begin(buf, nullptr,
+										ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar);
+
+									ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %0.1fm", calculateDistance(ptr->GetPosition(), player->GetPosition()) / 100.0f);
+									ImGui::End();
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 
 		if (show_player_base_info_window) {
 			if (show_player_base_info_window_sep) {
@@ -2343,7 +2469,7 @@ namespace menu
 				ImGui::ShowDemoWindow(&show_demo_window);
 
 			{
-				ImGui::Begin("ItemFinderPlus v0.3##0", nullptr, 0);
+				ImGui::Begin("ItemFinderPlus v0.4##0", nullptr, 0);
 
 				ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 				if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
@@ -2486,8 +2612,8 @@ namespace menu
 							save_settings();
 						}
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGui::CalcTextSize("v0.3.4-beta").x - 2);
-						myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "v0.3.4-beta");
+						ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGui::CalcTextSize("v0.4-beta").x - 2);
+						myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "v0.4-beta");
 						ImGui::EndTabItem();
 					}
 					if (ImGui::BeginTabItem(ICON_MDI_ACCOUNT_EDIT " 属性修改", 0, 0)) {

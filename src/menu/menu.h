@@ -20,5 +20,7 @@ namespace menu
 	void __fastcall render();
 
 	void initStyle();
+	extern int trackX;
+	extern int trackY;
 	//extern ImFont* font2;
 }

@@ -117,6 +117,12 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 			logger::info("kPostLoadGame"sv);
 			isGameLoading = false;
 			startflag = true;
+			if (trackPtrs.size() > 0) {
+				trackPtrs.clear();
+			}
+			if (trackActorPtrs.size() > 0) {
+				trackActorPtrs.clear();
+			}
 			//std::thread t(delayedExecution);
 			
 			break;
