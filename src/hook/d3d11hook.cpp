@@ -109,16 +109,14 @@ namespace d3d11hook
 
 		ImGui_ImplDX11_NewFrame();
 		ImGui_ImplWin32_NewFrame();
-
 		ImGui::NewFrame();
 
 		menu::render();
 
 		ImGui::EndFrame();
-
 		ImGui::Render();
 
-		g_pd3dContext->OMSetRenderTargets(1, &D3D11RenderView, nullptr);
+		//g_pd3dContext->OMSetRenderTargets(1, &D3D11RenderView, nullptr);
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
 		const auto result = orgD3D11Present(This, SyncInterval, Flags);

@@ -8,6 +8,7 @@
 #include <nlohmann/json.hpp>
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
+#include <imgui/imgui_internal.h>
 
 std::filesystem::path settings = "";
 std::string fontFilePath = "";
@@ -107,6 +108,19 @@ namespace menu
 				style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.00f, 1.00f, 1.00f, 0.22f);
 				/*style.Colors[ImGuiCol_TooltipBg] = ImVec4(0.00f, 0.13f, 0.13f, 0.90f);
 			style.Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.04f, 0.10f, 0.09f, 0.51f);*/
+
+				
+				// 覆盖
+				style.Colors[ImGuiCol_Tab] = ImLerp(style.Colors[ImGuiCol_Header], style.Colors[ImGuiCol_TitleBgActive], 0.80f);
+				style.Colors[ImGuiCol_TabHovered] = style.Colors[ImGuiCol_HeaderHovered];
+				style.Colors[ImGuiCol_TabActive] = ImLerp(style.Colors[ImGuiCol_HeaderActive], style.Colors[ImGuiCol_TitleBgActive], 0.60f);
+				style.Colors[ImGuiCol_TabUnfocused] = ImLerp(style.Colors[ImGuiCol_Tab], style.Colors[ImGuiCol_TitleBg], 0.80f);
+				style.Colors[ImGuiCol_TabUnfocusedActive] = ImLerp(style.Colors[ImGuiCol_TabActive], style.Colors[ImGuiCol_TitleBg], 0.40f);
+				style.Colors[ImGuiCol_TableHeaderBg] = ImVec4(0.19f, 0.19f, 0.20f, 1.00f);
+				style.Colors[ImGuiCol_TableBorderStrong] = ImVec4(0.31f, 0.31f, 0.35f, 1.00f);  // Prefer using Alpha=1.0 here
+				style.Colors[ImGuiCol_TableBorderLight] = ImVec4(0.23f, 0.23f, 0.25f, 1.00f);   // Prefer using Alpha=1.0 here
+				style.Colors[ImGuiCol_TableRowBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+				style.Colors[ImGuiCol_TableRowBgAlt] = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
 				break;
 			}
 		case 5:
@@ -166,6 +180,19 @@ namespace menu
 				style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.92f, 0.18f, 0.29f, 0.43f);
 				style.Colors[ImGuiCol_PopupBg] = ImVec4(0.20f, 0.22f, 0.27f, 0.9f);
 				//style.Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.20f, 0.22f, 0.27f, 0.73f);
+
+				
+				// 覆盖
+				style.Colors[ImGuiCol_Tab] = ImLerp(style.Colors[ImGuiCol_Header], style.Colors[ImGuiCol_TitleBgActive], 0.80f);
+				style.Colors[ImGuiCol_TabHovered] = style.Colors[ImGuiCol_HeaderHovered];
+				style.Colors[ImGuiCol_TabActive] = ImLerp(style.Colors[ImGuiCol_HeaderActive], style.Colors[ImGuiCol_TitleBgActive], 0.60f);
+				style.Colors[ImGuiCol_TabUnfocused] = ImLerp(style.Colors[ImGuiCol_Tab], style.Colors[ImGuiCol_TitleBg], 0.80f);
+				style.Colors[ImGuiCol_TabUnfocusedActive] = ImLerp(style.Colors[ImGuiCol_TabActive], style.Colors[ImGuiCol_TitleBg], 0.40f);
+				style.Colors[ImGuiCol_TableHeaderBg] = ImVec4(0.19f, 0.19f, 0.20f, 1.00f);
+				style.Colors[ImGuiCol_TableBorderStrong] = ImVec4(0.31f, 0.31f, 0.35f, 1.00f);  // Prefer using Alpha=1.0 here
+				style.Colors[ImGuiCol_TableBorderLight] = ImVec4(0.23f, 0.23f, 0.25f, 1.00f);   // Prefer using Alpha=1.0 here
+				style.Colors[ImGuiCol_TableRowBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+				style.Colors[ImGuiCol_TableRowBgAlt] = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
 				break;
 			}
 		}
@@ -1996,6 +2023,13 @@ namespace menu
 						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##41")) {
 							takeAllItem(getItemCountWEAP(), getItemsWEAP(), RE::FormType::Weapon);
 						}
+						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+						ImGui::Checkbox("自动拾取##41", &show_items_window_auto_weap);
+					} else {
+						if (show_items_window_auto_weap) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::Text(ICON_MDI_AUTORENEW);
+						}
 					}
 					buildItemInfo(getItemCountWEAP(), getItemsWEAP(), RE::FormType::Weapon);
 				}
@@ -2073,6 +2107,13 @@ namespace menu
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##47")) {
 							takeAllItem(getItemCountARMO(), getItemsARMO(), RE::FormType::Armor);
+						}
+						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+						ImGui::Checkbox("自动拾取##26", &show_items_window_auto_armo);
+					} else {
+						if (show_items_window_auto_armo) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::Text(ICON_MDI_AUTORENEW);
 						}
 					}
 					buildItemInfo(getItemCountARMO(), getItemsARMO(), RE::FormType::Armor);
@@ -2312,6 +2353,10 @@ namespace menu
 							if (ImGui::TreeNodeEx(ICON_MDI_HUMAN_MALE " 尸体物品过滤", ImGuiTreeNodeFlags_DefaultOpen)) {
 								if (ImGui::BeginTable("tableItemsSettingACHR", 3)) {
 									ImGui::TableNextColumn();
+									ImGui::Checkbox(ICON_MDI_SWORD "武器", &show_items_window_auto_achr_weap);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(ICON_MDI_SHIELD_HALF_FULL "装备", &show_items_window_auto_achr_armo);
+									ImGui::TableNextColumn();
 									ImGui::Checkbox(ICON_MDI_ARROW_PROJECTILE "弹药", &show_items_window_auto_achr_ammo);
 									ImGui::TableNextColumn();
 									ImGui::Checkbox(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE "药水", &show_items_window_auto_achr_alch);
@@ -2338,6 +2383,10 @@ namespace menu
 							if (ImGui::TreeNodeEx(ICON_MDI_ARCHIVE_OUTLINE " 容器物品过滤", ImGuiTreeNodeFlags_DefaultOpen)) {
 								if (ImGui::BeginTable("tableItemsSettingCONT", 3)) {
 									ImGui::TableNextColumn();
+									ImGui::Checkbox(ICON_MDI_SWORD "武器", &show_items_window_auto_cont_weap);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(ICON_MDI_SHIELD_HALF_FULL "装备", &show_items_window_auto_cont_armo);
+									ImGui::TableNextColumn();
 									ImGui::Checkbox(ICON_MDI_ARROW_PROJECTILE "弹药", &show_items_window_auto_cont_ammo);
 									ImGui::TableNextColumn();
 									ImGui::Checkbox(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE "药水", &show_items_window_auto_cont_alch);
@@ -2357,6 +2406,34 @@ namespace menu
 									ImGui::Checkbox(ICON_MDI_PACKAGE_VARIANT_CLOSED "杂项", &show_items_window_auto_cont_misc);
 									ImGui::EndTable();
 								}
+
+								ImGui::TreePop();
+							}
+
+							
+							if (ImGui::TreeNodeEx(ICON_MDI_SWORD " 武器过滤", ImGuiTreeNodeFlags_DefaultOpen)) {
+								ImGui::Checkbox("只拾取附魔武器", &show_items_window_auto_weap_enchant);
+								ImGui::Checkbox("设置拾取价值", &show_items_window_auto_weap_price);
+								ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
+								if (show_items_window_auto_weap_price) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::DragInt("##设置价格", &show_items_window_auto_weap_price_value, 1, 100, 10000, " >%d");
+								}
+								ImGui::PopItemWidth();
+
+								ImGui::TreePop();
+							}
+
+							
+							if (ImGui::TreeNodeEx(ICON_MDI_SHIELD_HALF_FULL " 装备过滤", ImGuiTreeNodeFlags_DefaultOpen)) {
+								ImGui::Checkbox("只拾取附魔装备", &show_items_window_auto_armo_enchant);
+								ImGui::Checkbox("设置拾取价值##2", &show_items_window_auto_armo_price);
+								ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
+								if (show_items_window_auto_armo_price) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::DragInt("##设置价格2", &show_items_window_auto_armo_price_value, 1, 100, 10000, " >%d");
+								}
+								ImGui::PopItemWidth();
 
 								ImGui::TreePop();
 							}
@@ -2869,6 +2946,12 @@ namespace menu
 					if (j2.contains("show_items_window_auto_achr")) {
 						show_items_window_auto_achr = j2["show_items_window_auto_achr"].get<bool>();
 					}
+					if (j2.contains("show_items_window_auto_weap")) {
+						show_items_window_auto_weap = j2["show_items_window_auto_weap"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_armo")) {
+						show_items_window_auto_armo = j2["show_items_window_auto_armo"].get<bool>();
+					}
 					if (j2.contains("show_items_window_auto_achr_ingr")) {
 						show_items_window_auto_achr_ingr = j2["show_items_window_auto_achr_ingr"].get<bool>();
 					}
@@ -2896,6 +2979,12 @@ namespace menu
 					}
 					if (j2.contains("show_items_window_auto_achr_sgem")) {
 						show_items_window_auto_achr_sgem = j2["show_items_window_auto_achr_sgem"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_achr_weap")) {
+						show_items_window_auto_achr_weap = j2["show_items_window_auto_achr_weap"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_achr_armo")) {
+						show_items_window_auto_achr_armo = j2["show_items_window_auto_achr_armo"].get<bool>();
 					}
 
 					if (j2.contains("show_items_window_auto_cont")) {
@@ -2929,6 +3018,36 @@ namespace menu
 					if (j2.contains("show_items_window_auto_notification")) {
 						show_items_window_auto_notification = j2["show_items_window_auto_notification"].get<bool>();
 					}
+
+					if (j2.contains("show_items_window_auto_cont_weap")) {
+						show_items_window_auto_cont_weap = j2["show_items_window_auto_cont_weap"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_cont_armo")) {
+						show_items_window_auto_cont_armo = j2["show_items_window_auto_cont_armo"].get<bool>();
+					}
+
+					if (j2.contains("show_items_window_auto_armo_price")) {
+						show_items_window_auto_armo_price = j2["show_items_window_auto_armo_price"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_weap_price")) {
+						show_items_window_auto_weap_price = j2["show_items_window_auto_weap_price"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_weap_enchant")) {
+						show_items_window_auto_weap_enchant = j2["show_items_window_auto_weap_enchant"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_armo_enchant")) {
+						show_items_window_auto_armo_enchant = j2["show_items_window_auto_armo_enchant"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_weap_price_value")) {
+						show_items_window_auto_weap_price_value = j2["show_items_window_auto_weap_price_value"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_armo_price_value")) {
+						show_items_window_auto_armo_price_value = j2["show_items_window_auto_armo_price_value"].get<bool>();
+					}
+
+
+
+					
 				}
 
 				if (j.contains("playerBaseInfo")) {
@@ -3129,6 +3248,8 @@ namespace menu
 															 { "show_items_window_auto_sgem", show_items_window_auto_sgem },
 															 { "show_items_window_auto_achr", show_items_window_auto_achr },
 															 { "show_items_window_auto_cont", show_items_window_auto_cont },
+															 { "show_items_window_auto_weap", show_items_window_auto_weap },
+															 { "show_items_window_auto_armo", show_items_window_auto_armo },
 															 { "show_items_window_auto_ignore", show_items_window_auto_ignore },
 															 { "show_items_window_auto_achr_ingr", show_items_window_auto_achr_ingr },
 															 { "show_items_window_auto_achr_food", show_items_window_auto_achr_food },
@@ -3149,6 +3270,16 @@ namespace menu
 															 { "show_items_window_auto_cont_scrl", show_items_window_auto_cont_scrl },
 															 { "show_items_window_auto_cont_keym", show_items_window_auto_cont_keym },
 															 { "show_items_window_auto_notification", show_items_window_auto_notification },
+															 { "show_items_window_auto_cont_weap", show_items_window_auto_cont_weap },
+															 { "show_items_window_auto_achr_weap", show_items_window_auto_achr_weap },
+															 { "show_items_window_auto_cont_armo", show_items_window_auto_cont_armo },
+															 { "show_items_window_auto_achr_armo", show_items_window_auto_achr_armo },
+															 { "show_items_window_auto_weap_enchant", show_items_window_auto_weap_enchant },
+															 { "show_items_window_auto_weap_price", show_items_window_auto_weap_price },
+															 { "show_items_window_auto_armo_enchant", show_items_window_auto_armo_enchant },
+															 { "show_items_window_auto_armo_price", show_items_window_auto_armo_price },
+															 { "show_items_window_auto_weap_price_value", show_items_window_auto_weap_price_value },
+															 { "show_items_window_auto_armo_price_value", show_items_window_auto_armo_price_value },
 
 														 } }
 

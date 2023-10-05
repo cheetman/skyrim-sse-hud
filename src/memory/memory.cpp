@@ -31,8 +31,6 @@ int screenHeight = 0;
 //	return RE::NiCamera::WorldPtToScreenPt3(reinterpret_cast<float*>(CameraWorldToCam), CameraPort, &aWorldPt, &aScreenPt.x, &aScreenPt.y, &aScreenPt.z, 1e-5f);
 //}
 
-
-
 void __cdecl RefreshGameInfo(void*)
 {
 	// 标记装备槽是否主要
@@ -667,6 +665,8 @@ bool show_items_window_ignore = true;
 bool show_items_window_auto_ignore = true;
 bool show_items_window_auto_notification = true;
 bool show_items_window_auto_ammo = false;
+bool show_items_window_auto_weap = false;
+bool show_items_window_auto_armo = false;
 bool show_items_window_auto_flor = false;
 bool show_items_window_auto_tree = false;
 //bool show_items_window_auto_acti = false;
@@ -686,6 +686,8 @@ bool show_items_window_auto_achr_scrl = false;
 bool show_items_window_auto_achr_keym = false;
 bool show_items_window_auto_achr_misc = false;
 bool show_items_window_auto_achr_gold = false;
+bool show_items_window_auto_achr_weap = false;
+bool show_items_window_auto_achr_armo = false;
 bool show_items_window_auto_cont_ingr = false;
 bool show_items_window_auto_cont_food = false;
 bool show_items_window_auto_cont_alch = false;
@@ -695,7 +697,15 @@ bool show_items_window_auto_cont_scrl = false;
 bool show_items_window_auto_cont_keym = false;
 bool show_items_window_auto_cont_misc = false;
 bool show_items_window_auto_cont_gold = false;
+bool show_items_window_auto_cont_weap = false;
+bool show_items_window_auto_cont_armo = false;
 
+bool show_items_window_auto_weap_enchant = false;
+bool show_items_window_auto_weap_price = false;
+bool show_items_window_auto_armo_enchant = false;
+bool show_items_window_auto_armo_price = false;
+int show_items_window_auto_weap_price_value = 500;
+int show_items_window_auto_armo_price_value = 500;
 //bool show_items_window_auto = true;  //暂时用不到
 //bool show_items_window_auto_setting = true;
 int show_items_window_auto_dis = 2;
@@ -1144,6 +1154,101 @@ int getItemCountACHR()
 	return true;
 }
 
+
+bool __fastcall autoTakeArmo(RE::TESObjectREFR* reff, RE::PlayerCharacter* player, bool autoFlag, int distance, bool isDeleteExist)
+{
+	// 自动拾取
+	if (autoFlag) {
+		if (distance < show_items_window_auto_dis) {
+			if (!reff->IsCrimeToActivate()) {
+				if (!reff->IsMarkedForDeletion()) {
+					// 增加判断
+					if (show_items_window_auto_armo_enchant) {
+						if (!reff->IsEnchanted()) {
+							return false;
+						}
+					}
+
+					if (show_items_window_auto_armo_price) {
+						if (reff->GetObjectReference()->GetGoldValue() < show_items_window_auto_armo_price_value) {
+							return false;
+						}
+					}
+
+					if (show_items_window_auto_ignore) {
+						// 判断地点忽略
+						int formID = 0;
+						if (player->currentLocation) {
+							formID = player->currentLocation->GetFormID();
+						}
+						if (excludeLocationFormIds.find(formID) == excludeLocationFormIds.end()) {
+							if (!isDeleteExist) {
+								deleteREFRs.insert(reff);
+							}
+							return true;
+						}
+					} else {
+						if (!isDeleteExist) {
+							deleteREFRs.insert(reff);
+						}
+						return true;
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+bool __fastcall autoTakeWeap(RE::TESObjectREFR* reff, RE::PlayerCharacter* player, bool autoFlag, int distance, bool isDeleteExist)
+{
+	// 自动拾取
+	if (autoFlag) {
+		if (distance < show_items_window_auto_dis) {
+			if (!reff->IsCrimeToActivate()) {
+				if (!reff->IsMarkedForDeletion()) {
+
+					// 增加判断
+					if (show_items_window_auto_weap_enchant) {
+						if (!reff->IsEnchanted()) {
+							return false;
+						}
+					}
+
+					if (show_items_window_auto_weap_price) {
+						if (reff->GetObjectReference()->GetGoldValue() < show_items_window_auto_weap_price_value) {
+							return false;
+						}
+					}
+
+
+					if (show_items_window_auto_ignore) {
+						// 判断地点忽略
+						int formID = 0;
+						if (player->currentLocation) {
+							formID = player->currentLocation->GetFormID();
+						}
+						if (excludeLocationFormIds.find(formID) == excludeLocationFormIds.end()) {
+							if (!isDeleteExist) {
+								deleteREFRs.insert(reff);
+							}
+							return true;
+						}
+					} else {
+						if (!isDeleteExist) {
+							deleteREFRs.insert(reff);
+						}
+						return true;
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
 bool __fastcall autoTake(RE::TESObjectREFR* reff, RE::PlayerCharacter* player, bool autoFlag, int distance, bool isDeleteExist)
 {
 	// 自动拾取
@@ -1472,6 +1577,43 @@ void __cdecl RefreshItemInfo(void*)
 
 									if (show_items_window_auto_achr && distance < show_items_window_auto_dis && autoPick) {
 										switch (obj->GetFormType()) {
+										case RE::FormType::Weapon:
+											if (show_items_window_auto_achr_weap) {
+												if (show_items_window_auto_weap_enchant) {
+													if (!entry.get()->IsEnchanted()) {
+														break;
+													}
+												}
+												
+												if (show_items_window_auto_weap_price) {
+													if (obj->GetGoldValue() < show_items_window_auto_weap_price_value) {
+														break;
+													}
+												}
+												if (autoTakeForACHR(actor, obj, count, player)) {
+													continue;
+												}
+											}
+											break;
+										case RE::FormType::Armor:
+											if (show_items_window_auto_achr_armo) {
+												if (show_items_window_auto_armo_enchant) {
+													if (!entry.get()->IsEnchanted()) {
+														break;
+													}
+												}
+
+												if (show_items_window_auto_armo_price) {
+													if (obj->GetGoldValue() < show_items_window_auto_armo_price_value) {
+														break;
+													}
+												}
+
+												if (autoTakeForACHR(actor, obj, count, player)) {
+													continue;
+												}
+											}
+											break;
 										case RE::FormType::Ammo:
 											if (show_items_window_auto_achr_ammo) {
 												if (autoTakeForACHR(actor, obj, count, player)) {
@@ -1605,6 +1747,13 @@ void __cdecl RefreshItemInfo(void*)
 											}
 										}
 
+
+										// 自动拾取判断
+										if (autoTakeWeap(reff, player, show_items_window_auto_weap, distance, isDeleteExist)) {
+											continue;
+										}
+
+
 										items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].ptr = reff;
 										items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].baseFormId = baseObj->GetFormID();
 										items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].baseFormIdStr = FormIDToString(baseObj->GetFormID());
@@ -1657,6 +1806,13 @@ void __cdecl RefreshItemInfo(void*)
 												continue;
 											}
 										}
+
+										
+										// 自动拾取判断
+										if (autoTakeArmo(reff, player, show_items_window_auto_armo, distance, isDeleteExist)) {
+											continue;
+										}
+
 
 										items[nowItemIndex].itemInfoARMO[tmpCountARMO].ptr = reff;
 										items[nowItemIndex].itemInfoARMO[tmpCountARMO].baseFormId = baseObj->GetFormID();
@@ -2049,6 +2205,43 @@ void __cdecl RefreshItemInfo(void*)
 													// 并且不犯罪 判断是否拾取
 													if (!isCrimeInv) {
 														switch (obj->GetFormType()) {
+														case RE::FormType::Weapon:
+															if (show_items_window_auto_cont_weap) {
+																if (show_items_window_auto_weap_enchant) {
+																	if (!entry.get()->IsEnchanted()) {
+																		break;
+																	}
+																}
+
+																if (show_items_window_auto_weap_price) {
+																	if (obj->GetGoldValue() < show_items_window_auto_weap_price_value) {
+																		break;
+																	}
+																}
+																if (autoTakeForCONT(reff, obj, count, player)) {
+																	continue;
+																}
+															}
+															break;
+														case RE::FormType::Armor:
+															if (show_items_window_auto_cont_armo) {
+																if (show_items_window_auto_armo_enchant) {
+																	if (!entry.get()->IsEnchanted()) {
+																		break;
+																	}
+																}
+
+																if (show_items_window_auto_armo_price) {
+																	if (obj->GetGoldValue() < show_items_window_auto_armo_price_value) {
+																		break;
+																	}
+																}
+
+																if (autoTakeForCONT(reff, obj, count, player)) {
+																	continue;
+																}
+															}
+															break;
 														case RE::FormType::Ammo:
 															if (show_items_window_auto_cont_ammo) {
 																if (autoTakeForCONT(reff, obj, count, player)) {

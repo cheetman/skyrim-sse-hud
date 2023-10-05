@@ -279,6 +279,8 @@ extern bool show_items_window_auto_tree;
 extern bool show_items_window_auto_sgem;
 extern bool show_items_window_auto_achr;
 extern bool show_items_window_auto_cont;
+extern bool show_items_window_auto_armo;
+extern bool show_items_window_auto_weap;
 extern bool show_items_window_auto_achr_ingr;
 extern bool show_items_window_auto_achr_food;
 extern bool show_items_window_auto_achr_alch;
@@ -288,6 +290,8 @@ extern bool show_items_window_auto_achr_misc;
 extern bool show_items_window_auto_achr_gold;
 extern bool show_items_window_auto_achr_scrl;
 extern bool show_items_window_auto_achr_keym;
+extern bool show_items_window_auto_achr_weap;
+extern bool show_items_window_auto_achr_armo;
 extern bool show_items_window_auto_cont_ingr;
 extern bool show_items_window_auto_cont_food;
 extern bool show_items_window_auto_cont_alch;
@@ -297,6 +301,8 @@ extern bool show_items_window_auto_cont_misc;
 extern bool show_items_window_auto_cont_gold;
 extern bool show_items_window_auto_cont_scrl;
 extern bool show_items_window_auto_cont_keym;
+extern bool show_items_window_auto_cont_weap;
+extern bool show_items_window_auto_cont_armo;
 extern bool show_items_window_auto_notification;
 
 
@@ -307,6 +313,13 @@ extern int show_items_window_auto_dis;
 extern int show_items_window_auto_dis_skyrim;
 extern int show_items_window_auto_dis_local;
 extern int show_items_window_array_max_length;
+
+extern bool show_items_window_auto_weap_enchant;
+extern bool show_items_window_auto_weap_price;
+extern bool show_items_window_auto_armo_enchant;
+extern bool show_items_window_auto_armo_price;
+extern int show_items_window_auto_weap_price_value;
+extern int show_items_window_auto_armo_price_value;
 
 struct ItemInvInfo
 {
