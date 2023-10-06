@@ -79,6 +79,8 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/imgui/imstb_rectpack.h"
 	"${SOURCE_DIR}/imgui/imstb_textedit.h"
 	"${SOURCE_DIR}/imgui/imstb_truetype.h"
+	"${SOURCE_DIR}/setting/setting.h"
+	"${SOURCE_DIR}/setting/setting.cpp"
 )
 
 source_group(TREE "${ROOT_DIR}" FILES ${SOURCE_FILES})

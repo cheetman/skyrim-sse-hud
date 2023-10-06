@@ -5,17 +5,19 @@
 #include <memory/memory.h>
 #include <menu/menu.h>
 #include <event/BSTEquipEvent.h>
+#include <setting/setting.h>
 
 
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
 {
-	settings = "data\\skse\\plugins\\sse-hud.json";
+	setting::settings_path = "data\\skse\\plugins\\sse-hud.json";
+	setting::settings_path_gallery = "data\\skse\\plugins\\1.json";
 	fontFilePath = "data\\skse\\plugins\\xyght3.0-62354202.ttf";
 	//fontFilePath2 = "data\\skse\\plugins\\xyght3.0-62354202.ttf";
 
 	//MessageBox(nullptr, TEXT("测试中文."), nullptr, MB_OK);
-	menu::load_settings();
-
+	setting::load_settings();
+	setting::load_settings_gallery();
 	try {
 #ifndef NDEBUG
 		auto sink = std::make_shared<spdlog::sinks::msvc_sink_mt>();
@@ -182,7 +184,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 {
 	logger::info("SKSEPlugin_Load"sv);
 #ifndef NDEBUG
-	//MessageBoxA(nullptr, "SKSEPlugin_Load", nullptr, MB_OK);
+	MessageBoxA(nullptr, "SKSEPlugin_Load", nullptr, MB_OK);
 	Sleep(1000);
 #endif
 

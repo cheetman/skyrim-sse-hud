@@ -304,7 +304,7 @@ extern bool show_items_window_auto_cont_keym;
 extern bool show_items_window_auto_cont_weap;
 extern bool show_items_window_auto_cont_armo;
 extern bool show_items_window_auto_notification;
-
+extern bool show_items_window_file;
 
 extern bool show_items_window_direction;
 extern bool show_items_window_ignore;
@@ -340,6 +340,31 @@ struct ItemInfo
 	RE::FormID baseFormId = 0;
 	std::string baseFormIdStr = "";
 	std::string formTypeStr = "";
+	std::string filename = "";
+
+	std::string name = "";
+	bool isCrime = false;
+	RE::TESObjectREFR* ptr = nullptr;
+	RE::LOCK_LEVEL lockLevel;
+	bool isDeleted = false;
+	bool isHarvested = false;
+	bool isEnchanted = false;
+
+	float distance = 0.0f;
+	int direction = 0;
+	bool isAuto = false;
+};
+
+struct ItemInfoCONT
+{
+	int gold = 0;
+	float weight = 0;
+	RE::FormID formId = 0;
+	std::string formIdStr = "";
+	RE::FormID baseFormId = 0;
+	std::string baseFormIdStr = "";
+	std::string formTypeStr = "";
+	std::string filename = "";
 
 	std::string name = "";
 	bool isCrime = false;
@@ -412,7 +437,7 @@ struct Item2Info
 	ItemInfo itemInfoALCH[3000];
 	ItemInfo itemInfoINGR[3000];
 	ItemInfo itemInfoMISC[3000];
-	ItemInfo itemInfoCONT[3000];
+	ItemInfoCONT itemInfoCONT[3000];
 	ItemInfo itemInfoFLOR[3000];
 	ItemInfo itemInfoFOOD[3000];
 	ItemInfo itemInfoKEYM[3000];
@@ -420,7 +445,7 @@ struct Item2Info
 	ItemInfo itemInfoSGEM[3000];
 	ItemInfo itemInfoACTI[3000];
 
-	ItemInfo itemInfoACHR[3000];
+	ItemInfoCONT itemInfoACHR[3000];
 };
 
 int getItemCount();
@@ -448,7 +473,7 @@ ItemInfo* getItemsBOOK();
 ItemInfo* getItemsINGR();
 ItemInfo* getItemsALCH();
 ItemInfo* getItemsMISC();
-ItemInfo* getItemsCONT();
+ItemInfoCONT* getItemsCONT();
 ItemInfo* getItemsFLOR();
 ItemInfo* getItemsFOOD();
 ItemInfo* getItemsKEYM();
@@ -456,7 +481,7 @@ ItemInfo* getItemsTREE();
 ItemInfo* getItemsSGEM();
 ItemInfo* getItemsACTI();
 
-ItemInfo* getItemsACHR();
+ItemInfoCONT* getItemsACHR();
 
 extern std::unordered_set<int> autoContFormIds;
 extern std::vector<IncludeForm> autoContForms;

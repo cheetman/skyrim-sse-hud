@@ -482,7 +482,7 @@ bool compareForItem(const ItemInfo& info1, const ItemInfo& info2)
 	}
 }
 
-bool compareForItemCONT(const ItemInfo& info1, const ItemInfo& info2)
+bool compareForItemCONT(const ItemInfoCONT& info1, const ItemInfoCONT& info2)
 {
 	if (info1.baseFormId != info2.baseFormId) {
 		return info1.baseFormId > info2.baseFormId;
@@ -661,6 +661,7 @@ bool show_items_window = false;
 bool show_items_window_settings = false;
 bool show_items_window_formid = false;
 bool show_items_window_direction = false;
+bool show_items_window_file = false;
 bool show_items_window_ignore = true;
 bool show_items_window_auto_ignore = true;
 bool show_items_window_auto_notification = true;
@@ -1021,7 +1022,7 @@ ItemInfo* getItemsMISC()
 {
 	return items[!nowItemIndex].itemInfoMISC;
 }
-ItemInfo* getItemsCONT()
+ItemInfoCONT* getItemsCONT()
 {
 	return items[!nowItemIndex].itemInfoCONT;
 }
@@ -1045,7 +1046,7 @@ ItemInfo* getItemsACTI()
 {
 	return items[!nowItemIndex].itemInfoACTI;
 }
-ItemInfo* getItemsACHR()
+ItemInfoCONT* getItemsACHR()
 {
 	return items[!nowItemIndex].itemInfoACHR;
 }
@@ -1154,7 +1155,6 @@ int getItemCountACHR()
 	return true;
 }
 
-
 bool __fastcall autoTakeArmo(RE::TESObjectREFR* reff, RE::PlayerCharacter* player, bool autoFlag, int distance, bool isDeleteExist)
 {
 	// 自动拾取
@@ -1208,7 +1208,6 @@ bool __fastcall autoTakeWeap(RE::TESObjectREFR* reff, RE::PlayerCharacter* playe
 		if (distance < show_items_window_auto_dis) {
 			if (!reff->IsCrimeToActivate()) {
 				if (!reff->IsMarkedForDeletion()) {
-
 					// 增加判断
 					if (show_items_window_auto_weap_enchant) {
 						if (!reff->IsEnchanted()) {
@@ -1221,7 +1220,6 @@ bool __fastcall autoTakeWeap(RE::TESObjectREFR* reff, RE::PlayerCharacter* playe
 							return false;
 						}
 					}
-
 
 					if (show_items_window_auto_ignore) {
 						// 判断地点忽略
@@ -1584,7 +1582,7 @@ void __cdecl RefreshItemInfo(void*)
 														break;
 													}
 												}
-												
+
 												if (show_items_window_auto_weap_price) {
 													if (obj->GetGoldValue() < show_items_window_auto_weap_price_value) {
 														break;
@@ -1747,12 +1745,10 @@ void __cdecl RefreshItemInfo(void*)
 											}
 										}
 
-
 										// 自动拾取判断
 										if (autoTakeWeap(reff, player, show_items_window_auto_weap, distance, isDeleteExist)) {
 											continue;
 										}
-
 
 										items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].ptr = reff;
 										items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].baseFormId = baseObj->GetFormID();
@@ -1769,6 +1765,12 @@ void __cdecl RefreshItemInfo(void*)
 										if (show_items_window_direction) {
 											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].distance = distance;
 											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+										}
+										if (show_items_window_file) {
+											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].filename = baseObj->GetFile()->fileName;
+
+											//RE::TESForm::GetAllForms;
+											//logger::debug("{} - {}", reff->GetFormEditorID(), baseObj->GetFormEditorID()); // 没用
 										}
 
 										tmpCountWEAP++;
@@ -1807,12 +1809,10 @@ void __cdecl RefreshItemInfo(void*)
 											}
 										}
 
-										
 										// 自动拾取判断
 										if (autoTakeArmo(reff, player, show_items_window_auto_armo, distance, isDeleteExist)) {
 											continue;
 										}
-
 
 										items[nowItemIndex].itemInfoARMO[tmpCountARMO].ptr = reff;
 										items[nowItemIndex].itemInfoARMO[tmpCountARMO].baseFormId = baseObj->GetFormID();
@@ -1829,6 +1829,9 @@ void __cdecl RefreshItemInfo(void*)
 										if (show_items_window_direction) {
 											items[nowItemIndex].itemInfoARMO[tmpCountARMO].distance = distance;
 											items[nowItemIndex].itemInfoARMO[tmpCountARMO].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+										}
+										if (show_items_window_file) {
+											items[nowItemIndex].itemInfoARMO[tmpCountARMO].filename = baseObj->GetFile()->fileName;
 										}
 										tmpCountARMO++;
 
@@ -1886,6 +1889,9 @@ void __cdecl RefreshItemInfo(void*)
 										items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].gold = baseObj->GetGoldValue();
 										items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].isCrime = reff->IsCrimeToActivate();
 
+										if (show_items_window_file) {
+											items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].filename = baseObj->GetFile()->fileName;
+										}
 										tmpCountAMMO++;
 
 										break;
@@ -1931,6 +1937,9 @@ void __cdecl RefreshItemInfo(void*)
 										if (show_items_window_direction) {
 											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].distance = distance;
 											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+										}
+										if (show_items_window_file) {
+											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].filename = baseObj->GetFile()->fileName;
 										}
 
 										tmpCountBOOK++;
@@ -1990,6 +1999,9 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].gold = baseObj->GetGoldValue();
 											items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].isCrime = reff->IsCrimeToActivate();
 
+											if (show_items_window_file) {
+												items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].filename = baseObj->GetFile()->fileName;
+											}
 											tmpCountFOOD++;
 										} else {
 											if (tmpCountALCH > show_items_window_array_max_length) {
@@ -2029,6 +2041,9 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoALCH[tmpCountALCH].gold = baseObj->GetGoldValue();
 											items[nowItemIndex].itemInfoALCH[tmpCountALCH].isCrime = reff->IsCrimeToActivate();
 
+											if (show_items_window_file) {
+												items[nowItemIndex].itemInfoALCH[tmpCountALCH].filename = baseObj->GetFile()->fileName;
+											}
 											tmpCountALCH++;
 										}
 
@@ -2081,6 +2096,9 @@ void __cdecl RefreshItemInfo(void*)
 										items[nowItemIndex].itemInfoINGR[tmpCountINGR].gold = baseObj->GetGoldValue();
 										items[nowItemIndex].itemInfoINGR[tmpCountINGR].isCrime = reff->IsCrimeToActivate();
 
+										if (show_items_window_file) {
+											items[nowItemIndex].itemInfoINGR[tmpCountINGR].filename = baseObj->GetFile()->fileName;
+										}
 										tmpCountINGR++;
 										break;
 									}
@@ -2136,6 +2154,9 @@ void __cdecl RefreshItemInfo(void*)
 										items[nowItemIndex].itemInfoMISC[tmpCountMISC].gold = baseObj->GetGoldValue();
 										items[nowItemIndex].itemInfoMISC[tmpCountMISC].isCrime = reff->IsCrimeToActivate();
 
+										if (show_items_window_file) {
+											items[nowItemIndex].itemInfoMISC[tmpCountMISC].filename = baseObj->GetFile()->fileName;
+										}
 										tmpCountMISC++;
 
 										break;
@@ -2182,6 +2203,9 @@ void __cdecl RefreshItemInfo(void*)
 										if (show_items_window_direction) {
 											items[nowItemIndex].itemInfoCONT[tmpCountCONT].distance = distance;
 											items[nowItemIndex].itemInfoCONT[tmpCountCONT].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+										}
+										if (show_items_window_file) {
+											items[nowItemIndex].itemInfoCONT[tmpCountCONT].filename = baseObj->GetFile()->fileName;
 										}
 
 										int tmpInvCount = 0;
@@ -2402,6 +2426,9 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].distance = distance;
 											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 										}
+										if (show_items_window_file) {
+											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].filename = baseObj->GetFile()->fileName;
+										}
 
 										// 自动拾取判断
 										if (autoHarvest(reff, player, show_items_window_auto_flor, distance, flora)) {
@@ -2495,6 +2522,9 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoTREE[tmpCountTREE].distance = distance;
 											items[nowItemIndex].itemInfoTREE[tmpCountTREE].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 										}
+										if (show_items_window_file) {
+											items[nowItemIndex].itemInfoTREE[tmpCountTREE].filename = baseObj->GetFile()->fileName;
+										}
 
 										// 自动拾取判断
 										if (autoHarvest(reff, player, show_items_window_auto_tree, distance, tree)) {
@@ -2575,6 +2605,9 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].distance = distance;
 											items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 										}
+										if (show_items_window_file) {
+											items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].filename = baseObj->GetFile()->fileName;
+										}
 
 										tmpCountKEYM++;
 										break;
@@ -2627,6 +2660,9 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].distance = distance;
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 										}
+										if (show_items_window_file) {
+											items[nowItemIndex].itemInfoACTI[tmpCountACTI].filename = baseObj->GetFile()->fileName;
+										}
 
 										items[nowItemIndex].itemInfoACTI[tmpCountACTI].isHarvested = (reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested);
 
@@ -2673,6 +2709,9 @@ void __cdecl RefreshItemInfo(void*)
 										if (show_items_window_direction) {
 											items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].distance = distance;
 											items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+										}
+										if (show_items_window_file) {
+											items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].filename = baseObj->GetFile()->fileName;
 										}
 
 										items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].ptr = reff;
@@ -2749,6 +2788,9 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfo[tmpCount].distance = distance;
 											items[nowItemIndex].itemInfo[tmpCount].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 										}
+										if (show_items_window_file) {
+											items[nowItemIndex].itemInfo[tmpCount].filename = baseObj->GetFile()->fileName;
+										}
 
 										//logger::debug(GetFormTypeName(baseObj->formType.underlying()));
 										//logger::debug(std::to_string(tmpCount) + " " + StringUtil::Utf8ToGbk(reff->GetDisplayFullName()));
@@ -2782,7 +2824,7 @@ void __cdecl RefreshItemInfo(void*)
 		std::sort(items[nowItemIndex].itemInfoSGEM, items[nowItemIndex].itemInfoSGEM + tmpCountSGEM, compareForItem);
 		std::sort(items[nowItemIndex].itemInfoACTI, items[nowItemIndex].itemInfoACTI + tmpCountACTI, compareForItem);
 
-		std::sort(items[nowItemIndex].itemInfoACHR, items[nowItemIndex].itemInfoACHR + tmpCountACHR, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoACHR, items[nowItemIndex].itemInfoACHR + tmpCountACHR, compareForItemCONT);
 
 		items[nowItemIndex].itemCount = tmpCount;
 		items[nowItemIndex].itemCountWEAP = tmpCountWEAP;
