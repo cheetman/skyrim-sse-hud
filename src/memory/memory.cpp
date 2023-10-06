@@ -715,6 +715,9 @@ int show_items_window_auto_dis_skyrim = 100;
 int show_items_window_auto_dis_local = 160;
 int show_items_window_array_max_length = 2998;
 
+// 艺术馆
+bool show_items_window_gallery = false;
+
 void __cdecl RefreshActorInfo(void*)
 {
 	while (true) {
@@ -988,6 +991,9 @@ std::unordered_set<RE::TESObjectREFR*> deleteREFRs;
 // 艺术馆
 std::unordered_set<int> galleryFormIds;
 std::vector<GalleryForm> galleryFormData;
+std::vector<GalleryModForm> galleryFormModData;
+//int galleryTotalCount = 0;
+//int galleryCount = 0;
 
 //std::vector<ItemInfo> tracks;
 std::unordered_set<RE::TESObjectREFR*> trackPtrs;
@@ -1480,13 +1486,26 @@ void __cdecl RefreshItemInfo(void*)
 			// 初始化艺术馆
 			const auto handler = RE::TESDataHandler::GetSingleton();
 			for (auto item : setting::galleryList) {
-				for (auto formid : item.formids) {
-					auto form = handler->LookupForm(formid, item.name);
+				// 先检查一下有没有mod
+				auto file = handler->LookupModByName(item.filename);
+				if (!file || file->compileIndex == 0xFF) {
+					galleryFormModData.push_back({ -1, item.filename, item.name, item.formids.size(), 0 });
+					continue;
+				}
+
+				size_t itemCount = 0;
+				for (auto rawFormID : item.formids) {
+					RE::FormID formID = file->compileIndex << (3 * 8);
+					formID += file->smallFileCompileIndex << ((1 * 8) + 4);
+					formID += rawFormID;
+					auto form = handler->LookupForm(formID, item.filename);
 					if (form) {
-						galleryFormIds.insert(form->GetFormID());
-						galleryFormData.push_back({ form->GetFormID(), form->GetName(), item.name });
+						galleryFormIds.insert(formID);
+						galleryFormData.push_back({ formID, form->GetName(), item.filename });
+						itemCount++;
 					}
 				}
+				galleryFormModData.push_back({ file->compileIndex, item.filename, item.name, item.formids.size(), itemCount });
 			}
 		}
 

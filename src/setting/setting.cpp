@@ -21,6 +21,7 @@ namespace setting
 			for (const auto& obj : json) {
 				GalleryData data;
 				data.name = obj["name"];
+				data.filename = obj["filename"];
 				if (obj.contains("formids")) {
 					for (const auto& formid : obj["formids"]) {
 						std::string formidstr = formid;

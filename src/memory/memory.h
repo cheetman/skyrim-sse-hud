@@ -5,11 +5,8 @@
 #include <string>
 #include <unordered_set>
 
-extern bool active;
-extern bool activeItems;
 
 // 人物属性
-
 struct PlayerInfo
 {
 	std::string name = "";         // 玩家名
@@ -56,7 +53,6 @@ struct PlayerInfo
 	std::string location = "";  // 位置
 };
 
-extern PlayerInfo playerInfo;
 
 // 装备防具信息
 
@@ -180,6 +176,12 @@ struct ActorInfo
 	InventoryInfo Inventorys[100];
 };
 
+
+extern bool active;
+extern bool activeItems;
+
+extern PlayerInfo playerInfo;
+
 extern int show_npc_window_dis_meter;
 extern bool show_npc_window_dis;
 extern bool show_npc_window_direction;
@@ -262,8 +264,8 @@ struct PlayerInventoryInfo
 	InventoryInfo inventorys[300];
 };
 
-// 临时
 
+// 临时
 extern bool isGameLoading;
 
 extern bool show_items_window;
@@ -321,6 +323,9 @@ extern bool show_items_window_auto_armo_price;
 extern int show_items_window_auto_weap_price_value;
 extern int show_items_window_auto_armo_price_value;
 
+// 艺术馆
+extern bool show_items_window_gallery;
+
 struct ItemInvInfo
 {
 	std::string name = "";
@@ -355,30 +360,10 @@ struct ItemInfo
 	bool isAuto = false;
 };
 
-struct ItemInfoCONT
+struct ItemInfoCONT : public ItemInfo
 {
-	int gold = 0;
-	float weight = 0;
-	RE::FormID formId = 0;
-	std::string formIdStr = "";
-	RE::FormID baseFormId = 0;
-	std::string baseFormIdStr = "";
-	std::string formTypeStr = "";
-	std::string filename = "";
-
-	std::string name = "";
-	bool isCrime = false;
-	RE::TESObjectREFR* ptr = nullptr;
-	RE::LOCK_LEVEL lockLevel;
-	bool isDeleted = false;
-	bool isHarvested = false;
-	bool isEnchanted = false;
-
 	int invCount = 0;
 	ItemInvInfo invs[200];
-	float distance = 0.0f;
-	int direction = 0;
-	bool isAuto = false;
 };
 
 struct ExcludeForm
@@ -386,7 +371,6 @@ struct ExcludeForm
 	RE::FormID formId = 0;
 	std::string name = "";
 	std::string formTypeStr = "";
-	//std::string formIdStr = "";
 
 	bool operator<(const ExcludeForm& other) const
 	{
@@ -400,7 +384,6 @@ struct IncludeForm
 	RE::FormID formId = 0;
 	std::string name = "";
 	std::string formTypeStr = "";
-	//std::string formIdStr = "";
 
 	bool operator<(const IncludeForm& other) const
 	{
@@ -419,6 +402,22 @@ struct GalleryForm
 	bool operator<(const GalleryForm& other) const
 	{
 		return formId < other.formId;
+	}
+};
+
+
+struct GalleryModForm
+{
+	int compileIndex = 0;
+	std::string filename = "";
+	std::string name = "";
+	size_t totalItemCount = 0;
+	size_t itemCount = 0;
+	//std::string formIdStr = "";
+
+	bool operator<(const GalleryModForm& other) const
+	{
+		return compileIndex < other.compileIndex;
 	}
 };
 
@@ -505,28 +504,19 @@ extern std::vector<ExcludeForm> excludeForms;
 extern std::vector<ExcludeForm> excludeLocationForms;
 extern std::unordered_set<RE::TESObjectREFR*> deleteREFRs;
 
-//extern std::vector<ItemInfo> tracks;
 extern std::unordered_set<RE::TESObjectREFR*> trackPtrs;
 extern std::unordered_set<RE::Actor*> trackActorPtrs;
 
 
 extern std::unordered_set<int> galleryFormIds;
 extern std::vector<GalleryForm> galleryFormData;
+extern std::vector<GalleryModForm> galleryFormModData;
+//extern int galleryTotalCount;
+//extern int galleryCount;
+
 
 extern int screenWidth ;
 extern int screenHeight ;
-//extern RECT oldRect;
-
-
-//void test()
-//{
-//	//RE::NiPointer<RE::NiCamera> camera = ddd();
-//	//RE::NiCamera* ca = camera.get();
-//	//float x;
-//	//float y;
-//	//float z;
-//	//ca->WorldPtToScreenPt3(ca->worldToCam, ca->port, 0, x, y, z, 1e-5f);
-//}
 
 
 float calculateDistance(const RE::NiPoint3& p1, const RE::NiPoint3& p2);

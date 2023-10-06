@@ -3,13 +3,13 @@
 #include <fonts/IconsMaterialDesignIcons.h>
 #include <hook/hudhook.h>
 #include <imgui/imgui.h>
+#include <imgui/imgui_internal.h>
 #include <memory/memory.h>
 #include <menu/menu.h>
 #include <nlohmann/json.hpp>
+#include <setting/setting.h>
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
-#include <imgui/imgui_internal.h>
-#include <setting/setting.h>
 
 std::string fontFilePath = "";
 
@@ -109,7 +109,6 @@ namespace menu
 				/*style.Colors[ImGuiCol_TooltipBg] = ImVec4(0.00f, 0.13f, 0.13f, 0.90f);
 			style.Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.04f, 0.10f, 0.09f, 0.51f);*/
 
-				
 				// 覆盖
 				style.Colors[ImGuiCol_Tab] = ImLerp(style.Colors[ImGuiCol_Header], style.Colors[ImGuiCol_TitleBgActive], 0.80f);
 				style.Colors[ImGuiCol_TabHovered] = style.Colors[ImGuiCol_HeaderHovered];
@@ -181,7 +180,6 @@ namespace menu
 				style.Colors[ImGuiCol_PopupBg] = ImVec4(0.20f, 0.22f, 0.27f, 0.9f);
 				//style.Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.20f, 0.22f, 0.27f, 0.73f);
 
-				
 				// 覆盖
 				style.Colors[ImGuiCol_Tab] = ImLerp(style.Colors[ImGuiCol_Header], style.Colors[ImGuiCol_TitleBgActive], 0.80f);
 				style.Colors[ImGuiCol_TabHovered] = style.Colors[ImGuiCol_HeaderHovered];
@@ -1029,7 +1027,7 @@ namespace menu
 			columnCount++;
 		}
 		//if (show_items_window_settings) {
-			columnCount++;
+		columnCount++;
 		//}
 		if (show_items_window_direction) {
 			columnCount++;
@@ -1091,7 +1089,7 @@ namespace menu
 				ImGui::TableSetupColumn("MOD", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_7);
 			}
 			//if (show_items_window_settings) {
-				ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_6);
+			ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_6);
 			//}
 			ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
 			ImGui::TableHeadersRow();
@@ -1418,6 +1416,7 @@ namespace menu
 		style.WindowBorderSize = window_border ? 1.0f : 0.0f;
 		style.FrameBorderSize = frame_border ? 1.0f : 0.0f;
 
+		// 追踪
 		if (trackPtrs.size() > 0 || trackActorPtrs.size() > 0) {
 			if (!(isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu)) {
 				RE::NiPointer<RE::NiCamera> camera = testCamera();
@@ -1425,11 +1424,6 @@ namespace menu
 				if (camera) {
 					RE::NiCamera* ca = camera.get();
 					if (ca) {
-						//ImU32 color = IM_COL32(255, 0, 0, 255);  // 红色
-						/*ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
-					ImGui::SetNextWindowPos(ImVec2(0, 0));*/
-						//ImDrawList* drawList = ImGui::GetWindowDrawList();
-
 						for (const auto& ptr : trackPtrs) {
 							float x1;
 							float y1;
@@ -1452,13 +1446,7 @@ namespace menu
 									char buf[32];
 									snprintf(buf, 32, "%p", ptr);
 									ImGui::Begin(buf, nullptr,
-										ImGuiWindowFlags_NoTitleBar 
-										| ImGuiWindowFlags_NoResize 
-										| ImGuiWindowFlags_NoMove 
-										| ImGuiWindowFlags_NoCollapse 
-										| ImGuiWindowFlags_NoBackground 
-										| ImGuiWindowFlags_NoScrollbar 
-										| ImGuiWindowFlags_AlwaysAutoResize);
+										ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize);
 
 									ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %0.1fm", calculateDistance(ptr->GetPosition(), player->GetPosition()) / 100.0f);
 									ImGui::End();
@@ -1596,11 +1584,7 @@ namespace menu
 		if (show_player_info_window) {
 			ImGui::Begin("人物属性", nullptr, window_flags);
 
-			//myText2("Health:%d", (int)health);
-			//myText2("Magicka:%d", (int)kMagicka);
-			//myText2("Stamina:%d", (int)kStamina);
 			ImGui::Text(ICON_MDI_SWORD " 伤害: %s", playerInfo.DamageStr.c_str());
-			//myText("防御: %s", playerInfo.DamageResist.c_str());
 			ImGui::Text(ICON_MDI_SHIELD_HALF_FULL " 防御: %.2f", playerInfo.kDamageResist);
 			ImGui::Text(ICON_MDI_WATER " 毒抗: %.1f%%", playerInfo.kPoisonResist);
 			ImGui::Text(ICON_MDI_FIRE " 火抗: %.1f%%", playerInfo.kResistFire);
@@ -1609,7 +1593,6 @@ namespace menu
 			ImGui::Text(ICON_MDI_MAGIC_STAFF " 法抗: %.1f%%", playerInfo.kResistMagic);
 			ImGui::Text(ICON_MDI_PILL " 抵抗力: %.1f%%", playerInfo.kResistDisease);
 			//myText2("criticalChance:%d", (int)kCriticalChance);
-			//myText2("armor:%d", (int)kDamageResist);
 			ImGui::End();
 		}
 
@@ -1970,17 +1953,9 @@ namespace menu
 
 		if (show_inv_window) {
 			if (active || !show_inv_window_active) {
-				//static ImFont* font = ImGui::GetIO().Fonts->AddFontFromFileTTF("data\\skse\\plugins\\materialdesignicons-webfont.ttf", 14);
-
-				ImGui::Begin("防具信息", nullptr, window_flags);  //window_flags&(~ImGuiWindowFlags_AlwaysAutoResize)
-
+				ImGui::Begin("防具信息", nullptr, window_flags);
 				ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 				if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
-					//if (ImGui::BeginTabItem("\uF04E5"  " 武器", 0, 0)) {
-
-					/*		ImGui::Text(ICON_MDI_ABUGIDA_DEVANAGARI "  Paint");
-					ImGui::Text("\U000F132A" "  Paint");*/
-
 					if (ImGui::BeginTabItem(ICON_MDI_SWORD " 武器", 0, 0)) {
 						buildPlayerInvInfo(getPlayerInvWEAPCount(), getPlayerInvWEAPData());
 						ImGui::EndTabItem();
@@ -2288,21 +2263,18 @@ namespace menu
 				if (show_items_window_settings) {
 					ImGui::SameLine(0.0f, 9.1f * ImGui::GetTextLineHeightWithSpacing());
 
-					//if (ImGui::Button("保存设置##2", ImVec2(0, 0))) {
 					if (ImGui::Button(ICON_MDI_CONTENT_SAVE " 保存设置##2")) {
 						auto colorPlotHistogram = style.Colors[ImGuiCol_PlotHistogram];
 						colorPlotHistogramX = colorPlotHistogram.x;
 						colorPlotHistogramY = colorPlotHistogram.y;
 						colorPlotHistogramZ = colorPlotHistogram.z;
 						colorPlotHistogramW = colorPlotHistogram.w;
-
 						setting::save_settings();
 					}
 
 					{
 						ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
 
-						//ImGui::BeginChild("ChildL", ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, 260), false, window_flags);
 						ImGui::BeginChild("childItemsSetting", ImVec2(ImGui::GetTextLineHeightWithSpacing() * 15, ImGui::GetTextLineHeightWithSpacing() * (14.5f)), true, window_flags);
 
 						if (ImGui::BeginTable("tableItemsSetting", 2)) {
@@ -2434,7 +2406,6 @@ namespace menu
 								ImGui::TreePop();
 							}
 
-							
 							if (ImGui::TreeNodeEx(ICON_MDI_SWORD " 武器过滤", ImGuiTreeNodeFlags_DefaultOpen)) {
 								ImGui::Checkbox("只拾取附魔武器", &show_items_window_auto_weap_enchant);
 								ImGui::Checkbox("设置拾取价值", &show_items_window_auto_weap_price);
@@ -2448,7 +2419,6 @@ namespace menu
 								ImGui::TreePop();
 							}
 
-							
 							if (ImGui::TreeNodeEx(ICON_MDI_SHIELD_HALF_FULL " 装备过滤", ImGuiTreeNodeFlags_DefaultOpen)) {
 								ImGui::Checkbox("只拾取附魔装备", &show_items_window_auto_armo_enchant);
 								ImGui::Checkbox("设置拾取价值##2", &show_items_window_auto_armo_price);
@@ -2535,6 +2505,52 @@ namespace menu
 											excludeLocationForms.end());
 									}
 								}
+							}
+
+							ImGui::TreePop();
+						}
+
+						if (ImGui::TreeNodeEx(ICON_MDI_AUTORENEW " 龙裔艺术馆陈列品查找", ImGuiTreeNodeFlags_DefaultOpen)) {
+							ImGui::Checkbox("新增艺术馆物品板块", &show_items_window_gallery);
+
+							ImGui::Text(" 艺术馆MOD");
+
+							static ImGuiTableFlags flagsItem =
+								ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
+							const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+							if (ImGui::BeginTable("tableGalleryMod", 4, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
+								ImGui::TableSetupColumn("Index", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_1);
+								ImGui::TableSetupColumn("MOD", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_2);
+								ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 40, PlayerInfoColumnID_4);
+								ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60, PlayerInfoColumnID_3);
+
+								ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
+								ImGui::TableHeadersRow();
+
+								int deleteFormId = 0;
+
+								ImGuiListClipper clipper;
+								clipper.Begin(galleryFormModData.size());
+								while (clipper.Step())
+									for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
+										GalleryModForm item = galleryFormModData[row_n];
+										ImGui::PushID(item.filename.c_str());
+										ImGui::TableNextRow();
+										ImGui::TableNextColumn();
+										//ImGui::Text("%08X", item.formId);
+										if (item.compileIndex != -1) {
+											ImGui::Text("%d", item.compileIndex);
+										}
+										ImGui::TableNextColumn();
+										ImGui::Text("%s", item.filename.c_str());
+										ImGui::TableNextColumn();
+										ImGui::Text("%d(%d)", item.itemCount, item.totalItemCount);
+										ImGui::TableNextColumn();
+										ImGui::Text("%s", item.name.c_str());
+
+										ImGui::PopID();
+									}
+								ImGui::EndTable();
 							}
 
 							ImGui::TreePop();
@@ -2825,5 +2841,4 @@ namespace menu
 		}
 	}
 
-	
 }

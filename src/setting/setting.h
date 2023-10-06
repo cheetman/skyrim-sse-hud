@@ -11,6 +11,7 @@ namespace setting
 
 	struct GalleryData
 	{
+		std::string filename;
 		std::string name;
 		std::vector<int> formids;
 	};
