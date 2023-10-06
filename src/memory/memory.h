@@ -409,6 +409,20 @@ struct IncludeForm
 };
 
 
+struct GalleryForm
+{
+	RE::FormID formId = 0;
+	std::string name = "";
+	std::string modName = "";
+	//std::string formIdStr = "";
+
+	bool operator<(const GalleryForm& other) const
+	{
+		return formId < other.formId;
+	}
+};
+
+
 struct Item2Info
 {
 	int itemCount = 0;
@@ -494,6 +508,10 @@ extern std::unordered_set<RE::TESObjectREFR*> deleteREFRs;
 //extern std::vector<ItemInfo> tracks;
 extern std::unordered_set<RE::TESObjectREFR*> trackPtrs;
 extern std::unordered_set<RE::Actor*> trackActorPtrs;
+
+
+extern std::unordered_set<int> galleryFormIds;
+extern std::vector<GalleryForm> galleryFormData;
 
 extern int screenWidth ;
 extern int screenHeight ;

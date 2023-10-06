@@ -1,5 +1,6 @@
 #include "memory.h"
 #include <event/BSTMenuEvent.h>
+#include <setting/setting.h>
 #include <unordered_set>
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
@@ -973,13 +974,20 @@ void __cdecl RefreshActorInfo(void*)
 Item2Info* items = new Item2Info[2];
 int nowItemIndex = 0;
 
-std::unordered_set<int> autoContFormIds;
-std::vector<IncludeForm> autoContForms;
+// 物品排除
 std::unordered_set<int> excludeFormIds;
 std::vector<ExcludeForm> excludeForms;
+// 地点排除
 std::unordered_set<int> excludeLocationFormIds;
 std::vector<ExcludeForm> excludeLocationForms;
+// 容器类型
+std::unordered_set<int> autoContFormIds;
+std::vector<IncludeForm> autoContForms;
 std::unordered_set<RE::TESObjectREFR*> deleteREFRs;
+
+// 艺术馆
+std::unordered_set<int> galleryFormIds;
+std::vector<GalleryForm> galleryFormData;
 
 //std::vector<ItemInfo> tracks;
 std::unordered_set<RE::TESObjectREFR*> trackPtrs;
@@ -1466,6 +1474,18 @@ void __cdecl RefreshItemInfo(void*)
 				auto form = RE::TESForm::LookupByID(id);
 				if (form) {
 					excludeLocationForms.push_back({ form->GetFormID(), form->GetName(), "" });
+				}
+			}
+
+			// 初始化艺术馆
+			const auto handler = RE::TESDataHandler::GetSingleton();
+			for (auto item : setting::galleryList) {
+				for (auto formid : item.formids) {
+					auto form = handler->LookupForm(formid, item.name);
+					if (form) {
+						galleryFormIds.insert(form->GetFormID());
+						galleryFormData.push_back({ form->GetFormID(), form->GetName(), item.name });
+					}
 				}
 			}
 		}
