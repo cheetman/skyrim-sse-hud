@@ -6,7 +6,46 @@
 #include <unordered_set>
 
 
-// 人物属性
+[[nodiscard]] static inline bool CanDisplay(const RE::TESBoundObject& a_object)
+{
+	switch (a_object.GetFormType()) {
+	case RE::FormType::Scroll:
+	case RE::FormType::Armor:
+	case RE::FormType::Book:
+	case RE::FormType::Ingredient:
+	case RE::FormType::Misc:
+	case RE::FormType::Weapon:
+	case RE::FormType::Ammo:
+	case RE::FormType::KeyMaster:
+	case RE::FormType::AlchemyItem:
+	case RE::FormType::Note:
+	case RE::FormType::SoulGem:
+		break;
+	case RE::FormType::Light:
+		{
+			auto& light = static_cast<const RE::TESObjectLIGH&>(a_object);
+			if (!light.CanBeCarried()) {
+				return false;
+			}
+		}
+		break;
+	default:
+		return false;
+	}
+
+	if (!a_object.GetPlayable()) {
+		return false;
+	}
+
+	auto name = a_object.GetName();
+	if (!name || name[0] == '\0') {
+		return false;
+	}
+
+	return true;
+}
+
+	// 人物属性
 struct PlayerInfo
 {
 	std::string name = "";         // 玩家名
@@ -409,6 +448,7 @@ struct GalleryForm
 struct GalleryModForm
 {
 	int compileIndex = 0;
+	int smallFileCompileIndex = 0;
 	std::string filename = "";
 	std::string name = "";
 	size_t totalItemCount = 0;

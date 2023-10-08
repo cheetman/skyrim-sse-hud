@@ -2298,7 +2298,7 @@ namespace menu
 								ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
 
 							const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
-							if (ImGui::BeginTable("tableItemIngore", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 8), 0.0f)) {
+							if (ImGui::BeginTable("tableItemIngore", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
 								ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_1);
 								ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60, PlayerInfoColumnID_2);
 								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 40, PlayerInfoColumnID_3);
@@ -2510,16 +2510,16 @@ namespace menu
 							ImGui::TreePop();
 						}
 
-						if (ImGui::TreeNodeEx(ICON_MDI_AUTORENEW " 龙裔艺术馆陈列品查找", ImGuiTreeNodeFlags_DefaultOpen)) {
-							ImGui::Checkbox("新增艺术馆物品板块", &show_items_window_gallery);
+						if (ImGui::TreeNodeEx(ICON_MDI_HOME_MODERN " 龙裔艺术馆", ImGuiTreeNodeFlags_DefaultOpen)) {
+							ImGui::Checkbox("艺术馆物品板块", &show_items_window_gallery);
 
-							ImGui::Text(" 艺术馆MOD");
+							ImGui::Text("MOD列表");
 
 							static ImGuiTableFlags flagsItem =
 								ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
 							const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
 							if (ImGui::BeginTable("tableGalleryMod", 4, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
-								ImGui::TableSetupColumn("Index", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_1);
+								ImGui::TableSetupColumn("Index", ImGuiTableColumnFlags_WidthFixed, 30, PlayerInfoColumnID_1);
 								ImGui::TableSetupColumn("MOD", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_2);
 								ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 40, PlayerInfoColumnID_4);
 								ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60, PlayerInfoColumnID_3);
@@ -2536,26 +2536,119 @@ namespace menu
 										GalleryModForm item = galleryFormModData[row_n];
 										ImGui::PushID(item.filename.c_str());
 										ImGui::TableNextRow();
-										ImGui::TableNextColumn();
-										//ImGui::Text("%08X", item.formId);
+
 										if (item.compileIndex != -1) {
-											ImGui::Text("%d", item.compileIndex);
+											ImGui::TableNextColumn();
+											ImGui::Text("%02X:%03X", item.compileIndex, item.smallFileCompileIndex);
+
+											ImGui::TableNextColumn();
+											ImGui::Text("%s", item.filename.c_str());
+											ImGui::TableNextColumn();
+											ImGui::Text("%d(%d)", item.itemCount, item.totalItemCount);
+											ImGui::TableNextColumn();
+											ImGui::Text("%s", item.name.c_str());
+										} else {
+											ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+											ImGui::TableNextColumn();
+
+											ImGui::TableNextColumn();
+											ImGui::Text("%s", item.filename.c_str());
+											ImGui::TableNextColumn();
+											ImGui::Text("%d(%d)", item.itemCount, item.totalItemCount);
+											ImGui::TableNextColumn();
+											ImGui::Text("%s", item.name.c_str());
+											ImGui::PopStyleColor();
 										}
-										ImGui::TableNextColumn();
-										ImGui::Text("%s", item.filename.c_str());
-										ImGui::TableNextColumn();
-										ImGui::Text("%d(%d)", item.itemCount, item.totalItemCount);
-										ImGui::TableNextColumn();
-										ImGui::Text("%s", item.name.c_str());
 
 										ImGui::PopID();
 									}
 								ImGui::EndTable();
 							}
 
+							static char str0[128] = "93F97";
+							if (ImGui::Button(ICON_MDI_CONTENT_SAVE " 生成配置文件")) {
+								std::string formidstr = str0;
+								auto form = RE::TESForm::LookupByID(std::stoi(formidstr, 0, 16));
+								if (form) {
+									if (form->Is(RE::FormType::Reference)) {
+										auto reff = form->AsReference();
+										if (reff) {
+											auto baseObj = reff->GetBaseObject();
+											if (baseObj) {
+												if (baseObj->GetFormType() == RE::FormType::Container) {
+													auto inv = reff->GetInventory(CanDisplay);
+
+													std::vector<setting::GalleryDataGen> galleryList;
+													for (auto& [obj, data] : inv) {
+														auto& [count, entry] = data;
+														if (count > 0 && entry) {
+															bool flag = false;
+															// 检查一下mod是否存在
+															for (auto& data : galleryList) {
+																if (data.filename == obj->GetFile()->fileName) {
+																	// 存在直接加
+																	flag = true;
+
+																	int formid = obj->GetFormID();
+																	if (obj->GetFile()->IsLight()) {
+																		formid &= 0x00000FFF;
+																	} else {
+																		formid &= 0x00FFFFFF;
+																	}
+																	char buf[80];
+																	snprintf(buf, 80, "%08X", formid);
+																	data.formids.push_back(buf);
+																	break;
+																}
+															}
+															if (!flag) {
+																setting::GalleryDataGen data;
+																data.filename = obj->GetFile()->fileName;
+																data.name = obj->GetFile()->fileName;
+
+																int formid = obj->GetFormID();
+																if (obj->GetFile()->IsLight()) {
+																	formid &= 0x00000FFF;
+																} else {
+																	formid &= 0x00FFFFFF;
+																}
+																char buf[80];
+																snprintf(buf, 80, "%08X", formid);
+																data.formids.push_back(buf);
+																galleryList.push_back(data);
+															}
+														}
+													}
+
+													std::filesystem::path settings_path = "data\\skse\\plugins\\ItemFinderPlus-GalleryList-Gen.json";
+
+													nlohmann::json arr = nlohmann::json::array();
+
+													for (const auto& data : galleryList) {
+														nlohmann::json obj = nlohmann::json::object();
+														obj["filename"] = data.filename;
+														obj["name"] = data.name;
+														nlohmann::json arr2 = nlohmann::json::array();
+														for (const auto& formid : data.formids) {
+															arr2.push_back(formid);
+														}
+														obj["formids"] = arr2;
+														arr.push_back(obj);
+													}
+
+													std::ofstream o(settings_path);
+													o << std::setw(4) << arr << std::endl;
+												}
+											}
+										}
+									}
+								}
+							}
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::InputText("ID:", str0, IM_ARRAYSIZE(str0));
+
 							ImGui::TreePop();
 						}
-
 						ImGui::EndChild();
 					}
 				}

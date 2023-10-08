@@ -15,5 +15,12 @@ namespace setting
 		std::string name;
 		std::vector<int> formids;
 	};
+
+	struct GalleryDataGen
+	{
+		std::string filename;
+		std::string name;
+		std::vector<std::string> formids;
+	};
 	extern std::vector<GalleryData> galleryList;
 }

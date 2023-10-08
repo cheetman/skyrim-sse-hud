@@ -19,16 +19,20 @@ namespace setting
 			i >> json;
 
 			for (const auto& obj : json) {
-				GalleryData data;
-				data.name = obj["name"];
-				data.filename = obj["filename"];
-				if (obj.contains("formids")) {
-					for (const auto& formid : obj["formids"]) {
-						std::string formidstr = formid;
-						data.formids.push_back(std::stoi(formidstr, 0, 16));
+				if (obj.contains("filename")) {
+					GalleryData data;
+					if (obj.contains("name")) {
+						data.name = obj["name"];
 					}
+					data.filename = obj["filename"];
+					if (obj.contains("formids")) {
+						for (const auto& formid : obj["formids"]) {
+							std::string formidstr = formid;
+							data.formids.push_back(std::stoi(formidstr, 0, 16));
+						}
+					}
+					galleryList.push_back(data);
 				}
-				galleryList.push_back(data);
 			}
 		} catch (std::exception const& ex) {
 			logger::error(ex.what());

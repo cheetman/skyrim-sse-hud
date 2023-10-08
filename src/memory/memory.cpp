@@ -1130,44 +1130,7 @@ int getItemCountACHR()
 	return items[!nowItemIndex].itemCountACHR;
 }
 
-[[nodiscard]] static inline bool CanDisplay(const RE::TESBoundObject& a_object)
-{
-	switch (a_object.GetFormType()) {
-	case RE::FormType::Scroll:
-	case RE::FormType::Armor:
-	case RE::FormType::Book:
-	case RE::FormType::Ingredient:
-	case RE::FormType::Misc:
-	case RE::FormType::Weapon:
-	case RE::FormType::Ammo:
-	case RE::FormType::KeyMaster:
-	case RE::FormType::AlchemyItem:
-	case RE::FormType::Note:
-	case RE::FormType::SoulGem:
-		break;
-	case RE::FormType::Light:
-		{
-			auto& light = static_cast<const RE::TESObjectLIGH&>(a_object);
-			if (!light.CanBeCarried()) {
-				return false;
-			}
-		}
-		break;
-	default:
-		return false;
-	}
 
-	if (!a_object.GetPlayable()) {
-		return false;
-	}
-
-	auto name = a_object.GetName();
-	if (!name || name[0] == '\0') {
-		return false;
-	}
-
-	return true;
-}
 
 bool __fastcall autoTakeArmo(RE::TESObjectREFR* reff, RE::PlayerCharacter* player, bool autoFlag, int distance, bool isDeleteExist)
 {
@@ -1489,7 +1452,7 @@ void __cdecl RefreshItemInfo(void*)
 				// 先检查一下有没有mod
 				auto file = handler->LookupModByName(item.filename);
 				if (!file || file->compileIndex == 0xFF) {
-					galleryFormModData.push_back({ -1, item.filename, item.name, item.formids.size(), 0 });
+					galleryFormModData.push_back({ -1,-1, item.filename, item.name, item.formids.size(), 0 });
 					continue;
 				}
 
@@ -1498,14 +1461,14 @@ void __cdecl RefreshItemInfo(void*)
 					RE::FormID formID = file->compileIndex << (3 * 8);
 					formID += file->smallFileCompileIndex << ((1 * 8) + 4);
 					formID += rawFormID;
-					auto form = handler->LookupForm(formID, item.filename);
+					auto form = RE::TESForm::LookupByID(formID);
 					if (form) {
 						galleryFormIds.insert(formID);
 						galleryFormData.push_back({ formID, form->GetName(), item.filename });
 						itemCount++;
 					}
 				}
-				galleryFormModData.push_back({ file->compileIndex, item.filename, item.name, item.formids.size(), itemCount });
+				galleryFormModData.push_back({ file->compileIndex, file->smallFileCompileIndex, item.filename, item.name, item.formids.size(), itemCount });
 			}
 		}
 

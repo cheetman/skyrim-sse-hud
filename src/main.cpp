@@ -11,7 +11,7 @@
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
 {
 	setting::settings_path = "data\\skse\\plugins\\sse-hud.json";
-	setting::settings_path_gallery = "data\\skse\\plugins\\1.json";
+	setting::settings_path_gallery = "data\\skse\\plugins\\ItemFinderPlus-GalleryList.json";
 	fontFilePath = "data\\skse\\plugins\\xyght3.0-62354202.ttf";
 	//fontFilePath2 = "data\\skse\\plugins\\xyght3.0-62354202.ttf";
 
