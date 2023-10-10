@@ -380,11 +380,11 @@ namespace menu
 	bool show_teammate = true;
 	bool show_horse = true;
 
-	void __fastcall buildNpcInfo(int active, ActorInfo* actorInfo, int actorCount)
+	void __fastcall buildNpcInfo(int active2, ActorInfo* actor2Info, int actorCount)
 	{
-		if (active) {
+		if (active2) {
 			for (int i = 0; i < actorCount; i++) {
-				auto item = actorInfo[i];
+				auto item = actor2Info[i];
 
 				char hp[16] = "已死亡";
 				if (item.lifeState != RE::ACTOR_LIFE_STATE::kDead) {
@@ -481,7 +481,7 @@ namespace menu
 			}
 		} else {
 			for (int i = 0; i < actorCount; i++) {
-				auto item = actorInfo[i];
+				auto item = actor2Info[i];
 
 				if (item.isInCombat) {
 					myTextColored(ImVec4(1, 1, 0, 1), "\uf071");
@@ -2513,7 +2513,7 @@ namespace menu
 						if (ImGui::TreeNodeEx(ICON_MDI_HOME_MODERN " 龙裔艺术馆", ImGuiTreeNodeFlags_DefaultOpen)) {
 							ImGui::Checkbox("艺术馆物品板块", &show_items_window_gallery);
 
-							ImGui::Text("MOD列表");
+							ImGui::Text("MOD清单 [已识别%d(%d)件物品,%d(%d)个MOD]", galleryItemCount, galleryItemTotalCount, galleryModCount, galleryModTotalCount);
 
 							static ImGuiTableFlags flagsItem =
 								ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
@@ -2539,7 +2539,11 @@ namespace menu
 
 										if (item.compileIndex != -1) {
 											ImGui::TableNextColumn();
-											ImGui::Text("%02X:%03X", item.compileIndex, item.smallFileCompileIndex);
+											if (item.compileIndex == 0xFE) {
+												ImGui::Text("%02X:%03X", item.compileIndex, item.smallFileCompileIndex);
+											} else {
+												ImGui::Text("%02X", item.compileIndex);
+											}
 
 											ImGui::TableNextColumn();
 											ImGui::Text("%s", item.filename.c_str());
@@ -2585,12 +2589,12 @@ namespace menu
 															bool flag = false;
 															// 检查一下mod是否存在
 															for (auto& data : galleryList) {
-																if (data.filename == obj->GetFile()->fileName) {
+																if (data.filename == obj->GetFile(0)->fileName) {
 																	// 存在直接加
 																	flag = true;
 
 																	int formid = obj->GetFormID();
-																	if (obj->GetFile()->IsLight()) {
+																	if (obj->GetFile(0)->IsLight()) {
 																		formid &= 0x00000FFF;
 																	} else {
 																		formid &= 0x00FFFFFF;
@@ -2603,11 +2607,11 @@ namespace menu
 															}
 															if (!flag) {
 																setting::GalleryDataGen data;
-																data.filename = obj->GetFile()->fileName;
-																data.name = obj->GetFile()->fileName;
+																data.filename = obj->GetFile(0)->fileName;
+																data.name = obj->GetFile(0)->fileName;
 
 																int formid = obj->GetFormID();
-																if (obj->GetFile()->IsLight()) {
+																if (obj->GetFile(0)->IsLight()) {
 																	formid &= 0x00000FFF;
 																} else {
 																	formid &= 0x00FFFFFF;

@@ -551,8 +551,10 @@ extern std::unordered_set<RE::Actor*> trackActorPtrs;
 extern std::unordered_set<int> galleryFormIds;
 extern std::vector<GalleryForm> galleryFormData;
 extern std::vector<GalleryModForm> galleryFormModData;
-//extern int galleryTotalCount;
-//extern int galleryCount;
+extern int galleryModTotalCount;
+extern int galleryModCount;
+extern int galleryItemTotalCount;
+extern int galleryItemCount;
 
 
 extern int screenWidth ;

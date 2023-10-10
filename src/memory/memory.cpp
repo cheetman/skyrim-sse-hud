@@ -992,8 +992,10 @@ std::unordered_set<RE::TESObjectREFR*> deleteREFRs;
 std::unordered_set<int> galleryFormIds;
 std::vector<GalleryForm> galleryFormData;
 std::vector<GalleryModForm> galleryFormModData;
-//int galleryTotalCount = 0;
-//int galleryCount = 0;
+int galleryModTotalCount = 0;
+int galleryModCount = 0;
+int galleryItemTotalCount = 0;
+int galleryItemCount = 0;
 
 //std::vector<ItemInfo> tracks;
 std::unordered_set<RE::TESObjectREFR*> trackPtrs;
@@ -1129,8 +1131,6 @@ int getItemCountACHR()
 {
 	return items[!nowItemIndex].itemCountACHR;
 }
-
-
 
 bool __fastcall autoTakeArmo(RE::TESObjectREFR* reff, RE::PlayerCharacter* player, bool autoFlag, int distance, bool isDeleteExist)
 {
@@ -1448,11 +1448,14 @@ void __cdecl RefreshItemInfo(void*)
 
 			// 初始化艺术馆
 			const auto handler = RE::TESDataHandler::GetSingleton();
+
 			for (auto item : setting::galleryList) {
+				galleryModTotalCount++;
+				galleryItemTotalCount += item.formids.size();
 				// 先检查一下有没有mod
 				auto file = handler->LookupModByName(item.filename);
 				if (!file || file->compileIndex == 0xFF) {
-					galleryFormModData.push_back({ -1,-1, item.filename, item.name, item.formids.size(), 0 });
+					galleryFormModData.push_back({ -1, -1, item.filename, item.name, item.formids.size(), 0 });
 					continue;
 				}
 
@@ -1466,10 +1469,21 @@ void __cdecl RefreshItemInfo(void*)
 						galleryFormIds.insert(formID);
 						galleryFormData.push_back({ formID, form->GetName(), item.filename });
 						itemCount++;
+						galleryItemCount++;
 					}
 				}
 				galleryFormModData.push_back({ file->compileIndex, file->smallFileCompileIndex, item.filename, item.name, item.formids.size(), itemCount });
+
+				galleryModCount++;
 			}
+			// 排序
+			std::sort(galleryFormModData.begin(), galleryFormModData.end(), [](const GalleryModForm& a, const GalleryModForm& b) {
+				if (a.compileIndex != b.compileIndex) {
+					return a.compileIndex < b.compileIndex;
+				}
+				return a.smallFileCompileIndex < b.smallFileCompileIndex;
+			});
+
 		}
 
 		bool isDeleteExist = deleteREFRs.size() > 0;
@@ -1769,7 +1783,7 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 										}
 										if (show_items_window_file) {
-											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].filename = baseObj->GetFile()->fileName;
+											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].filename = baseObj->GetFile(0)->fileName;
 
 											//RE::TESForm::GetAllForms;
 											//logger::debug("{} - {}", reff->GetFormEditorID(), baseObj->GetFormEditorID()); // 没用
@@ -1833,7 +1847,7 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoARMO[tmpCountARMO].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 										}
 										if (show_items_window_file) {
-											items[nowItemIndex].itemInfoARMO[tmpCountARMO].filename = baseObj->GetFile()->fileName;
+											items[nowItemIndex].itemInfoARMO[tmpCountARMO].filename = baseObj->GetFile(0)->fileName;
 										}
 										tmpCountARMO++;
 
@@ -1892,7 +1906,7 @@ void __cdecl RefreshItemInfo(void*)
 										items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].isCrime = reff->IsCrimeToActivate();
 
 										if (show_items_window_file) {
-											items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].filename = baseObj->GetFile()->fileName;
+											items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].filename = baseObj->GetFile(0)->fileName;
 										}
 										tmpCountAMMO++;
 
@@ -1941,7 +1955,7 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 										}
 										if (show_items_window_file) {
-											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].filename = baseObj->GetFile()->fileName;
+											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].filename = baseObj->GetFile(0)->fileName;
 										}
 
 										tmpCountBOOK++;
@@ -2002,7 +2016,7 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].isCrime = reff->IsCrimeToActivate();
 
 											if (show_items_window_file) {
-												items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].filename = baseObj->GetFile()->fileName;
+												items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].filename = baseObj->GetFile(0)->fileName;
 											}
 											tmpCountFOOD++;
 										} else {
@@ -2044,7 +2058,7 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoALCH[tmpCountALCH].isCrime = reff->IsCrimeToActivate();
 
 											if (show_items_window_file) {
-												items[nowItemIndex].itemInfoALCH[tmpCountALCH].filename = baseObj->GetFile()->fileName;
+												items[nowItemIndex].itemInfoALCH[tmpCountALCH].filename = baseObj->GetFile(0)->fileName;
 											}
 											tmpCountALCH++;
 										}
@@ -2099,7 +2113,7 @@ void __cdecl RefreshItemInfo(void*)
 										items[nowItemIndex].itemInfoINGR[tmpCountINGR].isCrime = reff->IsCrimeToActivate();
 
 										if (show_items_window_file) {
-											items[nowItemIndex].itemInfoINGR[tmpCountINGR].filename = baseObj->GetFile()->fileName;
+											items[nowItemIndex].itemInfoINGR[tmpCountINGR].filename = baseObj->GetFile(0)->fileName;
 										}
 										tmpCountINGR++;
 										break;
@@ -2157,7 +2171,7 @@ void __cdecl RefreshItemInfo(void*)
 										items[nowItemIndex].itemInfoMISC[tmpCountMISC].isCrime = reff->IsCrimeToActivate();
 
 										if (show_items_window_file) {
-											items[nowItemIndex].itemInfoMISC[tmpCountMISC].filename = baseObj->GetFile()->fileName;
+											items[nowItemIndex].itemInfoMISC[tmpCountMISC].filename = baseObj->GetFile(0)->fileName;
 										}
 										tmpCountMISC++;
 
@@ -2207,7 +2221,7 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoCONT[tmpCountCONT].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 										}
 										if (show_items_window_file) {
-											items[nowItemIndex].itemInfoCONT[tmpCountCONT].filename = baseObj->GetFile()->fileName;
+											items[nowItemIndex].itemInfoCONT[tmpCountCONT].filename = baseObj->GetFile(0)->fileName;
 										}
 
 										int tmpInvCount = 0;
@@ -2429,7 +2443,7 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 										}
 										if (show_items_window_file) {
-											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].filename = baseObj->GetFile()->fileName;
+											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].filename = baseObj->GetFile(0)->fileName;
 										}
 
 										// 自动拾取判断
@@ -2525,7 +2539,7 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoTREE[tmpCountTREE].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 										}
 										if (show_items_window_file) {
-											items[nowItemIndex].itemInfoTREE[tmpCountTREE].filename = baseObj->GetFile()->fileName;
+											items[nowItemIndex].itemInfoTREE[tmpCountTREE].filename = baseObj->GetFile(0)->fileName;
 										}
 
 										// 自动拾取判断
@@ -2608,7 +2622,7 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 										}
 										if (show_items_window_file) {
-											items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].filename = baseObj->GetFile()->fileName;
+											items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].filename = baseObj->GetFile(0)->fileName;
 										}
 
 										tmpCountKEYM++;
@@ -2663,7 +2677,7 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 										}
 										if (show_items_window_file) {
-											items[nowItemIndex].itemInfoACTI[tmpCountACTI].filename = baseObj->GetFile()->fileName;
+											items[nowItemIndex].itemInfoACTI[tmpCountACTI].filename = baseObj->GetFile(0)->fileName;
 										}
 
 										items[nowItemIndex].itemInfoACTI[tmpCountACTI].isHarvested = (reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested);
@@ -2713,7 +2727,7 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 										}
 										if (show_items_window_file) {
-											items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].filename = baseObj->GetFile()->fileName;
+											items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].filename = baseObj->GetFile(0)->fileName;
 										}
 
 										items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].ptr = reff;
@@ -2791,7 +2805,7 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfo[tmpCount].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 										}
 										if (show_items_window_file) {
-											items[nowItemIndex].itemInfo[tmpCount].filename = baseObj->GetFile()->fileName;
+											items[nowItemIndex].itemInfo[tmpCount].filename = baseObj->GetFile(0)->fileName;
 										}
 
 										//logger::debug(GetFormTypeName(baseObj->formType.underlying()));
