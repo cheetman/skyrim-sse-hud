@@ -82,13 +82,6 @@ int SehFilter(DWORD dwExceptionCode)
 void __cdecl installimgui(void*);
 
 
-//void delayedExecution()
-//{
-//	std::this_thread::sleep_for(std::chrono::seconds(3));
-//	isGameLoading = false;
-//}
-
-
 void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 {
 	switch (a_msg->type) {
@@ -124,9 +117,20 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 			}
 			if (trackActorPtrs.size() > 0) {
 				trackActorPtrs.clear();
+			}			
+			break;
+		}
+	case SKSE::MessagingInterface::kNewGame:
+		{
+			logger::info("kNewGame"sv);
+			isGameLoading = false;
+			startflag = true;
+			if (trackPtrs.size() > 0) {
+				trackPtrs.clear();
 			}
-			//std::thread t(delayedExecution);
-			
+			if (trackActorPtrs.size() > 0) {
+				trackActorPtrs.clear();
+			}
 			break;
 		}
 	case SKSE::MessagingInterface::kSaveGame:
@@ -147,18 +151,6 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 	case SKSE::MessagingInterface::kDataLoaded:
 		{
 			logger::info("kDataLoaded"sv);
-			//MessageBox(nullptr, "SKSE kDataLoaded", nullptr, MB_OK);
-
-			/*		RE::GFxValue obj;
-		
-
-			RE::GFxValue fxValue;
-			fxValue.SetNumber(90);
-			obj.SetMember("goldNumber", fxValue);
-
-			RE::GFxValue fxValue2;
-			fxValue2.SetNumber(100);
-			obj.SetMember("encumbranceNumber", fxValue);*/
 
 			break;
 		}

@@ -234,6 +234,7 @@ extern WeaponInfo rightWeaponInfo;
 extern WeaponInfo ammoInfo;
 
 extern int refresh_time_data;
+extern int refresh_time_auto;
 extern bool startflag;
 
 //extern bool isRefreshActorInfo;

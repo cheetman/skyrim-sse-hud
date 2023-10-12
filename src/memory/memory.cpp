@@ -9,6 +9,7 @@
 bool active = false;
 bool activeItems = false;
 int refresh_time_data = 300;
+int refresh_time_auto = 1;
 bool startflag = false;
 WeaponInfo leftWeaponInfo;
 WeaponInfo rightWeaponInfo;
@@ -35,7 +36,6 @@ int screenHeight = 0;
 void __cdecl RefreshGameInfo(void*)
 {
 	// 标记装备槽是否主要
-	//wornArmos[1].isMainSlotAlert =
 	wornArmos[2].isMainSlotAlert = wornArmos[3].isMainSlotAlert = wornArmos[5].isMainSlotAlert = wornArmos[6].isMainSlotAlert = wornArmos[7].isMainSlotAlert = true;
 	wornArmos[1].isSpeacilSlotAlert = wornArmos[2].isSpeacilSlotAlert = wornArmos[3].isSpeacilSlotAlert = wornArmos[5].isSpeacilSlotAlert = wornArmos[6].isSpeacilSlotAlert = wornArmos[7].isSpeacilSlotAlert = wornArmos[9].isSpeacilSlotAlert = false;
 	for (int i = 0; i <= 31; i++) {
@@ -48,17 +48,13 @@ void __cdecl RefreshGameInfo(void*)
 		}
 		Sleep(refresh_time_data);
 		if (!startflag) {
-			/*	RE::UI* ui = RE::UI::GetSingleton();
-			const auto menu = ui ? ui->GetMenu<RE::ContainerMenu>() : nullptr;
-			const auto movie = menu ? menu->uiMovie : nullptr;
-			if (movie) {
-
-			}*/
-			Sleep(3000);
 			continue;
 		}
 		if (isGameLoading) {
-			Sleep(3000);
+			continue;
+		}
+
+		if (isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu) {
 			continue;
 		}
 
@@ -76,30 +72,30 @@ void __cdecl RefreshGameInfo(void*)
 			}
 
 			//__try {
-			auto playerFormEditorID = player->GetFormEditorID();
-			auto playerFormID = player->GetFormID();
-			auto playerGoldValue = player->GetGoldValue();
+			//auto playerFormEditorID = player->GetFormEditorID();
+			//auto playerFormID = player->GetFormID();
+			//auto playerGoldValue = player->GetGoldValue();
 			// 用不到
 			//auto playerGoldAmount = player->GetGoldAmount();
-			auto playerDisplayFullName = player->GetDisplayFullName();
+			//auto playerDisplayFullName = player->GetDisplayFullName();
 
-			auto playerLevel = player->GetLevel();
-			auto playerRace = player->GetRace();
-			if (playerRace) {
-				//playerRaceName = player->GetRace()->GetFullName();
-			}
+			//auto playerLevel = player->GetLevel();
+			//auto playerRace = player->GetRace();
+			//if (playerRace) {
+			//playerRaceName = player->GetRace()->GetFullName();
+			//}
 
-			auto playerAttackingWeapon = player->GetAttackingWeapon();
-			auto playerEquippedEntryDataLeft = player->GetEquippedEntryData(true);
-			auto playerEquippedEntryDataRight = player->GetEquippedEntryData(false);
-			auto playerEquippedObjectLeft = player->GetEquippedObject(true);
-			auto playerEquippedObjectRight = player->GetEquippedObject(false);
+			//auto playerAttackingWeapon = player->GetAttackingWeapon();
+			//auto playerEquippedEntryDataLeft = player->GetEquippedEntryData(true);
+			//auto playerEquippedEntryDataRight = player->GetEquippedEntryData(false);
+			//auto playerEquippedObjectLeft = player->GetEquippedObject(true);
+			//auto playerEquippedObjectRight = player->GetEquippedObject(false);
 
 			//auto id = player->GetCrimeGoldValue();
-			auto factionOwner = player->GetFactionOwner();
-			if (factionOwner) {
-				auto factionOwnerName = factionOwner->GetFullName();
-			}
+			//auto factionOwner = player->GetFactionOwner();
+			//if (factionOwner) {
+			//	auto factionOwnerName = factionOwner->GetFullName();
+			//}
 			// 轻甲等级
 			//lightArmor = player->GetActorValue(RE::ActorValue::kLightArmor);
 			//// 重甲等级
@@ -733,6 +729,10 @@ void __cdecl RefreshActorInfo(void*)
 			continue;
 		}
 
+		if (isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu) {
+			continue;
+		}
+
 		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 		if (!player) {
 			Sleep(3000);
@@ -843,7 +843,6 @@ void __cdecl RefreshActorInfo(void*)
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth);
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].isSentient = IsSentient2(actor);
-						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
 
 						if (show_npc_window_direction) {
 							actorInfo[nowIndex].teammateInfo[tmpTeammateCount].distance = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
@@ -883,7 +882,6 @@ void __cdecl RefreshActorInfo(void*)
 						actorInfo[nowIndex].enemyInfo[tmpEnemyCount].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth);
 						actorInfo[nowIndex].enemyInfo[tmpEnemyCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
 						actorInfo[nowIndex].enemyInfo[tmpEnemyCount].isSentient = IsSentient2(actor);
-						actorInfo[nowIndex].enemyInfo[tmpEnemyCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
 						actorInfo[nowIndex].enemyInfo[tmpEnemyCount].lifeState = actor->GetLifeState();
 						actorInfo[nowIndex].enemyInfo[tmpEnemyCount].isInCombat = actor->IsInCombat();
 
@@ -917,7 +915,6 @@ void __cdecl RefreshActorInfo(void*)
 						actorInfo[nowIndex].horseInfo[tmpHorseCount].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth);
 						actorInfo[nowIndex].horseInfo[tmpHorseCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
 						actorInfo[nowIndex].horseInfo[tmpHorseCount].isSentient = IsSentient2(actor);
-						actorInfo[nowIndex].horseInfo[tmpHorseCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
 						actorInfo[nowIndex].horseInfo[tmpHorseCount].lifeState = actor->GetLifeState();
 						actorInfo[nowIndex].horseInfo[tmpHorseCount].isInCombat = actor->IsInCombat();
 
@@ -952,7 +949,6 @@ void __cdecl RefreshActorInfo(void*)
 						actorInfo[nowIndex].npcInfo[tmpNpcCount].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth);
 						actorInfo[nowIndex].npcInfo[tmpNpcCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
 						actorInfo[nowIndex].npcInfo[tmpNpcCount].isSentient = IsSentient2(actor);
-						actorInfo[nowIndex].npcInfo[tmpNpcCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
 						actorInfo[nowIndex].npcInfo[tmpNpcCount].lifeState = actor->GetLifeState();
 						actorInfo[nowIndex].npcInfo[tmpNpcCount].isInCombat = actor->IsInCombat();
 
@@ -1392,12 +1388,6 @@ void __cdecl RefreshItemInfo(void*)
 {
 	while (true) {
 		Sleep(1000);
-
-		if (!activeItems && !show_items_window && !show_items_window_auto_ammo && !show_items_window_auto_flor && !show_items_window_auto_food && !show_items_window_auto_ingr && !show_items_window_auto_alch && !show_items_window_auto_misc && !show_items_window_auto_tree && !show_items_window_auto_sgem && !show_items_window_auto_achr && !show_items_window_auto_cont) {
-			Sleep(1000);
-			continue;
-		}
-
 		if (!startflag) {
 			Sleep(1000);
 			continue;
@@ -1408,13 +1398,29 @@ void __cdecl RefreshItemInfo(void*)
 			continue;
 		}
 
+		if (!activeItems && !show_items_window && !show_items_window_auto_ammo && !show_items_window_auto_flor && !show_items_window_auto_food && !show_items_window_auto_ingr && !show_items_window_auto_alch && !show_items_window_auto_misc && !show_items_window_auto_tree && !show_items_window_auto_sgem && !show_items_window_auto_achr && !show_items_window_auto_cont) {
+			Sleep(1000);
+			continue;
+		} else {
+			// 设置刷新时间
+			if (activeItems) {
+
+			} else {
+				Sleep(refresh_time_auto * 1000 - 1000);
+				if (refresh_time_auto < 1) {
+					refresh_time_auto = 1;
+				}
+			}
+		}
+
 		if (isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu) {
+			Sleep(1000);
 			continue;
 		}
 
 		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 		if (!player) {
-			Sleep(3000);
+			Sleep(1000);
 			continue;
 		}
 
@@ -1447,43 +1453,42 @@ void __cdecl RefreshItemInfo(void*)
 			}
 
 			// 初始化艺术馆
-			const auto handler = RE::TESDataHandler::GetSingleton();
+			//const auto handler = RE::TESDataHandler::GetSingleton();
 
-			for (auto item : setting::galleryList) {
-				galleryModTotalCount++;
-				galleryItemTotalCount += item.formids.size();
-				// 先检查一下有没有mod
-				auto file = handler->LookupModByName(item.filename);
-				if (!file || file->compileIndex == 0xFF) {
-					galleryFormModData.push_back({ -1, -1, item.filename, item.name, item.formids.size(), 0 });
-					continue;
-				}
+			//for (auto item : setting::galleryList) {
+			//	galleryModTotalCount++;
+			//	galleryItemTotalCount += item.formids.size();
+			//	// 先检查一下有没有mod
+			//	auto file = handler->LookupModByName(item.filename);
+			//	if (!file || file->compileIndex == 0xFF) {
+			//		galleryFormModData.push_back({ -1, -1, item.filename, item.name, item.formids.size(), 0 });
+			//		continue;
+			//	}
 
-				size_t itemCount = 0;
-				for (auto rawFormID : item.formids) {
-					RE::FormID formID = file->compileIndex << (3 * 8);
-					formID += file->smallFileCompileIndex << ((1 * 8) + 4);
-					formID += rawFormID;
-					auto form = RE::TESForm::LookupByID(formID);
-					if (form) {
-						galleryFormIds.insert(formID);
-						galleryFormData.push_back({ formID, form->GetName(), item.filename });
-						itemCount++;
-						galleryItemCount++;
-					}
-				}
-				galleryFormModData.push_back({ file->compileIndex, file->smallFileCompileIndex, item.filename, item.name, item.formids.size(), itemCount });
+			//	size_t itemCount = 0;
+			//	for (auto rawFormID : item.formids) {
+			//		RE::FormID formID = file->compileIndex << (3 * 8);
+			//		formID += file->smallFileCompileIndex << ((1 * 8) + 4);
+			//		formID += rawFormID;
+			//		auto form = RE::TESForm::LookupByID(formID);
+			//		if (form) {
+			//			galleryFormIds.insert(formID);
+			//			galleryFormData.push_back({ formID, form->GetName(), item.filename });
+			//			itemCount++;
+			//			galleryItemCount++;
+			//		}
+			//	}
+			//	galleryFormModData.push_back({ file->compileIndex, file->smallFileCompileIndex, item.filename, item.name, item.formids.size(), itemCount });
 
-				galleryModCount++;
-			}
-			// 排序
-			std::sort(galleryFormModData.begin(), galleryFormModData.end(), [](const GalleryModForm& a, const GalleryModForm& b) {
-				if (a.compileIndex != b.compileIndex) {
-					return a.compileIndex < b.compileIndex;
-				}
-				return a.smallFileCompileIndex < b.smallFileCompileIndex;
-			});
-
+			//	galleryModCount++;
+			//}
+			//// 排序
+			//std::sort(galleryFormModData.begin(), galleryFormModData.end(), [](const GalleryModForm& a, const GalleryModForm& b) {
+			//	if (a.compileIndex != b.compileIndex) {
+			//		return a.compileIndex < b.compileIndex;
+			//	}
+			//	return a.smallFileCompileIndex < b.smallFileCompileIndex;
+			//});
 		}
 
 		bool isDeleteExist = deleteREFRs.size() > 0;
@@ -1705,6 +1710,12 @@ void __cdecl RefreshItemInfo(void*)
 											break;
 										}
 									}
+
+									// 画面不显示则直接跳过
+									if (!activeItems) {
+										continue;
+									}
+
 									items[nowItemIndex].itemInfoACHR[tmpCountACHR].invs[tmpInvCount].ptr = obj;
 									items[nowItemIndex].itemInfoACHR[tmpCountACHR].invs[tmpInvCount].name = obj->GetName();
 									bool stealing = player->WouldBeStealing(actor);
@@ -1766,6 +1777,11 @@ void __cdecl RefreshItemInfo(void*)
 											continue;
 										}
 
+										// 画面不显示则直接跳过
+										if (!activeItems) {
+											continue;
+										}
+
 										items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].ptr = reff;
 										items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].baseFormId = baseObj->GetFormID();
 										items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].baseFormIdStr = FormIDToString(baseObj->GetFormID());
@@ -1784,9 +1800,6 @@ void __cdecl RefreshItemInfo(void*)
 										}
 										if (show_items_window_file) {
 											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].filename = baseObj->GetFile(0)->fileName;
-
-											//RE::TESForm::GetAllForms;
-											//logger::debug("{} - {}", reff->GetFormEditorID(), baseObj->GetFormEditorID()); // 没用
 										}
 
 										tmpCountWEAP++;
@@ -1827,6 +1840,11 @@ void __cdecl RefreshItemInfo(void*)
 
 										// 自动拾取判断
 										if (autoTakeArmo(reff, player, show_items_window_auto_armo, distance, isDeleteExist)) {
+											continue;
+										}
+
+										// 画面不显示则直接跳过
+										if (!activeItems) {
 											continue;
 										}
 
@@ -1889,6 +1907,12 @@ void __cdecl RefreshItemInfo(void*)
 											continue;
 										}
 
+										// 画面不显示则直接跳过
+										if (!activeItems) {
+											continue;
+										}
+
+
 										if (show_items_window_direction) {
 											items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].distance = distance;
 											items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
@@ -1914,6 +1938,11 @@ void __cdecl RefreshItemInfo(void*)
 									}
 								case RE::FormType::Book:
 									{
+										// 画面不显示则直接跳过
+										if (!activeItems) {
+											continue;
+										}
+
 										if (tmpCountBOOK > show_items_window_array_max_length) {
 											continue;
 										}
@@ -1938,6 +1967,7 @@ void __cdecl RefreshItemInfo(void*)
 												continue;
 											}
 										}
+
 
 										items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].ptr = reff;
 										items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].baseFormId = baseObj->GetFormID();
@@ -1999,6 +2029,12 @@ void __cdecl RefreshItemInfo(void*)
 												continue;
 											}
 
+											
+											// 画面不显示则直接跳过
+											if (!activeItems) {
+												continue;
+											}
+
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].distance = distance;
 												items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
@@ -2038,6 +2074,11 @@ void __cdecl RefreshItemInfo(void*)
 
 											// 自动拾取判断
 											if (autoTake(reff, player, show_items_window_auto_alch, distance, isDeleteExist)) {
+												continue;
+											}
+
+											// 画面不显示则直接跳过
+											if (!activeItems) {
 												continue;
 											}
 
@@ -2096,6 +2137,11 @@ void __cdecl RefreshItemInfo(void*)
 											continue;
 										}
 
+										// 画面不显示则直接跳过
+										if (!activeItems) {
+											continue;
+										}
+
 										if (show_items_window_direction) {
 											items[nowItemIndex].itemInfoINGR[tmpCountINGR].distance = distance;
 											items[nowItemIndex].itemInfoINGR[tmpCountINGR].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
@@ -2151,6 +2197,11 @@ void __cdecl RefreshItemInfo(void*)
 
 										// 自动拾取判断
 										if (autoTake(reff, player, show_items_window_auto_misc, distance, isDeleteExist)) {
+											continue;
+										}
+
+										// 画面不显示则直接跳过
+										if (!activeItems) {
 											continue;
 										}
 
@@ -2360,6 +2411,11 @@ void __cdecl RefreshItemInfo(void*)
 														}
 													}
 
+													// 画面不显示则直接跳过
+													if (!activeItems) {
+														continue;
+													}
+
 													items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].ptr = obj;
 													items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].name = obj->GetName();
 													items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].isCrime = isCrimeInv;
@@ -2372,6 +2428,11 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 										} else {
+											// 画面不显示则直接跳过
+											if (!activeItems) {
+												continue;
+											}
+
 											for (auto& [obj, data] : inv) {
 												auto& [count, entry] = data;
 												if (count > 0 && entry) {
@@ -2427,6 +2488,16 @@ void __cdecl RefreshItemInfo(void*)
 											}
 										}
 
+										// 自动拾取判断
+										if (autoHarvest(reff, player, show_items_window_auto_flor, distance, flora)) {
+											continue;
+										}
+
+										// 画面不显示则直接跳过
+										if (!activeItems) {
+											continue;
+										}
+
 										items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].ptr = reff;
 										items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].baseFormId = baseObj->GetFormID();
 										items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].baseFormIdStr = FormIDToString(baseObj->GetFormID());
@@ -2446,10 +2517,8 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].filename = baseObj->GetFile(0)->fileName;
 										}
 
-										// 自动拾取判断
-										if (autoHarvest(reff, player, show_items_window_auto_flor, distance, flora)) {
-											continue;
-										}
+										
+
 
 										//// 自动拾取
 										//if ((show_items_window_auto && show_items_window_auto_flor)) {
@@ -2523,6 +2592,15 @@ void __cdecl RefreshItemInfo(void*)
 											}
 										}
 
+										// 自动拾取判断
+										if (autoHarvest(reff, player, show_items_window_auto_tree, distance, tree)) {
+											continue;
+										}
+										// 画面不显示则直接跳过
+										if (!activeItems) {
+											continue;
+										}
+
 										items[nowItemIndex].itemInfoTREE[tmpCountTREE].ptr = reff;
 										items[nowItemIndex].itemInfoTREE[tmpCountTREE].baseFormId = baseObj->GetFormID();
 										items[nowItemIndex].itemInfoTREE[tmpCountTREE].baseFormIdStr = FormIDToString(baseObj->GetFormID());
@@ -2542,10 +2620,6 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoTREE[tmpCountTREE].filename = baseObj->GetFile(0)->fileName;
 										}
 
-										// 自动拾取判断
-										if (autoHarvest(reff, player, show_items_window_auto_tree, distance, tree)) {
-											continue;
-										}
 
 										//// 自动拾取
 										//if ((show_items_window_auto && show_items_window_auto_tree)) {
@@ -2581,6 +2655,11 @@ void __cdecl RefreshItemInfo(void*)
 									}
 								case RE::FormType::KeyMaster:
 									{
+										// 画面不显示则直接跳过
+										if (!activeItems) {
+											continue;
+										}
+
 										if (tmpCountKEYM > show_items_window_array_max_length) {
 											continue;
 										}
@@ -2630,6 +2709,11 @@ void __cdecl RefreshItemInfo(void*)
 									}
 								case RE::FormType::Activator:
 									{
+										// 画面不显示则直接跳过
+										if (!activeItems) {
+											continue;
+										}
+
 										if (tmpCountACTI > show_items_window_array_max_length) {
 											continue;
 										}
@@ -2722,6 +2806,12 @@ void __cdecl RefreshItemInfo(void*)
 											continue;
 										}
 
+										// 画面不显示则直接跳过
+										if (!activeItems) {
+											continue;
+										}
+
+
 										if (show_items_window_direction) {
 											items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].distance = distance;
 											items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
@@ -2760,6 +2850,11 @@ void __cdecl RefreshItemInfo(void*)
 									continue;
 								default:
 									{
+										// 画面不显示则直接跳过
+										if (!activeItems) {
+											continue;
+										}
+
 										if (tmpCount > show_items_window_array_max_length) {
 											continue;
 										}

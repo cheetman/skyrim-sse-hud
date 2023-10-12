@@ -2343,6 +2343,7 @@ namespace menu
 						if (ImGui::TreeNodeEx(ICON_MDI_AUTORENEW " 自动拾取", ImGuiTreeNodeFlags_DefaultOpen)) {
 							ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
 							ImGui::DragInt("拾取范围", &show_items_window_auto_dis, 1, 1, 100, "%d米");
+							ImGui::DragInt("拾取频率", &refresh_time_auto, 1, 1, 10, "%d秒");
 							ImGui::PopItemWidth();
 							ImGui::Checkbox("拾取提示", &show_items_window_auto_notification);
 

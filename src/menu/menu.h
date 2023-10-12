@@ -50,4 +50,5 @@ namespace menu
 	extern bool show_player_base_info_window_sep;
 	extern bool flag_process;
 	extern bool flag_base_info_setting;
+
 }
