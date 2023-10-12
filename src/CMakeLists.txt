@@ -81,6 +81,8 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/imgui/imstb_truetype.h"
 	"${SOURCE_DIR}/setting/setting.h"
 	"${SOURCE_DIR}/setting/setting.cpp"
+	"${SOURCE_DIR}/memory/autotake.h"
+	"${SOURCE_DIR}/memory/autotake.cpp"
 )
 
 source_group(TREE "${ROOT_DIR}" FILES ${SOURCE_FILES})
