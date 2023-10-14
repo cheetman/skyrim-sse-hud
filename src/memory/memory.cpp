@@ -23,16 +23,6 @@ bool show_npc_window_dead_hidden = false;
 
 int screenWidth = 0;
 int screenHeight = 0;
-//RECT oldRect;
-
-//#define POINTER_SKYRIMSE(className, variableName, ...) static VersionDbPtr<className> variableName(__VA_ARGS__)
-//
-//static float (*CameraWorldToCam)[4][4] = nullptr;
-//static const RE::NiRect<float>* CameraPort = nullptr;
-//bool WorldPtToScreenPt3(const RE::NiPoint3& aWorldPt, RE::NiPoint3& aScreenPt)
-//{
-//	return RE::NiCamera::WorldPtToScreenPt3(reinterpret_cast<float*>(CameraWorldToCam), CameraPort, &aWorldPt, &aScreenPt.x, &aScreenPt.y, &aScreenPt.z, 1e-5f);
-//}
 
 void __cdecl RefreshGameInfo(void*)
 {
@@ -658,58 +648,10 @@ bool show_npc_window = false;
 bool show_items_window = false;
 bool show_items_window_settings = false;
 bool show_items_window_formid = false;
+bool show_items_window_refid = false;
 bool show_items_window_direction = false;
 bool show_items_window_file = false;
 bool show_items_window_ignore = true;
-bool show_items_window_auto_ignore = true;
-bool show_items_window_auto_notification = true;
-bool show_items_window_auto_ammo = false;
-bool show_items_window_auto_weap = false;
-bool show_items_window_auto_armo = false;
-bool show_items_window_auto_flor = false;
-bool show_items_window_auto_tree = false;
-//bool show_items_window_auto_acti = false;
-bool show_items_window_auto_food = false;
-bool show_items_window_auto_ingr = false;
-bool show_items_window_auto_alch = false;
-bool show_items_window_auto_misc = false;
-bool show_items_window_auto_sgem = false;
-bool show_items_window_auto_achr = false;
-bool show_items_window_auto_cont = false;
-bool show_items_window_auto_achr_ingr = false;
-bool show_items_window_auto_achr_food = false;
-bool show_items_window_auto_achr_alch = false;
-bool show_items_window_auto_achr_sgem = false;
-bool show_items_window_auto_achr_ammo = false;
-bool show_items_window_auto_achr_scrl = false;
-bool show_items_window_auto_achr_keym = false;
-bool show_items_window_auto_achr_misc = false;
-bool show_items_window_auto_achr_gold = false;
-bool show_items_window_auto_achr_weap = false;
-bool show_items_window_auto_achr_armo = false;
-bool show_items_window_auto_cont_ingr = false;
-bool show_items_window_auto_cont_food = false;
-bool show_items_window_auto_cont_alch = false;
-bool show_items_window_auto_cont_sgem = false;
-bool show_items_window_auto_cont_ammo = false;
-bool show_items_window_auto_cont_scrl = false;
-bool show_items_window_auto_cont_keym = false;
-bool show_items_window_auto_cont_misc = false;
-bool show_items_window_auto_cont_gold = false;
-bool show_items_window_auto_cont_weap = false;
-bool show_items_window_auto_cont_armo = false;
-
-bool show_items_window_auto_weap_enchant = false;
-bool show_items_window_auto_weap_price = false;
-bool show_items_window_auto_armo_enchant = false;
-bool show_items_window_auto_armo_price = false;
-int show_items_window_auto_weap_price_value = 500;
-int show_items_window_auto_armo_price_value = 500;
-//bool show_items_window_auto = true;  //暂时用不到
-//bool show_items_window_auto_setting = true;
-int show_items_window_auto_dis = 2;
-int show_items_window_auto_dis_skyrim = 100;
-int show_items_window_auto_dis_local = 160;
 int show_items_window_array_max_length = 2998;
 
 // 艺术馆
@@ -977,13 +919,6 @@ int nowItemIndex = 0;
 // 物品排除
 std::unordered_set<int> excludeFormIds;
 std::vector<ExcludeForm> excludeForms;
-// 地点排除
-std::unordered_set<int> excludeLocationFormIds;
-std::vector<ExcludeForm> excludeLocationForms;
-// 容器类型
-std::unordered_set<int> autoContFormIds;
-std::vector<IncludeForm> autoContForms;
-std::unordered_set<RE::TESObjectREFR*> deleteREFRs;
 
 // 艺术馆
 std::unordered_set<int> galleryFormIds;
@@ -1063,6 +998,14 @@ ItemInfoCONT* getItemsACHR()
 {
 	return items[!nowItemIndex].itemInfoACHR;
 }
+ItemInfo* getItemsSTON()
+{
+	return items[!nowItemIndex].itemInfoSTON;
+}
+ItemInfo* getItemsANVI()
+{
+	return items[!nowItemIndex].itemInfoANVI;
+}
 
 int getItemCount()
 {
@@ -1127,6 +1070,14 @@ int getItemCountACTI()
 int getItemCountACHR()
 {
 	return items[!nowItemIndex].itemCountACHR;
+}
+int getItemCountSTON()
+{
+	return items[!nowItemIndex].itemCountSTON;
+}
+int getItemCountANVI()
+{
+	return items[!nowItemIndex].itemCountANVI;
 }
 
 void __cdecl RefreshItemInfo(void*)
@@ -1255,6 +1206,8 @@ void __cdecl RefreshItemInfo(void*)
 			int tmpCountSGEM = 0;
 			int tmpCountACTI = 0;
 			int tmpCountACHR = 0;
+			int tmpCountSTON = 0;
+			int tmpCountANVI = 0;
 
 			auto currentLocation = player->currentLocation;
 			const auto& [map, lock] = RE::TESForm::GetAllForms();
@@ -1321,6 +1274,12 @@ void __cdecl RefreshItemInfo(void*)
 								for (auto& [obj, data] : inv) {
 									auto& [count, entry] = data;
 									if (count > 0 && entry) {
+#ifndef NDEBUG
+										if (obj->IsIgnored()) {
+											MessageBox(nullptr, obj->GetName(), nullptr, MB_OK);
+										}
+#endif
+
 										items[nowItemIndex].itemInfoACHR[tmpCountACHR].invs[tmpInvCount].ptr = obj;
 										items[nowItemIndex].itemInfoACHR[tmpCountACHR].invs[tmpInvCount].name = obj->GetName();
 										bool stealing = player->WouldBeStealing(actor);
@@ -1355,6 +1314,13 @@ void __cdecl RefreshItemInfo(void*)
 											if (reff->IsMarkedForDeletion()) {
 												continue;
 											}
+
+#ifndef NDEBUG
+											if (reff->IsIgnored()) {
+												MessageBox(nullptr, reff->GetDisplayFullName(), nullptr, MB_OK);
+											}
+#endif
+
 											if (show_items_window_ignore) {
 												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
 													continue;
@@ -1409,6 +1375,12 @@ void __cdecl RefreshItemInfo(void*)
 											if (reff->IsMarkedForDeletion()) {
 												continue;
 											}
+
+#ifndef NDEBUG
+											if (reff->IsIgnored()) {
+												MessageBox(nullptr, reff->GetDisplayFullName(), nullptr, MB_OK);
+											}
+#endif
 
 											if (show_items_window_ignore) {
 												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
@@ -1465,6 +1437,13 @@ void __cdecl RefreshItemInfo(void*)
 											if (reff->IsMarkedForDeletion()) {
 												continue;
 											}
+
+#ifndef NDEBUG
+											if (reff->IsIgnored()) {
+												MessageBox(nullptr, reff->GetDisplayFullName(), nullptr, MB_OK);
+											}
+#endif
+
 											if (show_items_window_ignore) {
 												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
 													continue;
@@ -1519,6 +1498,13 @@ void __cdecl RefreshItemInfo(void*)
 											if (reff->IsMarkedForDeletion()) {
 												continue;
 											}
+
+#ifndef NDEBUG
+											if (reff->IsIgnored()) {
+												MessageBox(nullptr, reff->GetDisplayFullName(), nullptr, MB_OK);
+											}
+#endif
+
 											if (show_items_window_ignore) {
 												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
 													continue;
@@ -1565,6 +1551,13 @@ void __cdecl RefreshItemInfo(void*)
 											if (reff->IsMarkedForDeletion()) {
 												continue;
 											}
+
+#ifndef NDEBUG
+											if (reff->IsIgnored()) {
+												MessageBox(nullptr, reff->GetDisplayFullName(), nullptr, MB_OK);
+											}
+#endif
+
 											if (show_items_window_ignore) {
 												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
 													continue;
@@ -1662,6 +1655,15 @@ void __cdecl RefreshItemInfo(void*)
 											if (reff->IsMarkedForDeletion()) {
 												continue;
 											}
+
+											
+											#ifndef NDEBUG
+											if (reff->IsIgnored()) {
+												MessageBox(nullptr, reff->GetDisplayFullName(), nullptr, MB_OK);
+											}
+											#endif
+
+
 											if (show_items_window_ignore) {
 												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
 													continue;
@@ -1704,21 +1706,19 @@ void __cdecl RefreshItemInfo(void*)
 										}
 									case RE::FormType::Misc:
 										{
-											if (tmpCountMISC > show_items_window_array_max_length) {
-												continue;
-											}
-
 											if (reff->IsMarkedForDeletion()) {
 												continue;
 											}
+#ifndef NDEBUG
+											if (reff->IsIgnored()) {
+												MessageBox(nullptr, reff->GetDisplayFullName(), nullptr, MB_OK);
+											}
+#endif
+
 											if (show_items_window_ignore) {
 												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
 													continue;
 												}
-											}
-											auto name = reff->GetDisplayFullName();
-											if (strlen(name) == 0) {
-												continue;
 											}
 
 											float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
@@ -1733,26 +1733,95 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
-											if (show_items_window_direction) {
-												items[nowItemIndex].itemInfoMISC[tmpCountMISC].distance = distance;
-												items[nowItemIndex].itemInfoMISC[tmpCountMISC].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+											auto name = reff->GetDisplayFullName();
+											if (strlen(name) == 0) {
+												continue;
 											}
 
-											items[nowItemIndex].itemInfoMISC[tmpCountMISC].ptr = reff;
-											items[nowItemIndex].itemInfoMISC[tmpCountMISC].baseFormId = baseObj->GetFormID();
-											items[nowItemIndex].itemInfoMISC[tmpCountMISC].baseFormIdStr = FormIDToString(baseObj->GetFormID());
-											items[nowItemIndex].itemInfoMISC[tmpCountMISC].formId = reff->GetFormID();
-											items[nowItemIndex].itemInfoMISC[tmpCountMISC].formIdStr = FormIDToString(reff->GetFormID());
-											items[nowItemIndex].itemInfoMISC[tmpCountMISC].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
-											items[nowItemIndex].itemInfoMISC[tmpCountMISC].name = name;
-											items[nowItemIndex].itemInfoMISC[tmpCountMISC].weight = reff->GetWeight();
-											items[nowItemIndex].itemInfoMISC[tmpCountMISC].gold = baseObj->GetGoldValue();
-											items[nowItemIndex].itemInfoMISC[tmpCountMISC].isCrime = reff->IsCrimeToActivate();
+											// 判断宝石和矿锭
 
-											if (show_items_window_file) {
-												items[nowItemIndex].itemInfoMISC[tmpCountMISC].filename = baseObj->GetFile(0)->fileName;
+											auto misc = baseObj->As<RE::TESObjectMISC>();
+											if (misc) {
+												// 宝石
+												if (HasKeyword(misc, VendorItemGem)) {
+													if (tmpCountSTON > show_items_window_array_max_length) {
+														continue;
+													}
+
+													if (show_items_window_direction) {
+														items[nowItemIndex].itemInfoSTON[tmpCountSTON].distance = distance;
+														items[nowItemIndex].itemInfoSTON[tmpCountSTON].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+													}
+
+													items[nowItemIndex].itemInfoSTON[tmpCountSTON].ptr = reff;
+													items[nowItemIndex].itemInfoSTON[tmpCountSTON].baseFormId = baseObj->GetFormID();
+													items[nowItemIndex].itemInfoSTON[tmpCountSTON].baseFormIdStr = FormIDToString(baseObj->GetFormID());
+													items[nowItemIndex].itemInfoSTON[tmpCountSTON].formId = reff->GetFormID();
+													items[nowItemIndex].itemInfoSTON[tmpCountSTON].formIdStr = FormIDToString(reff->GetFormID());
+													items[nowItemIndex].itemInfoSTON[tmpCountSTON].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+													items[nowItemIndex].itemInfoSTON[tmpCountSTON].name = name;
+													items[nowItemIndex].itemInfoSTON[tmpCountSTON].weight = reff->GetWeight();
+													items[nowItemIndex].itemInfoSTON[tmpCountSTON].gold = baseObj->GetGoldValue();
+													items[nowItemIndex].itemInfoSTON[tmpCountSTON].isCrime = reff->IsCrimeToActivate();
+
+													if (show_items_window_file) {
+														items[nowItemIndex].itemInfoSTON[tmpCountSTON].filename = baseObj->GetFile(0)->fileName;
+													}
+													tmpCountSTON++;
+
+													// 矿锭
+												} else if (HasKeyword(misc, VendorItemOreIngot)) {
+													if (tmpCountANVI > show_items_window_array_max_length) {
+														continue;
+													}
+
+													if (show_items_window_direction) {
+														items[nowItemIndex].itemInfoANVI[tmpCountANVI].distance = distance;
+														items[nowItemIndex].itemInfoANVI[tmpCountANVI].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+													}
+
+													items[nowItemIndex].itemInfoANVI[tmpCountANVI].ptr = reff;
+													items[nowItemIndex].itemInfoANVI[tmpCountANVI].baseFormId = baseObj->GetFormID();
+													items[nowItemIndex].itemInfoANVI[tmpCountANVI].baseFormIdStr = FormIDToString(baseObj->GetFormID());
+													items[nowItemIndex].itemInfoANVI[tmpCountANVI].formId = reff->GetFormID();
+													items[nowItemIndex].itemInfoANVI[tmpCountANVI].formIdStr = FormIDToString(reff->GetFormID());
+													items[nowItemIndex].itemInfoANVI[tmpCountANVI].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+													items[nowItemIndex].itemInfoANVI[tmpCountANVI].name = name;
+													items[nowItemIndex].itemInfoANVI[tmpCountANVI].weight = reff->GetWeight();
+													items[nowItemIndex].itemInfoANVI[tmpCountANVI].gold = baseObj->GetGoldValue();
+													items[nowItemIndex].itemInfoANVI[tmpCountANVI].isCrime = reff->IsCrimeToActivate();
+
+													if (show_items_window_file) {
+														items[nowItemIndex].itemInfoANVI[tmpCountANVI].filename = baseObj->GetFile(0)->fileName;
+													}
+													tmpCountANVI++;
+												} else {
+													if (tmpCountMISC > show_items_window_array_max_length) {
+														continue;
+													}
+
+													if (show_items_window_direction) {
+														items[nowItemIndex].itemInfoMISC[tmpCountMISC].distance = distance;
+														items[nowItemIndex].itemInfoMISC[tmpCountMISC].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+													}
+
+													items[nowItemIndex].itemInfoMISC[tmpCountMISC].ptr = reff;
+													items[nowItemIndex].itemInfoMISC[tmpCountMISC].baseFormId = baseObj->GetFormID();
+													items[nowItemIndex].itemInfoMISC[tmpCountMISC].baseFormIdStr = FormIDToString(baseObj->GetFormID());
+													items[nowItemIndex].itemInfoMISC[tmpCountMISC].formId = reff->GetFormID();
+													items[nowItemIndex].itemInfoMISC[tmpCountMISC].formIdStr = FormIDToString(reff->GetFormID());
+													items[nowItemIndex].itemInfoMISC[tmpCountMISC].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+													items[nowItemIndex].itemInfoMISC[tmpCountMISC].name = name;
+													items[nowItemIndex].itemInfoMISC[tmpCountMISC].weight = reff->GetWeight();
+													items[nowItemIndex].itemInfoMISC[tmpCountMISC].gold = baseObj->GetGoldValue();
+													items[nowItemIndex].itemInfoMISC[tmpCountMISC].isCrime = reff->IsCrimeToActivate();
+
+													if (show_items_window_file) {
+														items[nowItemIndex].itemInfoMISC[tmpCountMISC].filename = baseObj->GetFile(0)->fileName;
+													}
+													tmpCountMISC++;
+												}
 											}
-											tmpCountMISC++;
 
 											break;
 										}
@@ -1765,6 +1834,13 @@ void __cdecl RefreshItemInfo(void*)
 											if (reff->IsMarkedForDeletion()) {
 												continue;
 											}
+
+#ifndef NDEBUG
+											if (reff->IsIgnored()) {
+												MessageBox(nullptr, reff->GetDisplayFullName(), nullptr, MB_OK);
+											}
+#endif
+
 											if (show_items_window_ignore) {
 												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
 													continue;
@@ -1818,6 +1894,12 @@ void __cdecl RefreshItemInfo(void*)
 											for (auto& [obj, data] : inv) {
 												auto& [count, entry] = data;
 												if (count > 0 && entry) {
+#ifndef NDEBUG
+													if (obj->IsIgnored()) {
+														MessageBox(nullptr, obj->GetName(), nullptr, MB_OK);
+													}
+#endif
+
 													items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].ptr = obj;
 													items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].name = obj->GetName();
 													bool stealing = player->WouldBeStealing(reff);
@@ -1845,6 +1927,12 @@ void __cdecl RefreshItemInfo(void*)
 											if (reff->IsMarkedForDeletion()) {
 												continue;
 											}
+
+#ifndef NDEBUG
+											if (reff->IsIgnored()) {
+												MessageBox(nullptr, reff->GetDisplayFullName(), nullptr, MB_OK);
+											}
+#endif
 											if (show_items_window_ignore) {
 												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
 													continue;
@@ -1927,10 +2015,15 @@ void __cdecl RefreshItemInfo(void*)
 												continue;
 											}
 
-											if (reff->IsMarkedForDeletion()) {
+											if (reff->IsMarkedForDeletion() ) {
 												continue;
 											}
 
+#ifndef NDEBUG
+											if (reff->IsIgnored()) {
+												MessageBox(nullptr, reff->GetDisplayFullName(), nullptr, MB_OK);
+											}
+#endif
 											auto name = reff->GetDisplayFullName();
 											if (strlen(name) == 0) {
 												continue;
@@ -1992,9 +2085,15 @@ void __cdecl RefreshItemInfo(void*)
 												continue;
 											}
 
-											if (reff->IsMarkedForDeletion()) {
+											if (reff->IsMarkedForDeletion() ) {
 												continue;
 											}
+
+#ifndef NDEBUG
+											if (reff->IsIgnored()) {
+												MessageBox(nullptr, reff->GetDisplayFullName(), nullptr, MB_OK);
+											}
+#endif
 											if (show_items_window_ignore) {
 												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
 													continue;
@@ -2044,6 +2143,12 @@ void __cdecl RefreshItemInfo(void*)
 											if (reff->IsMarkedForDeletion()) {
 												continue;
 											}
+
+#ifndef NDEBUG
+											if (reff->IsIgnored()) {
+												MessageBox(nullptr, reff->GetDisplayFullName(), nullptr, MB_OK);
+											}
+#endif
 
 											auto name = reff->GetDisplayFullName();
 											if (strlen(name) == 0) {
@@ -2102,6 +2207,12 @@ void __cdecl RefreshItemInfo(void*)
 											if (reff->IsMarkedForDeletion()) {
 												continue;
 											}
+
+#ifndef NDEBUG
+											if (reff->IsIgnored()) {
+												MessageBox(nullptr, reff->GetDisplayFullName(), nullptr, MB_OK);
+											}
+#endif
 											if (show_items_window_ignore) {
 												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
 													continue;
@@ -2172,6 +2283,12 @@ void __cdecl RefreshItemInfo(void*)
 												continue;
 											}
 
+#ifndef NDEBUG
+											if (reff->IsIgnored()) {
+												MessageBox(nullptr, reff->GetDisplayFullName(), nullptr, MB_OK);
+											}
+#endif
+
 											if (show_items_window_ignore) {
 												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
 													continue;
@@ -2241,6 +2358,8 @@ void __cdecl RefreshItemInfo(void*)
 			std::sort(items[nowItemIndex].itemInfoTREE, items[nowItemIndex].itemInfoTREE + tmpCountTREE, compareForItem);
 			std::sort(items[nowItemIndex].itemInfoSGEM, items[nowItemIndex].itemInfoSGEM + tmpCountSGEM, compareForItem);
 			std::sort(items[nowItemIndex].itemInfoACTI, items[nowItemIndex].itemInfoACTI + tmpCountACTI, compareForItem);
+			std::sort(items[nowItemIndex].itemInfoSTON, items[nowItemIndex].itemInfoSTON + tmpCountSTON, compareForItem);
+			std::sort(items[nowItemIndex].itemInfoANVI, items[nowItemIndex].itemInfoANVI + tmpCountANVI, compareForItem);
 
 			std::sort(items[nowItemIndex].itemInfoACHR, items[nowItemIndex].itemInfoACHR + tmpCountACHR, compareForItemCONT);
 
@@ -2259,7 +2378,8 @@ void __cdecl RefreshItemInfo(void*)
 			items[nowItemIndex].itemCountTREE = tmpCountTREE;
 			items[nowItemIndex].itemCountSGEM = tmpCountSGEM;
 			items[nowItemIndex].itemCountACTI = tmpCountACTI;
-
+			items[nowItemIndex].itemCountSTON = tmpCountSTON;
+			items[nowItemIndex].itemCountANVI = tmpCountANVI;
 			items[nowItemIndex].itemCountACHR = tmpCountACHR;
 		} else {
 			refreshItemAuto();

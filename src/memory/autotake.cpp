@@ -4,6 +4,71 @@
 #include <utils/NameUtil.h>
 #include <utils/PlayerDataProvider.h>
 
+bool show_items_window_auto_ignore = true;
+bool show_items_window_auto_notification = true;
+bool show_items_window_auto_ammo = false;
+bool show_items_window_auto_weap = false;
+bool show_items_window_auto_armo = false;
+bool show_items_window_auto_flor = false;
+bool show_items_window_auto_tree = false;
+//bool show_items_window_auto_acti = false;
+bool show_items_window_auto_food = false;
+bool show_items_window_auto_ingr = false;
+bool show_items_window_auto_alch = false;
+bool show_items_window_auto_misc = false;
+bool show_items_window_auto_sgem = false;
+bool show_items_window_auto_achr = false;
+bool show_items_window_auto_cont = false;
+bool show_items_window_auto_ston = false;
+bool show_items_window_auto_anvi = false;
+bool show_items_window_auto_achr_ingr = false;
+bool show_items_window_auto_achr_food = false;
+bool show_items_window_auto_achr_alch = false;
+bool show_items_window_auto_achr_sgem = false;
+bool show_items_window_auto_achr_ammo = false;
+bool show_items_window_auto_achr_scrl = false;
+bool show_items_window_auto_achr_keym = false;
+bool show_items_window_auto_achr_misc = false;
+bool show_items_window_auto_achr_gold = false;
+bool show_items_window_auto_achr_weap = false;
+bool show_items_window_auto_achr_armo = false;
+bool show_items_window_auto_achr_ston = false;
+bool show_items_window_auto_achr_anvi = false;
+bool show_items_window_auto_achr_lock = false;
+bool show_items_window_auto_cont_ingr = false;
+bool show_items_window_auto_cont_food = false;
+bool show_items_window_auto_cont_alch = false;
+bool show_items_window_auto_cont_sgem = false;
+bool show_items_window_auto_cont_ammo = false;
+bool show_items_window_auto_cont_scrl = false;
+bool show_items_window_auto_cont_keym = false;
+bool show_items_window_auto_cont_misc = false;
+bool show_items_window_auto_cont_gold = false;
+bool show_items_window_auto_cont_weap = false;
+bool show_items_window_auto_cont_armo = false;
+bool show_items_window_auto_cont_ston = false;
+bool show_items_window_auto_cont_anvi = false;
+bool show_items_window_auto_cont_lock = false;
+
+bool show_items_window_auto_weap_enchant = false;
+bool show_items_window_auto_weap_price = false;
+bool show_items_window_auto_armo_enchant = false;
+bool show_items_window_auto_armo_price = false;
+int show_items_window_auto_weap_price_value = 500;
+int show_items_window_auto_armo_price_value = 500;
+
+int show_items_window_auto_dis = 2;
+int show_items_window_auto_dis_skyrim = 100;
+int show_items_window_auto_dis_local = 160;
+
+// 地点排除
+std::unordered_set<int> excludeLocationFormIds;
+std::vector<ExcludeForm> excludeLocationForms;
+// 容器类型
+std::unordered_set<int> autoContFormIds;
+std::vector<IncludeForm> autoContForms;
+std::unordered_set<RE::TESObjectREFR*> deleteREFRs;
+
 bool __fastcall autoTakeArmo(RE::TESObjectREFR* reff, RE::PlayerCharacter* player, bool autoFlag, int distance, bool isDeleteExist)
 {
 	// 自动拾取
@@ -414,10 +479,34 @@ void refreshItemAuto()
 													}
 												}
 
-											} else {
-												if (show_items_window_auto_achr_misc) {
+											} else if (obj->IsLockpick()) {
+												if (show_items_window_auto_achr_lock) {
 													if (autoTakeForACHR(actor, obj, count, player)) {
 														continue;
+													}
+												}
+											} else {
+												auto misc = obj->As<RE::TESObjectMISC>();
+												if (misc) {
+													if (HasKeyword(misc, VendorItemGem)) {
+														if (show_items_window_auto_achr_ston) {
+															if (autoTakeForACHR(actor, obj, count, player)) {
+																continue;
+															}
+														}
+
+													} else if (HasKeyword(misc, VendorItemOreIngot)) {
+														if (show_items_window_auto_achr_anvi) {
+															if (autoTakeForACHR(actor, obj, count, player)) {
+																continue;
+															}
+														}
+													} else {
+														if (show_items_window_auto_achr_misc) {
+															if (autoTakeForACHR(actor, obj, count, player)) {
+																continue;
+															}
+														}
 													}
 												}
 											}
@@ -749,9 +838,31 @@ void refreshItemAuto()
 										}
 									}
 
-									// 自动拾取判断
-									if (autoTake(reff, player, show_items_window_auto_misc, distance, isDeleteExist)) {
-										continue;
+									auto misc = baseObj->As<RE::TESObjectMISC>();
+									if (misc) {
+										if (HasKeyword(misc, VendorItemGem)) {
+											if (show_items_window_auto_ston) {
+												// 自动拾取判断
+												if (autoTake(reff, player, show_items_window_auto_ston, distance, isDeleteExist)) {
+													continue;
+												}
+											}
+
+										} else if (HasKeyword(misc, VendorItemOreIngot)) {
+											if (show_items_window_auto_anvi) {
+												// 自动拾取判断
+												if (autoTake(reff, player, show_items_window_auto_anvi, distance, isDeleteExist)) {
+													continue;
+												}
+											}
+										} else {
+											if (show_items_window_auto_cont_misc) {
+												// 自动拾取判断
+												if (autoTake(reff, player, show_items_window_auto_misc, distance, isDeleteExist)) {
+													continue;
+												}
+											}
+										}
 									}
 
 									tmpCountMISC++;
@@ -867,13 +978,38 @@ void refreshItemAuto()
 																	}
 																}
 
-															} else {
-																if (show_items_window_auto_cont_misc) {
+															} else if (obj->IsLockpick()) {
+																if (show_items_window_auto_cont_lock) {
 																	if (autoTakeForCONT(reff, obj, count, player)) {
 																		continue;
 																	}
 																}
+															} else {
+																auto misc = obj->As<RE::TESObjectMISC>();
+																if (misc) {
+																	if (HasKeyword(misc, VendorItemGem)) {
+																		if (show_items_window_auto_cont_ston) {
+																			if (autoTakeForCONT(reff, obj, count, player)) {
+																				continue;
+																			}
+																		}
+
+																	} else if (HasKeyword(misc, VendorItemOreIngot)) {
+																		if (show_items_window_auto_cont_anvi) {
+																			if (autoTakeForCONT(reff, obj, count, player)) {
+																				continue;
+																			}
+																		}
+																	} else {
+																		if (show_items_window_auto_cont_misc) {
+																			if (autoTakeForCONT(reff, obj, count, player)) {
+																				continue;
+																			}
+																		}
+																	}
+																}
 															}
+
 															break;
 														}
 

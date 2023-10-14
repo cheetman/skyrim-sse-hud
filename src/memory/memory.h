@@ -45,6 +45,22 @@
 	return true;
 }
 
+bool static inline HasKeyword(RE::BGSKeywordForm* o, RE::FormID formID)
+{
+	bool result = false;
+
+	if (o->keywords) {
+		for (std::uint32_t idx = 0; idx < o->numKeywords; ++idx) {
+			if (o->keywords[idx] && o->keywords[idx]->formID == formID) {
+				result = true;
+				break;
+			}
+		}
+	}
+	return result;
+}
+
+
 	// 人物属性
 struct PlayerInfo
 {
@@ -311,57 +327,11 @@ extern bool isGameLoading;
 extern bool show_items_window;
 extern bool show_items_window_settings;
 extern bool show_items_window_formid;
-extern bool show_items_window_auto_ammo;
-extern bool show_items_window_auto_flor;
-extern bool show_items_window_auto_food;
-extern bool show_items_window_auto_ingr;
-extern bool show_items_window_auto_alch;
-extern bool show_items_window_auto_misc;
-extern bool show_items_window_auto_tree;
-extern bool show_items_window_auto_sgem;
-extern bool show_items_window_auto_achr;
-extern bool show_items_window_auto_cont;
-extern bool show_items_window_auto_armo;
-extern bool show_items_window_auto_weap;
-extern bool show_items_window_auto_achr_ingr;
-extern bool show_items_window_auto_achr_food;
-extern bool show_items_window_auto_achr_alch;
-extern bool show_items_window_auto_achr_sgem;
-extern bool show_items_window_auto_achr_ammo;
-extern bool show_items_window_auto_achr_misc;
-extern bool show_items_window_auto_achr_gold;
-extern bool show_items_window_auto_achr_scrl;
-extern bool show_items_window_auto_achr_keym;
-extern bool show_items_window_auto_achr_weap;
-extern bool show_items_window_auto_achr_armo;
-extern bool show_items_window_auto_cont_ingr;
-extern bool show_items_window_auto_cont_food;
-extern bool show_items_window_auto_cont_alch;
-extern bool show_items_window_auto_cont_sgem;
-extern bool show_items_window_auto_cont_ammo;
-extern bool show_items_window_auto_cont_misc;
-extern bool show_items_window_auto_cont_gold;
-extern bool show_items_window_auto_cont_scrl;
-extern bool show_items_window_auto_cont_keym;
-extern bool show_items_window_auto_cont_weap;
-extern bool show_items_window_auto_cont_armo;
-extern bool show_items_window_auto_notification;
+extern bool show_items_window_refid;
 extern bool show_items_window_file;
-
-extern bool show_items_window_direction;
+ extern bool show_items_window_direction;
 extern bool show_items_window_ignore;
-extern bool show_items_window_auto_ignore;
-extern int show_items_window_auto_dis;
-extern int show_items_window_auto_dis_skyrim;
-extern int show_items_window_auto_dis_local;
 extern int show_items_window_array_max_length;
-
-extern bool show_items_window_auto_weap_enchant;
-extern bool show_items_window_auto_weap_price;
-extern bool show_items_window_auto_armo_enchant;
-extern bool show_items_window_auto_armo_price;
-extern int show_items_window_auto_weap_price_value;
-extern int show_items_window_auto_armo_price_value;
 
 // 艺术馆
 extern bool show_items_window_gallery;
@@ -480,8 +450,9 @@ struct Item2Info
 	int itemCountTREE = 0;
 	int itemCountSGEM = 0;
 	int itemCountACTI = 0;
-
 	int itemCountACHR = 0;
+	int itemCountSTON = 0;
+	int itemCountANVI = 0;
 
 	ItemInfo itemInfo[3000];
 	ItemInfo itemInfoWEAP[3000];
@@ -498,6 +469,8 @@ struct Item2Info
 	ItemInfo itemInfoTREE[3000];
 	ItemInfo itemInfoSGEM[3000];
 	ItemInfo itemInfoACTI[3000];
+	ItemInfo itemInfoSTON[3000];
+	ItemInfo itemInfoANVI[3000];
 
 	ItemInfoCONT itemInfoACHR[3000];
 };
@@ -517,8 +490,11 @@ int getItemCountKEYM();
 int getItemCountTREE();
 int getItemCountSGEM();
 int getItemCountACTI();
-
 int getItemCountACHR();
+int getItemCountSTON();
+int getItemCountANVI();
+
+
 ItemInfo* getItems();
 ItemInfo* getItemsWEAP();
 ItemInfo* getItemsARMO();
@@ -534,16 +510,14 @@ ItemInfo* getItemsKEYM();
 ItemInfo* getItemsTREE();
 ItemInfo* getItemsSGEM();
 ItemInfo* getItemsACTI();
+ItemInfo* getItemsSTON();
+ItemInfo* getItemsANVI();
 
 ItemInfoCONT* getItemsACHR();
 
-extern std::unordered_set<int> autoContFormIds;
-extern std::vector<IncludeForm> autoContForms;
 extern std::unordered_set<int> excludeFormIds;
-extern std::unordered_set<int> excludeLocationFormIds;
 extern std::vector<ExcludeForm> excludeForms;
-extern std::vector<ExcludeForm> excludeLocationForms;
-extern std::unordered_set<RE::TESObjectREFR*> deleteREFRs;
+
 
 extern std::unordered_set<RE::TESObjectREFR*> trackPtrs;
 extern std::unordered_set<RE::Actor*> trackActorPtrs;
@@ -563,3 +537,6 @@ extern int screenHeight ;
 
 
 float calculateDistance(const RE::NiPoint3& p1, const RE::NiPoint3& p2);
+
+static const RE::FormID VendorItemOreIngot = 0x000914EC;
+static const RE::FormID VendorItemGem = 0x000914ED;
