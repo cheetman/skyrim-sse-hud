@@ -95,15 +95,15 @@ namespace setting
 				auto const& j = json["windowSetting"];
 				if (j.contains("ArmorInfo")) {
 					auto const& j2 = j["ArmorInfo"];
-					menu::show_player_armor_window = j2["isShow"].get<bool>();
+					show_player_armor_window = j2["isShow"].get<bool>();
 				}
 				if (j.contains("WeaponInfo")) {
 					auto const& j2 = j["WeaponInfo"];
-					menu::show_player_weapon_window = j2["isShow"].get<bool>();
+					show_player_weapon_window = j2["isShow"].get<bool>();
 				}
 				if (j.contains("playerInfo")) {
 					auto const& j2 = j["playerInfo"];
-					menu::show_player_info_window = j2["isShow"].get<bool>();
+					show_player_info_window = j2["isShow"].get<bool>();
 				}
 				if (j.contains("DebugInfo")) {
 					auto const& j2 = j["DebugInfo"];
@@ -111,7 +111,7 @@ namespace setting
 				}
 				if (j.contains("playerModInfo")) {
 					auto const& j2 = j["playerModInfo"];
-					menu::show_player_mod_window = j2["isShow"].get<bool>();
+					show_player_mod_window = j2["isShow"].get<bool>();
 				}
 				/*			if (j.contains("EnemyInfo")) {
 					auto const& j2 = j["EnemyInfo"];
@@ -313,7 +313,7 @@ namespace setting
 
 				if (j.contains("playerBaseInfo")) {
 					auto const& j2 = j["playerBaseInfo"];
-					menu::show_player_base_info_window = j2["isShow"].get<bool>();
+					show_player_base_info_window = j2["isShow"].get<bool>();
 
 					if (j2.contains("flag_process")) {
 						menu::flag_process = j2["flag_process"].get<bool>();
@@ -455,7 +455,7 @@ namespace setting
 				{ "windowSetting", {
 
 									   { "playerBaseInfo", {
-															   { "isShow", menu::show_player_base_info_window },
+															   { "isShow", show_player_base_info_window },
 															   { "show_player_base_info_window_sep", menu::show_player_base_info_window_sep },
 															   { "flag_process", menu::flag_process },
 															   { "colorPlotHistogramX", menu::colorPlotHistogramX },
@@ -464,19 +464,19 @@ namespace setting
 															   { "colorPlotHistogramW", menu::colorPlotHistogramW },
 														   } },
 									   { "playerModInfo", {
-															  { "isShow", menu::show_player_mod_window },
+															  { "isShow", show_player_mod_window },
 														  } },
 
 									   { "playerInfo", {
-														   { "isShow", menu::show_player_info_window },
+														   { "isShow", show_player_info_window },
 													   } },
 
 									   { "ArmorInfo", {
-														  { "isShow", menu::show_player_armor_window },
+														  { "isShow", show_player_armor_window },
 													  } },
 
 									   { "WeaponInfo", {
-														   { "isShow", menu::show_player_weapon_window },
+														   { "isShow", show_player_weapon_window },
 													   } },
 									   { "EnemyInfo", {
 														  { "isShow", show_enemy_window },

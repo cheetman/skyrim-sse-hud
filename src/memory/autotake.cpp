@@ -382,11 +382,18 @@ void refreshItemAuto()
 			if (form->Is(RE::FormType::ActorCharacter)) {
 				auto actor = form->As<RE::Actor>();
 				if (actor && actor->IsDead() && !actor->IsSummoned()) {
-					// 排除自己
-					if (actor->IsPlayerRef()) {
-						continue;
-					}
 					if (actor->GetCurrentLocation() == currentLocation) {
+
+						
+						// 排除自己
+						if (actor->IsPlayerRef()) {
+							continue;
+						}
+
+						if (!actor->Is3DLoaded()) {
+							continue;
+						}
+
 						if (tmpCountACHR > show_items_window_array_max_length) {
 							continue;
 						}
@@ -579,6 +586,11 @@ void refreshItemAuto()
 				auto reff = form->AsReference();
 				if (reff) {
 					if (reff->GetCurrentLocation() == currentLocation) {
+
+						if (!reff->Is3DLoaded()) {
+							continue;
+						}
+
 						auto baseObj = reff->GetBaseObject();
 						if (baseObj) {
 							switch (baseObj->GetFormType()) {

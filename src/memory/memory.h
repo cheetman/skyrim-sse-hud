@@ -5,7 +5,6 @@
 #include <string>
 #include <unordered_set>
 
-
 [[nodiscard]] static inline bool CanDisplay(const RE::TESBoundObject& a_object)
 {
 	switch (a_object.GetFormType()) {
@@ -60,8 +59,7 @@ bool static inline HasKeyword(RE::BGSKeywordForm* o, RE::FormID formID)
 	return result;
 }
 
-
-	// 人物属性
+// 人物属性
 struct PlayerInfo
 {
 	std::string name = "";         // 玩家名
@@ -105,9 +103,12 @@ struct PlayerInfo
 	float equippedWeight = 0.0f;
 	float carryWeight = 0.0f;
 
-	std::string location = "";  // 位置
+	std::string location = "";
+	RE::FormID locationId = 0;
+	std::string parentLocation = "";
+	RE::FormID parentLocationId = 0;
+	
 };
-
 
 // 装备防具信息
 
@@ -231,7 +232,6 @@ struct ActorInfo
 	InventoryInfo Inventorys[100];
 };
 
-
 extern bool active;
 extern bool activeItems;
 
@@ -320,7 +320,6 @@ struct PlayerInventoryInfo
 	InventoryInfo inventorys[300];
 };
 
-
 // 临时
 extern bool isGameLoading;
 
@@ -329,7 +328,8 @@ extern bool show_items_window_settings;
 extern bool show_items_window_formid;
 extern bool show_items_window_refid;
 extern bool show_items_window_file;
- extern bool show_items_window_direction;
+extern bool show_items_window_3D;
+extern bool show_items_window_direction;
 extern bool show_items_window_ignore;
 extern int show_items_window_array_max_length;
 
@@ -370,6 +370,13 @@ struct ItemInfo
 	bool isAuto = false;
 };
 
+struct ItemInfoBOOK : public ItemInfo
+{
+	bool isRead = false;
+	bool isSpell = false;
+	bool isSkill = false;
+};
+
 struct ItemInfoCONT : public ItemInfo
 {
 	int invCount = 0;
@@ -388,6 +395,19 @@ struct ExcludeForm
 	}
 };
 
+struct WeatherForm
+{
+	RE::FormID formId = 0;
+	std::string editorId = "";
+
+	bool operator<(const WeatherForm& other) const
+	{
+		return formId < other.formId;
+	}
+};
+
+
+
 
 struct IncludeForm
 {
@@ -401,7 +421,6 @@ struct IncludeForm
 	}
 };
 
-
 struct GalleryForm
 {
 	RE::FormID formId = 0;
@@ -414,7 +433,6 @@ struct GalleryForm
 		return formId < other.formId;
 	}
 };
-
 
 struct GalleryModForm
 {
@@ -431,7 +449,6 @@ struct GalleryModForm
 		return compileIndex < other.compileIndex;
 	}
 };
-
 
 struct Item2Info
 {
@@ -458,7 +475,7 @@ struct Item2Info
 	ItemInfo itemInfoWEAP[3000];
 	ItemInfo itemInfoARMO[3000];
 	ItemInfo itemInfoAMMO[3000];
-	ItemInfo itemInfoBOOK[3000];
+	ItemInfoBOOK itemInfoBOOK[3000];
 	ItemInfo itemInfoALCH[3000];
 	ItemInfo itemInfoINGR[3000];
 	ItemInfo itemInfoMISC[3000];
@@ -494,12 +511,11 @@ int getItemCountACHR();
 int getItemCountSTON();
 int getItemCountANVI();
 
-
 ItemInfo* getItems();
 ItemInfo* getItemsWEAP();
 ItemInfo* getItemsARMO();
 ItemInfo* getItemsAMMO();
-ItemInfo* getItemsBOOK();
+ItemInfoBOOK* getItemsBOOK();
 ItemInfo* getItemsINGR();
 ItemInfo* getItemsALCH();
 ItemInfo* getItemsMISC();
@@ -518,10 +534,8 @@ ItemInfoCONT* getItemsACHR();
 extern std::unordered_set<int> excludeFormIds;
 extern std::vector<ExcludeForm> excludeForms;
 
-
 extern std::unordered_set<RE::TESObjectREFR*> trackPtrs;
 extern std::unordered_set<RE::Actor*> trackActorPtrs;
-
 
 extern std::unordered_set<int> galleryFormIds;
 extern std::vector<GalleryForm> galleryFormData;
@@ -531,12 +545,19 @@ extern int galleryModCount;
 extern int galleryItemTotalCount;
 extern int galleryItemCount;
 
+extern std::vector<WeatherForm> weatherForms;
+extern RE::FormID currentWeather;
 
-extern int screenWidth ;
-extern int screenHeight ;
-
+extern int screenWidth;
+extern int screenHeight;
 
 float calculateDistance(const RE::NiPoint3& p1, const RE::NiPoint3& p2);
 
 static const RE::FormID VendorItemOreIngot = 0x000914EC;
 static const RE::FormID VendorItemGem = 0x000914ED;
+
+extern bool show_player_base_info_window;
+extern bool show_player_armor_window;
+extern bool show_player_weapon_window;
+extern bool show_player_mod_window;
+extern bool show_player_info_window;

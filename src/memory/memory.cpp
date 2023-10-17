@@ -9,7 +9,7 @@
 
 bool active = false;
 bool activeItems = false;
-int refresh_time_data = 300;
+int refresh_time_data = 500;
 int refresh_time_auto = 1;
 bool startflag = false;
 WeaponInfo leftWeaponInfo;
@@ -24,6 +24,12 @@ bool show_npc_window_dead_hidden = false;
 int screenWidth = 0;
 int screenHeight = 0;
 
+bool show_player_base_info_window = false;
+bool show_player_mod_window = false;
+bool show_player_info_window = false;
+bool show_player_armor_window = false;
+bool show_player_weapon_window = false;
+
 void __cdecl RefreshGameInfo(void*)
 {
 	// 标记装备槽是否主要
@@ -32,6 +38,7 @@ void __cdecl RefreshGameInfo(void*)
 	for (int i = 0; i <= 31; i++) {
 		wornArmos[i].equipSlotName = GetEquipSlotName(i);
 	}
+	bool initFlag = true;
 
 	while (true) {
 		if (refresh_time_data < 50) {
@@ -52,14 +59,39 @@ void __cdecl RefreshGameInfo(void*)
 		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 
 		if (player) {
-			playerInfo.Angle = player->GetAngle();
-			playerInfo.Position = player->GetPosition();
-			playerInfo.name = player->GetName();
-			if (player->currentLocation) {
-				auto locationName = player->currentLocation->GetFullName();
-				playerInfo.location = locationName;
+			//playerInfo.name = player->GetName();
+			auto currentLocation = player->currentLocation;
+			if (currentLocation) {
+				playerInfo.location = currentLocation->GetFullName();
+				playerInfo.locationId = currentLocation->GetFormID();
+				if (currentLocation->parentLoc) {
+					playerInfo.parentLocation = currentLocation->parentLoc->GetFullName();
+					playerInfo.parentLocationId = currentLocation->parentLoc->GetFormID();
+				} else {
+					playerInfo.parentLocationId = -1;
+				}
 			} else {
 				playerInfo.location = "天际";
+				playerInfo.parentLocationId = -1;
+			}
+
+			playerInfo.Angle = player->GetAngle();
+			playerInfo.Position = player->GetPosition();
+
+			{
+				if (initFlag) {
+					// 初始化天气
+					auto dataHandler = RE::TESDataHandler::GetSingleton();
+					if (dataHandler) {
+						for (auto form : dataHandler->GetFormArray<RE::TESWeather>()) {
+							if (!form) {
+								continue;
+							}
+							weatherForms.push_back({ form->GetFormID(), form->GetFormEditorID() });
+						}
+						initFlag = false;
+					}
+				}
 			}
 
 			//__try {
@@ -93,260 +125,271 @@ void __cdecl RefreshGameInfo(void*)
 			//heavyArmor = player->GetActorValue(RE::ActorValue::kHeavyArmor);
 			//
 			//player->GetLevel();
-			playerInfo.equippedWeight = player->equippedWeight;
-			playerInfo.carryWeight = player->GetActorValue(RE::ActorValue::kCarryWeight);
 
-			playerInfo.kHealth = player->GetActorValue(RE::ActorValue::kHealth);
-			playerInfo.kMagicka = player->GetActorValue(RE::ActorValue::kMagicka);
-			playerInfo.kStamina = player->GetActorValue(RE::ActorValue::kStamina);
+			// 天气信息
 
-			playerInfo.kHealthBase = player->GetPermanentActorValue(RE::ActorValue::kHealth);
-			playerInfo.kStaminaBase = player->GetPermanentActorValue(RE::ActorValue::kStamina);
-			playerInfo.kMagickaBase = player->GetPermanentActorValue(RE::ActorValue::kMagicka);
+			if (active) {
+			}
+
+			// 基础信息
+			if (show_player_base_info_window) {
+				//playerInfo.equippedWeight = player->equippedWeight;
+				//playerInfo.carryWeight = player->GetActorValue(RE::ActorValue::kCarryWeight);
+
+				playerInfo.kHealth = player->GetActorValue(RE::ActorValue::kHealth);
+				playerInfo.kMagicka = player->GetActorValue(RE::ActorValue::kMagicka);
+				playerInfo.kStamina = player->GetActorValue(RE::ActorValue::kStamina);
+
+				playerInfo.kHealthBase = player->GetPermanentActorValue(RE::ActorValue::kHealth);
+				playerInfo.kStaminaBase = player->GetPermanentActorValue(RE::ActorValue::kStamina);
+				playerInfo.kMagickaBase = player->GetPermanentActorValue(RE::ActorValue::kMagicka);
+			}
 
 			// 生命恢复速率
-			auto kHealRate = player->GetActorValue(RE::ActorValue::kHealRate);
+			//auto kHealRate = player->GetActorValue(RE::ActorValue::kHealRate);
 			// 战斗中生命恢复速率
-			auto kCombatHealthRegenMultiply = player->GetActorValue(RE::ActorValue::kCombatHealthRegenMultiply);
+			//auto kCombatHealthRegenMultiply = player->GetActorValue(RE::ActorValue::kCombatHealthRegenMultiply);
 			// 魔法恢复速率
-			auto kMagickaRate = player->GetActorValue(RE::ActorValue::kMagickaRate);
+			//auto kMagickaRate = player->GetActorValue(RE::ActorValue::kMagickaRate);
 			// 体力恢复速率
-			auto KStaminaRate = player->GetActorValue(RE::ActorValue::KStaminaRate);
+			//auto KStaminaRate = player->GetActorValue(RE::ActorValue::KStaminaRate);
 
-			playerInfo.kOneHandedModifier = player->GetActorValue(RE::ActorValue::kOneHandedModifier);
-			playerInfo.kTwoHandedModifier = player->GetActorValue(RE::ActorValue::kTwoHandedModifier);
-			playerInfo.kMarksmanModifier = player->GetActorValue(RE::ActorValue::kMarksmanModifier);
-			playerInfo.kSmithingModifier = player->GetActorValue(RE::ActorValue::kSmithingModifier);
-			playerInfo.kSmithingPowerModifier = player->GetActorValue(RE::ActorValue::kSmithingPowerModifier);
-			playerInfo.kSmithingSkillAdvance = player->GetActorValue(RE::ActorValue::kSmithingSkillAdvance);
-			playerInfo.kAlchemyModifier = player->GetActorValue(RE::ActorValue::kAlchemyModifier);
-			playerInfo.kAlchemySkillAdvance = player->GetActorValue(RE::ActorValue::kAlchemySkillAdvance);
-			playerInfo.kAlchemyPowerModifier = player->GetActorValue(RE::ActorValue::kAlchemyPowerModifier);
-			playerInfo.kEnchantingModifier = player->GetActorValue(RE::ActorValue::kEnchantingModifier);
-			playerInfo.kEnchantingPowerModifier = player->GetActorValue(RE::ActorValue::kEnchantingPowerModifier);
-			playerInfo.kEnchantingSkillAdvance = player->GetActorValue(RE::ActorValue::kEnchantingSkillAdvance);
-
+			if (show_player_mod_window) {
+				playerInfo.kOneHandedModifier = player->GetActorValue(RE::ActorValue::kOneHandedModifier);
+				playerInfo.kTwoHandedModifier = player->GetActorValue(RE::ActorValue::kTwoHandedModifier);
+				playerInfo.kMarksmanModifier = player->GetActorValue(RE::ActorValue::kMarksmanModifier);
+				playerInfo.kSmithingModifier = player->GetActorValue(RE::ActorValue::kSmithingModifier);
+				playerInfo.kSmithingPowerModifier = player->GetActorValue(RE::ActorValue::kSmithingPowerModifier);
+				playerInfo.kSmithingSkillAdvance = player->GetActorValue(RE::ActorValue::kSmithingSkillAdvance);
+				playerInfo.kAlchemyModifier = player->GetActorValue(RE::ActorValue::kAlchemyModifier);
+				playerInfo.kAlchemySkillAdvance = player->GetActorValue(RE::ActorValue::kAlchemySkillAdvance);
+				playerInfo.kAlchemyPowerModifier = player->GetActorValue(RE::ActorValue::kAlchemyPowerModifier);
+				playerInfo.kEnchantingModifier = player->GetActorValue(RE::ActorValue::kEnchantingModifier);
+				playerInfo.kEnchantingPowerModifier = player->GetActorValue(RE::ActorValue::kEnchantingPowerModifier);
+				playerInfo.kEnchantingSkillAdvance = player->GetActorValue(RE::ActorValue::kEnchantingSkillAdvance);
+			}
 			// 武器伤害
 			//kMeleeDamage = player->GetActorValue(RE::ActorValue::kMeleeDamage);
 			// 空手伤害
 			//kUnarmedDamage = player->GetActorValue(RE::ActorValue::kUnarmedDamage);
 
-			// 弓箭伤害
-			playerInfo.ArrowDamage = PlayerDataProvider::getArrowDamage(player);
-			// 右手伤害
-			playerInfo.DamageRight = PlayerDataProvider::getDamage(player, false);
-			// 左手伤害
-			playerInfo.DamageLeft = PlayerDataProvider::getDamage(player, true);
+			if (show_player_info_window) {
+				// 弓箭伤害
+				playerInfo.ArrowDamage = PlayerDataProvider::getArrowDamage(player);
+				// 右手伤害
+				playerInfo.DamageRight = PlayerDataProvider::getDamage(player, false);
+				// 左手伤害
+				playerInfo.DamageLeft = PlayerDataProvider::getDamage(player, true);
 
-			// 显示伤害
-			std::string tmp = "";
-			if (playerInfo.DamageLeft.empty()) {
-				if (playerInfo.DamageRight.empty()) {
-					tmp = "0";
+				// 显示伤害
+				std::string tmp = "";
+				if (playerInfo.DamageLeft.empty()) {
+					if (playerInfo.DamageRight.empty()) {
+						tmp = "0";
+					} else {
+						tmp = playerInfo.DamageRight;
+					}
 				} else {
-					tmp = playerInfo.DamageRight;
+					if (playerInfo.DamageRight.empty()) {
+						tmp = playerInfo.DamageLeft;
+					} else {
+						tmp.append(playerInfo.DamageLeft);
+						tmp.append(" | ");
+						tmp.append(playerInfo.DamageRight);
+					}
 				}
-			} else {
-				if (playerInfo.DamageRight.empty()) {
-					tmp = playerInfo.DamageLeft;
-				} else {
-					tmp.append(playerInfo.DamageLeft);
-					tmp.append(" | ");
-					tmp.append(playerInfo.DamageRight);
+				if (!playerInfo.ArrowDamage.empty()) {
+					tmp.append("   - 箭:");
+					tmp.append(playerInfo.ArrowDamage);
 				}
-			}
-			if (!playerInfo.ArrowDamage.empty()) {
-				tmp.append("   - 箭:");
-				tmp.append(playerInfo.ArrowDamage);
-			}
-			playerInfo.DamageStr = tmp;
+				playerInfo.DamageStr = tmp;
 
-			// 护甲
-			playerInfo.kDamageResist = player->GetActorValue(RE::ActorValue::kDamageResist);
-			//playerInfo.DamageResist = PlayerDataProvider::getDamageResistance(player, -1, "");
-
-			// 暴击几率
-			//kCriticalChance = player->GetActorValue(RE::ActorValue::kCriticalChance);
-			// 毒抗
-			playerInfo.kPoisonResist = player->GetActorValue(RE::ActorValue::kPoisonResist);
-			// 火炕
-			playerInfo.kResistFire = player->GetActorValue(RE::ActorValue::kResistFire);
-			playerInfo.kResistShock = player->GetActorValue(RE::ActorValue::kResistShock);
-			playerInfo.kResistMagic = player->GetActorValue(RE::ActorValue::kResistMagic);
-			playerInfo.kResistFrost = player->GetActorValue(RE::ActorValue::kResistFrost);
-			playerInfo.kResistDisease = player->GetActorValue(RE::ActorValue::kResistDisease);
+				// 护甲
+				playerInfo.kDamageResist = player->GetActorValue(RE::ActorValue::kDamageResist);
+				// 暴击几率
+				//kCriticalChance = player->GetActorValue(RE::ActorValue::kCriticalChance);
+				// 毒抗
+				playerInfo.kPoisonResist = player->GetActorValue(RE::ActorValue::kPoisonResist);
+				// 火炕
+				playerInfo.kResistFire = player->GetActorValue(RE::ActorValue::kResistFire);
+				playerInfo.kResistShock = player->GetActorValue(RE::ActorValue::kResistShock);
+				playerInfo.kResistMagic = player->GetActorValue(RE::ActorValue::kResistMagic);
+				playerInfo.kResistFrost = player->GetActorValue(RE::ActorValue::kResistFrost);
+				playerInfo.kResistDisease = player->GetActorValue(RE::ActorValue::kResistDisease);
+			}
 
 			// 装备信息
-			const auto inv = player->GetInventory([](RE::TESBoundObject& a_object) {
-				return a_object.IsArmor();
-			});
+			if (show_player_armor_window) {
+				const auto inv = player->GetInventory([](RE::TESBoundObject& a_object) {
+					return a_object.IsArmor();
+				});
 
-			int removeIndexs = 0;  // 最后需要移除的元素索引
-			for (const auto& [item, invData] : inv) {
-				const auto& [count, entry] = invData;
-				if (count > 0 && entry->IsWorn()) {
-					const auto armor = item->As<RE::TESObjectARMO>();
-					// 插槽名称(所有)
-					//std::string slotNames = "";
-					int parts = (int)armor->GetSlotMask();
+				int removeIndexs = 0;  // 最后需要移除的元素索引
+				for (const auto& [item, invData] : inv) {
+					const auto& [count, entry] = invData;
+					if (count > 0 && entry->IsWorn()) {
+						const auto armor = item->As<RE::TESObjectARMO>();
+						// 插槽名称(所有)
+						//std::string slotNames = "";
+						int parts = (int)armor->GetSlotMask();
 
-					removeIndexs += parts;
+						removeIndexs += parts;
 
-					//int slotIndex = 0;
-					for (int i = 0; i <= 31; i++) {
-						int mask = 1 << i;
-						if ((parts & mask) == mask) {
-							/*if (slotIndex == 0) {
+						//int slotIndex = 0;
+						for (int i = 0; i <= 31; i++) {
+							int mask = 1 << i;
+							if ((parts & mask) == mask) {
+								/*if (slotIndex == 0) {
 									slotIndex = i;
 									removeIndexs += parts;
 									slotNames.append(GetEquipSlotName(i));
 									slotNames.append(" ");
 								}*/
-							wornArmos[i].isExist = true;
-							wornArmos[i].name = armor->GetName();
-							wornArmos[i].formID = FormIDToString(armor->GetFormID());
-							wornArmos[i].formTypeName = GetFormTypeName(armor->formType.underlying());
-							wornArmos[i].goldValue = armor->GetGoldValue();
-							wornArmos[i].value = armor->value;
-							wornArmos[i].armorRating = armor->GetArmorRating();
-							wornArmos[i].armorTypeName = GetArmorTypeName(armor->GetArmorType());
-							//wornArmos[i].equipSlotName = slotNames;
-							//wornArmos[i].equipSlotName = GetEquipSlotName(i);
-							wornArmos[i].weight = armor->weight;
-							std::string tmp = wornArmos[i].name;
-							tmp.append(" - ");
-							tmp.append(wornArmos[i].armorTypeName);
-							tmp.append(" | ");
-							tmp.append(wornArmos[i].equipSlotName);
-							wornArmos[i].treeId = tmp;
+								wornArmos[i].isExist = true;
+								wornArmos[i].name = armor->GetName();
+								wornArmos[i].formID = FormIDToString(armor->GetFormID());
+								wornArmos[i].formTypeName = GetFormTypeName(armor->formType.underlying());
+								wornArmos[i].goldValue = armor->GetGoldValue();
+								wornArmos[i].value = armor->value;
+								wornArmos[i].armorRating = armor->GetArmorRating();
+								wornArmos[i].armorTypeName = GetArmorTypeName(armor->GetArmorType());
+								//wornArmos[i].equipSlotName = slotNames;
+								//wornArmos[i].equipSlotName = GetEquipSlotName(i);
+								wornArmos[i].weight = armor->weight;
+								std::string tmp = wornArmos[i].name;
+								tmp.append(" - ");
+								tmp.append(wornArmos[i].armorTypeName);
+								tmp.append(" | ");
+								tmp.append(wornArmos[i].equipSlotName);
+								wornArmos[i].treeId = tmp;
+							}
 						}
+						//if (slotIndex > 0) {
+						//}
 					}
-					//if (slotIndex > 0) {
-					//}
 				}
-			}
-			// 删除未占用插槽的元素
-			for (int i = 0; i <= 31; i++) {
-				int mask = 1 << i;
-				if ((removeIndexs & mask) != mask) {
-					wornArmos[i].isExist = false;
+				// 删除未占用插槽的元素
+				for (int i = 0; i <= 31; i++) {
+					int mask = 1 << i;
+					if ((removeIndexs & mask) != mask) {
+						wornArmos[i].isExist = false;
+					}
 				}
 			}
 
 			// 武器信息
-			auto leftWeapon = player->GetEquippedObject(true);
-			if (leftWeapon) {
-				leftWeaponInfo.formType = leftWeapon->GetFormType();
-				leftWeaponInfo.formTypeName = GetFormTypeName(leftWeapon->formType.underlying());
-				leftWeaponInfo.name = leftWeapon->GetName();
-				leftWeaponInfo.formID = FormIDToString(leftWeapon->GetFormID());
-				if (leftWeapon->IsWeapon()) {
-					auto item = leftWeapon->As<RE::TESObjectWEAP>();
-					leftWeaponInfo.isExist = true;
-					leftWeaponInfo.goldValue = item->GetGoldValue();
-					leftWeaponInfo.value = item->value;
-					leftWeaponInfo.weaponTypeName = GetWeaponAnimationTypeName(item->GetWeaponType());
-					leftWeaponInfo.damage = item->GetAttackDamage();
-					leftWeaponInfo.critDamage = item->GetCritDamage();
-					leftWeaponInfo.weight = item->weight;
-					std::string tmp = std::string(leftWeaponInfo.name);
-					tmp.append(" - ");
-					tmp.append(leftWeaponInfo.weaponTypeName);
-					leftWeaponInfo.treeId = tmp;
-				} else if (leftWeapon->Is(RE::FormType::Spell)) {
-					auto item = leftWeapon->As<RE::MagicItem>();
-					leftWeaponInfo.isExist = true;
-					leftWeaponInfo.goldValue = item->GetGoldValue();
-					leftWeaponInfo.castingTypeName = GetCastingTypeName(item->GetCastingType());
-					leftWeaponInfo.spellTypeName = GetSpellTypeName(item->GetSpellType());
-					leftWeaponInfo.cost = item->CalculateMagickaCost(player);
-					leftWeaponInfo.time = item->GetChargeTime();
-					auto tmp = std::string(leftWeaponInfo.name);
-					tmp.append(" - ");
-					tmp.append(leftWeaponInfo.castingTypeName);
-					leftWeaponInfo.treeId = tmp;
+			if (show_player_weapon_window) {
+				auto leftWeapon = player->GetEquippedObject(true);
+				if (leftWeapon) {
+					leftWeaponInfo.formType = leftWeapon->GetFormType();
+					leftWeaponInfo.formTypeName = GetFormTypeName(leftWeapon->formType.underlying());
+					leftWeaponInfo.name = leftWeapon->GetName();
+					leftWeaponInfo.formID = FormIDToString(leftWeapon->GetFormID());
+					if (leftWeapon->IsWeapon()) {
+						auto item = leftWeapon->As<RE::TESObjectWEAP>();
+						leftWeaponInfo.isExist = true;
+						leftWeaponInfo.goldValue = item->GetGoldValue();
+						leftWeaponInfo.value = item->value;
+						leftWeaponInfo.weaponTypeName = GetWeaponAnimationTypeName(item->GetWeaponType());
+						leftWeaponInfo.damage = item->GetAttackDamage();
+						leftWeaponInfo.critDamage = item->GetCritDamage();
+						leftWeaponInfo.weight = item->weight;
+						std::string tmp = std::string(leftWeaponInfo.name);
+						tmp.append(" - ");
+						tmp.append(leftWeaponInfo.weaponTypeName);
+						leftWeaponInfo.treeId = tmp;
+					} else if (leftWeapon->Is(RE::FormType::Spell)) {
+						auto item = leftWeapon->As<RE::MagicItem>();
+						leftWeaponInfo.isExist = true;
+						leftWeaponInfo.goldValue = item->GetGoldValue();
+						leftWeaponInfo.castingTypeName = GetCastingTypeName(item->GetCastingType());
+						leftWeaponInfo.spellTypeName = GetSpellTypeName(item->GetSpellType());
+						leftWeaponInfo.cost = item->CalculateMagickaCost(player);
+						leftWeaponInfo.time = item->GetChargeTime();
+						auto tmp = std::string(leftWeaponInfo.name);
+						tmp.append(" - ");
+						tmp.append(leftWeaponInfo.castingTypeName);
+						leftWeaponInfo.treeId = tmp;
+					} else {
+						leftWeaponInfo.isExist = false;
+					}
 				} else {
 					leftWeaponInfo.isExist = false;
 				}
-			} else {
-				leftWeaponInfo.isExist = false;
-			}
 
-			auto rightWeapon = player->GetEquippedObject(false);
-			if (rightWeapon) {
-				rightWeaponInfo.formType = rightWeapon->GetFormType();
-				rightWeaponInfo.formTypeName = GetFormTypeName(rightWeapon->formType.underlying());
-				rightWeaponInfo.name = rightWeapon->GetName();
-				rightWeaponInfo.formID = FormIDToString(rightWeapon->GetFormID());
-				if (rightWeapon->IsWeapon()) {
-					auto item = rightWeapon->As<RE::TESObjectWEAP>();
-					rightWeaponInfo.isExist = true;
-					rightWeaponInfo.goldValue = item->GetGoldValue();
-					rightWeaponInfo.value = item->value;
-					rightWeaponInfo.weaponTypeName = GetWeaponAnimationTypeName(item->GetWeaponType());
-					rightWeaponInfo.damage = item->GetAttackDamage();
-					rightWeaponInfo.critDamage = item->GetCritDamage();
-					rightWeaponInfo.weight = item->weight;
+				auto rightWeapon = player->GetEquippedObject(false);
+				if (rightWeapon) {
+					rightWeaponInfo.formType = rightWeapon->GetFormType();
+					rightWeaponInfo.formTypeName = GetFormTypeName(rightWeapon->formType.underlying());
+					rightWeaponInfo.name = rightWeapon->GetName();
+					rightWeaponInfo.formID = FormIDToString(rightWeapon->GetFormID());
+					if (rightWeapon->IsWeapon()) {
+						auto item = rightWeapon->As<RE::TESObjectWEAP>();
+						rightWeaponInfo.isExist = true;
+						rightWeaponInfo.goldValue = item->GetGoldValue();
+						rightWeaponInfo.value = item->value;
+						rightWeaponInfo.weaponTypeName = GetWeaponAnimationTypeName(item->GetWeaponType());
+						rightWeaponInfo.damage = item->GetAttackDamage();
+						rightWeaponInfo.critDamage = item->GetCritDamage();
+						rightWeaponInfo.weight = item->weight;
 
-					if (item->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandSword ||
-						item->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandAxe ||
-						item->GetWeaponType() == RE::WEAPON_TYPE::kBow ||
-						item->GetWeaponType() == RE::WEAPON_TYPE::kCrossbow) {
-						rightWeaponInfo.isTwoHand = true;
+						if (item->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandSword ||
+							item->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandAxe ||
+							item->GetWeaponType() == RE::WEAPON_TYPE::kBow ||
+							item->GetWeaponType() == RE::WEAPON_TYPE::kCrossbow) {
+							rightWeaponInfo.isTwoHand = true;
+						} else {
+							rightWeaponInfo.isTwoHand = false;
+						}
+
+						auto tmp = std::string(rightWeaponInfo.name);
+						tmp.append(" - ");
+						tmp.append(rightWeaponInfo.weaponTypeName);
+						rightWeaponInfo.treeId = tmp;
+					} else if (rightWeapon->Is(RE::FormType::Spell)) {
+						auto item = rightWeapon->As<RE::MagicItem>();
+
+						rightWeaponInfo.isExist = true;
+						rightWeaponInfo.goldValue = item->GetGoldValue();
+						rightWeaponInfo.castingTypeName = GetCastingTypeName(item->GetCastingType());
+						rightWeaponInfo.spellTypeName = GetSpellTypeName(item->GetSpellType());
+						rightWeaponInfo.cost = item->CalculateMagickaCost(player);
+						rightWeaponInfo.time = item->GetChargeTime();
+						rightWeaponInfo.isTwoHand = item->IsTwoHanded();
+
+						auto tmp = std::string(rightWeaponInfo.name);
+						tmp.append(" - ");
+						tmp.append(rightWeaponInfo.castingTypeName);
+						rightWeaponInfo.treeId = tmp;
 					} else {
-						rightWeaponInfo.isTwoHand = false;
+						rightWeaponInfo.isExist = false;
 					}
 
-					auto tmp = std::string(rightWeaponInfo.name);
-					tmp.append(" - ");
-					tmp.append(rightWeaponInfo.weaponTypeName);
-					rightWeaponInfo.treeId = tmp;
-				} else if (rightWeapon->Is(RE::FormType::Spell)) {
-					auto item = rightWeapon->As<RE::MagicItem>();
-
-					rightWeaponInfo.isExist = true;
-					rightWeaponInfo.goldValue = item->GetGoldValue();
-					rightWeaponInfo.castingTypeName = GetCastingTypeName(item->GetCastingType());
-					rightWeaponInfo.spellTypeName = GetSpellTypeName(item->GetSpellType());
-					rightWeaponInfo.cost = item->CalculateMagickaCost(player);
-					rightWeaponInfo.time = item->GetChargeTime();
-					rightWeaponInfo.isTwoHand = item->IsTwoHanded();
-
-					auto tmp = std::string(rightWeaponInfo.name);
-					tmp.append(" - ");
-					tmp.append(rightWeaponInfo.castingTypeName);
-					rightWeaponInfo.treeId = tmp;
 				} else {
 					rightWeaponInfo.isExist = false;
 				}
-
-			} else {
-				rightWeaponInfo.isExist = false;
-			}
-			// 弹药
-			auto ammo = player->GetCurrentAmmo();
-			if (ammo) {
-				const auto item = ammo->As<RE::TESAmmo>();
-				ammoInfo.isExist = true;
-				ammoInfo.formType = item->GetFormType();
-				ammoInfo.formTypeName = GetFormTypeName(item->formType.underlying());
-				ammoInfo.name = item->GetName();
-				ammoInfo.formID = FormIDToString(item->GetFormID());
-				ammoInfo.goldValue = item->GetGoldValue();
-				ammoInfo.value = item->value;
-				ammoInfo.damage = item->data.damage;
-				ammoInfo.weight = item->weight;
-				auto tmp = std::string(ammoInfo.name);
-				/*tmp.append(" - ");
+				// 弹药
+				auto ammo = player->GetCurrentAmmo();
+				if (ammo) {
+					const auto item = ammo->As<RE::TESAmmo>();
+					ammoInfo.isExist = true;
+					ammoInfo.formType = item->GetFormType();
+					ammoInfo.formTypeName = GetFormTypeName(item->formType.underlying());
+					ammoInfo.name = item->GetName();
+					ammoInfo.formID = FormIDToString(item->GetFormID());
+					ammoInfo.goldValue = item->GetGoldValue();
+					ammoInfo.value = item->value;
+					ammoInfo.damage = item->data.damage;
+					ammoInfo.weight = item->weight;
+					auto tmp = std::string(ammoInfo.name);
+					/*tmp.append(" - ");
 					tmp.append(rightWeaponInfo.castingTypeName);*/
-				ammoInfo.treeId = tmp;
-			} else {
-				ammoInfo.isExist = false;
+					ammoInfo.treeId = tmp;
+				} else {
+					ammoInfo.isExist = false;
+				}
 			}
 
-			/*	} __except (SehFilter(GetExceptionCode())) {
-					logger::info("catch (...)");
-				}*/
 		} else {
 			logger::info("no player"sv);
 		}
@@ -518,81 +561,6 @@ void RefreshInventory(RE::Actor* actor, ActorInfo* actorInfo, int tmpIndex)
 }
 
 PlayerInventoryInfo* MyInventoryInfo = new PlayerInventoryInfo[2];
-//PlayerInventoryInfo MyInventoryInfo[2];
-int getPlayerGoldCount()
-{
-	return MyInventoryInfo[!nowIndex].gold;
-}
-int getPlayerInvCount()
-{
-	return MyInventoryInfo[!nowIndex].inventoryCount;
-}
-int getPlayerInvBOOKCount()
-{
-	return MyInventoryInfo[!nowIndex].inventoryBOOKCount;
-}
-int getPlayerInvWEAPCount()
-{
-	return MyInventoryInfo[!nowIndex].inventoryWEAPCount;
-}
-int getPlayerInvARMOCount()
-{
-	return MyInventoryInfo[!nowIndex].inventoryARMOCount;
-}
-int getPlayerInvAMMOCount()
-{
-	return MyInventoryInfo[!nowIndex].inventoryAMMOCount;
-}
-int getPlayerInvFOODCount()
-{
-	return MyInventoryInfo[!nowIndex].inventoryFOODCount;
-}
-int getPlayerInvALCHCount()
-{
-	return MyInventoryInfo[!nowIndex].inventoryALCHCount;
-}
-int getPlayerInvINGRCount()
-{
-	return MyInventoryInfo[!nowIndex].inventoryINGRCount;
-}
-
-InventoryInfo* getPlayerInvData()
-{
-	return &MyInventoryInfo[!nowIndex].inventorys[0];
-}
-InventoryInfo* getPlayerInvARMOData()
-{
-	return &MyInventoryInfo[!nowIndex].inventorysARMO[0];
-}
-InventoryInfo* getPlayerInvWEAPData()
-{
-	return &MyInventoryInfo[!nowIndex].inventorysWEAP[0];
-}
-InventoryInfo* getPlayerInvBOOKData()
-{
-	return &MyInventoryInfo[!nowIndex].inventorysBOOK[0];
-}
-InventoryInfo* getPlayerInvAMMOData()
-{
-	return &MyInventoryInfo[!nowIndex].inventorysAMMO[0];
-}
-InventoryInfo* getPlayerInvFOODData()
-{
-	return &MyInventoryInfo[!nowIndex].inventorysFOOD[0];
-}
-InventoryInfo* getPlayerInvALCHData()
-{
-	return &MyInventoryInfo[!nowIndex].inventorysALCH[0];
-}
-InventoryInfo* getPlayerInvINGRData()
-{
-	return &MyInventoryInfo[!nowIndex].inventorysINGR[0];
-}
-
-InventoryInfo* getPlayerInvData(int i)
-{
-	return &MyInventoryInfo[!nowIndex].inventorys[i];
-}
 
 void __fastcall buildPlayerInvData(InventoryInfo inv[], int& i, RE::TESBoundObject* item, RE::InventoryEntryData* entry, std::int32_t count)
 {
@@ -651,6 +619,7 @@ bool show_items_window_formid = false;
 bool show_items_window_refid = false;
 bool show_items_window_direction = false;
 bool show_items_window_file = false;
+bool show_items_window_3D = false;
 bool show_items_window_ignore = true;
 int show_items_window_array_max_length = 2998;
 
@@ -929,6 +898,10 @@ int galleryModCount = 0;
 int galleryItemTotalCount = 0;
 int galleryItemCount = 0;
 
+// 天气
+std::vector<WeatherForm> weatherForms;
+RE::FormID currentWeather = 0;
+
 //std::vector<ItemInfo> tracks;
 std::unordered_set<RE::TESObjectREFR*> trackPtrs;
 std::unordered_set<RE::Actor*> trackActorPtrs;
@@ -950,7 +923,7 @@ ItemInfo* getItemsAMMO()
 {
 	return items[!nowItemIndex].itemInfoAMMO;
 }
-ItemInfo* getItemsBOOK()
+ItemInfoBOOK* getItemsBOOK()
 {
 	return items[!nowItemIndex].itemInfoBOOK;
 }
@@ -1229,6 +1202,12 @@ void __cdecl RefreshItemInfo(void*)
 								continue;
 							}
 							if (actor->GetCurrentLocation() == currentLocation) {
+								if (!show_items_window_3D) {
+									if (!actor->Is3DLoaded()) {
+										continue;
+									}
+								}
+
 								if (tmpCountACHR > show_items_window_array_max_length) {
 									continue;
 								}
@@ -1302,6 +1281,12 @@ void __cdecl RefreshItemInfo(void*)
 						auto reff = form->AsReference();
 						if (reff) {
 							if (reff->GetCurrentLocation() == currentLocation) {
+								if (!show_items_window_3D) {
+									if (!reff->Is3DLoaded()) {
+										continue;
+									}
+								}
+
 								auto baseObj = reff->GetBaseObject();
 								if (baseObj) {
 									switch (baseObj->GetFormType()) {
@@ -1528,7 +1513,6 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].baseFormIdStr = FormIDToString(baseObj->GetFormID());
 											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].formId = reff->GetFormID();
 											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].formIdStr = FormIDToString(reff->GetFormID());
-											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
 											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].name = reff->GetDisplayFullName();
 											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].gold = baseObj->GetGoldValue();
@@ -1540,6 +1524,21 @@ void __cdecl RefreshItemInfo(void*)
 											}
 											if (show_items_window_file) {
 												items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].filename = baseObj->GetFile(0)->fileName;
+											}
+
+											auto book = baseObj->As<RE::TESObjectBOOK>();
+											if (book) {
+												if (book->TeachesSpell()) {
+													items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].formTypeStr = "魔法";
+												} else if (book->TeachesSkill()) {
+													items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].formTypeStr = "技能";
+												} else if (book->IsNoteScroll()) {
+													items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].formTypeStr = "笔记";
+												} else {
+													items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].formTypeStr = "-";
+												}
+
+												items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].isRead = book->IsRead();
 											}
 
 											tmpCountBOOK++;
@@ -1656,13 +1655,11 @@ void __cdecl RefreshItemInfo(void*)
 												continue;
 											}
 
-											
-											#ifndef NDEBUG
+#ifndef NDEBUG
 											if (reff->IsIgnored()) {
 												MessageBox(nullptr, reff->GetDisplayFullName(), nullptr, MB_OK);
 											}
-											#endif
-
+#endif
 
 											if (show_items_window_ignore) {
 												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
@@ -2015,7 +2012,7 @@ void __cdecl RefreshItemInfo(void*)
 												continue;
 											}
 
-											if (reff->IsMarkedForDeletion() ) {
+											if (reff->IsMarkedForDeletion()) {
 												continue;
 											}
 
@@ -2085,7 +2082,7 @@ void __cdecl RefreshItemInfo(void*)
 												continue;
 											}
 
-											if (reff->IsMarkedForDeletion() ) {
+											if (reff->IsMarkedForDeletion()) {
 												continue;
 											}
 
@@ -2385,4 +2382,79 @@ void __cdecl RefreshItemInfo(void*)
 			refreshItemAuto();
 		}
 	}
+}
+
+int getPlayerGoldCount()
+{
+	return MyInventoryInfo[!nowIndex].gold;
+}
+int getPlayerInvCount()
+{
+	return MyInventoryInfo[!nowIndex].inventoryCount;
+}
+int getPlayerInvBOOKCount()
+{
+	return MyInventoryInfo[!nowIndex].inventoryBOOKCount;
+}
+int getPlayerInvWEAPCount()
+{
+	return MyInventoryInfo[!nowIndex].inventoryWEAPCount;
+}
+int getPlayerInvARMOCount()
+{
+	return MyInventoryInfo[!nowIndex].inventoryARMOCount;
+}
+int getPlayerInvAMMOCount()
+{
+	return MyInventoryInfo[!nowIndex].inventoryAMMOCount;
+}
+int getPlayerInvFOODCount()
+{
+	return MyInventoryInfo[!nowIndex].inventoryFOODCount;
+}
+int getPlayerInvALCHCount()
+{
+	return MyInventoryInfo[!nowIndex].inventoryALCHCount;
+}
+int getPlayerInvINGRCount()
+{
+	return MyInventoryInfo[!nowIndex].inventoryINGRCount;
+}
+
+InventoryInfo* getPlayerInvData()
+{
+	return &MyInventoryInfo[!nowIndex].inventorys[0];
+}
+InventoryInfo* getPlayerInvARMOData()
+{
+	return &MyInventoryInfo[!nowIndex].inventorysARMO[0];
+}
+InventoryInfo* getPlayerInvWEAPData()
+{
+	return &MyInventoryInfo[!nowIndex].inventorysWEAP[0];
+}
+InventoryInfo* getPlayerInvBOOKData()
+{
+	return &MyInventoryInfo[!nowIndex].inventorysBOOK[0];
+}
+InventoryInfo* getPlayerInvAMMOData()
+{
+	return &MyInventoryInfo[!nowIndex].inventorysAMMO[0];
+}
+InventoryInfo* getPlayerInvFOODData()
+{
+	return &MyInventoryInfo[!nowIndex].inventorysFOOD[0];
+}
+InventoryInfo* getPlayerInvALCHData()
+{
+	return &MyInventoryInfo[!nowIndex].inventorysALCH[0];
+}
+InventoryInfo* getPlayerInvINGRData()
+{
+	return &MyInventoryInfo[!nowIndex].inventorysINGR[0];
+}
+
+InventoryInfo* getPlayerInvData(int i)
+{
+	return &MyInventoryInfo[!nowIndex].inventorys[i];
 }

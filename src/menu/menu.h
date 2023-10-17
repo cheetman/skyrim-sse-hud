@@ -21,10 +21,6 @@ namespace menu
 	extern int trackY;
 	//extern ImFont* font2;
 
-	extern bool show_player_info_window ;
-	extern bool show_player_mod_window ;
-	extern bool show_player_armor_window ;
-	extern bool show_player_weapon_window ;
 	extern bool show_player_debug_window ;
 	extern bool no_titlebar ;
 	extern bool no_resize ;
@@ -46,7 +42,6 @@ namespace menu
 	extern float colorPlotHistogramZ;
 	extern float colorPlotHistogramW;
 
-	extern bool show_player_base_info_window;
 	extern bool show_player_base_info_window_sep;
 	extern bool flag_process;
 	extern bool flag_base_info_setting;
