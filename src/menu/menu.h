@@ -13,19 +13,18 @@ namespace menu
 	extern int hotkey;
 	extern int hotkey2;
 	extern float font_scale;
-	extern int imgui_style_index;
 	void __fastcall render();
 
-	void initStyle();
 	extern int trackX;
 	extern int trackY;
-	//extern ImFont* font2;
 
 	extern bool show_player_debug_window ;
 	extern bool no_titlebar ;
 	extern bool no_resize ;
 	extern bool no_collapse ;
-	extern bool no_background ;
+	extern bool no_background;
+	extern bool no_background_items;
+	
 	extern bool auto_resize ;
 
 	extern bool window_border ;

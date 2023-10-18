@@ -5,6 +5,7 @@
 #include <memory/autotake.h>
 #include <menu/menu.h>
 #include <nlohmann/json.hpp>
+#include <menu/theme.h>
 
 namespace setting
 {
@@ -79,6 +80,14 @@ namespace setting
 				if (j.contains("font_scale")) {
 					menu::font_scale = j["font_scale"].get<float>();
 				}
+
+				if (j.contains("no_background_items")) {
+					menu::no_background_items = j["no_background_items"].get<bool>();
+				}
+				if (j.contains("imgui_font_index")) {
+					menu::imgui_font_index = j["imgui_font_index"].get<int>();
+				}
+
 			}
 
 			if (json.contains("gameSetting")) {
@@ -445,6 +454,8 @@ namespace setting
 									  { "hotkey", menu::hotkey },
 									  { "hotkey2", menu::hotkey2 },
 									  { "font_scale", ImGui::GetIO().FontGlobalScale },
+									  { "no_background_items", menu::no_background_items },
+									  { "imgui_font_index", menu::imgui_font_index },
 
 								  } },
 

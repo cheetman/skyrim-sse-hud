@@ -3,7 +3,6 @@
 #pragma comment(lib, "d3d11.lib")
 
 #include <MinHook.h>
-#include <fonts/IconsMaterialDesignIcons.h>
 #include <hook/BSRenderManager.h>
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_dx11.h>
@@ -11,6 +10,7 @@
 #include <memory/memory.h>
 #include <menu/menu.h>
 #include <utils/utils.h>
+#include <menu/theme.h>
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -37,57 +37,28 @@ namespace d3d11hook
 			g_pSwapChain = This;
 			if (SUCCEEDED(g_pSwapChain->GetDevice(IID_PPV_ARGS(&g_pd3dDevice)))) {
 				g_pd3dDevice->GetImmediateContext(&g_pd3dContext);
-
 				ID3D11Texture2D* backBuffer;
 				g_pSwapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
 				g_pd3dDevice->CreateRenderTargetView(backBuffer, nullptr, &D3D11RenderView);
 				backBuffer->Release();
-
 				DXGI_SWAP_CHAIN_DESC sd;
 				This->GetDesc(&sd);
 				auto window = sd.OutputWindow;
 				RECT rect;
-				/*::GetWindowRect(window, &oldRect);
-				screenWidth = (oldRect.right - oldRect.left);
-				screenHeight = (oldRect.bottom - oldRect.top);*/
-
 				GetClientRect(window, &rect);
 				screenWidth = rect.right - rect.left;
 				screenHeight = rect.bottom - rect.top;
 
-				/*screenWidth = GetSystemMetrics(SM_CXFULLSCREEN);
-				screenHeight = GetSystemMetrics(SM_CYFULLSCREEN);*/
 
 				//OldWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(window, GWLP_WNDPROC, (LONG_PTR)WndProc));
 
 				ImGui::CreateContext();
 				ImGuiIO& io = ImGui::GetIO();
 				io.ConfigFlags = ImGuiConfigFlags_NoMouseCursorChange;
-				if (std::filesystem::exists(fontFilePath)) {
-					float baseFontSize = 18.0f;
-
-					io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\xyght3.0-62354202.ttf", baseFontSize, 0, io.Fonts->GetGlyphRangesChineseFull());
-
-					float iconFontSize = baseFontSize * 2.0f / 3.0f;
-
-					ImFontConfig config;
-					config.MergeMode = true;
-					config.GlyphMinAdvanceX = iconFontSize;
-					static const ImWchar icon_ranges[] = { 0xf000, 0xf3ff, 0 };
-					io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\fontawesome-webfont.ttf", iconFontSize, &config, icon_ranges);
-					SKSE::log::info("AddFontFromFileTTF");
-
-					/*io.Fonts*/
-					ImFontConfig config2;
-					config2.MergeMode = true;
-					config2.PixelSnapH = true;
-					config2.GlyphMinAdvanceX = iconFontSize;
-					static const ImWchar icon_ranges2[] = { static_cast<ImWchar>(ICON_MIN_MDI), static_cast<ImWchar>(ICON_MAX_MDI), static_cast<ImWchar>(0) };
-					io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\materialdesignicons-webfont.ttf", iconFontSize, &config2, icon_ranges2);
-
-					// 初始化缩放
-					io.FontGlobalScale = menu::font_scale;
-				}
+			
+				menu::initFonts();
+				// 初始化缩放
+				io.FontGlobalScale = menu::font_scale;
 
 				if (!ImGui_ImplWin32_Init(window)) {
 					SKSE::log::warn("ImGui_ImplWin32_Init fail");
@@ -96,7 +67,7 @@ namespace d3d11hook
 					SKSE::log::warn("ImGui_ImplDX11_Init fail");
 				}
 
-				menu::initStyle();
+				menu::buildStyle();
 				SKSE::log::info("ImGui_ImplDX11_Init");
 			} else {
 				SKSE::log::info("g_pSwapChain->GetDevice(IID_PPV_ARGS(&g_pd3dDevice) Fail");
@@ -261,6 +232,7 @@ namespace d3d11hook
 						return 1;
 					}
 					SKSE::log::info("MH_EnableHook pSwapChainVTable success");
+					return 0;
 				} else {
 					return 0;
 				}

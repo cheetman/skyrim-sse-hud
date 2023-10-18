@@ -214,7 +214,7 @@ struct ActorInfo
 	int direction = 0;
 
 	int isSentient = 0;
-	int level = 0.0f;
+	int level = 0;
 	bool isDead = false;
 	bool isTeammate = false;
 	bool idHostile = false;

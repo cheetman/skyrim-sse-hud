@@ -3,10 +3,10 @@
 #include <fonts/IconsMaterialDesignIcons.h>
 #include <hook/hudhook.h>
 #include <imgui/imgui.h>
-#include <imgui/imgui_internal.h>
 #include <memory/autotake.h>
 #include <memory/memory.h>
 #include <menu/menu.h>
+#include <menu/theme.h>
 #include <nlohmann/json.hpp>
 #include <setting/setting.h>
 #include <utils/GeneralUtil.h>
@@ -34,183 +34,6 @@ namespace menu
 		return nullptr;
 	};
 
-	void initStyle()
-	{
-		switch (imgui_style_index) {
-		case 0:
-			ImGui::StyleColorsDark(&ImGui::GetStyle());
-			break;
-		case 1:
-			ImGui::StyleColorsLight(&ImGui::GetStyle());
-			break;
-		case 2:
-			ImGui::StyleColorsClassic(&ImGui::GetStyle());
-			break;
-		case 3:
-			{
-				ImGuiStyle& style = ImGui::GetStyle();
-				ImGui::StyleColorsDark(&style);
-				style.Colors[ImGuiCol_WindowBg] = ImVec4(0.06f, 0.06f, 0.06f, 0.85f);
-				style.Colors[ImGuiCol_TableHeaderBg] = ImVec4(0.19f, 0.19f, 0.20f, 0.63f);
-				style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.31f, 0.31f, 0.31f, 0.8f);
-				break;
-			}
-		case 4:
-			{
-				ImGuiStyle& style = ImGui::GetStyle();
-				style.Alpha = 1.0;
-				/*style.WindowFillAlphaDefault = 0.83;
-			style.ChildWindowRounding = 3;*/
-				style.WindowRounding = 3;
-				style.GrabRounding = 1;
-				style.GrabMinSize = 20;
-				style.FrameRounding = 3;
-
-				style.Colors[ImGuiCol_Text] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
-				style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.00f, 0.40f, 0.41f, 1.00f);
-				style.Colors[ImGuiCol_WindowBg] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-				//style.Colors[ImGuiCol_ChildWindowBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-				style.Colors[ImGuiCol_Border] = ImVec4(0.00f, 1.00f, 1.00f, 0.65f);
-				style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-				style.Colors[ImGuiCol_FrameBg] = ImVec4(0.44f, 0.80f, 0.80f, 0.18f);
-				style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.44f, 0.80f, 0.80f, 0.27f);
-				style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.44f, 0.81f, 0.86f, 0.66f);
-				style.Colors[ImGuiCol_TitleBg] = ImVec4(0.14f, 0.18f, 0.21f, 0.73f);
-				style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.00f, 0.00f, 0.00f, 0.54f);
-				style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.00f, 1.00f, 1.00f, 0.27f);
-				style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.20f);
-				style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.22f, 0.29f, 0.30f, 0.71f);
-				style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.00f, 1.00f, 1.00f, 0.44f);
-				style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.00f, 1.00f, 1.00f, 0.74f);
-				style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
-				//style.Colors[ImGuiCol_ComboBg] = ImVec4(0.16f, 0.24f, 0.22f, 0.60f);
-				style.Colors[ImGuiCol_CheckMark] = ImVec4(0.00f, 1.00f, 1.00f, 0.68f);
-				style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.00f, 1.00f, 1.00f, 0.36f);
-				style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.00f, 1.00f, 1.00f, 0.76f);
-				style.Colors[ImGuiCol_Button] = ImVec4(0.00f, 0.65f, 0.65f, 0.46f);
-				style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.01f, 1.00f, 1.00f, 0.43f);
-				style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.00f, 1.00f, 1.00f, 0.62f);
-				style.Colors[ImGuiCol_Header] = ImVec4(0.00f, 1.00f, 1.00f, 0.33f);
-				style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.00f, 1.00f, 1.00f, 0.42f);
-				style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.00f, 1.00f, 1.00f, 0.54f);
-				/*style.Colors[ImGuiCol_Column] = ImVec4(0.00f, 0.50f, 0.50f, 0.33f);
-			style.Colors[ImGuiCol_ColumnHovered] = ImVec4(0.00f, 0.50f, 0.50f, 0.47f);
-			style.Colors[ImGuiCol_ColumnActive] = ImVec4(0.00f, 0.70f, 0.70f, 1.00f);*/
-				style.Colors[ImGuiCol_ResizeGrip] = ImVec4(0.00f, 1.00f, 1.00f, 0.54f);
-				style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.00f, 1.00f, 1.00f, 0.74f);
-				style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
-				/*style.Colors[ImGuiCol_CloseButton] = ImVec4(0.00f, 0.78f, 0.78f, 0.35f);
-			style.Colors[ImGuiCol_CloseButtonHovered] = ImVec4(0.00f, 0.78f, 0.78f, 0.47f);
-			style.Colors[ImGuiCol_CloseButtonActive] = ImVec4(0.00f, 0.78f, 0.78f, 1.00f);*/
-				style.Colors[ImGuiCol_PlotLines] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
-				style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
-				style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
-				style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
-				style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.00f, 1.00f, 1.00f, 0.22f);
-				/*style.Colors[ImGuiCol_TooltipBg] = ImVec4(0.00f, 0.13f, 0.13f, 0.90f);
-			style.Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.04f, 0.10f, 0.09f, 0.51f);*/
-
-				// 覆盖
-				style.Colors[ImGuiCol_Tab] = ImLerp(style.Colors[ImGuiCol_Header], style.Colors[ImGuiCol_TitleBgActive], 0.80f);
-				style.Colors[ImGuiCol_TabHovered] = style.Colors[ImGuiCol_HeaderHovered];
-				style.Colors[ImGuiCol_TabActive] = ImLerp(style.Colors[ImGuiCol_HeaderActive], style.Colors[ImGuiCol_TitleBgActive], 0.60f);
-				style.Colors[ImGuiCol_TabUnfocused] = ImLerp(style.Colors[ImGuiCol_Tab], style.Colors[ImGuiCol_TitleBg], 0.80f);
-				style.Colors[ImGuiCol_TabUnfocusedActive] = ImLerp(style.Colors[ImGuiCol_TabActive], style.Colors[ImGuiCol_TitleBg], 0.40f);
-				style.Colors[ImGuiCol_TableHeaderBg] = ImVec4(0.19f, 0.19f, 0.20f, 1.00f);
-				style.Colors[ImGuiCol_TableBorderStrong] = ImVec4(0.31f, 0.31f, 0.35f, 1.00f);  // Prefer using Alpha=1.0 here
-				style.Colors[ImGuiCol_TableBorderLight] = ImVec4(0.23f, 0.23f, 0.25f, 1.00f);   // Prefer using Alpha=1.0 here
-				style.Colors[ImGuiCol_TableRowBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-				style.Colors[ImGuiCol_TableRowBgAlt] = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
-				break;
-			}
-		case 5:
-			{
-				ImGuiStyle& mStyle = ImGui::GetStyle();
-				//mStyle.WindowMinSize = ImVec2(160, 20);
-				mStyle.FramePadding = ImVec2(4, 2);
-				mStyle.ItemSpacing = ImVec2(6, 2);
-				mStyle.ItemInnerSpacing = ImVec2(6, 4);
-				mStyle.Alpha = 0.95f;
-				mStyle.WindowRounding = 4.0f;
-				mStyle.FrameRounding = 2.0f;
-				mStyle.IndentSpacing = 6.0f;
-				mStyle.ItemInnerSpacing = ImVec2(2, 4);
-				mStyle.ColumnsMinSpacing = 50.0f;
-				mStyle.GrabMinSize = 14.0f;
-				mStyle.GrabRounding = 16.0f;
-				mStyle.ScrollbarSize = 12.0f;
-				mStyle.ScrollbarRounding = 16.0f;
-
-				ImGuiStyle& style = mStyle;
-				style.Colors[ImGuiCol_Text] = ImVec4(0.86f, 0.93f, 0.89f, 0.78f);
-				style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.86f, 0.93f, 0.89f, 0.28f);
-				style.Colors[ImGuiCol_WindowBg] = ImVec4(0.13f, 0.14f, 0.17f, 1.00f);
-				style.Colors[ImGuiCol_Border] = ImVec4(0.31f, 0.31f, 1.00f, 0.00f);
-				style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-				style.Colors[ImGuiCol_FrameBg] = ImVec4(0.20f, 0.22f, 0.27f, 1.00f);
-				style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.92f, 0.18f, 0.29f, 0.78f);
-				style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.92f, 0.18f, 0.29f, 1.00f);
-				style.Colors[ImGuiCol_TitleBg] = ImVec4(0.20f, 0.22f, 0.27f, 1.00f);
-				style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.20f, 0.22f, 0.27f, 0.75f);
-				style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.92f, 0.18f, 0.29f, 1.00f);
-				style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.20f, 0.22f, 0.27f, 0.47f);
-				style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.20f, 0.22f, 0.27f, 1.00f);
-				style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.09f, 0.15f, 0.16f, 1.00f);
-				style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.92f, 0.18f, 0.29f, 0.78f);
-				style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.92f, 0.18f, 0.29f, 1.00f);
-				style.Colors[ImGuiCol_CheckMark] = ImVec4(0.71f, 0.22f, 0.27f, 1.00f);
-				style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.47f, 0.77f, 0.83f, 0.14f);
-				style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.92f, 0.18f, 0.29f, 1.00f);
-				style.Colors[ImGuiCol_Button] = ImVec4(0.47f, 0.77f, 0.83f, 0.14f);
-				style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.92f, 0.18f, 0.29f, 0.86f);
-				style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.92f, 0.18f, 0.29f, 1.00f);
-				style.Colors[ImGuiCol_Header] = ImVec4(0.92f, 0.18f, 0.29f, 0.76f);
-				style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.92f, 0.18f, 0.29f, 0.86f);
-				style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.92f, 0.18f, 0.29f, 1.00f);
-				style.Colors[ImGuiCol_Separator] = ImVec4(0.14f, 0.16f, 0.19f, 1.00f);
-				style.Colors[ImGuiCol_SeparatorHovered] = ImVec4(0.92f, 0.18f, 0.29f, 0.78f);
-				style.Colors[ImGuiCol_SeparatorActive] = ImVec4(0.92f, 0.18f, 0.29f, 1.00f);
-				style.Colors[ImGuiCol_ResizeGrip] = ImVec4(0.47f, 0.77f, 0.83f, 0.04f);
-				style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.92f, 0.18f, 0.29f, 0.78f);
-				style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.92f, 0.18f, 0.29f, 1.00f);
-				style.Colors[ImGuiCol_PlotLines] = ImVec4(0.86f, 0.93f, 0.89f, 0.63f);
-				style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.92f, 0.18f, 0.29f, 1.00f);
-				style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.86f, 0.93f, 0.89f, 0.63f);
-				style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.92f, 0.18f, 0.29f, 1.00f);
-				style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.92f, 0.18f, 0.29f, 0.43f);
-				style.Colors[ImGuiCol_PopupBg] = ImVec4(0.20f, 0.22f, 0.27f, 0.9f);
-				//style.Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.20f, 0.22f, 0.27f, 0.73f);
-
-				// 覆盖
-				style.Colors[ImGuiCol_Tab] = ImLerp(style.Colors[ImGuiCol_Header], style.Colors[ImGuiCol_TitleBgActive], 0.80f);
-				style.Colors[ImGuiCol_TabHovered] = style.Colors[ImGuiCol_HeaderHovered];
-				style.Colors[ImGuiCol_TabActive] = ImLerp(style.Colors[ImGuiCol_HeaderActive], style.Colors[ImGuiCol_TitleBgActive], 0.60f);
-				style.Colors[ImGuiCol_TabUnfocused] = ImLerp(style.Colors[ImGuiCol_Tab], style.Colors[ImGuiCol_TitleBg], 0.80f);
-				style.Colors[ImGuiCol_TabUnfocusedActive] = ImLerp(style.Colors[ImGuiCol_TabActive], style.Colors[ImGuiCol_TitleBg], 0.40f);
-				style.Colors[ImGuiCol_TableHeaderBg] = ImVec4(0.19f, 0.19f, 0.20f, 1.00f);
-				style.Colors[ImGuiCol_TableBorderStrong] = ImVec4(0.31f, 0.31f, 0.35f, 1.00f);  // Prefer using Alpha=1.0 here
-				style.Colors[ImGuiCol_TableBorderLight] = ImVec4(0.23f, 0.23f, 0.25f, 1.00f);   // Prefer using Alpha=1.0 here
-				style.Colors[ImGuiCol_TableRowBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-				style.Colors[ImGuiCol_TableRowBgAlt] = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
-				break;
-			}
-		}
-	}
-
-	//ImFont* font2 = nullptr;
-	//static float health = 0.0f;
-	//static float kMagicka = 0.0f;
-	//static float kStamina = 0.0f;
-	//static float armor = 0.0f;
-	//static float lightArmor = 0.0f;
-	//static float heavyArmor = 0.0f;
-	//static float kMeleeDamage = 0.0f;
-	//static float kUnarmedDamage = 0.0f;
-	//static float kCriticalChance = 0.0f;
-	//static float kDamageResist = 0.0f;
-	//static float lightArmor2 = 0.0f;
-	//static float heavyArmor2 = 0.0f;
-	//std::string playerRaceName = "";
 	bool auto_remove_ammo = false;
 	bool remember_last_ammo = false;
 	int hotkey = 0;
@@ -226,8 +49,8 @@ namespace menu
 	bool no_resize = false;
 	bool no_collapse = false;
 	bool no_background = false;
+	bool no_background_items = false;
 	bool auto_resize = true;
-	int imgui_style_index = 4;
 
 	// 20220428 追加
 	bool window_border = true;
@@ -2245,14 +2068,27 @@ namespace menu
 		}
 
 		if (show_items_window) {
-			ImGui::Begin("物品信息", nullptr, window_flags);
+			/*ImGui::Begin("物品信息", nullptr, window_flags);
 
-			ImGui::End();
+			ImGui::End();*/
 		}
 
 		if (activeItems) {
-			//if (show_items_window && activeItems) {
-			ImGui::Begin("附近物品信息", nullptr, window_flags);
+			
+
+			ImGuiWindowFlags window_flags2 = 0;
+			if (no_titlebar)
+				window_flags2 |= ImGuiWindowFlags_NoTitleBar;
+			if (no_resize)
+				window_flags2 |= ImGuiWindowFlags_NoResize;
+			if (no_collapse)
+				window_flags2 |= ImGuiWindowFlags_NoCollapse;
+			if (no_background_items)
+				window_flags2 |= ImGuiWindowFlags_NoBackground;
+			if (auto_resize)
+				window_flags2 |= ImGuiWindowFlags_AlwaysAutoResize;
+
+			ImGui::Begin("附近物品信息", nullptr, window_flags2);
 			myText(ICON_MDI_MAP_MARKER_RADIUS " %s", playerInfo.location.c_str());
 			if (show_items_window_formid) {
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -3002,23 +2838,42 @@ namespace menu
 				ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 				if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
 					if (ImGui::BeginTabItem(ICON_MDI_TOOLS " MOD设置", 0, 0)) {
-
-
 						ImGui::PushItemWidth(ImGui::GetFontSize() * 8);
 
 						static int style_idx = imgui_style_index;
-						if (ImGui::Combo("主题", &style_idx, "Dark\0Light\0Classic\0Dark修改\0Theme4\0Theme5\0", -1)) {
+						if (ImGui::Combo("UI主题", &style_idx, theme_items, -1)) {
 							imgui_style_index = style_idx;
-							initStyle();
+							buildStyle();
 						}
 
-						ImGui::DragFloat("窗体缩放", &ImGui::GetIO().FontGlobalScale, 0.005f, 0.5f, 1.8f, "%.2f", 1);
+						if (ImGui::Combo("UI字体", &imgui_font_index, font_items, -1)) {
+							ImGuiIO& io = ImGui::GetIO();
+							io.FontDefault = fonts[imgui_font_index];
+						}
+
+						ImGui::DragFloat("UI缩放", &ImGui::GetIO().FontGlobalScale, 0.005f, 0.5f, 1.8f, "%.2f", 1);
 						ImGui::Combo("窗口热键", &hotkey, "Insert\0F11\0F12\0Shift+Q\0Alt+Q\0", -1);
-						ImGui::Combo("物品菜单热键", &hotkey2, "Insert\0F11\0F12\0Shift+Q\0Alt+Q\0", -1);
 						//ImGui::DragInt("数据刷新(ms)", &refresh_time_data, 1, 100, 500, "%d ms");
 						ImGui::PopItemWidth();
 
+						if (ImGui::TreeNodeEx(ICON_MDI_TABLE_OF_CONTENTS " HUD", ImGuiTreeNodeFlags_DefaultOpen)) {
+							ImGui::Checkbox("背景透明", &no_background);
+							ImGui::TreePop();
+						}
+
+						if (ImGui::TreeNodeEx(ICON_MDI_TABLE_SEARCH " 物品菜单", ImGuiTreeNodeFlags_DefaultOpen)) {
+							ImGui::PushItemWidth(ImGui::GetFontSize() * 8);
+							ImGui::Combo("窗口热键", &hotkey2, "Insert\0F11\0F12\0Shift+Q\0Alt+Q\0", -1);
+							ImGui::Checkbox("背景透明", &no_background_items);
+							ImGui::PopItemWidth();
+							ImGui::TreePop();
+						}
+
 						ImGui::Separator();
+
+#ifndef NDEBUG
+						ImGui::Checkbox("demo", &show_demo_window);
+#endif
 
 						if (ImGui::Button(ICON_MDI_CONTENT_SAVE " 保存配置", ImVec2(0, 0))) {
 							auto colorPlotHistogram = style.Colors[ImGuiCol_PlotHistogram];
@@ -3030,30 +2885,8 @@ namespace menu
 							setting::save_settings();
 						}
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGui::CalcTextSize("v0.5.2-beta").x - 3);
-						myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "v0.5.2-beta");
-						ImGui::EndTabItem();
-					}
-
-					if (ImGui::BeginTabItem(ICON_MDI_DOCK_WINDOW " 窗口设置", 0, 0)) {
-						if (ImGui::BeginTable("split", 3)) {
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("不显示标题", &no_titlebar);
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("不允许缩放", &no_resize);
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("不允许折叠", &no_collapse);
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("不显示背景", &no_background);
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("窗体边框", &window_border);
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("控件边框", &frame_border);
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("是否窗口自适应", &auto_resize);
-							ImGui::EndTable();
-						}
-
+						ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGui::CalcTextSize("v0.5.3-beta").x - 3);
+						myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "v0.5.3-beta");
 						ImGui::EndTabItem();
 					}
 
@@ -3088,7 +2921,7 @@ namespace menu
 							ImGui::TableNextColumn();
 							ImGui::Checkbox("其他信息", &show_player_debug_window);
 							ImGui::TableNextColumn();
-							ImGui::Checkbox("物品信息(预留)", &show_items_window);
+							/*ImGui::Checkbox("物品信息(预留)", &show_items_window);*/
 							ImGui::TableNextColumn();
 							//ImGui::Checkbox("敌人信息", &show_enemy_window);
 							ImGui::Checkbox("NPC信息", &show_npc_window);
@@ -3120,6 +2953,25 @@ namespace menu
 									}
 								}*/
 
+							ImGui::EndTable();
+						}
+
+						ImGui::Separator();
+						if (ImGui::BeginTable("split3", 3)) {
+							ImGui::TableNextColumn();
+							ImGui::Checkbox("不显示标题", &no_titlebar);
+							ImGui::TableNextColumn();
+							ImGui::Checkbox("不允许缩放", &no_resize);
+							ImGui::TableNextColumn();
+							ImGui::Checkbox("不允许折叠", &no_collapse);
+							ImGui::TableNextColumn();
+							ImGui::Checkbox("不显示背景", &no_background);
+							ImGui::TableNextColumn();
+							ImGui::Checkbox("窗体边框", &window_border);
+							ImGui::TableNextColumn();
+							ImGui::Checkbox("控件边框", &frame_border);
+							ImGui::TableNextColumn();
+							ImGui::Checkbox("是否窗口自适应", &auto_resize);
 							ImGui::EndTable();
 						}
 
@@ -3249,7 +3101,7 @@ namespace menu
 						ImGui::Separator();
 
 						if (ImGui::TreeNodeEx("常用素材获取", ImGuiTreeNodeFlags_DefaultOpen)) {
-							if (ImGui::BeginTable("split", 2,0 )) {
+							if (ImGui::BeginTable("split", 2, 0)) {
 								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80);
 								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch, 0.0f);
 
@@ -3312,7 +3164,6 @@ namespace menu
 									ImGui::Text("天气:%s", weather->GetFormEditorID());
 								}
 							}
-
 
 							static ImGuiTableFlags flagsItem =
 								ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
