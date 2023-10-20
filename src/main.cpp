@@ -6,18 +6,13 @@
 #include <menu/menu.h>
 #include <event/BSTEquipEvent.h>
 #include <setting/setting.h>
+#include <memory/lotd.h>
 
 
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
 {
-	setting::settings_path = "data\\skse\\plugins\\sse-hud.json";
-	setting::settings_path_gallery = "data\\skse\\plugins\\ItemFinderPlus-GalleryList.json";
-	fontFilePath = "data\\skse\\plugins\\xyght3.0-62354202.ttf";
-	//fontFilePath2 = "data\\skse\\plugins\\xyght3.0-62354202.ttf";
-
 	//MessageBox(nullptr, TEXT("测试中文."), nullptr, MB_OK);
 	setting::load_settings();
-	setting::load_settings_gallery();
 	try {
 #ifndef NDEBUG
 		auto sink = std::make_shared<spdlog::sinks::msvc_sink_mt>();
@@ -151,7 +146,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 	case SKSE::MessagingInterface::kDataLoaded:
 		{
 			logger::info("kDataLoaded"sv);
-
+			lotd::init();
 			break;
 		}
 	default:

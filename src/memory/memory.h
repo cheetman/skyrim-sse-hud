@@ -5,59 +5,8 @@
 #include <string>
 #include <unordered_set>
 
-[[nodiscard]] static inline bool CanDisplay(const RE::TESBoundObject& a_object)
-{
-	switch (a_object.GetFormType()) {
-	case RE::FormType::Scroll:
-	case RE::FormType::Armor:
-	case RE::FormType::Book:
-	case RE::FormType::Ingredient:
-	case RE::FormType::Misc:
-	case RE::FormType::Weapon:
-	case RE::FormType::Ammo:
-	case RE::FormType::KeyMaster:
-	case RE::FormType::AlchemyItem:
-	case RE::FormType::Note:
-	case RE::FormType::SoulGem:
-		break;
-	case RE::FormType::Light:
-		{
-			auto& light = static_cast<const RE::TESObjectLIGH&>(a_object);
-			if (!light.CanBeCarried()) {
-				return false;
-			}
-		}
-		break;
-	default:
-		return false;
-	}
 
-	if (!a_object.GetPlayable()) {
-		return false;
-	}
 
-	auto name = a_object.GetName();
-	if (!name || name[0] == '\0') {
-		return false;
-	}
-
-	return true;
-}
-
-bool static inline HasKeyword(RE::BGSKeywordForm* o, RE::FormID formID)
-{
-	bool result = false;
-
-	if (o->keywords) {
-		for (std::uint32_t idx = 0; idx < o->numKeywords; ++idx) {
-			if (o->keywords[idx] && o->keywords[idx]->formID == formID) {
-				result = true;
-				break;
-			}
-		}
-	}
-	return result;
-}
 
 // 人物属性
 struct PlayerInfo
@@ -107,7 +56,8 @@ struct PlayerInfo
 	RE::FormID locationId = 0;
 	std::string parentLocation = "";
 	RE::FormID parentLocationId = 0;
-	
+
+	//RE::FormID weather = 0;
 };
 
 // 装备防具信息
@@ -250,10 +200,8 @@ extern WeaponInfo rightWeaponInfo;
 extern WeaponInfo ammoInfo;
 
 extern int refresh_time_data;
-extern int refresh_time_auto;
 extern bool startflag;
 
-//extern bool isRefreshActorInfo;
 void __cdecl RefreshGameInfo(void*);
 void __cdecl RefreshActorInfo(void*);
 void __cdecl RefreshItemInfo(void*);
@@ -399,6 +347,7 @@ struct WeatherForm
 {
 	RE::FormID formId = 0;
 	std::string editorId = "";
+	RE::TESWeather::WeatherDataFlag flag = RE::TESWeather::WeatherDataFlag::kNone;
 
 	bool operator<(const WeatherForm& other) const
 	{
@@ -470,6 +419,9 @@ struct Item2Info
 	int itemCountACHR = 0;
 	int itemCountSTON = 0;
 	int itemCountANVI = 0;
+	int itemCountANHD = 0;
+	int itemCountANPA = 0;
+	int itemCountTOOL = 0;
 
 	ItemInfo itemInfo[3000];
 	ItemInfo itemInfoWEAP[3000];
@@ -488,6 +440,9 @@ struct Item2Info
 	ItemInfo itemInfoACTI[3000];
 	ItemInfo itemInfoSTON[3000];
 	ItemInfo itemInfoANVI[3000];
+	ItemInfo itemInfoANHD[3000]; // 皮毛
+	ItemInfo itemInfoANPA[3000]; // 组织
+	ItemInfo itemInfoTOOL[3000]; // 工具
 
 	ItemInfoCONT itemInfoACHR[3000];
 };
@@ -510,6 +465,9 @@ int getItemCountACTI();
 int getItemCountACHR();
 int getItemCountSTON();
 int getItemCountANVI();
+int getItemCountANHD();
+int getItemCountANPA();
+int getItemCountTOOL();
 
 ItemInfo* getItems();
 ItemInfo* getItemsWEAP();
@@ -528,8 +486,10 @@ ItemInfo* getItemsSGEM();
 ItemInfo* getItemsACTI();
 ItemInfo* getItemsSTON();
 ItemInfo* getItemsANVI();
-
 ItemInfoCONT* getItemsACHR();
+ItemInfo* getItemsANHD();
+ItemInfo* getItemsANPA();
+ItemInfo* getItemsTOOL();
 
 extern std::unordered_set<int> excludeFormIds;
 extern std::vector<ExcludeForm> excludeForms;
@@ -537,13 +497,13 @@ extern std::vector<ExcludeForm> excludeForms;
 extern std::unordered_set<RE::TESObjectREFR*> trackPtrs;
 extern std::unordered_set<RE::Actor*> trackActorPtrs;
 
-extern std::unordered_set<int> galleryFormIds;
-extern std::vector<GalleryForm> galleryFormData;
-extern std::vector<GalleryModForm> galleryFormModData;
-extern int galleryModTotalCount;
-extern int galleryModCount;
-extern int galleryItemTotalCount;
-extern int galleryItemCount;
+//extern std::unordered_set<int> galleryFormIds;
+//extern std::vector<GalleryForm> galleryFormData;
+//extern std::vector<GalleryModForm> galleryFormModData;
+//extern int galleryModTotalCount;
+//extern int galleryModCount;
+//extern int galleryItemTotalCount;
+//extern int galleryItemCount;
 
 extern std::vector<WeatherForm> weatherForms;
 extern RE::FormID currentWeather;
@@ -551,10 +511,12 @@ extern RE::FormID currentWeather;
 extern int screenWidth;
 extern int screenHeight;
 
-float calculateDistance(const RE::NiPoint3& p1, const RE::NiPoint3& p2);
 
 static const RE::FormID VendorItemOreIngot = 0x000914EC;
 static const RE::FormID VendorItemGem = 0x000914ED;
+static const RE::FormID VendorItemAnimalHide = 0x000914EA;
+static const RE::FormID VendorItemAnimalPart = 0x000914EB;
+static const RE::FormID VendorItemTool = 0x000914EE;
 
 extern bool show_player_base_info_window;
 extern bool show_player_armor_window;

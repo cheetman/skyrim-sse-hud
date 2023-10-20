@@ -19,8 +19,12 @@ bool show_items_window_auto_misc = false;
 bool show_items_window_auto_sgem = false;
 bool show_items_window_auto_achr = false;
 bool show_items_window_auto_cont = false;
+bool show_items_window_auto_conttype = true;
 bool show_items_window_auto_ston = false;
 bool show_items_window_auto_anvi = false;
+bool show_items_window_auto_anhd = false;
+bool show_items_window_auto_anpa = false;
+bool show_items_window_auto_tool = false;
 bool show_items_window_auto_achr_ingr = false;
 bool show_items_window_auto_achr_food = false;
 bool show_items_window_auto_achr_alch = false;
@@ -35,6 +39,9 @@ bool show_items_window_auto_achr_armo = false;
 bool show_items_window_auto_achr_ston = false;
 bool show_items_window_auto_achr_anvi = false;
 bool show_items_window_auto_achr_lock = false;
+bool show_items_window_auto_achr_anhd = false;
+bool show_items_window_auto_achr_anpa = false;
+bool show_items_window_auto_achr_tool = false;
 bool show_items_window_auto_cont_ingr = false;
 bool show_items_window_auto_cont_food = false;
 bool show_items_window_auto_cont_alch = false;
@@ -49,6 +56,9 @@ bool show_items_window_auto_cont_armo = false;
 bool show_items_window_auto_cont_ston = false;
 bool show_items_window_auto_cont_anvi = false;
 bool show_items_window_auto_cont_lock = false;
+bool show_items_window_auto_cont_anhd = false;
+bool show_items_window_auto_cont_anpa = false;
+bool show_items_window_auto_cont_tool = false;
 
 bool show_items_window_auto_weap_enchant = false;
 bool show_items_window_auto_weap_price = false;
@@ -61,13 +71,29 @@ int show_items_window_auto_dis = 2;
 int show_items_window_auto_dis_skyrim = 100;
 int show_items_window_auto_dis_local = 160;
 
+
+int refresh_time_auto = 1;
+int show_items_window_auto_every_max = 10;
+int show_items_window_auto_every = 0;
+
 // 地点排除
 std::unordered_set<int> excludeLocationFormIds;
 std::vector<ExcludeForm> excludeLocationForms;
 // 容器类型
 std::unordered_set<int> autoContFormIds;
 std::vector<IncludeForm> autoContForms;
-std::unordered_set<RE::TESObjectREFR*> deleteREFRs;
+//std::unordered_set<RE::TESObjectREFR*> deleteREFRs;
+
+bool checkTakeCount() {
+	// 限制一下每次拾取
+	if (show_items_window_auto_every > show_items_window_auto_every_max) {
+		return true;
+	}
+	show_items_window_auto_every++;
+	return false;
+}
+
+
 
 bool __fastcall autoTakeArmo(RE::TESObjectREFR* reff, RE::PlayerCharacter* player, bool autoFlag, int distance, bool isDeleteExist)
 {
@@ -97,13 +123,22 @@ bool __fastcall autoTakeArmo(RE::TESObjectREFR* reff, RE::PlayerCharacter* playe
 						}
 						if (excludeLocationFormIds.find(formID) == excludeLocationFormIds.end()) {
 							if (!isDeleteExist) {
-								deleteREFRs.insert(reff);
+								// 限制数量
+								if (checkTakeCount()) {
+									return true;
+								}
+								addItemAuto(nullptr, reff, 1);
+								//deleteREFRs.insert(reff);
 							}
 							return true;
 						}
 					} else {
 						if (!isDeleteExist) {
-							deleteREFRs.insert(reff);
+							// 限制数量
+							if (checkTakeCount()) {
+								return true;
+							}
+							addItemAuto(nullptr, reff, 1);
 						}
 						return true;
 					}
@@ -143,13 +178,23 @@ bool __fastcall autoTakeWeap(RE::TESObjectREFR* reff, RE::PlayerCharacter* playe
 						}
 						if (excludeLocationFormIds.find(formID) == excludeLocationFormIds.end()) {
 							if (!isDeleteExist) {
-								deleteREFRs.insert(reff);
+								// 限制数量
+								if (checkTakeCount()) {
+									return true;
+								}
+								//deleteREFRs.insert(reff);
+								addItemAuto(nullptr, reff, 1);
 							}
 							return true;
 						}
 					} else {
 						if (!isDeleteExist) {
-							deleteREFRs.insert(reff);
+							// 限制数量
+							if (checkTakeCount()) {
+								return true;
+							}
+							//deleteREFRs.insert(reff);
+							addItemAuto(nullptr, reff, 1);
 						}
 						return true;
 					}
@@ -176,13 +221,23 @@ bool __fastcall autoTake(RE::TESObjectREFR* reff, RE::PlayerCharacter* player, b
 						}
 						if (excludeLocationFormIds.find(formID) == excludeLocationFormIds.end()) {
 							if (!isDeleteExist) {
-								deleteREFRs.insert(reff);
+								// 限制数量
+								if (checkTakeCount()) {
+									return true;
+								}
+								//deleteREFRs.insert(reff);
+								addItemAuto(nullptr, reff, 1);
 							}
 							return true;
 						}
 					} else {
 						if (!isDeleteExist) {
-							deleteREFRs.insert(reff);
+							// 限制数量
+							if (checkTakeCount()) {
+								return true;
+							}
+							//deleteREFRs.insert(reff);
+							addItemAuto(nullptr, reff, 1);
 						}
 						return true;
 					}
@@ -209,6 +264,10 @@ bool __fastcall autoHarvest(RE::TESObjectREFR* reff, RE::PlayerCharacter* player
 						}
 						if (excludeLocationFormIds.find(formID) == excludeLocationFormIds.end()) {
 							if (flora) {
+								// 限制数量
+								if (checkTakeCount()) {
+									return true;
+								}
 								flora->Activate(reff, player, 0, flora->produceItem, 1);
 								if (show_items_window_auto_notification) {
 									char buf[40];
@@ -219,6 +278,10 @@ bool __fastcall autoHarvest(RE::TESObjectREFR* reff, RE::PlayerCharacter* player
 						}
 					} else {
 						if (flora) {
+							// 限制数量
+							if (checkTakeCount()) {
+								return true;
+							}
 							flora->Activate(reff, player, 0, flora->produceItem, 1);
 
 							if (show_items_window_auto_notification) {
@@ -251,6 +314,10 @@ bool __fastcall autoHarvest(RE::TESObjectREFR* reff, RE::PlayerCharacter* player
 						}
 						if (excludeLocationFormIds.find(formID) == excludeLocationFormIds.end()) {
 							if (tree) {
+								// 限制数量
+								if (checkTakeCount()) {
+									return true;
+								}
 								tree->Activate(reff, player, 0, tree->produceItem, 1);
 
 								if (show_items_window_auto_notification) {
@@ -286,19 +353,11 @@ bool __fastcall autoTakeForACHR(RE::Actor* actor, RE::TESBoundObject* obj, int c
 			return false;
 		}
 	}
-
-	actor->RemoveItem(obj, count, RE::ITEM_REMOVE_REASON::kRemove, 0, player);
-
-	if (show_items_window_auto_notification) {
-		char buf[90];
-		if (count > 1) {
-			snprintf(buf, 80, "%s(%d) 从%s尸体自动拾取", obj->GetName(), count, actor->GetDisplayFullName());
-		} else {
-			snprintf(buf, 80, "%s 从%s尸体自动拾取", obj->GetName(), actor->GetDisplayFullName());
-		}
-		RE::DebugNotification(buf, NULL, false);
+	// 限制数量
+	if (checkTakeCount()) {
+		return true;
 	}
-	player->PlayPickUpSound(obj, true, false);
+	RemoveItemACHR(nullptr, actor, obj, count,true);
 	return true;
 }
 
@@ -309,20 +368,107 @@ bool __fastcall autoTakeForCONT(RE::TESObjectREFR* reff, RE::TESBoundObject* obj
 			return false;
 		}
 	}
+	
+	// 限制数量
+	if (checkTakeCount()) {
+		return true;
+	}
 
-	reff->RemoveItem(obj, count, RE::ITEM_REMOVE_REASON::kRemove, 0, player);
+	RemoveItemCONT(nullptr, reff, obj, count, true);
+	return true;
+}
 
-	if (show_items_window_auto_notification) {
-		char buf[90];
-		if (count > 1) {
-			snprintf(buf, 80, "%s(%d) 从%s自动拾取", obj->GetName(), count, reff->GetDisplayFullName());
-		} else {
-			snprintf(buf, 80, "%s 从%s自动拾取", obj->GetName(), reff->GetDisplayFullName());
+
+void RemoveItemACHR(RE::PlayerCharacter* contReff, RE::TESObjectREFR* actor, RE::TESBoundObject* obj, int count, bool autoTake)
+{
+	if (!contReff) {
+		contReff = RE::PlayerCharacter::GetSingleton();
+		if (!contReff) {
+			return;
 		}
+	}
+
+	contReff->PlayPickUpSound(obj, true, false);
+	char buf[100];
+	if (autoTake) {
+		if (count > 1) {
+			snprintf(buf, 100, "%s(%d) 从%s尸体中自动拾取", obj->GetName(), count, actor->GetDisplayFullName());
+		} else {
+			snprintf(buf, 100, "%s 从%s尸体中自动拾取", obj->GetName(), actor->GetDisplayFullName());
+		}
+	} else {
+		if (count > 1) {
+			snprintf(buf, 100, "%s(%d) 从%s尸体中拾取", obj->GetName(), count, actor->GetDisplayFullName());
+		} else {
+			snprintf(buf, 100, "%s 从%s尸体中拾取", obj->GetName(), actor->GetDisplayFullName());
+		}
+	}
+	RE::DebugNotification(buf, NULL, false);
+	ScriptUtil::RemoveItem(nullptr, 0, actor, obj, count, true, contReff);
+}
+
+void RemoveItemCONT(RE::PlayerCharacter* contReff, RE::TESObjectREFR* actor, RE::TESBoundObject* obj, int count, bool autoTake)
+{
+	if (!contReff) {
+		contReff = RE::PlayerCharacter::GetSingleton();
+		if (!contReff) {
+			return;
+		}
+	}
+
+	contReff->PlayPickUpSound(obj, true, false);
+	char buf[100];
+	if (autoTake) {
+		if (count > 1) {
+			snprintf(buf, 100, "%s(%d) 从%s中自动拾取", obj->GetName(), count, actor->GetDisplayFullName());
+		} else {
+			snprintf(buf, 100, "%s 从%s中自动拾取", obj->GetName(), actor->GetDisplayFullName());
+		}
+	} else {
+		if (count > 1) {
+			snprintf(buf, 100, "%s(%d) 从%s中拾取", obj->GetName(), count, actor->GetDisplayFullName());
+		} else {
+			snprintf(buf, 100, "%s 从%s中拾取", obj->GetName(), actor->GetDisplayFullName());
+		}
+	}
+	RE::DebugNotification(buf, NULL, false);
+	ScriptUtil::RemoveItem(nullptr, 0, actor, obj, count, true, contReff);
+}
+
+void addItem(RE::PlayerCharacter* contReff, RE::TESObjectREFR* reff, int count)
+{
+	//player->PickUpObject(reff, 1);
+	if (!contReff) {
+		contReff = RE::PlayerCharacter::GetSingleton();
+		if (!contReff) {
+			return;
+		}
+	}
+	contReff->PlayPickUpSound(reff->GetBaseObject(), true, false);
+	char buf[80];
+	snprintf(buf, 80, "%s 已拾取", reff->GetDisplayFullName());
+	RE::DebugNotification(buf, NULL, false);
+	ScriptUtil::AddItem(nullptr, 0, contReff, reff, count, true);
+
+}
+
+
+void addItemAuto(RE::PlayerCharacter* contReff, RE::TESObjectREFR* reff, int count)
+{
+	//player->PickUpObject(reff, 1);
+	if (!contReff) {
+		contReff = RE::PlayerCharacter::GetSingleton();
+		if (!contReff) {
+			return;
+		}
+	}
+	contReff->PlayPickUpSound(reff->GetBaseObject(), true, false);
+	if (show_items_window_auto_notification) {
+		char buf[80];
+		snprintf(buf, 80, "%s 已自动拾取", reff->GetDisplayFullName());
 		RE::DebugNotification(buf, NULL, false);
 	}
-	player->PlayPickUpSound(obj, true, false);
-	return true;
+	ScriptUtil::AddItem(nullptr, 0, contReff, reff, count, true);
 }
 
 void refreshItemAuto()
@@ -333,7 +479,11 @@ void refreshItemAuto()
 		return;
 	}
 
-	bool isDeleteExist = deleteREFRs.size() > 0;
+	// 限制拾取数量
+	show_items_window_auto_every = 1;
+
+	bool isDeleteExist = false;
+	//bool isDeleteExist = deleteREFRs.size() > 0;
 
 	Sleep(100);
 
@@ -405,7 +555,7 @@ void refreshItemAuto()
 						if (strlen(name) == 0) {
 							continue;
 						}
-						float distance = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
+						float distance = ValueUtil::calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
 
 						if (!currentLocation) {
 							if (distance > show_items_window_auto_dis_skyrim) {
@@ -418,7 +568,7 @@ void refreshItemAuto()
 						}
 
 						int tmpInvCount = 0;
-						auto inv = actor->GetInventory(CanDisplay);
+						auto inv = actor->GetInventory(FormUtil::CanDisplay);
 						for (auto& [obj, data] : inv) {
 							auto& [count, entry] = data;
 							if (count > 0 && entry) {
@@ -495,15 +645,33 @@ void refreshItemAuto()
 											} else {
 												auto misc = obj->As<RE::TESObjectMISC>();
 												if (misc) {
-													if (HasKeyword(misc, VendorItemGem)) {
+													if (FormUtil::HasKeyword(misc, VendorItemGem)) {
 														if (show_items_window_auto_achr_ston) {
 															if (autoTakeForACHR(actor, obj, count, player)) {
 																continue;
 															}
 														}
 
-													} else if (HasKeyword(misc, VendorItemOreIngot)) {
+													} else if (FormUtil::HasKeyword(misc, VendorItemOreIngot)) {
 														if (show_items_window_auto_achr_anvi) {
+															if (autoTakeForACHR(actor, obj, count, player)) {
+																continue;
+															}
+														}
+													} else if (FormUtil::HasKeyword(misc, VendorItemAnimalHide)) {
+														if (show_items_window_auto_achr_anhd) {
+															if (autoTakeForACHR(actor, obj, count, player)) {
+																continue;
+															}
+														}
+													} else if (FormUtil::HasKeyword(misc, VendorItemAnimalPart)) {
+														if (show_items_window_auto_achr_anpa) {
+															if (autoTakeForACHR(actor, obj, count, player)) {
+																continue;
+															}
+														}
+													} else if (FormUtil::HasKeyword(misc, VendorItemTool)) {
+														if (show_items_window_auto_achr_tool) {
 															if (autoTakeForACHR(actor, obj, count, player)) {
 																continue;
 															}
@@ -613,7 +781,7 @@ void refreshItemAuto()
 										continue;
 									}
 
-									float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+									float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 									if (!currentLocation) {
 										if (distance > show_items_window_auto_dis_skyrim) {
@@ -654,7 +822,7 @@ void refreshItemAuto()
 										continue;
 									}
 
-									float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+									float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 									if (!currentLocation) {
 										if (distance > show_items_window_auto_dis_skyrim) {
@@ -694,7 +862,7 @@ void refreshItemAuto()
 										continue;
 									}
 
-									float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+									float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 									if (!currentLocation) {
 										if (distance > show_items_window_auto_dis_skyrim) {
@@ -740,7 +908,7 @@ void refreshItemAuto()
 											continue;
 										}
 
-										float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+										float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 										if (!currentLocation) {
 											if (distance > show_items_window_auto_dis_skyrim) {
@@ -763,7 +931,7 @@ void refreshItemAuto()
 											continue;
 										}
 
-										float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+										float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 										if (!currentLocation) {
 											if (distance > show_items_window_auto_dis_skyrim) {
@@ -800,7 +968,7 @@ void refreshItemAuto()
 										}
 									}
 
-									float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+									float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 									if (!currentLocation) {
 										if (distance > show_items_window_auto_dis_skyrim) {
@@ -838,7 +1006,7 @@ void refreshItemAuto()
 										continue;
 									}
 
-									float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+									float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 									if (!currentLocation) {
 										if (distance > show_items_window_auto_dis_skyrim) {
@@ -852,7 +1020,7 @@ void refreshItemAuto()
 
 									auto misc = baseObj->As<RE::TESObjectMISC>();
 									if (misc) {
-										if (HasKeyword(misc, VendorItemGem)) {
+										if (FormUtil::HasKeyword(misc, VendorItemGem)) {
 											if (show_items_window_auto_ston) {
 												// 自动拾取判断
 												if (autoTake(reff, player, show_items_window_auto_ston, distance, isDeleteExist)) {
@@ -860,15 +1028,36 @@ void refreshItemAuto()
 												}
 											}
 
-										} else if (HasKeyword(misc, VendorItemOreIngot)) {
+										} else if (FormUtil::HasKeyword(misc, VendorItemOreIngot)) {
 											if (show_items_window_auto_anvi) {
 												// 自动拾取判断
 												if (autoTake(reff, player, show_items_window_auto_anvi, distance, isDeleteExist)) {
 													continue;
 												}
 											}
+										} else if (FormUtil::HasKeyword(misc, VendorItemAnimalHide)) {
+											if (show_items_window_auto_anhd) {
+												// 自动拾取判断
+												if (autoTake(reff, player, show_items_window_auto_anhd, distance, isDeleteExist)) {
+													continue;
+												}
+											}
+										} else if (FormUtil::HasKeyword(misc, VendorItemAnimalPart)) {
+											if (show_items_window_auto_anpa) {
+												// 自动拾取判断
+												if (autoTake(reff, player, show_items_window_auto_anpa, distance, isDeleteExist)) {
+													continue;
+												}
+											}
+										} else if (FormUtil::HasKeyword(misc, VendorItemTool)) {
+											if (show_items_window_auto_tool) {
+												// 自动拾取判断
+												if (autoTake(reff, player, show_items_window_auto_tool, distance, isDeleteExist)) {
+													continue;
+												}
+											}
 										} else {
-											if (show_items_window_auto_cont_misc) {
+											if (show_items_window_auto_misc) {
 												// 自动拾取判断
 												if (autoTake(reff, player, show_items_window_auto_misc, distance, isDeleteExist)) {
 													continue;
@@ -883,6 +1072,10 @@ void refreshItemAuto()
 								}
 							case RE::FormType::Container:
 								{
+									if (!show_items_window_auto_cont) {
+										continue;
+									}
+
 									if (tmpCountCONT > show_items_window_array_max_length) {
 										continue;
 									}
@@ -896,7 +1089,7 @@ void refreshItemAuto()
 										}
 									}
 
-									float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+									float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 									if (!currentLocation) {
 										if (distance > show_items_window_auto_dis_skyrim) {
@@ -910,14 +1103,16 @@ void refreshItemAuto()
 
 									bool isCrime = reff->IsCrimeToActivate();
 									int tmpInvCount = 0;
-									auto inv = reff->GetInventory(CanDisplay);
+									auto inv = reff->GetInventory(FormUtil::CanDisplay);
 
 									// 自动拾取条件1
 									bool auto1 = false;
-									if (show_items_window_auto_cont) {
+									if (show_items_window_auto_conttype) {
 										if (autoContFormIds.find(baseObj->GetFormID()) != autoContFormIds.end()) {
 											auto1 = true;
 										}
+									} else {
+										auto1 = true;
 									}
 
 									// 满足自动拾取(加上距离条件和地点条件)
@@ -999,15 +1194,33 @@ void refreshItemAuto()
 															} else {
 																auto misc = obj->As<RE::TESObjectMISC>();
 																if (misc) {
-																	if (HasKeyword(misc, VendorItemGem)) {
+																	if (FormUtil::HasKeyword(misc, VendorItemGem)) {
 																		if (show_items_window_auto_cont_ston) {
 																			if (autoTakeForCONT(reff, obj, count, player)) {
 																				continue;
 																			}
 																		}
 
-																	} else if (HasKeyword(misc, VendorItemOreIngot)) {
+																	} else if (FormUtil::HasKeyword(misc, VendorItemOreIngot)) {
 																		if (show_items_window_auto_cont_anvi) {
+																			if (autoTakeForCONT(reff, obj, count, player)) {
+																				continue;
+																			}
+																		}
+																	} else if (FormUtil::HasKeyword(misc, VendorItemAnimalHide)) {
+																		if (show_items_window_auto_cont_anhd) {
+																			if (autoTakeForCONT(reff, obj, count, player)) {
+																				continue;
+																			}
+																		}
+																	} else if (FormUtil::HasKeyword(misc, VendorItemAnimalPart)) {
+																		if (show_items_window_auto_cont_anpa) {
+																			if (autoTakeForCONT(reff, obj, count, player)) {
+																				continue;
+																			}
+																		}
+																	} else if (FormUtil::HasKeyword(misc, VendorItemTool)) {
+																		if (show_items_window_auto_cont_tool) {
 																			if (autoTakeForCONT(reff, obj, count, player)) {
 																				continue;
 																			}
@@ -1102,7 +1315,7 @@ void refreshItemAuto()
 										}
 									}
 
-									float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+									float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 									if (!currentLocation) {
 										if (distance > show_items_window_auto_dis_skyrim) {
@@ -1151,7 +1364,7 @@ void refreshItemAuto()
 										}
 									}
 
-									float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+									float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 									if (!currentLocation) {
 										if (distance > show_items_window_auto_dis_skyrim) {
@@ -1201,7 +1414,7 @@ void refreshItemAuto()
 										continue;
 									}
 
-									float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+									float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 									if (!currentLocation) {
 										if (distance > show_items_window_auto_dis_skyrim) {

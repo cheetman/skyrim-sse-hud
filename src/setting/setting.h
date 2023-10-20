@@ -3,12 +3,12 @@
 
 namespace setting
 {
-	extern std::filesystem::path settings_path;
-	extern std::filesystem::path settings_path_gallery;
-	bool save_settings();
-	bool load_settings();
-	bool load_settings_gallery();
-
+	struct LotdItemList
+	{
+		std::string listEditorId;
+		std::string roomName;
+		std::string listFormId;
+	};
 	struct GalleryData
 	{
 		std::string filename;
@@ -22,5 +22,18 @@ namespace setting
 		std::string name;
 		std::vector<std::string> formids;
 	};
-	extern std::vector<GalleryData> galleryList;
+
+	extern std::filesystem::path settings_path;
+	extern std::filesystem::path settings_path_gallery;
+	extern std::filesystem::path settings_path_lotd_item_list;
+	extern std::vector<LotdItemList> lotdItemLists;
+	//extern std::vector<GalleryData> galleryList;
+	bool save_settings();
+	bool load_settings();
+	bool load_settings_lotd();
+	 
+
+	
+
+
 }

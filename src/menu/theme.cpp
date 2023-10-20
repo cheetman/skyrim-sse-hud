@@ -5,7 +5,8 @@
 
 namespace menu
 {
-	int imgui_style_index = 5;
+	std::string fontFilePath = "data\\skse\\plugins\\xyght3.0-62354202.ttf";
+	int imgui_style_index = 6;
 	int imgui_font_index = 3;
 	std::vector<ImFont*> fonts;
 
@@ -54,7 +55,9 @@ namespace menu
 			io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\materialdesignicons-webfont.ttf", iconFontSize, &config2, icon_ranges2);
 			menu::fonts.push_back(font);*/
 
-			io.FontDefault = menu::fonts[imgui_font_index];
+			if (menu::fonts.size() > imgui_font_index) {
+				io.FontDefault = menu::fonts[imgui_font_index];
+			}
 		}
 	}
 
@@ -226,8 +229,9 @@ namespace menu
 
 				ImGui::StyleColorsClassic(style);
 
-				style->WindowTitleAlign = ImVec2(0.5, 0.5);
-				style->FramePadding = ImVec2(4, 4);
+				// 影响大小
+				/*style->WindowTitleAlign = ImVec2(0.5, 0.5);
+				style->FramePadding = ImVec2(4, 4);*/
 
 				// Rounded slider grabber
 				style->GrabRounding = 12.0f;

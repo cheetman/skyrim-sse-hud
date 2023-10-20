@@ -7,10 +7,10 @@
 #include <utils/NameUtil.h>
 #include <utils/PlayerDataProvider.h>
 
+
 bool active = false;
 bool activeItems = false;
 int refresh_time_data = 500;
-int refresh_time_auto = 1;
 bool startflag = false;
 WeaponInfo leftWeaponInfo;
 WeaponInfo rightWeaponInfo;
@@ -75,6 +75,18 @@ void __cdecl RefreshGameInfo(void*)
 				playerInfo.parentLocationId = -1;
 			}
 
+			auto sky = RE::Sky::GetSingleton();
+			if (sky) {
+				auto weather = sky->currentWeather;
+				if (weather) {
+
+
+				}
+				weather->data.flags.any(RE::TESWeather::WeatherDataFlag::kCloudy);
+
+			}
+
+
 			playerInfo.Angle = player->GetAngle();
 			playerInfo.Position = player->GetPosition();
 
@@ -87,7 +99,7 @@ void __cdecl RefreshGameInfo(void*)
 							if (!form) {
 								continue;
 							}
-							weatherForms.push_back({ form->GetFormID(), form->GetFormEditorID() });
+							weatherForms.push_back({ form->GetFormID(), form->GetFormEditorID(), form->data.flags.get() });
 						}
 						initFlag = false;
 					}
@@ -129,6 +141,8 @@ void __cdecl RefreshGameInfo(void*)
 			// 天气信息
 
 			if (active) {
+				float ddd = ScriptUtil::GetRealHoursPassed(nullptr, 0);
+				float dd = ddd;
 			}
 
 			// 基础信息
@@ -397,7 +411,6 @@ void __cdecl RefreshGameInfo(void*)
 }
 
 Actor2Info* actorInfo = new Actor2Info[2];
-//Actor2Info actorInfo[2];
 int nowIndex = 0;
 
 ActorInfo* getNpcData()
@@ -441,48 +454,7 @@ auto IsSentient2(RE::Actor* actor) -> uint32_t
 	return func(actor);
 }
 
-float calculateDistance(const RE::NiPoint3& p1, const RE::NiPoint3& p2)
-{
-	float dx = p2.x - p1.x;
-	float dy = p2.y - p1.y;
-	float dz = p2.z - p1.z;
 
-	return std::sqrt(dx * dx + dy * dy + dz * dz);
-}
-
-#define M_PI 3.14159265358979323846
-
-int calculateDirection(const RE::NiPoint3& p1, const RE::NiPoint3& p2, const RE::NiPoint3& a2)
-{
-	float x_diff = p1.x - p2.x;
-	float y_diff = p1.y - p2.y;
-
-	float angle = atan2(y_diff, x_diff) * 180 / M_PI;
-	if (angle < 0) {
-		angle += 360;
-	}
-
-	float relative_angle = angle + (a2.z * 180 / M_PI);
-
-	if (relative_angle < 0) {
-		relative_angle += 360;
-	}
-	if (relative_angle > 360) {
-		relative_angle -= 360;
-	}
-
-	//SKSE::log::error("angle {} 视角 {} 夹角 {}", (int)angle, (int)(a2.z * 180 / M_PI), (int)relative_angle);
-
-	if (relative_angle >= 45 && relative_angle < 135) {
-		return 1;  // 右边
-	} else if (relative_angle >= 135 && relative_angle < 225) {
-		return 2;  // 下
-	} else if (relative_angle >= 225 && relative_angle < 315) {
-		return 3;  // 左
-	} else {
-		return 4;  // 前
-	}
-}
 
 bool compareByLevel(const ActorInfo& info1, const ActorInfo& info2)
 {
@@ -757,8 +729,8 @@ void __cdecl RefreshActorInfo(void*)
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].isSentient = IsSentient2(actor);
 
 						if (show_npc_window_direction) {
-							actorInfo[nowIndex].teammateInfo[tmpTeammateCount].distance = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
-							actorInfo[nowIndex].teammateInfo[tmpTeammateCount].direction = calculateDirection(actor->GetPosition(), player->GetPosition(), player->GetAngle());
+							actorInfo[nowIndex].teammateInfo[tmpTeammateCount].distance = ValueUtil::calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
+							actorInfo[nowIndex].teammateInfo[tmpTeammateCount].direction = ValueUtil::calculateDirection(actor->GetPosition(), player->GetPosition(), player->GetAngle());
 						}
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].lifeState = actor->GetLifeState();
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].isInCombat = actor->IsInCombat();
@@ -776,7 +748,7 @@ void __cdecl RefreshActorInfo(void*)
 								continue;
 							}
 						}
-						float dis = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
+						float dis = ValueUtil::calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
 						if (show_npc_window_dis) {
 							if (dis > show_npc_window_dis_meter) {
 								continue;
@@ -784,7 +756,7 @@ void __cdecl RefreshActorInfo(void*)
 						}
 						if (show_npc_window_direction) {
 							actorInfo[nowIndex].enemyInfo[tmpEnemyCount].distance = dis;
-							actorInfo[nowIndex].enemyInfo[tmpEnemyCount].direction = calculateDirection(actor->GetPosition(), player->GetPosition(), player->GetAngle());
+							actorInfo[nowIndex].enemyInfo[tmpEnemyCount].direction = ValueUtil::calculateDirection(actor->GetPosition(), player->GetPosition(), player->GetAngle());
 						}
 						actorInfo[nowIndex].enemyInfo[tmpEnemyCount].formId = actor->GetFormID();
 						actorInfo[nowIndex].enemyInfo[tmpEnemyCount].formIdStr = FormIDToString(actor->GetFormID());
@@ -809,7 +781,7 @@ void __cdecl RefreshActorInfo(void*)
 								continue;
 							}
 						}
-						float dis = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
+						float dis = ValueUtil::calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
 						if (show_npc_window_dis) {
 							if (dis > show_npc_window_dis_meter) {
 								continue;
@@ -817,7 +789,7 @@ void __cdecl RefreshActorInfo(void*)
 						}
 						if (show_npc_window_direction) {
 							actorInfo[nowIndex].horseInfo[tmpHorseCount].distance = dis;
-							actorInfo[nowIndex].horseInfo[tmpHorseCount].direction = calculateDirection(actor->GetPosition(), player->GetPosition(), player->GetAngle());
+							actorInfo[nowIndex].horseInfo[tmpHorseCount].direction = ValueUtil::calculateDirection(actor->GetPosition(), player->GetPosition(), player->GetAngle());
 						}
 						actorInfo[nowIndex].horseInfo[tmpHorseCount].formId = actor->GetFormID();
 						actorInfo[nowIndex].horseInfo[tmpHorseCount].formIdStr = FormIDToString(actor->GetFormID());
@@ -842,7 +814,7 @@ void __cdecl RefreshActorInfo(void*)
 								continue;
 							}
 						}
-						float dis = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
+						float dis = ValueUtil::calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
 						if (show_npc_window_dis) {
 							if (dis > show_npc_window_dis_meter) {
 								continue;
@@ -851,7 +823,7 @@ void __cdecl RefreshActorInfo(void*)
 
 						if (show_npc_window_direction) {
 							actorInfo[nowIndex].npcInfo[tmpNpcCount].distance = dis;
-							actorInfo[nowIndex].npcInfo[tmpNpcCount].direction = calculateDirection(actor->GetPosition(), player->GetPosition(), player->GetAngle());
+							actorInfo[nowIndex].npcInfo[tmpNpcCount].direction = ValueUtil::calculateDirection(actor->GetPosition(), player->GetPosition(), player->GetAngle());
 						}
 						actorInfo[nowIndex].npcInfo[tmpNpcCount].formId = actor->GetFormID();
 						actorInfo[nowIndex].npcInfo[tmpNpcCount].formIdStr = FormIDToString(actor->GetFormID());
@@ -890,13 +862,13 @@ std::unordered_set<int> excludeFormIds;
 std::vector<ExcludeForm> excludeForms;
 
 // 艺术馆
-std::unordered_set<int> galleryFormIds;
-std::vector<GalleryForm> galleryFormData;
-std::vector<GalleryModForm> galleryFormModData;
-int galleryModTotalCount = 0;
-int galleryModCount = 0;
-int galleryItemTotalCount = 0;
-int galleryItemCount = 0;
+//std::unordered_set<int> galleryFormIds;
+//std::vector<GalleryForm> galleryFormData;
+//std::vector<GalleryModForm> galleryFormModData;
+//int galleryModTotalCount = 0;
+//int galleryModCount = 0;
+//int galleryItemTotalCount = 0;
+//int galleryItemCount = 0;
 
 // 天气
 std::vector<WeatherForm> weatherForms;
@@ -979,6 +951,18 @@ ItemInfo* getItemsANVI()
 {
 	return items[!nowItemIndex].itemInfoANVI;
 }
+ItemInfo* getItemsANHD()
+{
+	return items[!nowItemIndex].itemInfoANHD;
+}
+ItemInfo* getItemsANPA()
+{
+	return items[!nowItemIndex].itemInfoANPA;
+}
+ItemInfo* getItemsTOOL()
+{
+	return items[!nowItemIndex].itemInfoTOOL;
+}
 
 int getItemCount()
 {
@@ -1051,6 +1035,19 @@ int getItemCountSTON()
 int getItemCountANVI()
 {
 	return items[!nowItemIndex].itemCountANVI;
+}
+
+int getItemCountANHD()
+{
+	return items[!nowItemIndex].itemCountANHD;
+}
+int getItemCountANPA()
+{
+	return items[!nowItemIndex].itemCountANPA;
+}
+int getItemCountTOOL()
+{
+	return items[!nowItemIndex].itemCountTOOL;
 }
 
 void __cdecl RefreshItemInfo(void*)
@@ -1181,6 +1178,9 @@ void __cdecl RefreshItemInfo(void*)
 			int tmpCountACHR = 0;
 			int tmpCountSTON = 0;
 			int tmpCountANVI = 0;
+			int tmpCountANHD = 0;
+			int tmpCountANPA = 0;
+			int tmpCountTOOL = 0;
 
 			auto currentLocation = player->currentLocation;
 			const auto& [map, lock] = RE::TESForm::GetAllForms();
@@ -1219,7 +1219,7 @@ void __cdecl RefreshItemInfo(void*)
 								if (strlen(name) == 0) {
 									continue;
 								}
-								float distance = calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
+								float distance = ValueUtil::calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
 
 								if (!currentLocation) {
 									if (distance > show_items_window_auto_dis_skyrim) {
@@ -1245,11 +1245,11 @@ void __cdecl RefreshItemInfo(void*)
 
 								if (show_items_window_direction) {
 									items[nowItemIndex].itemInfoACHR[tmpCountACHR].distance = distance;
-									items[nowItemIndex].itemInfoACHR[tmpCountACHR].direction = calculateDirection(actor->GetPosition(), player->GetPosition(), player->GetAngle());
+									items[nowItemIndex].itemInfoACHR[tmpCountACHR].direction = ValueUtil::calculateDirection(actor->GetPosition(), player->GetPosition(), player->GetAngle());
 								}
 
 								int tmpInvCount = 0;
-								auto inv = actor->GetInventory(CanDisplay);
+								auto inv = actor->GetInventory(FormUtil::CanDisplay);
 								for (auto& [obj, data] : inv) {
 									auto& [count, entry] = data;
 									if (count > 0 && entry) {
@@ -1316,7 +1316,7 @@ void __cdecl RefreshItemInfo(void*)
 												continue;
 											}
 
-											float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+											float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 											if (!currentLocation) {
 												if (distance > show_items_window_auto_dis_skyrim) {
@@ -1342,7 +1342,7 @@ void __cdecl RefreshItemInfo(void*)
 
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].distance = distance;
-												items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+												items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 											}
 											if (show_items_window_file) {
 												items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].filename = baseObj->GetFile(0)->fileName;
@@ -1378,7 +1378,7 @@ void __cdecl RefreshItemInfo(void*)
 												continue;
 											}
 
-											float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+											float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 											if (!currentLocation) {
 												if (distance > show_items_window_auto_dis_skyrim) {
@@ -1404,7 +1404,7 @@ void __cdecl RefreshItemInfo(void*)
 
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfoARMO[tmpCountARMO].distance = distance;
-												items[nowItemIndex].itemInfoARMO[tmpCountARMO].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+												items[nowItemIndex].itemInfoARMO[tmpCountARMO].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 											}
 											if (show_items_window_file) {
 												items[nowItemIndex].itemInfoARMO[tmpCountARMO].filename = baseObj->GetFile(0)->fileName;
@@ -1439,7 +1439,7 @@ void __cdecl RefreshItemInfo(void*)
 												continue;
 											}
 
-											float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+											float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 											if (!currentLocation) {
 												if (distance > show_items_window_auto_dis_skyrim) {
@@ -1453,7 +1453,7 @@ void __cdecl RefreshItemInfo(void*)
 
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].distance = distance;
-												items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+												items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 											}
 
 											items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].ptr = reff;
@@ -1496,7 +1496,7 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
-											float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+											float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 											if (!currentLocation) {
 												if (distance > show_items_window_auto_dis_skyrim) {
@@ -1520,7 +1520,7 @@ void __cdecl RefreshItemInfo(void*)
 
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].distance = distance;
-												items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+												items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 											}
 											if (show_items_window_file) {
 												items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].filename = baseObj->GetFile(0)->fileName;
@@ -1572,7 +1572,7 @@ void __cdecl RefreshItemInfo(void*)
 													continue;
 												}
 
-												float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+												float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 												if (!currentLocation) {
 													if (distance > show_items_window_auto_dis_skyrim) {
@@ -1586,7 +1586,7 @@ void __cdecl RefreshItemInfo(void*)
 
 												if (show_items_window_direction) {
 													items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].distance = distance;
-													items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+													items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 												}
 
 												items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].ptr = reff;
@@ -1609,7 +1609,7 @@ void __cdecl RefreshItemInfo(void*)
 													continue;
 												}
 
-												float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+												float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 												if (!currentLocation) {
 													if (distance > show_items_window_auto_dis_skyrim) {
@@ -1623,7 +1623,7 @@ void __cdecl RefreshItemInfo(void*)
 
 												if (show_items_window_direction) {
 													items[nowItemIndex].itemInfoALCH[tmpCountALCH].distance = distance;
-													items[nowItemIndex].itemInfoALCH[tmpCountALCH].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+													items[nowItemIndex].itemInfoALCH[tmpCountALCH].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 												}
 
 												items[nowItemIndex].itemInfoALCH[tmpCountALCH].ptr = reff;
@@ -1667,7 +1667,7 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
-											float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+											float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 											if (!currentLocation) {
 												if (distance > show_items_window_auto_dis_skyrim) {
@@ -1681,7 +1681,7 @@ void __cdecl RefreshItemInfo(void*)
 
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfoINGR[tmpCountINGR].distance = distance;
-												items[nowItemIndex].itemInfoINGR[tmpCountINGR].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+												items[nowItemIndex].itemInfoINGR[tmpCountINGR].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 											}
 
 											items[nowItemIndex].itemInfoINGR[tmpCountINGR].ptr = reff;
@@ -1718,7 +1718,7 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
-											float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+											float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 											if (!currentLocation) {
 												if (distance > show_items_window_auto_dis_skyrim) {
@@ -1740,14 +1740,14 @@ void __cdecl RefreshItemInfo(void*)
 											auto misc = baseObj->As<RE::TESObjectMISC>();
 											if (misc) {
 												// 宝石
-												if (HasKeyword(misc, VendorItemGem)) {
+												if (FormUtil::HasKeyword(misc, VendorItemGem)) {
 													if (tmpCountSTON > show_items_window_array_max_length) {
 														continue;
 													}
 
 													if (show_items_window_direction) {
 														items[nowItemIndex].itemInfoSTON[tmpCountSTON].distance = distance;
-														items[nowItemIndex].itemInfoSTON[tmpCountSTON].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+														items[nowItemIndex].itemInfoSTON[tmpCountSTON].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 													}
 
 													items[nowItemIndex].itemInfoSTON[tmpCountSTON].ptr = reff;
@@ -1767,14 +1767,14 @@ void __cdecl RefreshItemInfo(void*)
 													tmpCountSTON++;
 
 													// 矿锭
-												} else if (HasKeyword(misc, VendorItemOreIngot)) {
+												} else if (FormUtil::HasKeyword(misc, VendorItemOreIngot)) {
 													if (tmpCountANVI > show_items_window_array_max_length) {
 														continue;
 													}
 
 													if (show_items_window_direction) {
 														items[nowItemIndex].itemInfoANVI[tmpCountANVI].distance = distance;
-														items[nowItemIndex].itemInfoANVI[tmpCountANVI].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+														items[nowItemIndex].itemInfoANVI[tmpCountANVI].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 													}
 
 													items[nowItemIndex].itemInfoANVI[tmpCountANVI].ptr = reff;
@@ -1792,6 +1792,85 @@ void __cdecl RefreshItemInfo(void*)
 														items[nowItemIndex].itemInfoANVI[tmpCountANVI].filename = baseObj->GetFile(0)->fileName;
 													}
 													tmpCountANVI++;
+												// 毛皮
+												} else if (FormUtil::HasKeyword(misc, VendorItemAnimalHide)) {
+													if (tmpCountANHD > show_items_window_array_max_length) {
+														continue;
+													}
+
+													if (show_items_window_direction) {
+														items[nowItemIndex].itemInfoANHD[tmpCountANHD].distance = distance;
+														items[nowItemIndex].itemInfoANHD[tmpCountANHD].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+													}
+
+													items[nowItemIndex].itemInfoANHD[tmpCountANHD].ptr = reff;
+													items[nowItemIndex].itemInfoANHD[tmpCountANHD].baseFormId = baseObj->GetFormID();
+													items[nowItemIndex].itemInfoANHD[tmpCountANHD].baseFormIdStr = FormIDToString(baseObj->GetFormID());
+													items[nowItemIndex].itemInfoANHD[tmpCountANHD].formId = reff->GetFormID();
+													items[nowItemIndex].itemInfoANHD[tmpCountANHD].formIdStr = FormIDToString(reff->GetFormID());
+													items[nowItemIndex].itemInfoANHD[tmpCountANHD].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+													items[nowItemIndex].itemInfoANHD[tmpCountANHD].name = name;
+													items[nowItemIndex].itemInfoANHD[tmpCountANHD].weight = reff->GetWeight();
+													items[nowItemIndex].itemInfoANHD[tmpCountANHD].gold = baseObj->GetGoldValue();
+													items[nowItemIndex].itemInfoANHD[tmpCountANHD].isCrime = reff->IsCrimeToActivate();
+
+													if (show_items_window_file) {
+														items[nowItemIndex].itemInfoANHD[tmpCountANHD].filename = baseObj->GetFile(0)->fileName;
+													}
+													tmpCountANHD++;
+
+													// 组织
+												} else if (FormUtil::HasKeyword(misc, VendorItemAnimalPart)) {
+													if (tmpCountANPA > show_items_window_array_max_length) {
+														continue;
+													}
+
+													if (show_items_window_direction) {
+														items[nowItemIndex].itemInfoANPA[tmpCountANPA].distance = distance;
+														items[nowItemIndex].itemInfoANPA[tmpCountANPA].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+													}
+
+													items[nowItemIndex].itemInfoANPA[tmpCountANPA].ptr = reff;
+													items[nowItemIndex].itemInfoANPA[tmpCountANPA].baseFormId = baseObj->GetFormID();
+													items[nowItemIndex].itemInfoANPA[tmpCountANPA].baseFormIdStr = FormIDToString(baseObj->GetFormID());
+													items[nowItemIndex].itemInfoANPA[tmpCountANPA].formId = reff->GetFormID();
+													items[nowItemIndex].itemInfoANPA[tmpCountANPA].formIdStr = FormIDToString(reff->GetFormID());
+													items[nowItemIndex].itemInfoANPA[tmpCountANPA].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+													items[nowItemIndex].itemInfoANPA[tmpCountANPA].name = name;
+													items[nowItemIndex].itemInfoANPA[tmpCountANPA].weight = reff->GetWeight();
+													items[nowItemIndex].itemInfoANPA[tmpCountANPA].gold = baseObj->GetGoldValue();
+													items[nowItemIndex].itemInfoANPA[tmpCountANPA].isCrime = reff->IsCrimeToActivate();
+
+													if (show_items_window_file) {
+														items[nowItemIndex].itemInfoANPA[tmpCountANPA].filename = baseObj->GetFile(0)->fileName;
+													}
+													tmpCountANPA++;
+												// 工具
+												} else if (FormUtil::HasKeyword(misc, VendorItemTool)) {
+													if (tmpCountTOOL > show_items_window_array_max_length) {
+														continue;
+													}
+
+													if (show_items_window_direction) {
+														items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].distance = distance;
+														items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+													}
+
+													items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].ptr = reff;
+													items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].baseFormId = baseObj->GetFormID();
+													items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].baseFormIdStr = FormIDToString(baseObj->GetFormID());
+													items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].formId = reff->GetFormID();
+													items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].formIdStr = FormIDToString(reff->GetFormID());
+													items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+													items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].name = name;
+													items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].weight = reff->GetWeight();
+													items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].gold = baseObj->GetGoldValue();
+													items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].isCrime = reff->IsCrimeToActivate();
+
+													if (show_items_window_file) {
+														items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].filename = baseObj->GetFile(0)->fileName;
+													}
+													tmpCountTOOL++;
 												} else {
 													if (tmpCountMISC > show_items_window_array_max_length) {
 														continue;
@@ -1799,7 +1878,7 @@ void __cdecl RefreshItemInfo(void*)
 
 													if (show_items_window_direction) {
 														items[nowItemIndex].itemInfoMISC[tmpCountMISC].distance = distance;
-														items[nowItemIndex].itemInfoMISC[tmpCountMISC].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+														items[nowItemIndex].itemInfoMISC[tmpCountMISC].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 													}
 
 													items[nowItemIndex].itemInfoMISC[tmpCountMISC].ptr = reff;
@@ -1844,7 +1923,7 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
-											float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+											float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 											if (!currentLocation) {
 												if (distance > show_items_window_auto_dis_skyrim) {
@@ -1870,14 +1949,14 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoCONT[tmpCountCONT].lockLevel = reff->GetLockLevel();
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfoCONT[tmpCountCONT].distance = distance;
-												items[nowItemIndex].itemInfoCONT[tmpCountCONT].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+												items[nowItemIndex].itemInfoCONT[tmpCountCONT].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 											}
 											if (show_items_window_file) {
 												items[nowItemIndex].itemInfoCONT[tmpCountCONT].filename = baseObj->GetFile(0)->fileName;
 											}
 
 											int tmpInvCount = 0;
-											auto inv = reff->GetInventory(CanDisplay);
+											auto inv = reff->GetInventory(FormUtil::CanDisplay);
 
 											// 自动拾取条件1
 											bool auto1 = false;
@@ -1943,7 +2022,7 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
-											float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+											float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 											if (!currentLocation) {
 												if (distance > show_items_window_auto_dis_skyrim) {
@@ -1968,7 +2047,7 @@ void __cdecl RefreshItemInfo(void*)
 
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].distance = distance;
-												items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+												items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 											}
 											if (show_items_window_file) {
 												items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].filename = baseObj->GetFile(0)->fileName;
@@ -2039,7 +2118,7 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
-											float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+											float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 											if (!currentLocation) {
 												if (distance > show_items_window_auto_dis_skyrim) {
@@ -2064,7 +2143,7 @@ void __cdecl RefreshItemInfo(void*)
 
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfoTREE[tmpCountTREE].distance = distance;
-												items[nowItemIndex].itemInfoTREE[tmpCountTREE].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+												items[nowItemIndex].itemInfoTREE[tmpCountTREE].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 											}
 											if (show_items_window_file) {
 												items[nowItemIndex].itemInfoTREE[tmpCountTREE].filename = baseObj->GetFile(0)->fileName;
@@ -2097,7 +2176,7 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
-											float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+											float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 											if (!currentLocation) {
 												if (distance > show_items_window_auto_dis_skyrim) {
@@ -2122,7 +2201,7 @@ void __cdecl RefreshItemInfo(void*)
 
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].distance = distance;
-												items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+												items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 											}
 											if (show_items_window_file) {
 												items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].filename = baseObj->GetFile(0)->fileName;
@@ -2158,7 +2237,7 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
-											float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+											float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 											if (!currentLocation) {
 												if (distance > show_items_window_auto_dis_skyrim) {
@@ -2183,7 +2262,7 @@ void __cdecl RefreshItemInfo(void*)
 
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfoACTI[tmpCountACTI].distance = distance;
-												items[nowItemIndex].itemInfoACTI[tmpCountACTI].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+												items[nowItemIndex].itemInfoACTI[tmpCountACTI].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 											}
 											if (show_items_window_file) {
 												items[nowItemIndex].itemInfoACTI[tmpCountACTI].filename = baseObj->GetFile(0)->fileName;
@@ -2220,7 +2299,7 @@ void __cdecl RefreshItemInfo(void*)
 												continue;
 											}
 
-											float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+											float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 											if (!currentLocation) {
 												if (distance > show_items_window_auto_dis_skyrim) {
@@ -2234,7 +2313,7 @@ void __cdecl RefreshItemInfo(void*)
 
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].distance = distance;
-												items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+												items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 											}
 											if (show_items_window_file) {
 												items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].filename = baseObj->GetFile(0)->fileName;
@@ -2292,7 +2371,7 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
-											float distance = calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+											float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 											if (!currentLocation) {
 												if (distance > show_items_window_auto_dis_skyrim) {
@@ -2318,7 +2397,7 @@ void __cdecl RefreshItemInfo(void*)
 
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfo[tmpCount].distance = distance;
-												items[nowItemIndex].itemInfo[tmpCount].direction = calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+												items[nowItemIndex].itemInfo[tmpCount].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 											}
 											if (show_items_window_file) {
 												items[nowItemIndex].itemInfo[tmpCount].filename = baseObj->GetFile(0)->fileName;
@@ -2357,8 +2436,11 @@ void __cdecl RefreshItemInfo(void*)
 			std::sort(items[nowItemIndex].itemInfoACTI, items[nowItemIndex].itemInfoACTI + tmpCountACTI, compareForItem);
 			std::sort(items[nowItemIndex].itemInfoSTON, items[nowItemIndex].itemInfoSTON + tmpCountSTON, compareForItem);
 			std::sort(items[nowItemIndex].itemInfoANVI, items[nowItemIndex].itemInfoANVI + tmpCountANVI, compareForItem);
-
 			std::sort(items[nowItemIndex].itemInfoACHR, items[nowItemIndex].itemInfoACHR + tmpCountACHR, compareForItemCONT);
+			std::sort(items[nowItemIndex].itemInfoANHD, items[nowItemIndex].itemInfoANHD + tmpCountANHD, compareForItem);
+			std::sort(items[nowItemIndex].itemInfoANPA, items[nowItemIndex].itemInfoANPA + tmpCountANPA, compareForItem);
+			std::sort(items[nowItemIndex].itemInfoTOOL, items[nowItemIndex].itemInfoTOOL + tmpCountTOOL, compareForItem);
+
 
 			items[nowItemIndex].itemCount = tmpCount;
 			items[nowItemIndex].itemCountWEAP = tmpCountWEAP;
@@ -2378,6 +2460,9 @@ void __cdecl RefreshItemInfo(void*)
 			items[nowItemIndex].itemCountSTON = tmpCountSTON;
 			items[nowItemIndex].itemCountANVI = tmpCountANVI;
 			items[nowItemIndex].itemCountACHR = tmpCountACHR;
+			items[nowItemIndex].itemCountANHD = tmpCountANHD;
+			items[nowItemIndex].itemCountANPA = tmpCountANPA;
+			items[nowItemIndex].itemCountTOOL = tmpCountTOOL;
 		} else {
 			refreshItemAuto();
 		}

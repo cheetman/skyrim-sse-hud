@@ -63,9 +63,51 @@ namespace StringUtil
 
 }
 
-
 namespace ValueUtil
 {
+	#define M_PI 3.14159265358979323846
+
+	static int calculateDirection(const RE::NiPoint3& p1, const RE::NiPoint3& p2, const RE::NiPoint3& a2)
+	{
+		float x_diff = p1.x - p2.x;
+		float y_diff = p1.y - p2.y;
+
+		float angle = atan2(y_diff, x_diff) * 180 / M_PI;
+		if (angle < 0) {
+			angle += 360;
+		}
+
+		float relative_angle = angle + (a2.z * 180 / M_PI);
+
+		if (relative_angle < 0) {
+			relative_angle += 360;
+		}
+		if (relative_angle > 360) {
+			relative_angle -= 360;
+		}
+
+		//SKSE::log::error("angle {} 视角 {} 夹角 {}", (int)angle, (int)(a2.z * 180 / M_PI), (int)relative_angle);
+
+		if (relative_angle >= 45 && relative_angle < 135) {
+			return 1;  // 右边
+		} else if (relative_angle >= 135 && relative_angle < 225) {
+			return 2;  // 下
+		} else if (relative_angle >= 225 && relative_angle < 315) {
+			return 3;  // 左
+		} else {
+			return 4;  // 前
+		}
+	}
+
+	static float calculateDistance(const RE::NiPoint3& p1, const RE::NiPoint3& p2)
+	{
+		float dx = p2.x - p1.x;
+		float dy = p2.y - p1.y;
+		float dz = p2.z - p1.z;
+
+		return std::sqrt(dx * dx + dy * dy + dz * dz);
+	}
+
 	static float calculateArmorDamageRes(float a_armor_rating, int32_t a_pieces_worn)
 	{
 		return (float(a_armor_rating * 0.12) + float(3 * a_pieces_worn));
@@ -200,6 +242,94 @@ namespace QuestUtil
 	static uint16_t getAs(int a_i) { return static_cast<uint16_t>(a_i); }
 }
 
+namespace ScriptUtil
+{
+	inline void AddItem(RE::BSScript::IVirtualMachine* vm, RE::VMStackID stackID, RE::TESObjectREFR* object, RE::TESForm* akItemToAdd, int aiCount, bool abSilent)
+	{
+		using func_t = decltype(AddItem);
+		REL::Relocation<func_t> func{ REL::ID(55616) };
+		func(vm, stackID, object, akItemToAdd, aiCount, abSilent);
+	}
+
+	inline void RemoveItem(RE::BSScript::IVirtualMachine* vm, RE::VMStackID stackID, RE::TESObjectREFR* object, RE::TESForm* akItemToRemove, int aiCount, bool abSilent, RE::TESObjectREFR* akOtherContainer)
+	{
+		using func_t = decltype(RemoveItem);
+		REL::Relocation<func_t> func{ REL::ID(55687) };
+		func(vm, stackID, object, akItemToRemove, aiCount, abSilent, akOtherContainer);
+	}
+
+	inline int QueryStat(RE::BSScript::IVirtualMachine* vm, RE::VMStackID stackID, const char* type)
+	{
+		using func_t = decltype(QueryStat);
+		REL::Relocation<func_t> func{ REL::ID(54856) };
+		return func(vm, stackID, type);
+	}
+	//(RE::BSFixedString& a_stat, 
+	
+	inline float GetRealHoursPassed(RE::BSScript::IVirtualMachine* vm, RE::VMStackID stackID)
+	{
+		using func_t = decltype(GetRealHoursPassed);
+		REL::Relocation<func_t> func{ REL::ID(54842) };
+		return func(vm, stackID);
+	}
+}
+
+namespace FormUtil
+{
+	bool static inline HasKeyword(RE::BGSKeywordForm* o, RE::FormID formID)
+	{
+		bool result = false;
+
+		if (o->keywords) {
+			for (std::uint32_t idx = 0; idx < o->numKeywords; ++idx) {
+				if (o->keywords[idx] && o->keywords[idx]->formID == formID) {
+					result = true;
+					break;
+				}
+			}
+		}
+		return result;
+	}
+	[[nodiscard]] static inline bool CanDisplay(const RE::TESBoundObject& a_object)
+	{
+		switch (a_object.GetFormType()) {
+		case RE::FormType::Scroll:
+		case RE::FormType::Armor:
+		case RE::FormType::Book:
+		case RE::FormType::Ingredient:
+		case RE::FormType::Misc:
+		case RE::FormType::Weapon:
+		case RE::FormType::Ammo:
+		case RE::FormType::KeyMaster:
+		case RE::FormType::AlchemyItem:
+		case RE::FormType::Note:
+		case RE::FormType::SoulGem:
+			break;
+		case RE::FormType::Light:
+			{
+				auto& light = static_cast<const RE::TESObjectLIGH&>(a_object);
+				if (!light.CanBeCarried()) {
+					return false;
+				}
+			}
+			break;
+		default:
+			return false;
+		}
+
+		if (!a_object.GetPlayable()) {
+			return false;
+		}
+
+		auto name = a_object.GetName();
+		if (!name || name[0] == '\0') {
+			return false;
+		}
+
+		return true;
+	}
+
+}
 
 namespace Detours
 {

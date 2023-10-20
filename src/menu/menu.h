@@ -1,10 +1,6 @@
 #pragma once
 #include <imgui/imgui.h>
-//#define IMGUI_USE_WCHAR32
-//#define IMGUIUSEWCHAR32
 
-	// 文件路径
-extern std::string fontFilePath;
 
 namespace menu
 {

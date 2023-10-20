@@ -9,31 +9,34 @@
 
 namespace setting
 {
-	std::filesystem::path settings_path = "";
+	std::filesystem::path settings_path = "data\\skse\\plugins\\sse-hud.json";
 	std::filesystem::path settings_path_gallery = "";
-	std::vector<GalleryData> galleryList;
+	std::filesystem::path settings_path_lotd_item_list = "data\\skse\\plugins\\ItemFinderPlus-LotdItemList.json";
+	//std::vector<GalleryData> galleryList;
+	std::vector<LotdItemList> lotdItemLists;
 
-	bool load_settings_gallery()
+	bool load_settings_lotd()
 	{
 		try {
-			std::ifstream i(settings_path_gallery);
+			std::ifstream i(settings_path_lotd_item_list);
 			nlohmann::json json;
 			i >> json;
 
 			for (const auto& obj : json) {
-				if (obj.contains("filename")) {
-					GalleryData data;
-					if (obj.contains("name")) {
-						data.name = obj["name"];
+				if (obj.contains("listEditorId")) {
+					LotdItemList data;
+					data.listEditorId = obj["listEditorId"];
+
+					if (obj.contains("roomName")) {
+						data.roomName = obj["roomName"];
 					}
-					data.filename = obj["filename"];
-					if (obj.contains("formids")) {
+					/*if (obj.contains("formids")) {
 						for (const auto& formid : obj["formids"]) {
 							std::string formidstr = formid;
 							data.formids.push_back(std::stoi(formidstr, 0, 16));
 						}
-					}
-					galleryList.push_back(data);
+					}*/
+					lotdItemLists.push_back(data);
 				}
 			}
 		} catch (std::exception const& ex) {
@@ -211,6 +214,15 @@ namespace setting
 					if (j2.contains("show_items_window_auto_achr_ingr")) {
 						show_items_window_auto_achr_ingr = j2["show_items_window_auto_achr_ingr"].get<bool>();
 					}
+					if (j2.contains("show_items_window_auto_anhd")) {
+						show_items_window_auto_anhd = j2["show_items_window_auto_anhd"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_anpa")) {
+						show_items_window_auto_anpa = j2["show_items_window_auto_anpa"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_tool")) {
+						show_items_window_auto_tool = j2["show_items_window_auto_tool"].get<bool>();
+					}
 
 					if (j2.contains("show_items_window_auto_achr_food")) {
 						show_items_window_auto_achr_food = j2["show_items_window_auto_achr_food"].get<bool>();
@@ -251,6 +263,15 @@ namespace setting
 					if (j2.contains("show_items_window_auto_achr_ston")) {
 						show_items_window_auto_achr_ston = j2["show_items_window_auto_achr_ston"].get<bool>();
 					}
+					if (j2.contains("show_items_window_auto_achr_anhd")) {
+						show_items_window_auto_achr_anhd = j2["show_items_window_auto_achr_anhd"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_achr_anpa")) {
+						show_items_window_auto_achr_anpa = j2["show_items_window_auto_achr_anpa"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_achr_tool")) {
+						show_items_window_auto_achr_tool = j2["show_items_window_auto_achr_tool"].get<bool>();
+					}
 
 					if (j2.contains("show_items_window_auto_cont")) {
 						show_items_window_auto_cont = j2["show_items_window_auto_cont"].get<bool>();
@@ -284,6 +305,10 @@ namespace setting
 						show_items_window_auto_notification = j2["show_items_window_auto_notification"].get<bool>();
 					}
 
+					if (j2.contains("show_items_window_auto_conttype")) {
+						show_items_window_auto_conttype = j2["show_items_window_auto_conttype"].get<bool>();
+					}
+
 					if (j2.contains("show_items_window_auto_cont_weap")) {
 						show_items_window_auto_cont_weap = j2["show_items_window_auto_cont_weap"].get<bool>();
 					}
@@ -298,6 +323,15 @@ namespace setting
 					}
 					if (j2.contains("show_items_window_auto_cont_anvi")) {
 						show_items_window_auto_cont_anvi = j2["show_items_window_auto_cont_anvi"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_cont_anhd")) {
+						show_items_window_auto_cont_anhd = j2["show_items_window_auto_cont_anhd"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_cont_anpa")) {
+						show_items_window_auto_cont_anpa = j2["show_items_window_auto_cont_anpa"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_cont_tool")) {
+						show_items_window_auto_cont_tool = j2["show_items_window_auto_cont_tool"].get<bool>();
 					}
 
 					if (j2.contains("show_items_window_auto_armo_price")) {
@@ -524,6 +558,9 @@ namespace setting
 															 { "show_items_window_auto_armo", show_items_window_auto_armo },
 															 { "show_items_window_auto_anvi", show_items_window_auto_anvi },
 															 { "show_items_window_auto_ston", show_items_window_auto_ston },
+															 { "show_items_window_auto_anhd", show_items_window_auto_anhd },
+															 { "show_items_window_auto_anpa", show_items_window_auto_anpa },
+															 { "show_items_window_auto_tool", show_items_window_auto_tool },
 															 { "show_items_window_auto_ignore", show_items_window_auto_ignore },
 															 { "show_items_window_auto_achr_ingr", show_items_window_auto_achr_ingr },
 															 { "show_items_window_auto_achr_food", show_items_window_auto_achr_food },
@@ -537,6 +574,9 @@ namespace setting
 															 { "show_items_window_auto_achr_lock", show_items_window_auto_achr_lock },
 															 { "show_items_window_auto_achr_ston", show_items_window_auto_achr_ston },
 															 { "show_items_window_auto_achr_anvi", show_items_window_auto_achr_anvi },
+															 { "show_items_window_auto_achr_anhd", show_items_window_auto_achr_anhd },
+															 { "show_items_window_auto_achr_anpa", show_items_window_auto_achr_anpa },
+															 { "show_items_window_auto_achr_tool", show_items_window_auto_achr_tool },
 															 { "show_items_window_auto_cont_ingr", show_items_window_auto_cont_ingr },
 															 { "show_items_window_auto_cont_food", show_items_window_auto_cont_food },
 															 { "show_items_window_auto_cont_alch", show_items_window_auto_cont_alch },
@@ -549,6 +589,9 @@ namespace setting
 															 { "show_items_window_auto_cont_lock", show_items_window_auto_cont_lock },
 															 { "show_items_window_auto_cont_ston", show_items_window_auto_cont_ston },
 															 { "show_items_window_auto_cont_anvi", show_items_window_auto_cont_anvi },
+															 { "show_items_window_auto_cont_anhd", show_items_window_auto_cont_anhd },
+															 { "show_items_window_auto_cont_anpa", show_items_window_auto_cont_anpa },
+															 { "show_items_window_auto_cont_tool", show_items_window_auto_cont_tool },
 															 { "show_items_window_auto_notification", show_items_window_auto_notification },
 															 { "show_items_window_auto_cont_weap", show_items_window_auto_cont_weap },
 															 { "show_items_window_auto_achr_weap", show_items_window_auto_achr_weap },
@@ -561,6 +604,7 @@ namespace setting
 															 { "show_items_window_auto_weap_price_value", show_items_window_auto_weap_price_value },
 															 { "show_items_window_auto_armo_price_value", show_items_window_auto_armo_price_value },
 
+															 { "show_items_window_auto_conttype", show_items_window_auto_conttype },
 														 } }
 
 								   } }
