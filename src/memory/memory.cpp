@@ -1064,7 +1064,18 @@ void __cdecl RefreshItemInfo(void*)
 			continue;
 		}
 
-		if (!activeItems && !show_items_window && !show_items_window_auto_ammo && !show_items_window_auto_flor && !show_items_window_auto_food && !show_items_window_auto_ingr && !show_items_window_auto_alch && !show_items_window_auto_misc && !show_items_window_auto_tree && !show_items_window_auto_sgem && !show_items_window_auto_achr && !show_items_window_auto_cont) {
+		if (!activeItems && !show_items_window && !show_items_window_auto_ammo 
+			&& !show_items_window_auto_flor && !show_items_window_auto_food 
+			&& !show_items_window_auto_ingr 
+			&& !show_items_window_auto_alch && !show_items_window_auto_misc 
+			&& !show_items_window_auto_tree && !show_items_window_auto_sgem 
+			&& !show_items_window_auto_achr && !show_items_window_auto_cont 
+			&& !show_items_window_auto_ston && !show_items_window_auto_anvi 
+			&& !show_items_window_auto_anhd && !show_items_window_auto_anpa 
+			&& !show_items_window_auto_tool
+			
+			
+			) {
 			Sleep(1000);
 			continue;
 		} else {
