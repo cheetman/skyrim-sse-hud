@@ -83,4 +83,6 @@ void addItem(RE::PlayerCharacter* contReff, RE::TESObjectREFR* reff, int count);
 void addItemAuto(RE::PlayerCharacter* contReff, RE::TESObjectREFR* reff, int count);
 void RemoveItemACHR(RE::PlayerCharacter* contReff, RE::TESObjectREFR* actor, RE::TESBoundObject* obj, int count, bool autoTake);
 void RemoveItemCONT(RE::PlayerCharacter* contReff, RE::TESObjectREFR* actor, RE::TESBoundObject* obj, int count, bool autoTake);
-void refreshItemAuto();
+
+
+void __cdecl TimerAutoPick(void*);

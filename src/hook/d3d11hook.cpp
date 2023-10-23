@@ -94,10 +94,7 @@ namespace d3d11hook
 		//if (result == DXGI_ERROR_DEVICE_REMOVED || result == DXGI_ERROR_DEVICE_RESET) {
 
 		//}
-
 		return result;
-
-		//return orgD3D11Present(pSwapChain, SyncInterval, Flags);
 	}
 
 	bool TryCreateDeviceAndSwapChain()

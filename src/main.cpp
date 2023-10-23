@@ -1,8 +1,20 @@
-#include "main.h"
+#include "event\BSTMenuEvent.h"
+#include "event\BSTScriptEvent.h"
+#include "event\BSTCrosshairRefEvent.h"
+
+#include "utils\GeneralUtil.h"
+#include "utils\NameUtil.h"
+#include "utils\PlayerDataProvider.h"
+#include <iostream>
+#include <stdlib.h>
+#include <tchar.h>
+#include <windows.h>
+
 #include <hook/d3d11hook.h>
 #include <hook/dinputhook.h>
 #include <hook/hudhook.h>
 #include <memory/memory.h>
+#include <memory/autotake.h>
 #include <menu/menu.h>
 #include <event/BSTEquipEvent.h>
 #include <setting/setting.h>
@@ -192,6 +204,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	_beginthread(RefreshGameInfo, 0, NULL);
 	_beginthread(RefreshActorInfo, 0, NULL);
 	_beginthread(RefreshItemInfo, 0, NULL);
+	_beginthread(TimerAutoPick, 0, NULL);
 	_beginthread(installimgui, 0, NULL);
 
 	return true;

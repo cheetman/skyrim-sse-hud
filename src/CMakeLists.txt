@@ -2,7 +2,6 @@ set(ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
 
 set(SOURCE_DIR "${ROOT_DIR}/src")
 set(SOURCE_FILES
-	"${SOURCE_DIR}/main.h"
 	"${SOURCE_DIR}/papyrus.cpp"
 	"${SOURCE_DIR}/main.cpp"
 	"${SOURCE_DIR}/PCH.h"

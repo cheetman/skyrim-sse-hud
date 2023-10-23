@@ -518,6 +518,7 @@ static const RE::FormID VendorItemAnimalHide = 0x000914EA;
 static const RE::FormID VendorItemAnimalPart = 0x000914EB;
 static const RE::FormID VendorItemTool = 0x000914EE;
 
+
 extern bool show_player_base_info_window;
 extern bool show_player_armor_window;
 extern bool show_player_weapon_window;

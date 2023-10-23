@@ -7,7 +7,6 @@
 #include <utils/NameUtil.h>
 #include <utils/PlayerDataProvider.h>
 
-
 bool active = false;
 bool activeItems = false;
 int refresh_time_data = 500;
@@ -79,13 +78,9 @@ void __cdecl RefreshGameInfo(void*)
 			if (sky) {
 				auto weather = sky->currentWeather;
 				if (weather) {
-
-
 				}
 				weather->data.flags.any(RE::TESWeather::WeatherDataFlag::kCloudy);
-
 			}
-
 
 			playerInfo.Angle = player->GetAngle();
 			playerInfo.Position = player->GetPosition();
@@ -453,8 +448,6 @@ auto IsSentient2(RE::Actor* actor) -> uint32_t
 	REL::Relocation<func_t> func{ REL::ID(36889) };
 	return func(actor);
 }
-
-
 
 bool compareByLevel(const ActorInfo& info1, const ActorInfo& info2)
 {
@@ -1064,33 +1057,11 @@ void __cdecl RefreshItemInfo(void*)
 			continue;
 		}
 
-		if (!activeItems && !show_items_window && !show_items_window_auto_ammo 
-			&& !show_items_window_auto_flor && !show_items_window_auto_food 
-			&& !show_items_window_auto_ingr 
-			&& !show_items_window_auto_alch && !show_items_window_auto_misc 
-			&& !show_items_window_auto_tree && !show_items_window_auto_sgem 
-			&& !show_items_window_auto_achr && !show_items_window_auto_cont 
-			&& !show_items_window_auto_ston && !show_items_window_auto_anvi 
-			&& !show_items_window_auto_anhd && !show_items_window_auto_anpa 
-			&& !show_items_window_auto_tool
-			
-			
-			) {
-			Sleep(1000);
+		if (!activeItems) {
 			continue;
-		} else {
-			// 设置刷新时间
-			if (activeItems) {
-			} else {
-				Sleep(refresh_time_auto * 1000 - 1000);
-				if (refresh_time_auto < 1) {
-					refresh_time_auto = 1;
-				}
-			}
 		}
 
 		if (isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu) {
-			Sleep(1000);
 			continue;
 		}
 
@@ -1161,49 +1132,47 @@ void __cdecl RefreshItemInfo(void*)
 			//});
 		}
 
-		if (activeItems) {
-			RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
-			if (!player) {
-				Sleep(1000);
-				continue;
-			}
+		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
+		if (!player) {
+			Sleep(1000);
+			continue;
+		}
 
-			nowItemIndex = !nowItemIndex;
-			Sleep(100);
+		nowItemIndex = !nowItemIndex;
+		Sleep(100);
 
-			int tmpCount = 0;
-			int tmpCountWEAP = 0;
-			int tmpCountARMO = 0;
-			int tmpCountAMMO = 0;
-			int tmpCountBOOK = 0;
-			int tmpCountALCH = 0;
-			int tmpCountINGR = 0;
-			int tmpCountMISC = 0;
-			int tmpCountCONT = 0;
-			int tmpCountFLOR = 0;
-			int tmpCountFOOD = 0;
-			int tmpCountKEYM = 0;
-			int tmpCountTREE = 0;
-			int tmpCountSGEM = 0;
-			int tmpCountACTI = 0;
-			int tmpCountACHR = 0;
-			int tmpCountSTON = 0;
-			int tmpCountANVI = 0;
-			int tmpCountANHD = 0;
-			int tmpCountANPA = 0;
-			int tmpCountTOOL = 0;
+		int tmpCount = 0;
+		int tmpCountWEAP = 0;
+		int tmpCountARMO = 0;
+		int tmpCountAMMO = 0;
+		int tmpCountBOOK = 0;
+		int tmpCountALCH = 0;
+		int tmpCountINGR = 0;
+		int tmpCountMISC = 0;
+		int tmpCountCONT = 0;
+		int tmpCountFLOR = 0;
+		int tmpCountFOOD = 0;
+		int tmpCountKEYM = 0;
+		int tmpCountTREE = 0;
+		int tmpCountSGEM = 0;
+		int tmpCountACTI = 0;
+		int tmpCountACHR = 0;
+		int tmpCountSTON = 0;
+		int tmpCountANVI = 0;
+		int tmpCountANHD = 0;
+		int tmpCountANPA = 0;
+		int tmpCountTOOL = 0;
 
-			auto currentLocation = player->currentLocation;
+		auto currentLocation = player->currentLocation;
+
+		{
 			const auto& [map, lock] = RE::TESForm::GetAllForms();
-			//const RE::BSReadLockGuard locker{ lock };
+			const RE::BSReadLockGuard locker{ lock };
 			if (!map) {
 				continue;
 			}
 
-			//auto& formIDs = *allForms.first;
-			//for (auto elem : formIDs) {
 			for (auto& [id, form] : *map) {
-				//auto form = elem.second;
 				if (form) {
 					if (form->Is(RE::FormType::ActorCharacter)) {
 						auto actor = form->As<RE::Actor>();
@@ -1803,7 +1772,7 @@ void __cdecl RefreshItemInfo(void*)
 														items[nowItemIndex].itemInfoANVI[tmpCountANVI].filename = baseObj->GetFile(0)->fileName;
 													}
 													tmpCountANVI++;
-												// 毛皮
+													// 毛皮
 												} else if (FormUtil::HasKeyword(misc, VendorItemAnimalHide)) {
 													if (tmpCountANHD > show_items_window_array_max_length) {
 														continue;
@@ -1856,7 +1825,7 @@ void __cdecl RefreshItemInfo(void*)
 														items[nowItemIndex].itemInfoANPA[tmpCountANPA].filename = baseObj->GetFile(0)->fileName;
 													}
 													tmpCountANPA++;
-												// 工具
+													// 工具
 												} else if (FormUtil::HasKeyword(misc, VendorItemTool)) {
 													if (tmpCountTOOL > show_items_window_array_max_length) {
 														continue;
@@ -2428,55 +2397,50 @@ void __cdecl RefreshItemInfo(void*)
 					}
 				}
 			}
-			//}
-
-			std::sort(items[nowItemIndex].itemInfo, items[nowItemIndex].itemInfo + tmpCount, compareForItem);
-			std::sort(items[nowItemIndex].itemInfoWEAP, items[nowItemIndex].itemInfoWEAP + tmpCountWEAP, compareForItem);
-			std::sort(items[nowItemIndex].itemInfoARMO, items[nowItemIndex].itemInfoARMO + tmpCountARMO, compareForItem);
-			std::sort(items[nowItemIndex].itemInfoAMMO, items[nowItemIndex].itemInfoAMMO + tmpCountAMMO, compareForItem);
-			std::sort(items[nowItemIndex].itemInfoBOOK, items[nowItemIndex].itemInfoBOOK + tmpCountBOOK, compareForItem);
-			std::sort(items[nowItemIndex].itemInfoALCH, items[nowItemIndex].itemInfoALCH + tmpCountALCH, compareForItem);
-			std::sort(items[nowItemIndex].itemInfoINGR, items[nowItemIndex].itemInfoINGR + tmpCountINGR, compareForItem);
-			std::sort(items[nowItemIndex].itemInfoMISC, items[nowItemIndex].itemInfoMISC + tmpCountMISC, compareForItem);
-			std::sort(items[nowItemIndex].itemInfoCONT, items[nowItemIndex].itemInfoCONT + tmpCountCONT, compareForItemCONT);
-			std::sort(items[nowItemIndex].itemInfoFLOR, items[nowItemIndex].itemInfoFLOR + tmpCountFLOR, compareForItem);
-			std::sort(items[nowItemIndex].itemInfoFOOD, items[nowItemIndex].itemInfoFOOD + tmpCountFOOD, compareForItem);
-			std::sort(items[nowItemIndex].itemInfoKEYM, items[nowItemIndex].itemInfoKEYM + tmpCountKEYM, compareForItem);
-			std::sort(items[nowItemIndex].itemInfoTREE, items[nowItemIndex].itemInfoTREE + tmpCountTREE, compareForItem);
-			std::sort(items[nowItemIndex].itemInfoSGEM, items[nowItemIndex].itemInfoSGEM + tmpCountSGEM, compareForItem);
-			std::sort(items[nowItemIndex].itemInfoACTI, items[nowItemIndex].itemInfoACTI + tmpCountACTI, compareForItem);
-			std::sort(items[nowItemIndex].itemInfoSTON, items[nowItemIndex].itemInfoSTON + tmpCountSTON, compareForItem);
-			std::sort(items[nowItemIndex].itemInfoANVI, items[nowItemIndex].itemInfoANVI + tmpCountANVI, compareForItem);
-			std::sort(items[nowItemIndex].itemInfoACHR, items[nowItemIndex].itemInfoACHR + tmpCountACHR, compareForItemCONT);
-			std::sort(items[nowItemIndex].itemInfoANHD, items[nowItemIndex].itemInfoANHD + tmpCountANHD, compareForItem);
-			std::sort(items[nowItemIndex].itemInfoANPA, items[nowItemIndex].itemInfoANPA + tmpCountANPA, compareForItem);
-			std::sort(items[nowItemIndex].itemInfoTOOL, items[nowItemIndex].itemInfoTOOL + tmpCountTOOL, compareForItem);
-
-
-			items[nowItemIndex].itemCount = tmpCount;
-			items[nowItemIndex].itemCountWEAP = tmpCountWEAP;
-			items[nowItemIndex].itemCountARMO = tmpCountARMO;
-			items[nowItemIndex].itemCountAMMO = tmpCountAMMO;
-			items[nowItemIndex].itemCountBOOK = tmpCountBOOK;
-			items[nowItemIndex].itemCountALCH = tmpCountALCH;
-			items[nowItemIndex].itemCountINGR = tmpCountINGR;
-			items[nowItemIndex].itemCountMISC = tmpCountMISC;
-			items[nowItemIndex].itemCountCONT = tmpCountCONT;
-			items[nowItemIndex].itemCountFLOR = tmpCountFLOR;
-			items[nowItemIndex].itemCountFOOD = tmpCountFOOD;
-			items[nowItemIndex].itemCountKEYM = tmpCountKEYM;
-			items[nowItemIndex].itemCountTREE = tmpCountTREE;
-			items[nowItemIndex].itemCountSGEM = tmpCountSGEM;
-			items[nowItemIndex].itemCountACTI = tmpCountACTI;
-			items[nowItemIndex].itemCountSTON = tmpCountSTON;
-			items[nowItemIndex].itemCountANVI = tmpCountANVI;
-			items[nowItemIndex].itemCountACHR = tmpCountACHR;
-			items[nowItemIndex].itemCountANHD = tmpCountANHD;
-			items[nowItemIndex].itemCountANPA = tmpCountANPA;
-			items[nowItemIndex].itemCountTOOL = tmpCountTOOL;
-		} else {
-			refreshItemAuto();
 		}
+		std::sort(items[nowItemIndex].itemInfo, items[nowItemIndex].itemInfo + tmpCount, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoWEAP, items[nowItemIndex].itemInfoWEAP + tmpCountWEAP, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoARMO, items[nowItemIndex].itemInfoARMO + tmpCountARMO, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoAMMO, items[nowItemIndex].itemInfoAMMO + tmpCountAMMO, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoBOOK, items[nowItemIndex].itemInfoBOOK + tmpCountBOOK, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoALCH, items[nowItemIndex].itemInfoALCH + tmpCountALCH, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoINGR, items[nowItemIndex].itemInfoINGR + tmpCountINGR, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoMISC, items[nowItemIndex].itemInfoMISC + tmpCountMISC, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoCONT, items[nowItemIndex].itemInfoCONT + tmpCountCONT, compareForItemCONT);
+		std::sort(items[nowItemIndex].itemInfoFLOR, items[nowItemIndex].itemInfoFLOR + tmpCountFLOR, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoFOOD, items[nowItemIndex].itemInfoFOOD + tmpCountFOOD, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoKEYM, items[nowItemIndex].itemInfoKEYM + tmpCountKEYM, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoTREE, items[nowItemIndex].itemInfoTREE + tmpCountTREE, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoSGEM, items[nowItemIndex].itemInfoSGEM + tmpCountSGEM, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoACTI, items[nowItemIndex].itemInfoACTI + tmpCountACTI, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoSTON, items[nowItemIndex].itemInfoSTON + tmpCountSTON, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoANVI, items[nowItemIndex].itemInfoANVI + tmpCountANVI, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoACHR, items[nowItemIndex].itemInfoACHR + tmpCountACHR, compareForItemCONT);
+		std::sort(items[nowItemIndex].itemInfoANHD, items[nowItemIndex].itemInfoANHD + tmpCountANHD, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoANPA, items[nowItemIndex].itemInfoANPA + tmpCountANPA, compareForItem);
+		std::sort(items[nowItemIndex].itemInfoTOOL, items[nowItemIndex].itemInfoTOOL + tmpCountTOOL, compareForItem);
+
+		items[nowItemIndex].itemCount = tmpCount;
+		items[nowItemIndex].itemCountWEAP = tmpCountWEAP;
+		items[nowItemIndex].itemCountARMO = tmpCountARMO;
+		items[nowItemIndex].itemCountAMMO = tmpCountAMMO;
+		items[nowItemIndex].itemCountBOOK = tmpCountBOOK;
+		items[nowItemIndex].itemCountALCH = tmpCountALCH;
+		items[nowItemIndex].itemCountINGR = tmpCountINGR;
+		items[nowItemIndex].itemCountMISC = tmpCountMISC;
+		items[nowItemIndex].itemCountCONT = tmpCountCONT;
+		items[nowItemIndex].itemCountFLOR = tmpCountFLOR;
+		items[nowItemIndex].itemCountFOOD = tmpCountFOOD;
+		items[nowItemIndex].itemCountKEYM = tmpCountKEYM;
+		items[nowItemIndex].itemCountTREE = tmpCountTREE;
+		items[nowItemIndex].itemCountSGEM = tmpCountSGEM;
+		items[nowItemIndex].itemCountACTI = tmpCountACTI;
+		items[nowItemIndex].itemCountSTON = tmpCountSTON;
+		items[nowItemIndex].itemCountANVI = tmpCountANVI;
+		items[nowItemIndex].itemCountACHR = tmpCountACHR;
+		items[nowItemIndex].itemCountANHD = tmpCountANHD;
+		items[nowItemIndex].itemCountANPA = tmpCountANPA;
+		items[nowItemIndex].itemCountTOOL = tmpCountTOOL;
 	}
 }
 
