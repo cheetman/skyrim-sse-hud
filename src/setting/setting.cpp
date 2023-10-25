@@ -3,6 +3,7 @@
 #include <iostream>
 #include <memory/memory.h>
 #include <memory/autotake.h>
+#include <memory/npc.h>
 #include <menu/menu.h>
 #include <nlohmann/json.hpp>
 #include <menu/theme.h>

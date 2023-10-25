@@ -22,6 +22,8 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/memory/memory.cpp"
 	"${SOURCE_DIR}/memory/lotd.h"
 	"${SOURCE_DIR}/memory/lotd.cpp"
+	"${SOURCE_DIR}/memory/npc.h"
+	"${SOURCE_DIR}/memory/npc.cpp"
 	"${SOURCE_DIR}/menu/menu.h"
 	"${SOURCE_DIR}/menu/menu.cpp"
 	"${SOURCE_DIR}/menu/theme.h"

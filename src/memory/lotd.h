@@ -1,4 +1,5 @@
 #pragma once
+#include <unordered_set>
 
 namespace lotd
 {
@@ -10,6 +11,8 @@ namespace lotd
 		std::string formTypeName;
 		std::string roomName;
 	};
+
+	// 以FLST区分
 	struct List
 	{
 		std::string name;
@@ -27,9 +30,25 @@ namespace lotd
 		}
 	};
 
-	extern bool isLoad;
-	void init();
+	struct Lotd2Info
+	{
+		std::map<std::string, int> counts;
+		std::map<std::string, std::vector<Form>> lists;
+	};
 
+	extern bool isLoad;
+	extern bool isShow;
+	extern int nowItemIndex;
+
+	// 集合 按照他的FLST区分
 	extern std::vector<List> lists;
+	// 集合 按照房间区分
+	extern std::map<std::string, std::vector<Form>> listsR;
+	extern std::map<std::string, std::unordered_set<RE::FormID>> formIdsR;
+
+	void init();
+	void refreshItemInfo();
+	std::vector<Form>& getItems(std::string& roomName);
+	int getCount(std::string& roomName);
 
 }

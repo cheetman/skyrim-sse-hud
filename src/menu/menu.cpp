@@ -12,6 +12,7 @@
 #include <setting/setting.h>
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
+#include <memory/npc.h>
 
 namespace menu
 {
@@ -1443,7 +1444,6 @@ namespace menu
 		if (!startflag && !active) {
 			return;
 		}
-
 		// 当打开菜单时不显示
 		if (isOpenCursorMenu && !active) {
 			return;

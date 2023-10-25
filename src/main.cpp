@@ -14,6 +14,7 @@
 #include <hook/dinputhook.h>
 #include <hook/hudhook.h>
 #include <memory/memory.h>
+#include <memory/npc.h>
 #include <memory/autotake.h>
 #include <menu/menu.h>
 #include <event/BSTEquipEvent.h>
@@ -24,7 +25,6 @@
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
 {
 	//MessageBox(nullptr, TEXT("测试中文."), nullptr, MB_OK);
-	setting::load_settings();
 	try {
 #ifndef NDEBUG
 		auto sink = std::make_shared<spdlog::sinks::msvc_sink_mt>();
@@ -158,6 +158,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 	case SKSE::MessagingInterface::kDataLoaded:
 		{
 			logger::info("kDataLoaded"sv);
+			initData();
 			lotd::init();
 			break;
 		}
@@ -197,8 +198,10 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	}
 
 	SKSE::AllocTrampoline(1 << 6);
-
 	logger::info("registered listener"sv);
+
+	// 读取配置
+	setting::load_settings();
 
 
 	_beginthread(RefreshGameInfo, 0, NULL);
