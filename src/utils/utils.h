@@ -274,7 +274,7 @@ namespace ScriptUtil
 	}
 
 	
-	inline void ExecuteCommand(std::string& commandStr)
+	inline void ExecuteCommand(std::string commandStr)
 	{
 		// 调用控制台
 		const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();

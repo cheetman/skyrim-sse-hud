@@ -20,6 +20,9 @@ namespace lotd
 		std::uint32_t size = 0;
 		std::uint32_t sizeACTI = 0;
 		std::uint32_t sizeFLST = 0;
+		std::uint32_t size2 = 0;
+		std::uint32_t sizeACTI2 = 0;
+		std::uint32_t sizeFLST2 = 0;
 		std::vector<Form> forms;
 
 	public:
@@ -42,9 +45,7 @@ namespace lotd
 
 		int gold = 0;
 		float weight = 0;
-		std::string formIdStr = "";
 		RE::FormID baseFormId = 0;
-		std::string baseFormIdStr = "";
 		std::string formTypeStr = "";
 		std::string filename = "";
 
@@ -53,6 +54,7 @@ namespace lotd
 		int count = 0;
 		std::string contname;
 		RE::TESObjectREFR* contptr = nullptr;
+		RE::FormID contformId;
 		RE::LOCK_LEVEL lockLevel;
 		bool isDeleted = false;
 		bool isHarvested = false;

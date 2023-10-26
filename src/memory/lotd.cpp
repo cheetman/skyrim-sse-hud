@@ -73,6 +73,24 @@ namespace lotd
 						list.sizeACTI++;
 					} else if (form->Is(RE::FormType::FormList)) {
 						list.sizeFLST++;
+						auto listform2 = form->As<RE::BGSListForm>();
+						if (listform2) {
+							for (auto form2 : listform2->forms) {
+								if (form2->Is(RE::FormType::Activator)) {
+									list.sizeACTI2++;
+								} else if (form2->Is(RE::FormType::FormList)) {
+									list.sizeFLST2++;
+								} else {
+									list.size2++;
+									// 集合 按照他的FLST区分
+									list.forms.push_back({ form2->formID, form2->formType.get(), form2->GetName(), GetFormTypeName(form2->formType.underlying()), listItem.roomName });
+									// 集合 按照房间区分
+									listsR[listItem.roomName].push_back({ form2->formID, form2->formType.get(), form2->GetName(), GetFormTypeName(form2->formType.underlying()), listItem.roomName });
+									formIdsR[listItem.roomName].insert({ form2->formID });
+								}
+							}
+						}
+
 					} else {
 						list.size++;
 						// 集合 按照他的FLST区分
@@ -93,7 +111,7 @@ namespace lotd
 		for (const auto& pair : formIdsR) {
 			if (pair.second.find(baseFormId) != pair.second.end()) {
 				auto& nowItemInfo = nowMap[pair.first];
-				// 去现在的索引
+				// 取现在的索引
 				int tmpCount = tmpCountMap[pair.first];
 				// 检查一下长度
 				if (tmpCount + 1 > nowItemInfo.size()) {
@@ -177,6 +195,7 @@ namespace lotd
 											itemptr->count = count;
 											itemptr->contname = name;
 											itemptr->contptr = actor;
+											itemptr->contformId = actor->GetFormID();
 
 											itemptr->ptr = nullptr;
 											itemptr->formId = obj->GetFormID();
@@ -263,6 +282,8 @@ namespace lotd
 												itemptr->isCrime = reff->IsCrimeToActivate();
 												itemptr->isEnchanted = reff->IsEnchanted();
 
+												itemptr->contformId = 0;
+
 												if (show_items_window_direction) {
 													itemptr->distance = distance;
 													itemptr->direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
@@ -327,6 +348,7 @@ namespace lotd
 														itemptr->count = count;
 														itemptr->contname = name;
 														itemptr->contptr = reff;
+														itemptr->contformId = reff->GetFormID();
 
 														itemptr->ptr = nullptr;
 														itemptr->formId = obj->GetFormID();

@@ -2659,7 +2659,7 @@ namespace menu
 										ImGui::TableNextColumn();
 										ImGui::Text("%s", item.name.c_str());
 										ImGui::TableNextColumn();
-										ImGui::Text("%d-%d-%d", item.size, item.sizeACTI, item.sizeFLST);
+										ImGui::Text("%d-%d-%d_%d-%d-%d", item.size, item.sizeACTI, item.sizeFLST, item.size2, item.sizeACTI2, item.sizeFLST2);
 										ImGui::PopID();
 									}
 								ImGui::EndTable();

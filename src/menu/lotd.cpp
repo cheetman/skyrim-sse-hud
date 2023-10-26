@@ -1,9 +1,9 @@
 #include "lotd.h"
 #include <fonts/IconsMaterialDesignIcons.h>
 #include <imgui/imgui.h>
-#include <memory/memory.h>
-#include <memory/lotd.h>
 #include <memory/autotake.h>
+#include <memory/lotd.h>
+#include <memory/memory.h>
 #include <utils/utils.h>
 
 namespace lotd
@@ -22,7 +22,6 @@ namespace lotd
 		TableColumn_8,
 		TableColumn_9
 	};
-
 
 	void buildItemInfo(int count, std::vector<LotdInfo>& items)
 	{
@@ -80,22 +79,48 @@ namespace lotd
 			while (clipper.Step())
 				for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
 					LotdInfo& item = items[row_n];
-					ImGui::PushID(item.formId + 0x1000000);
+					ImGui::PushID(item.formId + item.contformId + 0x5000000);
 					ImGui::TableNextRow();
 					ImGui::TableNextColumn();
+
+					// 名称
+					char buf[120];
+					if (item.ptr) {
+						if (item.isEnchanted) {
+							snprintf(buf, 120, "%s" ICON_MDI_FLASH, item.name.c_str());
+						} else {
+							snprintf(buf, 120, "%s", item.name.c_str());
+						}
+					} else {
+						if (item.count > 1) {
+							if (item.isEnchanted) {
+								snprintf(buf, 120, "%s" ICON_MDI_FLASH "(%d) [%s]", item.name.c_str(), item.count, item.contname.c_str());
+							} else {
+								snprintf(buf, 120, "%s(%d) [%s]", item.name.c_str(), item.count, item.contname.c_str());
+							}
+						} else {
+							if (item.isEnchanted) {
+								snprintf(buf, 120, "%s" ICON_MDI_FLASH " [%s]", item.name.c_str(), item.contname.c_str());
+							} else {
+								snprintf(buf, 120, "%s [%s]", item.name.c_str(), item.contname.c_str());
+							}
+						}
+					}
+
 					if (item.isCrime) {
 						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-						if (ImGui::Selectable( item.name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick)) {
+						if (ImGui::Selectable(buf, false, ImGuiSelectableFlags_AllowDoubleClick)) {
 							if (item.ptr) {
 								if (!item.ptr->IsMarkedForDeletion()) {
-									
 									addItem(nullptr, item.ptr, 1);
 								}
 							}
 						}
 						ImGui::PopStyleColor();
 					} else {
-						if (ImGui::Selectable( item.name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick)) {
+						if (ImGui::Selectable(buf, false, ImGuiSelectableFlags_AllowDoubleClick)) {
+
+
 							if (item.ptr) {
 								if (!item.ptr->IsMarkedForDeletion()) {
 									addItem(nullptr, item.ptr, 1);
@@ -136,11 +161,11 @@ namespace lotd
 
 					if (show_items_window_refid) {
 						ImGui::TableNextColumn();
-						ImGui::Text("%s", item.formIdStr.c_str());
+						ImGui::Text("%s", item.formId);
 					}
 					if (show_items_window_formid) {
 						ImGui::TableNextColumn();
-						ImGui::Text("%s", item.baseFormIdStr.c_str());
+						ImGui::Text("%08X", item.baseFormId);
 					}
 					if (show_items_window_file) {
 						ImGui::TableNextColumn();
@@ -150,21 +175,28 @@ namespace lotd
 					ImGui::TableNextColumn();
 					if (show_items_window_settings) {
 						if (ImGui::SmallButton("\uf101")) {
-							std::string commandStr = "player.moveto ";
-							commandStr.append(item.formIdStr);
-							ScriptUtil::ExecuteCommand(commandStr);
+							if (item.ptr) {
+								snprintf(buf, 120, "player.moveto %08X", item.formId);
+								ScriptUtil::ExecuteCommand(buf);
+							} else {
+								snprintf(buf, 120, "player.moveto %08X", item.contformId);
+								ScriptUtil::ExecuteCommand(buf);
+							}
 							if (activeItems) {
 								activeItems = false;
 							}
 						}
 					}
-
-					if (trackPtrs.find(item.ptr) == trackPtrs.end()) {
+					RE::TESObjectREFR* ptr = item.ptr;
+					if (!ptr) {
+						ptr = item.contptr;
+					}
+					if (trackPtrs.find(ptr) == trackPtrs.end()) {
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 						}
 						if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
-							trackPtrs.insert(item.ptr);
+							trackPtrs.insert(ptr);
 						}
 					}
 
@@ -172,22 +204,67 @@ namespace lotd
 				}
 			ImGui::EndTable();
 		}
-
-
-
-
 	}
-
 
 	void __fastcall render()
 	{
-		ImGui::TableNextColumn();
-		ImGui::Text(ICON_MDI_SWORD " 军械库");
-		buildItemInfo(getCount("Armory"), getItems("Armory"));
+		if (getCount("Armory") > 0) {
+			ImGui::TableNextColumn();
+			ImGui::Text(ICON_MDI_HOME " 军械库");
+			buildItemInfo(getCount("Armory"), getItems("Armory"));
+		}
 
-		
-		ImGui::TableNextColumn();
-		ImGui::Text(ICON_MDI_SWORD " GalleryLibrary");
-		buildItemInfo(getCount("GalleryLibrary"), getItems("GalleryLibrary"));
+		if (getCount("GalleryLibrary") > 0) {
+			ImGui::TableNextColumn();
+			ImGui::Text(ICON_MDI_HOME " 艺术馆图书室");
+			buildItemInfo(getCount("GalleryLibrary"), getItems("GalleryLibrary"));
+		}
+
+		if (getCount("DaedricGallery") > 0) {
+			ImGui::TableNextColumn();
+			ImGui::Text(ICON_MDI_HOME " DaedricGallery");
+			buildItemInfo(getCount("DaedricGallery"), getItems("DaedricGallery"));
+		}
+
+		if (getCount("DragonbornHall") > 0) {
+			ImGui::TableNextColumn();
+			ImGui::Text(ICON_MDI_HOME " 龙裔大厅");
+			buildItemInfo(getCount("DragonbornHall"), getItems("DragonbornHall"));
+		}
+
+		if (getCount("HallOfHeroes") > 0) {
+			ImGui::TableNextColumn();
+			ImGui::Text(ICON_MDI_HOME " 英雄大厅");
+			buildItemInfo(getCount("HallOfHeroes"), getItems("HallOfHeroes"));
+		}
+
+		if (getCount("HallOfLostEmpires") > 0) {
+			ImGui::TableNextColumn();
+			ImGui::Text(ICON_MDI_HOME " 失落帝国大厅");
+			buildItemInfo(getCount("HallOfLostEmpires"), getItems("HallOfLostEmpires"));
+		}
+
+		if (getCount("HallOfOddities") > 0) {
+			ImGui::TableNextColumn();
+			ImGui::Text(ICON_MDI_HOME " 奇物大厅");
+			buildItemInfo(getCount("HallOfOddities"), getItems("HallOfOddities"));
+		}
+
+		if (getCount("NaturalScience") > 0) {
+			ImGui::TableNextColumn();
+			ImGui::Text(ICON_MDI_HOME " 自然科学");
+			buildItemInfo(getCount("NaturalScience"), getItems("NaturalScience"));
+		}
+		if (getCount("HallOfSecrets") > 0) {
+			ImGui::TableNextColumn();
+			ImGui::Text(ICON_MDI_HOME " 秘密大厅");
+			buildItemInfo(getCount("HallOfSecrets"), getItems("HallOfSecrets"));
+		}
+
+		if (getCount("MuseumStoreroom") > 0) {
+			ImGui::TableNextColumn();
+			ImGui::Text(ICON_MDI_HOME " 博物馆储藏室");
+			buildItemInfo(getCount("MuseumStoreroom"), getItems("MuseumStoreroom"));
+		}
 	}
 }
