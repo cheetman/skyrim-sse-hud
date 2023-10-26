@@ -12,10 +12,17 @@ namespace lotd
 	std::vector<List> lists;
 	std::map<std::string, std::vector<Form>> listsR;
 	std::map<std::string, std::unordered_set<RE::FormID>> formIdsR;
+	std::unordered_set<RE::FormID> formIds;
+
+	std::map<std::string, std::string> roomNames;
+	std::map<std::string, std::unordered_set<RE::FormID>> displayIds;
+
 	Lotd2Info* lotdItems = new Lotd2Info[2];
 
 	bool isLoad = false;
 	bool isShow = false;
+	std::uint8_t lotdCompileIndex;
+	std::uint8_t lotdSmallFileCompileIndex;
 	int nowItemIndex = 0;
 
 	bool compareForLotdItem(const LotdInfo& info1, const LotdInfo& info2)
@@ -43,6 +50,22 @@ namespace lotd
 		if (!setting::load_settings_lotd()) {
 			return;
 		}
+		// 写死中文
+		roomNames.insert({ "Armory", "军械库" });
+		roomNames.insert({ "DaedricGallery", "魔族大厅" });
+		roomNames.insert({ "DragonbornHall", "龙裔大厅" });
+		roomNames.insert({ "HallOfHeroes", "英雄大厅" });
+		roomNames.insert({ "HallOfLostEmpires", "失落帝国大厅" });
+		roomNames.insert({ "HallOfOddities", "奇物大厅" });
+		roomNames.insert({ "HallOfSecrets", "秘密大厅" });
+		roomNames.insert({ "GalleryLibrary", "艺术馆图书室" });
+		roomNames.insert({ "NaturalScience", "自然科学" });
+		roomNames.insert({ "MuseumStoreroom", "博物馆储藏室" });
+
+		displayIds["00126087"];
+		displayIds["002ACDD9"];
+		displayIds["006C22C2"];
+		displayIds["002F8E89"];
 
 		//初始化艺术馆
 		const auto handler = RE::TESDataHandler::GetSingleton();
@@ -51,7 +74,10 @@ namespace lotd
 		if (!file || file->compileIndex == 0xFF) {
 			return;
 		}
+
 		isLoad = true;
+		lotdCompileIndex = file->compileIndex;
+		lotdSmallFileCompileIndex = file->smallFileCompileIndex;
 
 		// 获取物品列表
 		for (auto& listItem : setting::lotdItemLists) {
@@ -86,7 +112,8 @@ namespace lotd
 									list.forms.push_back({ form2->formID, form2->formType.get(), form2->GetName(), GetFormTypeName(form2->formType.underlying()), listItem.roomName });
 									// 集合 按照房间区分
 									listsR[listItem.roomName].push_back({ form2->formID, form2->formType.get(), form2->GetName(), GetFormTypeName(form2->formType.underlying()), listItem.roomName });
-									formIdsR[listItem.roomName].insert({ form2->formID });
+									formIdsR[listItem.roomName].insert(form2->formID);
+									formIds.insert(form2->formID);
 								}
 							}
 						}
@@ -97,7 +124,8 @@ namespace lotd
 						list.forms.push_back({ form->formID, form->formType.get(), form->GetName(), GetFormTypeName(form->formType.underlying()), listItem.roomName });
 						// 集合 按照房间区分
 						listsR[listItem.roomName].push_back({ form->formID, form->formType.get(), form->GetName(), GetFormTypeName(form->formType.underlying()), listItem.roomName });
-						formIdsR[listItem.roomName].insert({ form->formID });
+						formIdsR[listItem.roomName].insert(form->formID);
+						formIds.insert(form->formID);
 					}
 				}
 			}
@@ -411,6 +439,30 @@ namespace lotd
 			// 3.排序
 			auto& list = lotdItems[nowItemIndex].lists[pair.first];
 			std::partial_sort(list.begin(), list.begin() + pair.second, list.begin() + pair.second, compareForLotdItem);
+		}
+
+		const auto handler = RE::TESDataHandler::GetSingleton();
+		// 查询已陈列展品
+		for (auto& pair : displayIds) {
+			RE::FormID formId = lotdCompileIndex << (3 * 8);
+			formId += lotdSmallFileCompileIndex << ((1 * 8) + 4);
+			formId += std::stoi(pair.first, 0, 16);
+
+			auto form = RE::TESForm::LookupByID(formId);
+			if (form) {
+				auto reff = form->AsReference();
+				if (reff) {
+					if (reff->GetObjectReference()->Is(RE::FormType::Container)) {
+						auto inv = reff->GetInventory(FormUtil::CanDisplay);
+						for (auto& [obj, data] : inv) {
+							auto& [count, entry] = data;
+							if (count > 0 && entry) {
+								pair.second.insert(obj->GetFormID());
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 }

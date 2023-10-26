@@ -73,6 +73,8 @@ namespace lotd
 
 	extern bool isLoad;
 	extern bool isShow;
+	extern std::uint8_t lotdCompileIndex;
+	extern std::uint8_t lotdSmallFileCompileIndex;
 	extern int nowItemIndex;
 
 	// 集合 按照他的FLST区分
@@ -80,6 +82,12 @@ namespace lotd
 	// 集合 按照房间区分
 	extern std::map<std::string, std::vector<Form>> listsR;
 	extern std::map<std::string, std::unordered_set<RE::FormID>> formIdsR;
+	extern std::unordered_set<RE::FormID> formIds;
+	// 多语言
+	extern std::map<std::string, std::string> roomNames;
+
+	// 已展示
+	extern std::map<std::string, std::unordered_set<RE::FormID>> displayIds;
 
 	void init();
 	void refreshItemInfo();

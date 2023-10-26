@@ -2010,6 +2010,23 @@ namespace menu
 				}
 			}
 
+
+			if (lotd::isLoad) {
+				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				if (lotd::isShow) {
+					if (ImGui::SmallButton("艺术馆模式")) {
+						lotd::isShow = !lotd::isShow;
+					}
+
+				} else {
+					if (ImGui::SmallButton("普通模式")) {
+						lotd::isShow = !lotd::isShow;
+					}
+				}
+			}
+			
+			
+
 			if (ImGui::BeginTable("tableItem", 5)) {
 				if (lotd::isShow) {
 					lotd::render();
@@ -2351,243 +2368,52 @@ namespace menu
 						ImGui::Text("其他：");
 						buildItemInfo(getItemCount(), getItems(), RE::FormType::None);
 					}
-				}
 
-				ImGui::TableNextColumn();
-				ImGui::Checkbox("更多", &show_items_window_settings);
-				if (show_items_window_settings) {
-					ImGui::SameLine(0.0f, 9.1f * ImGui::GetTextLineHeightWithSpacing());
+					ImGui::TableNextColumn();
+					ImGui::Checkbox("更多", &show_items_window_settings);
+					if (show_items_window_settings) {
+						ImGui::SameLine(0.0f, 9.1f * ImGui::GetTextLineHeightWithSpacing());
 
-					if (ImGui::Button(ICON_MDI_CONTENT_SAVE " 保存设置##2")) {
-						auto colorPlotHistogram = style.Colors[ImGuiCol_PlotHistogram];
-						colorPlotHistogramX = colorPlotHistogram.x;
-						colorPlotHistogramY = colorPlotHistogram.y;
-						colorPlotHistogramZ = colorPlotHistogram.z;
-						colorPlotHistogramW = colorPlotHistogram.w;
-						setting::save_settings();
-					}
-
-					{
-						ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
-
-						ImGui::BeginChild("childItemsSetting", ImVec2(ImGui::GetTextLineHeightWithSpacing() * 15, ImGui::GetTextLineHeightWithSpacing() * (14.5f)), true, window_flags);
-
-						if (ImGui::BeginTable("tableItemsSetting", 2)) {
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("显示FORMID", &show_items_window_formid);
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("显示REFID", &show_items_window_refid);
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("显示方位", &show_items_window_direction);
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("显示来自MOD", &show_items_window_file);
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("显示无模型物品", &show_items_window_3D);
-							ImGui::EndTable();
+						if (ImGui::Button(ICON_MDI_CONTENT_SAVE " 保存设置##2")) {
+							auto colorPlotHistogram = style.Colors[ImGuiCol_PlotHistogram];
+							colorPlotHistogramX = colorPlotHistogram.x;
+							colorPlotHistogramY = colorPlotHistogram.y;
+							colorPlotHistogramZ = colorPlotHistogram.z;
+							colorPlotHistogramW = colorPlotHistogram.w;
+							setting::save_settings();
 						}
 
-						ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-						ImGui::DragInt("显示范围(本地)", &show_items_window_auto_dis_local, 1, 10, 2000, "%d米");
-						ImGui::DragInt("显示范围(天际)", &show_items_window_auto_dis_skyrim, 1, 20, 10000, "%d米");
-						ImGui::PopItemWidth();
+						{
+							ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
 
-						ImGui::Checkbox("忽略项目", &show_items_window_ignore);
-						if (show_items_window_ignore) {
-							static ImGuiTableFlags flagsItem =
-								ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
+							ImGui::BeginChild("childItemsSetting", ImVec2(ImGui::GetTextLineHeightWithSpacing() * 15, ImGui::GetTextLineHeightWithSpacing() * (14.5f)), true, window_flags);
 
-							const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
-							if (ImGui::BeginTable("tableItemIngore", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
-								ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_1);
-								ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60, PlayerInfoColumnID_2);
-								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 40, PlayerInfoColumnID_3);
-
-								ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
-								ImGui::TableHeadersRow();
-
-								int deleteFormId = 0;
-
-								ImGuiListClipper clipper;
-								clipper.Begin(excludeForms.size());
-								while (clipper.Step())
-									for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
-										ExcludeForm& item = excludeForms[row_n];
-										ImGui::PushID(item.formId + 0x2000000);
-										ImGui::TableNextRow();
-										ImGui::TableNextColumn();
-										ImGui::Text("%08X", item.formId);
-										ImGui::TableNextColumn();
-										ImGui::Text("%s", item.name.c_str());
-										ImGui::TableNextColumn();
-										//ImGui::Text("%s", item.formTypeStr.c_str());
-
-										if (ImGui::SmallButton(ICON_MDI_CLOSE)) {
-											deleteFormId = item.formId;
-										}
-
-										ImGui::PopID();
-									}
+							if (ImGui::BeginTable("tableItemsSetting", 2)) {
+								ImGui::TableNextColumn();
+								ImGui::Checkbox("显示FORMID", &show_items_window_formid);
+								ImGui::TableNextColumn();
+								ImGui::Checkbox("显示REFID", &show_items_window_refid);
+								ImGui::TableNextColumn();
+								ImGui::Checkbox("显示方位", &show_items_window_direction);
+								ImGui::TableNextColumn();
+								ImGui::Checkbox("显示来自MOD", &show_items_window_file);
+								ImGui::TableNextColumn();
+								ImGui::Checkbox("显示无模型物品", &show_items_window_3D);
 								ImGui::EndTable();
-								if (deleteFormId) {
-									excludeFormIds.erase(deleteFormId);
-									excludeForms.erase(std::remove_if(excludeForms.begin(), excludeForms.end(),
-														   [&deleteFormId](const ExcludeForm& x) {
-															   return x.formId == deleteFormId;
-														   }),
-										excludeForms.end());
-								}
 							}
-						}
 
-						if (ImGui::TreeNodeEx(ICON_MDI_AUTORENEW " 自动拾取", ImGuiTreeNodeFlags_DefaultOpen)) {
 							ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-							ImGui::DragInt("拾取范围", &show_items_window_auto_dis, 1, 1, 100, "%d米");
-							ImGui::DragInt("拾取频率", &refresh_time_auto, 1, 1, 10, "%d秒");
-							ImGui::DragInt("拾取数量", &show_items_window_auto_every_max, 1, 1, 10, "%d个");
+							ImGui::DragInt("显示范围(本地)", &show_items_window_auto_dis_local, 1, 10, 2000, "%d米");
+							ImGui::DragInt("显示范围(天际)", &show_items_window_auto_dis_skyrim, 1, 20, 10000, "%d米");
 							ImGui::PopItemWidth();
-							ImGui::Checkbox("拾取提示", &show_items_window_auto_notification);
 
-							if (ImGui::TreeNodeEx(ICON_MDI_HUMAN_MALE " 尸体物品过滤", ImGuiTreeNodeFlags_DefaultOpen)) {
-								if (ImGui::BeginTable("tableItemsSettingACHR", 3)) {
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_SWORD "武器", &show_items_window_auto_achr_weap);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_SHIELD_HALF_FULL "装备", &show_items_window_auto_achr_armo);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_ARROW_PROJECTILE "弹药", &show_items_window_auto_achr_ammo);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE "药水", &show_items_window_auto_achr_alch);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_FOOD_DRUMSTICK "食物", &show_items_window_auto_achr_food);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_SOURCE_BRANCH "材料", &show_items_window_auto_achr_ingr);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_CARDS_DIAMOND "灵魂石", &show_items_window_auto_achr_sgem);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_CASH "金钱", &show_items_window_auto_achr_gold);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_SCRIPT_TEXT "卷轴", &show_items_window_auto_achr_scrl);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_KEY "钥匙", &show_items_window_auto_achr_keym);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_DIAMOND_STONE "宝石", &show_items_window_auto_achr_ston);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_ANVIL "矿锭", &show_items_window_auto_achr_anvi);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_LOCK_OPEN "开锁器", &show_items_window_auto_achr_lock);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_BOX_CUTTER "兽皮", &show_items_window_auto_achr_anhd);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_RABBIT "战利品", &show_items_window_auto_achr_anpa);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_TOOLS "工具", &show_items_window_auto_achr_tool);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_PACKAGE_VARIANT_CLOSED "杂项", &show_items_window_auto_achr_misc);
-									ImGui::EndTable();
-								}
-
-								ImGui::TreePop();
-							}
-
-							if (ImGui::TreeNodeEx(ICON_MDI_ARCHIVE_OUTLINE " 容器物品过滤", ImGuiTreeNodeFlags_DefaultOpen)) {
-								if (ImGui::BeginTable("tableItemsSettingCONT", 3)) {
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_SWORD "武器", &show_items_window_auto_cont_weap);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_SHIELD_HALF_FULL "装备", &show_items_window_auto_cont_armo);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_ARROW_PROJECTILE "弹药", &show_items_window_auto_cont_ammo);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE "药水", &show_items_window_auto_cont_alch);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_FOOD_DRUMSTICK "食物", &show_items_window_auto_cont_food);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_SOURCE_BRANCH "材料", &show_items_window_auto_cont_ingr);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_CARDS_DIAMOND "灵魂石", &show_items_window_auto_cont_sgem);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_CASH "金钱", &show_items_window_auto_cont_gold);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_SCRIPT_TEXT "卷轴", &show_items_window_auto_cont_scrl);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_KEY "钥匙", &show_items_window_auto_cont_keym);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_DIAMOND_STONE "宝石", &show_items_window_auto_cont_ston);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_ANVIL "矿锭", &show_items_window_auto_cont_anvi);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_LOCK_OPEN "开锁器", &show_items_window_auto_cont_lock);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_BOX_CUTTER "兽皮", &show_items_window_auto_cont_anhd);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_RABBIT "战利品", &show_items_window_auto_cont_anpa);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_TOOLS "工具", &show_items_window_auto_cont_tool);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(ICON_MDI_PACKAGE_VARIANT_CLOSED "杂项", &show_items_window_auto_cont_misc);
-									ImGui::EndTable();
-								}
-
-								ImGui::TreePop();
-							}
-
-							if (ImGui::TreeNodeEx(ICON_MDI_SWORD " 武器过滤", ImGuiTreeNodeFlags_DefaultOpen)) {
-								ImGui::Checkbox("只拾取附魔武器", &show_items_window_auto_weap_enchant);
-								ImGui::Checkbox("设置拾取价值", &show_items_window_auto_weap_price);
-								ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-								if (show_items_window_auto_weap_price) {
-									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									ImGui::DragInt("##设置价格", &show_items_window_auto_weap_price_value, 1, 100, 10000, " >%d");
-								}
-								ImGui::PopItemWidth();
-
-								ImGui::TreePop();
-							}
-
-							if (ImGui::TreeNodeEx(ICON_MDI_SHIELD_HALF_FULL " 装备过滤", ImGuiTreeNodeFlags_DefaultOpen)) {
-								ImGui::Checkbox("只拾取附魔装备", &show_items_window_auto_armo_enchant);
-								ImGui::Checkbox("设置拾取价值##2", &show_items_window_auto_armo_price);
-								ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-								if (show_items_window_auto_armo_price) {
-									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									ImGui::DragInt("##设置价格2", &show_items_window_auto_armo_price_value, 1, 100, 10000, " >%d");
-								}
-								ImGui::PopItemWidth();
-
-								ImGui::TreePop();
-							}
-
-							ImGui::Checkbox("地点过滤", &show_items_window_auto_ignore);
-							if (show_items_window_auto_ignore) {
-								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-								if (ImGui::SmallButton("排除当前位置")) {
-									auto player = RE::PlayerCharacter::GetSingleton();
-									auto currentLocation = player->currentLocation;
-									RE::FormID formid = 0;
-									std::string name = "天际";
-									if (currentLocation) {
-										formid = currentLocation->GetFormID();
-										name = currentLocation->GetFullName();
-									}
-									bool exist = false;
-									for (const auto& excludeForm : excludeLocationForms) {
-										if (excludeForm.formId == formid) {
-											exist = true;
-											break;
-										}
-									}
-									if (!exist) {
-										excludeLocationForms.push_back({ formid, name, "" });
-									}
-									excludeLocationFormIds.insert(formid);
-								}
-								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-								ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %s", playerInfo.location.c_str());
+							ImGui::Checkbox("忽略项目", &show_items_window_ignore);
+							if (show_items_window_ignore) {
 								static ImGuiTableFlags flagsItem =
 									ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
 
 								const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
-								if (ImGui::BeginTable("tableItemLocationIngore", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
+								if (ImGui::BeginTable("tableItemIngore", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
 									ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_1);
 									ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60, PlayerInfoColumnID_2);
 									ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 40, PlayerInfoColumnID_3);
@@ -2598,11 +2424,11 @@ namespace menu
 									int deleteFormId = 0;
 
 									ImGuiListClipper clipper;
-									clipper.Begin(excludeLocationForms.size());
+									clipper.Begin(excludeForms.size());
 									while (clipper.Step())
 										for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
-											ExcludeForm& item = excludeLocationForms[row_n];
-											ImGui::PushID(item.formId + 0x3000000);
+											ExcludeForm& item = excludeForms[row_n];
+											ImGui::PushID(item.formId + 0x2000000);
 											ImGui::TableNextRow();
 											ImGui::TableNextColumn();
 											ImGui::Text("%08X", item.formId);
@@ -2612,206 +2438,398 @@ namespace menu
 											//ImGui::Text("%s", item.formTypeStr.c_str());
 
 											if (ImGui::SmallButton(ICON_MDI_CLOSE)) {
-												deleteFormId = item.formId == 0 ? -1 : item.formId;
+												deleteFormId = item.formId;
 											}
 
 											ImGui::PopID();
 										}
 									ImGui::EndTable();
-									if (deleteFormId != 0) {
-										if (deleteFormId == -1) {
-											deleteFormId = 0;
-										}
-										excludeLocationFormIds.erase(deleteFormId);
-										excludeLocationForms.erase(std::remove_if(excludeLocationForms.begin(), excludeLocationForms.end(),
-																	   [&deleteFormId](const ExcludeForm& x) {
-																		   return x.formId == deleteFormId;
-																	   }),
-											excludeLocationForms.end());
+									if (deleteFormId) {
+										excludeFormIds.erase(deleteFormId);
+										excludeForms.erase(std::remove_if(excludeForms.begin(), excludeForms.end(),
+															   [&deleteFormId](const ExcludeForm& x) {
+																   return x.formId == deleteFormId;
+															   }),
+											excludeForms.end());
 									}
 								}
 							}
 
-							ImGui::TreePop();
-						}
+							if (ImGui::TreeNodeEx(ICON_MDI_AUTORENEW " 自动拾取", ImGuiTreeNodeFlags_DefaultOpen)) {
+								ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
+								ImGui::DragInt("拾取范围", &show_items_window_auto_dis, 1, 1, 100, "%d米");
+								ImGui::DragInt("拾取频率", &refresh_time_auto, 1, 1, 10, "%d秒");
+								ImGui::DragInt("拾取数量", &show_items_window_auto_every_max, 1, 1, 10, "%d个");
+								ImGui::PopItemWidth();
+								ImGui::Checkbox("拾取提示", &show_items_window_auto_notification);
+
+								if (ImGui::TreeNodeEx(ICON_MDI_HUMAN_MALE " 尸体物品过滤", ImGuiTreeNodeFlags_DefaultOpen)) {
+									if (ImGui::BeginTable("tableItemsSettingACHR", 3)) {
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_SWORD "武器", &show_items_window_auto_achr_weap);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_SHIELD_HALF_FULL "装备", &show_items_window_auto_achr_armo);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_ARROW_PROJECTILE "弹药", &show_items_window_auto_achr_ammo);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE "药水", &show_items_window_auto_achr_alch);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_FOOD_DRUMSTICK "食物", &show_items_window_auto_achr_food);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_SOURCE_BRANCH "材料", &show_items_window_auto_achr_ingr);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_CARDS_DIAMOND "灵魂石", &show_items_window_auto_achr_sgem);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_CASH "金钱", &show_items_window_auto_achr_gold);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_SCRIPT_TEXT "卷轴", &show_items_window_auto_achr_scrl);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_KEY "钥匙", &show_items_window_auto_achr_keym);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_DIAMOND_STONE "宝石", &show_items_window_auto_achr_ston);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_ANVIL "矿锭", &show_items_window_auto_achr_anvi);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_LOCK_OPEN "开锁器", &show_items_window_auto_achr_lock);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_BOX_CUTTER "兽皮", &show_items_window_auto_achr_anhd);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_RABBIT "战利品", &show_items_window_auto_achr_anpa);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_TOOLS "工具", &show_items_window_auto_achr_tool);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_PACKAGE_VARIANT_CLOSED "杂项", &show_items_window_auto_achr_misc);
+										ImGui::EndTable();
+									}
+
+									ImGui::TreePop();
+								}
+
+								if (ImGui::TreeNodeEx(ICON_MDI_ARCHIVE_OUTLINE " 容器物品过滤", ImGuiTreeNodeFlags_DefaultOpen)) {
+									if (ImGui::BeginTable("tableItemsSettingCONT", 3)) {
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_SWORD "武器", &show_items_window_auto_cont_weap);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_SHIELD_HALF_FULL "装备", &show_items_window_auto_cont_armo);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_ARROW_PROJECTILE "弹药", &show_items_window_auto_cont_ammo);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE "药水", &show_items_window_auto_cont_alch);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_FOOD_DRUMSTICK "食物", &show_items_window_auto_cont_food);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_SOURCE_BRANCH "材料", &show_items_window_auto_cont_ingr);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_CARDS_DIAMOND "灵魂石", &show_items_window_auto_cont_sgem);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_CASH "金钱", &show_items_window_auto_cont_gold);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_SCRIPT_TEXT "卷轴", &show_items_window_auto_cont_scrl);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_KEY "钥匙", &show_items_window_auto_cont_keym);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_DIAMOND_STONE "宝石", &show_items_window_auto_cont_ston);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_ANVIL "矿锭", &show_items_window_auto_cont_anvi);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_LOCK_OPEN "开锁器", &show_items_window_auto_cont_lock);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_BOX_CUTTER "兽皮", &show_items_window_auto_cont_anhd);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_RABBIT "战利品", &show_items_window_auto_cont_anpa);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_TOOLS "工具", &show_items_window_auto_cont_tool);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(ICON_MDI_PACKAGE_VARIANT_CLOSED "杂项", &show_items_window_auto_cont_misc);
+										ImGui::EndTable();
+									}
+
+									ImGui::TreePop();
+								}
+
+								if (ImGui::TreeNodeEx(ICON_MDI_SWORD " 武器过滤", ImGuiTreeNodeFlags_DefaultOpen)) {
+									ImGui::Checkbox("只拾取附魔武器", &show_items_window_auto_weap_enchant);
+									ImGui::Checkbox("设置拾取价值", &show_items_window_auto_weap_price);
+									ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
+									if (show_items_window_auto_weap_price) {
+										ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+										ImGui::DragInt("##设置价格", &show_items_window_auto_weap_price_value, 1, 100, 10000, " >%d");
+									}
+									ImGui::PopItemWidth();
+
+									ImGui::TreePop();
+								}
+
+								if (ImGui::TreeNodeEx(ICON_MDI_SHIELD_HALF_FULL " 装备过滤", ImGuiTreeNodeFlags_DefaultOpen)) {
+									ImGui::Checkbox("只拾取附魔装备", &show_items_window_auto_armo_enchant);
+									ImGui::Checkbox("设置拾取价值##2", &show_items_window_auto_armo_price);
+									ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
+									if (show_items_window_auto_armo_price) {
+										ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+										ImGui::DragInt("##设置价格2", &show_items_window_auto_armo_price_value, 1, 100, 10000, " >%d");
+									}
+									ImGui::PopItemWidth();
+
+									ImGui::TreePop();
+								}
+
+								ImGui::Checkbox("地点过滤", &show_items_window_auto_ignore);
+								if (show_items_window_auto_ignore) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									if (ImGui::SmallButton("排除当前位置")) {
+										auto player = RE::PlayerCharacter::GetSingleton();
+										auto currentLocation = player->currentLocation;
+										RE::FormID formid = 0;
+										std::string name = "天际";
+										if (currentLocation) {
+											formid = currentLocation->GetFormID();
+											name = currentLocation->GetFullName();
+										}
+										bool exist = false;
+										for (const auto& excludeForm : excludeLocationForms) {
+											if (excludeForm.formId == formid) {
+												exist = true;
+												break;
+											}
+										}
+										if (!exist) {
+											excludeLocationForms.push_back({ formid, name, "" });
+										}
+										excludeLocationFormIds.insert(formid);
+									}
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %s", playerInfo.location.c_str());
+									static ImGuiTableFlags flagsItem =
+										ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
+
+									const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+									if (ImGui::BeginTable("tableItemLocationIngore", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
+										ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_1);
+										ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60, PlayerInfoColumnID_2);
+										ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 40, PlayerInfoColumnID_3);
+
+										ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
+										ImGui::TableHeadersRow();
+
+										int deleteFormId = 0;
+
+										ImGuiListClipper clipper;
+										clipper.Begin(excludeLocationForms.size());
+										while (clipper.Step())
+											for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
+												ExcludeForm& item = excludeLocationForms[row_n];
+												ImGui::PushID(item.formId + 0x3000000);
+												ImGui::TableNextRow();
+												ImGui::TableNextColumn();
+												ImGui::Text("%08X", item.formId);
+												ImGui::TableNextColumn();
+												ImGui::Text("%s", item.name.c_str());
+												ImGui::TableNextColumn();
+												//ImGui::Text("%s", item.formTypeStr.c_str());
+
+												if (ImGui::SmallButton(ICON_MDI_CLOSE)) {
+													deleteFormId = item.formId == 0 ? -1 : item.formId;
+												}
+
+												ImGui::PopID();
+											}
+										ImGui::EndTable();
+										if (deleteFormId != 0) {
+											if (deleteFormId == -1) {
+												deleteFormId = 0;
+											}
+											excludeLocationFormIds.erase(deleteFormId);
+											excludeLocationForms.erase(std::remove_if(excludeLocationForms.begin(), excludeLocationForms.end(),
+																		   [&deleteFormId](const ExcludeForm& x) {
+																			   return x.formId == deleteFormId;
+																		   }),
+												excludeLocationForms.end());
+										}
+									}
+								}
+
+								ImGui::TreePop();
+							}
 
 #ifndef NDEBUG
 
-						if (ImGui::TreeNodeEx(ICON_MDI_HOME_MODERN " 龙裔艺术馆", ImGuiTreeNodeFlags_DefaultOpen)) {
-							ImGui::Checkbox("艺术馆物品板块", &lotd::isShow);
+							if (ImGui::TreeNodeEx(ICON_MDI_HOME_MODERN " 龙裔艺术馆", ImGuiTreeNodeFlags_DefaultOpen)) {
+								static ImGuiTableFlags flagsItem =
+									ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
+								const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+								if (ImGui::BeginTable("tableLotd", 2, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
+									ImGui::TableSetupColumn("List", ImGuiTableColumnFlags_WidthFixed, 80, 1);
+									ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 30, 2);
+									ImGui::TableSetupScrollFreeze(0, 1);
+									ImGui::TableHeadersRow();
 
-							static ImGuiTableFlags flagsItem =
-								ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
-							const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
-							if (ImGui::BeginTable("tableLotd", 2, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
-								ImGui::TableSetupColumn("List", ImGuiTableColumnFlags_WidthFixed, 80, 1);
-								ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 30, 2);
-								ImGui::TableSetupScrollFreeze(0, 1);
-								ImGui::TableHeadersRow();
+									ImGuiListClipper clipper;
+									clipper.Begin(lotd::lists.size());
+									while (clipper.Step())
+										for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
+											lotd::List& item = lotd::lists[row_n];
+											ImGui::PushID(item.name.c_str());
+											ImGui::TableNextRow();
+											ImGui::TableNextColumn();
+											ImGui::Text("%s", item.name.c_str());
+											ImGui::TableNextColumn();
+											ImGui::Text("%d-%d-%d_%d-%d-%d", item.size, item.sizeACTI, item.sizeFLST, item.size2, item.sizeACTI2, item.sizeFLST2);
+											ImGui::PopID();
+										}
+									ImGui::EndTable();
+								}
 
-								ImGuiListClipper clipper;
-								clipper.Begin(lotd::lists.size());
-								while (clipper.Step())
-									for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
-										lotd::List& item = lotd::lists[row_n];
-										ImGui::PushID(item.name.c_str());
-										ImGui::TableNextRow();
-										ImGui::TableNextColumn();
-										ImGui::Text("%s", item.name.c_str());
-										ImGui::TableNextColumn();
-										ImGui::Text("%d-%d-%d_%d-%d-%d", item.size, item.sizeACTI, item.sizeFLST, item.size2, item.sizeACTI2, item.sizeFLST2);
-										ImGui::PopID();
-									}
-								ImGui::EndTable();
+								//	ImGui::Checkbox("艺术馆物品板块", &show_items_window_gallery);
+
+								//	ImGui::Text("MOD清单 [已识别%d(%d)件物品,%d(%d)个MOD]", galleryItemCount, galleryItemTotalCount, galleryModCount, galleryModTotalCount);
+
+								//	static ImGuiTableFlags flagsItem =
+								//		ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
+								//	const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+								//	if (ImGui::BeginTable("tableGalleryMod", 4, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
+								//		ImGui::TableSetupColumn("Index", ImGuiTableColumnFlags_WidthFixed, 30, PlayerInfoColumnID_1);
+								//		ImGui::TableSetupColumn("MOD", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_2);
+								//		ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 40, PlayerInfoColumnID_4);
+								//		ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60, PlayerInfoColumnID_3);
+
+								//		ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
+								//		ImGui::TableHeadersRow();
+
+								//		int deleteFormId = 0;
+
+								//		ImGuiListClipper clipper;
+								//		clipper.Begin(galleryFormModData.size());
+								//		while (clipper.Step())
+								//			for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
+								//				GalleryModForm item = galleryFormModData[row_n];
+								//				ImGui::PushID(item.filename.c_str());
+								//				ImGui::TableNextRow();
+
+								//				if (item.compileIndex != -1) {
+								//					ImGui::TableNextColumn();
+								//					if (item.compileIndex == 0xFE) {
+								//						ImGui::Text("%02X:%03X", item.compileIndex, item.smallFileCompileIndex);
+								//					} else {
+								//						ImGui::Text("%02X", item.compileIndex);
+								//					}
+
+								//					ImGui::TableNextColumn();
+								//					ImGui::Text("%s", item.filename.c_str());
+								//					ImGui::TableNextColumn();
+								//					ImGui::Text("%d(%d)", item.itemCount, item.totalItemCount);
+								//					ImGui::TableNextColumn();
+								//					ImGui::Text("%s", item.name.c_str());
+								//				} else {
+								//					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+								//					ImGui::TableNextColumn();
+
+								//					ImGui::TableNextColumn();
+								//					ImGui::Text("%s", item.filename.c_str());
+								//					ImGui::TableNextColumn();
+								//					ImGui::Text("%d(%d)", item.itemCount, item.totalItemCount);
+								//					ImGui::TableNextColumn();
+								//					ImGui::Text("%s", item.name.c_str());
+								//					ImGui::PopStyleColor();
+								//				}
+
+								//				ImGui::PopID();
+								//			}
+								//		ImGui::EndTable();
+								//	}
+
+								//	static char str0[128] = "93F97";
+								//	if (ImGui::Button(ICON_MDI_CONTENT_SAVE " 生成配置文件")) {
+								//		std::string formidstr = str0;
+								//		auto form = RE::TESForm::LookupByID(std::stoi(formidstr, 0, 16));
+								//		if (form) {
+								//			if (form->Is(RE::FormType::Reference)) {
+								//				auto reff = form->AsReference();
+								//				if (reff) {
+								//					auto baseObj = reff->GetBaseObject();
+								//					if (baseObj) {
+								//						if (baseObj->GetFormType() == RE::FormType::Container) {
+								//							auto inv = reff->GetInventory(CanDisplay);
+
+								//							std::vector<setting::GalleryDataGen> galleryList;
+								//							for (auto& [obj, data] : inv) {
+								//								auto& [count, entry] = data;
+								//								if (count > 0 && entry) {
+								//									bool flag = false;
+								//									// 检查一下mod是否存在
+								//									for (auto& data : galleryList) {
+								//										if (data.filename == obj->GetFile(0)->fileName) {
+								//											// 存在直接加
+								//											flag = true;
+
+								//											int formid = obj->GetFormID();
+								//											if (obj->GetFile(0)->IsLight()) {
+								//												formid &= 0x00000FFF;
+								//											} else {
+								//												formid &= 0x00FFFFFF;
+								//											}
+								//											char buf[80];
+								//											snprintf(buf, 80, "%08X", formid);
+								//											data.formids.push_back(buf);
+								//											break;
+								//										}
+								//									}
+								//									if (!flag) {
+								//										setting::GalleryDataGen data;
+								//										data.filename = obj->GetFile(0)->fileName;
+								//										data.name = obj->GetFile(0)->fileName;
+
+								//										int formid = obj->GetFormID();
+								//										if (obj->GetFile(0)->IsLight()) {
+								//											formid &= 0x00000FFF;
+								//										} else {
+								//											formid &= 0x00FFFFFF;
+								//										}
+								//										char buf[80];
+								//										snprintf(buf, 80, "%08X", formid);
+								//										data.formids.push_back(buf);
+								//										galleryList.push_back(data);
+								//									}
+								//								}
+								//							}
+
+								//							std::filesystem::path settings_path = "data\\skse\\plugins\\ItemFinderPlus-GalleryList-Gen.json";
+
+								//							nlohmann::json arr = nlohmann::json::array();
+
+								//							for (const auto& data : galleryList) {
+								//								nlohmann::json obj = nlohmann::json::object();
+								//								obj["filename"] = data.filename;
+								//								obj["name"] = data.name;
+								//								nlohmann::json arr2 = nlohmann::json::array();
+								//								for (const auto& formid : data.formids) {
+								//									arr2.push_back(formid);
+								//								}
+								//								obj["formids"] = arr2;
+								//								arr.push_back(obj);
+								//							}
+
+								//							std::ofstream o(settings_path);
+								//							o << std::setw(4) << arr << std::endl;
+								//						}
+								//					}
+								//				}
+								//			}
+								//		}
+								//	}
+								//	ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								//	ImGui::InputText("ID:", str0, IM_ARRAYSIZE(str0));
+
+								ImGui::TreePop();
 							}
 
-							//	ImGui::Checkbox("艺术馆物品板块", &show_items_window_gallery);
-
-							//	ImGui::Text("MOD清单 [已识别%d(%d)件物品,%d(%d)个MOD]", galleryItemCount, galleryItemTotalCount, galleryModCount, galleryModTotalCount);
-
-							//	static ImGuiTableFlags flagsItem =
-							//		ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
-							//	const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
-							//	if (ImGui::BeginTable("tableGalleryMod", 4, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
-							//		ImGui::TableSetupColumn("Index", ImGuiTableColumnFlags_WidthFixed, 30, PlayerInfoColumnID_1);
-							//		ImGui::TableSetupColumn("MOD", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_2);
-							//		ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 40, PlayerInfoColumnID_4);
-							//		ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60, PlayerInfoColumnID_3);
-
-							//		ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
-							//		ImGui::TableHeadersRow();
-
-							//		int deleteFormId = 0;
-
-							//		ImGuiListClipper clipper;
-							//		clipper.Begin(galleryFormModData.size());
-							//		while (clipper.Step())
-							//			for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
-							//				GalleryModForm item = galleryFormModData[row_n];
-							//				ImGui::PushID(item.filename.c_str());
-							//				ImGui::TableNextRow();
-
-							//				if (item.compileIndex != -1) {
-							//					ImGui::TableNextColumn();
-							//					if (item.compileIndex == 0xFE) {
-							//						ImGui::Text("%02X:%03X", item.compileIndex, item.smallFileCompileIndex);
-							//					} else {
-							//						ImGui::Text("%02X", item.compileIndex);
-							//					}
-
-							//					ImGui::TableNextColumn();
-							//					ImGui::Text("%s", item.filename.c_str());
-							//					ImGui::TableNextColumn();
-							//					ImGui::Text("%d(%d)", item.itemCount, item.totalItemCount);
-							//					ImGui::TableNextColumn();
-							//					ImGui::Text("%s", item.name.c_str());
-							//				} else {
-							//					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
-							//					ImGui::TableNextColumn();
-
-							//					ImGui::TableNextColumn();
-							//					ImGui::Text("%s", item.filename.c_str());
-							//					ImGui::TableNextColumn();
-							//					ImGui::Text("%d(%d)", item.itemCount, item.totalItemCount);
-							//					ImGui::TableNextColumn();
-							//					ImGui::Text("%s", item.name.c_str());
-							//					ImGui::PopStyleColor();
-							//				}
-
-							//				ImGui::PopID();
-							//			}
-							//		ImGui::EndTable();
-							//	}
-
-							//	static char str0[128] = "93F97";
-							//	if (ImGui::Button(ICON_MDI_CONTENT_SAVE " 生成配置文件")) {
-							//		std::string formidstr = str0;
-							//		auto form = RE::TESForm::LookupByID(std::stoi(formidstr, 0, 16));
-							//		if (form) {
-							//			if (form->Is(RE::FormType::Reference)) {
-							//				auto reff = form->AsReference();
-							//				if (reff) {
-							//					auto baseObj = reff->GetBaseObject();
-							//					if (baseObj) {
-							//						if (baseObj->GetFormType() == RE::FormType::Container) {
-							//							auto inv = reff->GetInventory(CanDisplay);
-
-							//							std::vector<setting::GalleryDataGen> galleryList;
-							//							for (auto& [obj, data] : inv) {
-							//								auto& [count, entry] = data;
-							//								if (count > 0 && entry) {
-							//									bool flag = false;
-							//									// 检查一下mod是否存在
-							//									for (auto& data : galleryList) {
-							//										if (data.filename == obj->GetFile(0)->fileName) {
-							//											// 存在直接加
-							//											flag = true;
-
-							//											int formid = obj->GetFormID();
-							//											if (obj->GetFile(0)->IsLight()) {
-							//												formid &= 0x00000FFF;
-							//											} else {
-							//												formid &= 0x00FFFFFF;
-							//											}
-							//											char buf[80];
-							//											snprintf(buf, 80, "%08X", formid);
-							//											data.formids.push_back(buf);
-							//											break;
-							//										}
-							//									}
-							//									if (!flag) {
-							//										setting::GalleryDataGen data;
-							//										data.filename = obj->GetFile(0)->fileName;
-							//										data.name = obj->GetFile(0)->fileName;
-
-							//										int formid = obj->GetFormID();
-							//										if (obj->GetFile(0)->IsLight()) {
-							//											formid &= 0x00000FFF;
-							//										} else {
-							//											formid &= 0x00FFFFFF;
-							//										}
-							//										char buf[80];
-							//										snprintf(buf, 80, "%08X", formid);
-							//										data.formids.push_back(buf);
-							//										galleryList.push_back(data);
-							//									}
-							//								}
-							//							}
-
-							//							std::filesystem::path settings_path = "data\\skse\\plugins\\ItemFinderPlus-GalleryList-Gen.json";
-
-							//							nlohmann::json arr = nlohmann::json::array();
-
-							//							for (const auto& data : galleryList) {
-							//								nlohmann::json obj = nlohmann::json::object();
-							//								obj["filename"] = data.filename;
-							//								obj["name"] = data.name;
-							//								nlohmann::json arr2 = nlohmann::json::array();
-							//								for (const auto& formid : data.formids) {
-							//									arr2.push_back(formid);
-							//								}
-							//								obj["formids"] = arr2;
-							//								arr.push_back(obj);
-							//							}
-
-							//							std::ofstream o(settings_path);
-							//							o << std::setw(4) << arr << std::endl;
-							//						}
-							//					}
-							//				}
-							//			}
-							//		}
-							//	}
-							//	ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							//	ImGui::InputText("ID:", str0, IM_ARRAYSIZE(str0));
-
-							ImGui::TreePop();
-						}
-
 #endif
-						ImGui::EndChild();
+							ImGui::EndChild();
+						}
 					}
+
+
 				}
+
 
 				ImGui::EndTable();
 			}
@@ -2839,7 +2857,7 @@ namespace menu
 				ImGui::ShowDemoWindow(&show_demo_window);
 
 			{
-				ImGui::Begin("ItemFinderPlus v0.6##0", nullptr, 0);
+				ImGui::Begin("ItemFinderPlus v0.7##0", nullptr, 0);
 
 				ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 				if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
@@ -2891,8 +2909,8 @@ namespace menu
 							setting::save_settings();
 						}
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGui::CalcTextSize("v0.6.3-beta").x - 3);
-						myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "v0.6.3-beta");
+						ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGui::CalcTextSize("v0.7-beta").x - 3);
+						myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "v0.7-beta");
 						ImGui::EndTabItem();
 					}
 

@@ -29,7 +29,7 @@ namespace lotd
 			ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
 
 		const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
-		int columnCount = 4;
+		int columnCount = 3;
 
 		if (show_items_window_refid) {
 			columnCount++;
@@ -51,7 +51,7 @@ namespace lotd
 
 		if (ImGui::BeginTable("tableItem3333", columnCount, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 15, TEXT_BASE_HEIGHT * show_inv_window_height), 0.0f)) {
 			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 80, TableColumn_1);
-			ImGui::TableSetupColumn("类型", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40, TableColumn_2);
+			//ImGui::TableSetupColumn("类型", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40, TableColumn_2);
 			ImGui::TableSetupColumn("价值", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 35, TableColumn_3);
 			ImGui::TableSetupColumn("重量", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 30, TableColumn_4);
 
@@ -119,8 +119,6 @@ namespace lotd
 						ImGui::PopStyleColor();
 					} else {
 						if (ImGui::Selectable(buf, false, ImGuiSelectableFlags_AllowDoubleClick)) {
-
-
 							if (item.ptr) {
 								if (!item.ptr->IsMarkedForDeletion()) {
 									addItem(nullptr, item.ptr, 1);
@@ -129,8 +127,8 @@ namespace lotd
 						}
 					}
 
-					ImGui::TableNextColumn();
-					ImGui::Text("%s", item.formTypeStr.c_str());
+					/*ImGui::TableNextColumn();
+					ImGui::Text("%s", item.formTypeStr.c_str());*/
 
 					ImGui::TableNextColumn();
 					ImGui::Text("%d", item.gold);
@@ -265,6 +263,24 @@ namespace lotd
 			ImGui::TableNextColumn();
 			ImGui::Text(ICON_MDI_HOME " 博物馆储藏室");
 			buildItemInfo(getCount("MuseumStoreroom"), getItems("MuseumStoreroom"));
+		}
+
+		{
+			ImGui::TableNextColumn();
+			ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
+			ImGui::BeginChild("childItemsSetting", ImVec2(ImGui::GetTextLineHeightWithSpacing() * 15, ImGui::GetTextLineHeightWithSpacing() * (14.5f)), true, window_flags);
+
+			ImGui::Text("已识别物品数量：%d", formIds.size());
+			for (const auto& pair : formIdsR) {
+				ImGui::Text(ICON_MDI_HOME " %s：%d(%d)", roomNames[pair.first].c_str(), pair.second.size(), 0);
+			}
+
+			ImGui::Text("已陈列物品");
+			for (const auto& pair : displayIds) {
+				ImGui::Text(ICON_MDI_HOME " %s：%d", pair.first.c_str(), pair.second.size());
+			}
+
+			ImGui::EndChild();
 		}
 	}
 }
