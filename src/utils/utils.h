@@ -272,6 +272,24 @@ namespace ScriptUtil
 		REL::Relocation<func_t> func{ REL::ID(54842) };
 		return func(vm, stackID);
 	}
+
+	
+	inline void ExecuteCommand(std::string& commandStr)
+	{
+		// 调用控制台
+		const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
+		const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
+		if (script) {
+			const auto selectedRef = RE::Console::GetSelectedRef();
+			script->SetCommand(commandStr);
+			script->CompileAndRun(selectedRef.get());
+			delete script;
+		}
+	}
+
+		
+	
+
 }
 
 namespace FormUtil

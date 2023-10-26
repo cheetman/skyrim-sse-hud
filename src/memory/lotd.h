@@ -30,10 +30,43 @@ namespace lotd
 		}
 	};
 
+
+	
+	struct LotdInfo
+	{
+		RE::FormID formId;
+		RE::FormType formType;
+		std::string name;
+		std::string formTypeName;
+		std::string roomName;
+
+		int gold = 0;
+		float weight = 0;
+		std::string formIdStr = "";
+		RE::FormID baseFormId = 0;
+		std::string baseFormIdStr = "";
+		std::string formTypeStr = "";
+		std::string filename = "";
+
+		bool isCrime = false;
+		RE::TESObjectREFR* ptr = nullptr;
+		int count = 0;
+		std::string contname;
+		RE::TESObjectREFR* contptr = nullptr;
+		RE::LOCK_LEVEL lockLevel;
+		bool isDeleted = false;
+		bool isHarvested = false;
+		bool isEnchanted = false;
+
+		float distance = 0.0f;
+		int direction = 0;
+		bool isAuto = false;
+	};
+
 	struct Lotd2Info
 	{
 		std::map<std::string, int> counts;
-		std::map<std::string, std::vector<Form>> lists;
+		std::map<std::string, std::vector<LotdInfo>> lists;
 	};
 
 	extern bool isLoad;
@@ -48,7 +81,7 @@ namespace lotd
 
 	void init();
 	void refreshItemInfo();
-	std::vector<Form>& getItems(std::string& roomName);
-	int getCount(std::string& roomName);
+	std::vector<LotdInfo>& getItems(std::string roomName);
+	int getCount(std::string roomName);
 
 }

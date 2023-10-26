@@ -6,13 +6,14 @@
 #include <memory/autotake.h>
 #include <memory/lotd.h>
 #include <memory/memory.h>
+#include <memory/npc.h>
+#include <menu/lotd.h>
 #include <menu/menu.h>
 #include <menu/theme.h>
 #include <nlohmann/json.hpp>
 #include <setting/setting.h>
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
-#include <memory/npc.h>
 
 namespace menu
 {
@@ -273,16 +274,7 @@ namespace menu
 					if (ImGui::SmallButton("\uf101 传送玩家")) {
 						std::string commandStr = "player.moveto ";
 						commandStr.append(item.formIdStr);
-
-						// 调用控制台
-						const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
-						const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
-						if (script) {
-							const auto selectedRef = RE::Console::GetSelectedRef();
-							script->SetCommand(commandStr);
-							script->CompileAndRun(selectedRef.get());
-							delete script;
-						}
+						ScriptUtil::ExecuteCommand(commandStr);
 					}
 					ImGui::PopID();
 
@@ -444,17 +436,17 @@ namespace menu
 
 		if (ImGui::BeginTable("tableItemCONT", columnCount, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 15, tableHeight), 0.0f)) {
 			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60, PlayerInfoColumnID_1);
-			ImGui::TableSetupColumn("类型", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_2);
-			ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 30, PlayerInfoColumnID_3);
+			ImGui::TableSetupColumn("类型", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f, PlayerInfoColumnID_2);
+			ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 30, PlayerInfoColumnID_3);
 
 			if (show_items_window_direction) {
-				ImGui::TableSetupColumn("方位", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_7);
+				ImGui::TableSetupColumn("方位", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f, PlayerInfoColumnID_7);
 			}
 			if (show_items_window_refid) {
-				ImGui::TableSetupColumn("REFID", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_8);
+				ImGui::TableSetupColumn("REFID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80, PlayerInfoColumnID_8);
 			}
 			if (show_items_window_formid) {
-				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_4);
+				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80, PlayerInfoColumnID_4);
 			}
 			if (show_items_window_file) {
 				ImGui::TableSetupColumn("MOD", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_6);
@@ -603,18 +595,9 @@ namespace menu
 					if (ImGui::SmallButton("\uf101")) {
 						std::string commandStr = "player.moveto ";
 						commandStr.append(item.formIdStr);
-
-						// 调用控制台
-						const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
-						const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
-						if (script) {
-							const auto selectedRef = RE::Console::GetSelectedRef();
-							script->SetCommand(commandStr);
-							script->CompileAndRun(selectedRef.get());
-							delete script;
-							if (activeItems) {
-								activeItems = false;
-							}
+						ScriptUtil::ExecuteCommand(commandStr);
+						if (activeItems) {
+							activeItems = false;
 						}
 					}
 
@@ -724,16 +707,16 @@ namespace menu
 		if (ImGui::BeginTable("tableItemACHR", columnCount, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 15, TEXT_BASE_HEIGHT * show_inv_window_height), 0.0f)) {
 			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_1);
 			//ImGui::TableSetupColumn("类型", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_2);
-			ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 30, PlayerInfoColumnID_3);
+			ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 30, PlayerInfoColumnID_3);
 
 			if (show_items_window_direction) {
-				ImGui::TableSetupColumn("方位", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_7);
+				ImGui::TableSetupColumn("方位", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f, PlayerInfoColumnID_7);
 			}
 			if (show_items_window_formid) {
-				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_4);
+				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80, PlayerInfoColumnID_4);
 			}
 
-			ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_5);
+			ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80, PlayerInfoColumnID_5);
 			/*if (show_items_window_settings) {
 			}*/
 
@@ -827,18 +810,9 @@ namespace menu
 					if (ImGui::SmallButton("\uf101")) {
 						std::string commandStr = "player.moveto ";
 						commandStr.append(item.formIdStr);
-
-						// 调用控制台
-						const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
-						const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
-						if (script) {
-							const auto selectedRef = RE::Console::GetSelectedRef();
-							script->SetCommand(commandStr);
-							script->CompileAndRun(selectedRef.get());
-							delete script;
-							if (activeItems) {
-								activeItems = false;
-							}
+						ScriptUtil::ExecuteCommand(commandStr);
+						if (activeItems) {
+							activeItems = false;
 						}
 					}
 				}
@@ -886,19 +860,19 @@ namespace menu
 
 		if (ImGui::BeginTable(("tableItem3" + std::to_string((int)formType)).c_str(), columnCount, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 15, TEXT_BASE_HEIGHT * show_inv_window_height), 0.0f)) {
 			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_1);
-			ImGui::TableSetupColumn("类型", ImGuiTableColumnFlags_WidthFixed, 40, PlayerInfoColumnID_5);
-			ImGui::TableSetupColumn("价值", ImGuiTableColumnFlags_WidthFixed, 35, PlayerInfoColumnID_2);
-			ImGui::TableSetupColumn("重量", ImGuiTableColumnFlags_WidthFixed, 30, PlayerInfoColumnID_3);
+			ImGui::TableSetupColumn("类型", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40, PlayerInfoColumnID_5);
+			ImGui::TableSetupColumn("价值", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 35, PlayerInfoColumnID_2);
+			ImGui::TableSetupColumn("重量", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 30, PlayerInfoColumnID_3);
 
 			if (show_items_window_direction) {
-				ImGui::TableSetupColumn("方位", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_8);
+				ImGui::TableSetupColumn("方位", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f, PlayerInfoColumnID_8);
 			}
 
 			if (show_items_window_refid) {
-				ImGui::TableSetupColumn("REFID", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_9);
+				ImGui::TableSetupColumn("REFID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80, PlayerInfoColumnID_9);
 			}
 			if (show_items_window_formid) {
-				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_4);
+				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80, PlayerInfoColumnID_4);
 			}
 			if (show_items_window_file) {
 				ImGui::TableSetupColumn("MOD", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_7);
@@ -1013,15 +987,7 @@ namespace menu
 							std::string commandStr = "player.moveto ";
 							commandStr.append(item.formIdStr);
 
-							// 调用控制台
-							const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
-							const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
-							if (script) {
-								const auto selectedRef = RE::Console::GetSelectedRef();
-								script->SetCommand(commandStr);
-								script->CompileAndRun(selectedRef.get());
-								delete script;
-							}
+							ScriptUtil::ExecuteCommand(commandStr);
 							if (activeItems) {
 								activeItems = false;
 							}
@@ -1046,15 +1012,7 @@ namespace menu
 	void __fastcall buildItemInfo(int count, ItemInfo* items, RE::FormType formType)
 	{
 		static ImGuiTableFlags flagsItem =
-			/*	ImGuiTableFlags_Reorderable
-			| ImGuiTableFlags_Hideable*/
-			ImGuiTableFlags_Resizable
-			//| ImGuiTableFlags_RowBg
-			| ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody
-			/*	| ImGuiTableFlags_NoBordersInBody
-				| ImGuiTableFlags_ScrollX
-				| ImGuiTableFlags_SizingFixedFit*/
-			;
+			ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
 
 		const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
 		int columnCount = 3;
@@ -1104,7 +1062,7 @@ namespace menu
 			case RE::FormType::KeyMaster:
 				break;
 			default:
-				ImGui::TableSetupColumn("价值", ImGuiTableColumnFlags_WidthFixed, 35, PlayerInfoColumnID_2);
+				ImGui::TableSetupColumn("价值", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 35, PlayerInfoColumnID_2);
 				break;
 			}
 			switch (formType) {
@@ -1116,40 +1074,40 @@ namespace menu
 			case RE::FormType::KeyMaster:
 				break;
 			default:
-				ImGui::TableSetupColumn("重量", ImGuiTableColumnFlags_WidthFixed, 30, PlayerInfoColumnID_3);
+				ImGui::TableSetupColumn("重量", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 30, PlayerInfoColumnID_3);
 				break;
 			}
 			switch (formType) {
 			case RE::FormType::Container:
-				ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 30, PlayerInfoColumnID_2);
+				ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 30, PlayerInfoColumnID_2);
 				break;
 			default:
 				break;
 			}
 
 			if (show_items_window_direction) {
-				ImGui::TableSetupColumn("方位", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_8);
+				ImGui::TableSetupColumn("方位", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f, PlayerInfoColumnID_8);
 			}
 
 			switch (formType) {
 			case RE::FormType::None:
-				ImGui::TableSetupColumn("类型", ImGuiTableColumnFlags_WidthFixed, 40, PlayerInfoColumnID_5);
+				ImGui::TableSetupColumn("类型", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40, PlayerInfoColumnID_5);
 				break;
 			default:
 				break;
 			}
 
 			if (show_items_window_refid) {
-				ImGui::TableSetupColumn("REFID", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_9);
+				ImGui::TableSetupColumn("REFID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80, PlayerInfoColumnID_9);
 			}
 			if (show_items_window_formid) {
-				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_4);
+				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80, PlayerInfoColumnID_4);
 			}
 			if (show_items_window_file) {
 				ImGui::TableSetupColumn("MOD", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_7);
 			}
 			//if (show_items_window_settings) {
-			ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_6);
+			ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80, PlayerInfoColumnID_6);
 			//}
 			ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
 			ImGui::TableHeadersRow();
@@ -1343,16 +1301,7 @@ namespace menu
 							//return;
 							std::string commandStr = "player.moveto ";
 							commandStr.append(item.formIdStr);
-
-							// 调用控制台
-							const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
-							const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
-							if (script) {
-								const auto selectedRef = RE::Console::GetSelectedRef();
-								script->SetCommand(commandStr);
-								script->CompileAndRun(selectedRef.get());
-								delete script;
-							}
+							ScriptUtil::ExecuteCommand(commandStr);
 							if (activeItems) {
 								activeItems = false;
 							}
@@ -1691,16 +1640,7 @@ namespace menu
 						if (ImGui::SmallButton("卸载")) {
 							std::string commandStr = "player.unequipItem ";
 							commandStr.append(leftWeaponInfo.formID);
-
-							// 调用控制台
-							const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
-							const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
-							if (script) {
-								const auto selectedRef = RE::Console::GetSelectedRef();
-								script->SetCommand(commandStr);
-								script->CompileAndRun(selectedRef.get());
-								delete script;
-							}
+							ScriptUtil::ExecuteCommand(commandStr);
 						}
 
 						switch (leftWeaponInfo.formType) {
@@ -1746,16 +1686,7 @@ namespace menu
 							if (ImGui::SmallButton("卸载")) {
 								std::string commandStr = "player.unequipItem ";
 								commandStr.append(rightWeaponInfo.formID);
-
-								// 调用控制台
-								const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
-								const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
-								if (script) {
-									const auto selectedRef = RE::Console::GetSelectedRef();
-									script->SetCommand(commandStr);
-									script->CompileAndRun(selectedRef.get());
-									delete script;
-								}
+								ScriptUtil::ExecuteCommand(commandStr);
 							}
 
 							switch (rightWeaponInfo.formType) {
@@ -1798,16 +1729,7 @@ namespace menu
 						if (ImGui::SmallButton("卸载")) {
 							std::string commandStr = "player.unequipItem ";
 							commandStr.append(ammoInfo.formID);
-
-							// 调用控制台
-							const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
-							const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
-							if (script) {
-								const auto selectedRef = RE::Console::GetSelectedRef();
-								script->SetCommand(commandStr);
-								script->CompileAndRun(selectedRef.get());
-								delete script;
-							}
+							ScriptUtil::ExecuteCommand(commandStr);
 						}
 						ImGui::Text("伤害: %.1f", ammoInfo.damage);
 						ImGui::Text("价格: %d", ammoInfo.goldValue);
@@ -1847,16 +1769,7 @@ namespace menu
 							if (ImGui::SmallButton("卸载")) {
 								std::string commandStr = "player.unequipItem ";
 								commandStr.append(item.formID);
-
-								// 调用控制台
-								const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
-								const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
-								if (script) {
-									const auto selectedRef = RE::Console::GetSelectedRef();
-									script->SetCommand(commandStr);
-									script->CompileAndRun(selectedRef.get());
-									delete script;
-								}
+								ScriptUtil::ExecuteCommand(commandStr);
 							}
 							ImGui::Text("价格: %d$", item.goldValue);
 							ImGui::Text("属性值: %d", item.value);
@@ -2098,346 +2011,346 @@ namespace menu
 			}
 
 			if (ImGui::BeginTable("tableItem", 5)) {
-				if (getItemCountWEAP() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text(ICON_MDI_SWORD " 武器(%d)", getItemCountWEAP());
+				if (lotd::isShow) {
+					lotd::render();
 
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##41")) {
-							takeAllItem(getItemCountWEAP(), getItemsWEAP(), RE::FormType::Weapon);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##41", &show_items_window_auto_weap);
-					} else {
-						if (show_items_window_auto_weap) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfo(getItemCountWEAP(), getItemsWEAP(), RE::FormType::Weapon);
-				}
-				if (getItemCountARMO() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text(ICON_MDI_SHIELD " 装备(%d)", getItemCountARMO());
+				} else {
+					if (getItemCountWEAP() > 0) {
+						ImGui::TableNextColumn();
+						ImGui::Text(ICON_MDI_SWORD " 武器(%d)", getItemCountWEAP());
 
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##47")) {
-							takeAllItem(getItemCountARMO(), getItemsARMO(), RE::FormType::Armor);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##26", &show_items_window_auto_armo);
-					} else {
-						if (show_items_window_auto_armo) {
+						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfo(getItemCountARMO(), getItemsARMO(), RE::FormType::Armor);
-				}
-				if (getItemCountAMMO() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text(ICON_MDI_ARROW_PROJECTILE " 弹药(%d)", getItemCountAMMO());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##42")) {
-							takeAllItem(getItemCountAMMO(), getItemsAMMO(), RE::FormType::Ammo);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##47", &show_items_window_auto_ammo);
-					} else {
-						if (show_items_window_auto_ammo) {
+							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##41")) {
+								takeAllItem(getItemCountWEAP(), getItemsWEAP(), RE::FormType::Weapon);
+							}
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
+							ImGui::Checkbox("自动拾取##41", &show_items_window_auto_weap);
+						} else {
+							if (show_items_window_auto_weap) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Text(ICON_MDI_AUTORENEW);
+							}
 						}
+						buildItemInfo(getItemCountWEAP(), getItemsWEAP(), RE::FormType::Weapon);
 					}
-					buildItemInfo(getItemCountAMMO(), getItemsAMMO(), RE::FormType::Ammo);
-				}
-				if (getItemCountBOOK() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text(ICON_MDI_BOOK_OPEN_VARIANT " 书信(%d)", getItemCountBOOK());
+					if (getItemCountARMO() > 0) {
+						ImGui::TableNextColumn();
+						ImGui::Text(ICON_MDI_SHIELD " 装备(%d)", getItemCountARMO());
 
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##43")) {
-							takeAllItemBOOK(getItemCountBOOK(), getItemsBOOK(), RE::FormType::Book);
-						}
-					}
-					buildItemInfoBOOK(getItemCountBOOK(), getItemsBOOK(), RE::FormType::Book);
-				}
-				if (getItemCountALCH() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE " 药水(%d)", getItemCountALCH());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##44")) {
-							takeAllItem(getItemCountALCH(), getItemsALCH(), RE::FormType::AlchemyItem);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##44", &show_items_window_auto_alch);
-					} else {
-						if (show_items_window_auto_alch) {
+						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfo(getItemCountALCH(), getItemsALCH(), RE::FormType::AlchemyItem);
-				}
-				if (getItemCountFOOD() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text(ICON_MDI_FOOD_DRUMSTICK " 食物(%d)", getItemCountFOOD());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##45")) {
-							takeAllItem(getItemCountFOOD(), getItemsFOOD(), RE::FormType::PluginInfo);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##45", &show_items_window_auto_food);
-					} else {
-						if (show_items_window_auto_food) {
+							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##47")) {
+								takeAllItem(getItemCountARMO(), getItemsARMO(), RE::FormType::Armor);
+							}
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
+							ImGui::Checkbox("自动拾取##26", &show_items_window_auto_armo);
+						} else {
+							if (show_items_window_auto_armo) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Text(ICON_MDI_AUTORENEW);
+							}
 						}
+						buildItemInfo(getItemCountARMO(), getItemsARMO(), RE::FormType::Armor);
 					}
-					buildItemInfo(getItemCountFOOD(), getItemsFOOD(), RE::FormType::PluginInfo);  // 临时用PluginInfo
-				}
-				if (getItemCountINGR() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text(ICON_MDI_SOURCE_BRANCH " 材料(%d)", getItemCountINGR());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##48")) {
-							takeAllItem(getItemCountINGR(), getItemsINGR(), RE::FormType::Ingredient);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##48", &show_items_window_auto_ingr);
-					} else {
-						if (show_items_window_auto_ingr) {
+					if (getItemCountAMMO() > 0) {
+						ImGui::TableNextColumn();
+						ImGui::Text(ICON_MDI_ARROW_PROJECTILE " 弹药(%d)", getItemCountAMMO());
+						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfo(getItemCountINGR(), getItemsINGR(), RE::FormType::Ingredient);
-				}
-				if (getItemCountSGEM() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text(ICON_MDI_CARDS_DIAMOND " 灵魂石(%d)", getItemCountSGEM());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##53")) {
-							takeAllItem(getItemCountSGEM(), getItemsSGEM(), RE::FormType::SoulGem);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##53", &show_items_window_auto_sgem);
-					} else {
-						if (show_items_window_auto_sgem) {
+							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##42")) {
+								takeAllItem(getItemCountAMMO(), getItemsAMMO(), RE::FormType::Ammo);
+							}
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
+							ImGui::Checkbox("自动拾取##47", &show_items_window_auto_ammo);
+						} else {
+							if (show_items_window_auto_ammo) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Text(ICON_MDI_AUTORENEW);
+							}
 						}
+						buildItemInfo(getItemCountAMMO(), getItemsAMMO(), RE::FormType::Ammo);
 					}
-					buildItemInfo(getItemCountSGEM(), getItemsSGEM(), RE::FormType::SoulGem);
-				}
-				if (getItemCountKEYM() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text(ICON_MDI_KEY " 钥匙(%d)", getItemCountKEYM());
+					if (getItemCountBOOK() > 0) {
+						ImGui::TableNextColumn();
+						ImGui::Text(ICON_MDI_BOOK_OPEN_VARIANT " 书信(%d)", getItemCountBOOK());
 
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##52")) {
-							takeAllItem(getItemCountKEYM(), getItemsKEYM(), RE::FormType::KeyMaster);
+						if (show_items_window_settings) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##43")) {
+								takeAllItemBOOK(getItemCountBOOK(), getItemsBOOK(), RE::FormType::Book);
+							}
 						}
+						buildItemInfoBOOK(getItemCountBOOK(), getItemsBOOK(), RE::FormType::Book);
 					}
-					buildItemInfo(getItemCountKEYM(), getItemsKEYM(), RE::FormType::KeyMaster);
-				}
+					if (getItemCountALCH() > 0) {
+						ImGui::TableNextColumn();
+						ImGui::Text(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE " 药水(%d)", getItemCountALCH());
+						if (show_items_window_settings) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##44")) {
+								takeAllItem(getItemCountALCH(), getItemsALCH(), RE::FormType::AlchemyItem);
+							}
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::Checkbox("自动拾取##44", &show_items_window_auto_alch);
+						} else {
+							if (show_items_window_auto_alch) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Text(ICON_MDI_AUTORENEW);
+							}
+						}
+						buildItemInfo(getItemCountALCH(), getItemsALCH(), RE::FormType::AlchemyItem);
+					}
+					if (getItemCountFOOD() > 0) {
+						ImGui::TableNextColumn();
+						ImGui::Text(ICON_MDI_FOOD_DRUMSTICK " 食物(%d)", getItemCountFOOD());
+						if (show_items_window_settings) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##45")) {
+								takeAllItem(getItemCountFOOD(), getItemsFOOD(), RE::FormType::PluginInfo);
+							}
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::Checkbox("自动拾取##45", &show_items_window_auto_food);
+						} else {
+							if (show_items_window_auto_food) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Text(ICON_MDI_AUTORENEW);
+							}
+						}
+						buildItemInfo(getItemCountFOOD(), getItemsFOOD(), RE::FormType::PluginInfo);  // 临时用PluginInfo
+					}
+					if (getItemCountINGR() > 0) {
+						ImGui::TableNextColumn();
+						ImGui::Text(ICON_MDI_SOURCE_BRANCH " 材料(%d)", getItemCountINGR());
+						if (show_items_window_settings) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##48")) {
+								takeAllItem(getItemCountINGR(), getItemsINGR(), RE::FormType::Ingredient);
+							}
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::Checkbox("自动拾取##48", &show_items_window_auto_ingr);
+						} else {
+							if (show_items_window_auto_ingr) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Text(ICON_MDI_AUTORENEW);
+							}
+						}
+						buildItemInfo(getItemCountINGR(), getItemsINGR(), RE::FormType::Ingredient);
+					}
+					if (getItemCountSGEM() > 0) {
+						ImGui::TableNextColumn();
+						ImGui::Text(ICON_MDI_CARDS_DIAMOND " 灵魂石(%d)", getItemCountSGEM());
+						if (show_items_window_settings) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##53")) {
+								takeAllItem(getItemCountSGEM(), getItemsSGEM(), RE::FormType::SoulGem);
+							}
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::Checkbox("自动拾取##53", &show_items_window_auto_sgem);
+						} else {
+							if (show_items_window_auto_sgem) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Text(ICON_MDI_AUTORENEW);
+							}
+						}
+						buildItemInfo(getItemCountSGEM(), getItemsSGEM(), RE::FormType::SoulGem);
+					}
+					if (getItemCountKEYM() > 0) {
+						ImGui::TableNextColumn();
+						ImGui::Text(ICON_MDI_KEY " 钥匙(%d)", getItemCountKEYM());
 
-				if (getItemCountSTON() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text(ICON_MDI_DIAMOND_STONE " 宝石(%d)", getItemCountSTON());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-1")) {
-							takeAllItem(getItemCountSTON(), getItemsSTON(), RE::FormType::Misc);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##32-1", &show_items_window_auto_ston);
-					} else {
-						if (show_items_window_auto_ston) {
+						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
+							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##52")) {
+								takeAllItem(getItemCountKEYM(), getItemsKEYM(), RE::FormType::KeyMaster);
+							}
 						}
+						buildItemInfo(getItemCountKEYM(), getItemsKEYM(), RE::FormType::KeyMaster);
 					}
-					buildItemInfo(getItemCountSTON(), getItemsSTON(), RE::FormType::Misc);
-				}
+					if (getItemCountSTON() > 0) {
+						ImGui::TableNextColumn();
+						ImGui::Text(ICON_MDI_DIAMOND_STONE " 宝石(%d)", getItemCountSTON());
+						if (show_items_window_settings) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-1")) {
+								takeAllItem(getItemCountSTON(), getItemsSTON(), RE::FormType::Misc);
+							}
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::Checkbox("自动拾取##32-1", &show_items_window_auto_ston);
+						} else {
+							if (show_items_window_auto_ston) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Text(ICON_MDI_AUTORENEW);
+							}
+						}
+						buildItemInfo(getItemCountSTON(), getItemsSTON(), RE::FormType::Misc);
+					}
+					if (getItemCountANVI() > 0) {
+						ImGui::TableNextColumn();
+						ImGui::Text(ICON_MDI_ANVIL " 矿锭(%d)", getItemCountANVI());
+						if (show_items_window_settings) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-2")) {
+								takeAllItem(getItemCountANVI(), getItemsANVI(), RE::FormType::Misc);
+							}
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::Checkbox("自动拾取##32-2", &show_items_window_auto_anvi);
+						} else {
+							if (show_items_window_auto_anvi) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Text(ICON_MDI_AUTORENEW);
+							}
+						}
+						buildItemInfo(getItemCountANVI(), getItemsANVI(), RE::FormType::Misc);
+					}
+					if (getItemCountANHD() > 0) {
+						ImGui::TableNextColumn();
+						ImGui::Text(ICON_MDI_BOX_CUTTER " 兽皮(%d)", getItemCountANHD());
+						if (show_items_window_settings) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-3")) {
+								takeAllItem(getItemCountANHD(), getItemsANHD(), RE::FormType::Misc);
+							}
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::Checkbox("自动拾取##32-3", &show_items_window_auto_anhd);
+						} else {
+							if (show_items_window_auto_anhd) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Text(ICON_MDI_AUTORENEW);
+							}
+						}
+						buildItemInfo(getItemCountANHD(), getItemsANHD(), RE::FormType::Misc);
+					}
+					if (getItemCountANPA() > 0) {
+						ImGui::TableNextColumn();
+						ImGui::Text(ICON_MDI_RABBIT " 战利品(%d)", getItemCountANPA());
+						if (show_items_window_settings) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-4")) {
+								takeAllItem(getItemCountANPA(), getItemsANPA(), RE::FormType::Misc);
+							}
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::Checkbox("自动拾取##32-4", &show_items_window_auto_anpa);
+						} else {
+							if (show_items_window_auto_anpa) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Text(ICON_MDI_AUTORENEW);
+							}
+						}
+						buildItemInfo(getItemCountANPA(), getItemsANPA(), RE::FormType::Misc);
+					}
+					if (getItemCountTOOL() > 0) {
+						ImGui::TableNextColumn();
+						ImGui::Text(ICON_MDI_TOOLS " 工具(%d)", getItemCountTOOL());
+						if (show_items_window_settings) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-5")) {
+								takeAllItem(getItemCountTOOL(), getItemsTOOL(), RE::FormType::Misc);
+							}
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::Checkbox("自动拾取##32-5", &show_items_window_auto_tool);
+						} else {
+							if (show_items_window_auto_tool) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Text(ICON_MDI_AUTORENEW);
+							}
+						}
+						buildItemInfo(getItemCountTOOL(), getItemsTOOL(), RE::FormType::Misc);
+					}
+					if (getItemCountMISC() > 0) {
+						ImGui::TableNextColumn();
+						ImGui::Text(ICON_MDI_PACKAGE_VARIANT_CLOSED " 杂项(%d)", getItemCountMISC());
+						if (show_items_window_settings) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##49")) {
+								takeAllItem(getItemCountMISC(), getItemsMISC(), RE::FormType::Misc);
+							}
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::Checkbox("自动拾取##49", &show_items_window_auto_misc);
+						} else {
+							if (show_items_window_auto_misc) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Text(ICON_MDI_AUTORENEW);
+							}
+						}
+						buildItemInfo(getItemCountMISC(), getItemsMISC(), RE::FormType::Misc);
+					}
+					if (getItemCountFLOR() > 0) {
+						ImGui::TableNextColumn();
+						ImGui::Text(ICON_MDI_BASKET_OUTLINE " 可收获(%d)", getItemCountFLOR());
+						if (show_items_window_settings) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##50")) {
+								takeAllItem(getItemCountFLOR(), getItemsFLOR(), RE::FormType::Flora);
+							}
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::Checkbox("自动收获##50", &show_items_window_auto_flor);
+						} else {
+							if (show_items_window_auto_flor) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Text(ICON_MDI_AUTORENEW);
+							}
+						}
+						buildItemInfo(getItemCountFLOR(), getItemsFLOR(), RE::FormType::Flora);
+					}
+					if (getItemCountTREE() > 0) {
+						ImGui::TableNextColumn();
+						ImGui::Text(ICON_MDI_FLOWER_TULIP_OUTLINE " 植物(%d)", getItemCountTREE());
+						if (show_items_window_settings) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##53")) {
+								takeAllItem(getItemCountTREE(), getItemsTREE(), RE::FormType::Tree);
+							}
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::Checkbox("自动收获##53", &show_items_window_auto_tree);
+						} else {
+							if (show_items_window_auto_tree) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Text(ICON_MDI_AUTORENEW);
+							}
+						}
+						buildItemInfo(getItemCountTREE(), getItemsTREE(), RE::FormType::Tree);
+					}
+					if (getItemCountACHR() > 0) {
+						ImGui::TableNextColumn();
+						ImGui::Text(ICON_MDI_HUMAN_MALE " 尸体(%d)", getItemCountACHR());
 
-				if (getItemCountANVI() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text(ICON_MDI_ANVIL " 矿锭(%d)", getItemCountANVI());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-2")) {
-							takeAllItem(getItemCountANVI(), getItemsANVI(), RE::FormType::Misc);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##32-2", &show_items_window_auto_anvi);
-					} else {
-						if (show_items_window_auto_anvi) {
+						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
+							ImGui::Checkbox("自动拾取##62", &show_items_window_auto_achr);
+						} else {
+							if (show_items_window_auto_achr) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Text(ICON_MDI_AUTORENEW);
+							}
 						}
+						buildItemACHRInfo(getItemCountACHR(), getItemsACHR(), RE::FormType::ActorCharacter);
 					}
-					buildItemInfo(getItemCountANVI(), getItemsANVI(), RE::FormType::Misc);
-				}
-				if (getItemCountANHD() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text(ICON_MDI_BOX_CUTTER " 兽皮(%d)", getItemCountANHD());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-3")) {
-							takeAllItem(getItemCountANHD(), getItemsANHD(), RE::FormType::Misc);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##32-3", &show_items_window_auto_anhd);
-					} else {
-						if (show_items_window_auto_anhd) {
+					if (getItemCountCONT() > 0) {
+						ImGui::TableNextColumn();
+						ImGui::Text(ICON_MDI_ARCHIVE_OUTLINE " 箱子(%d)", getItemCountCONT());
+						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
+							ImGui::Checkbox("自动拾取##28", &show_items_window_auto_cont);
+						} else {
+							if (show_items_window_auto_cont) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Text(ICON_MDI_AUTORENEW);
+							}
 						}
+						buildItemCONTInfo(getItemCountCONT(), getItemsCONT(), RE::FormType::Container);
 					}
-					buildItemInfo(getItemCountANHD(), getItemsANHD(), RE::FormType::Misc);
-				}
-				if (getItemCountANPA() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text(ICON_MDI_RABBIT " 战利品(%d)", getItemCountANPA());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-4")) {
-							takeAllItem(getItemCountANPA(), getItemsANPA(), RE::FormType::Misc);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##32-4", &show_items_window_auto_anpa);
-					} else {
-						if (show_items_window_auto_anpa) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfo(getItemCountANPA(), getItemsANPA(), RE::FormType::Misc);
-				}
-				if (getItemCountTOOL() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text(ICON_MDI_TOOLS " 工具(%d)", getItemCountTOOL());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-5")) {
-							takeAllItem(getItemCountTOOL(), getItemsTOOL(), RE::FormType::Misc);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##32-5", &show_items_window_auto_tool);
-					} else {
-						if (show_items_window_auto_tool) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfo(getItemCountTOOL(), getItemsTOOL(), RE::FormType::Misc);
-				}
-				if (getItemCountMISC() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text(ICON_MDI_PACKAGE_VARIANT_CLOSED " 杂项(%d)", getItemCountMISC());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##49")) {
-							takeAllItem(getItemCountMISC(), getItemsMISC(), RE::FormType::Misc);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##49", &show_items_window_auto_misc);
-					} else {
-						if (show_items_window_auto_misc) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfo(getItemCountMISC(), getItemsMISC(), RE::FormType::Misc);
-				}
+					if (getItemCountACTI() > 0) {
+						ImGui::TableNextColumn();
+						ImGui::Text(ICON_MDI_COGS " 可互动(%d)", getItemCountACTI());
 
-				if (getItemCountFLOR() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text(ICON_MDI_BASKET_OUTLINE " 可收获(%d)", getItemCountFLOR());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##50")) {
-							takeAllItem(getItemCountFLOR(), getItemsFLOR(), RE::FormType::Flora);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动收获##50", &show_items_window_auto_flor);
-					} else {
-						if (show_items_window_auto_flor) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
+						buildItemInfo(getItemCountACTI(), getItemsACTI(), RE::FormType::Activator);
 					}
-					buildItemInfo(getItemCountFLOR(), getItemsFLOR(), RE::FormType::Flora);
-				}
-				if (getItemCountTREE() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text(ICON_MDI_FLOWER_TULIP_OUTLINE " 植物(%d)", getItemCountTREE());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##53")) {
-							takeAllItem(getItemCountTREE(), getItemsTREE(), RE::FormType::Tree);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动收获##53", &show_items_window_auto_tree);
-					} else {
-						if (show_items_window_auto_tree) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
+					if (getItemCount() > 0) {
+						ImGui::TableNextColumn();
+						ImGui::Text("其他：");
+						buildItemInfo(getItemCount(), getItems(), RE::FormType::None);
 					}
-					buildItemInfo(getItemCountTREE(), getItemsTREE(), RE::FormType::Tree);
-				}
-				if (getItemCountACHR() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text(ICON_MDI_HUMAN_MALE " 尸体(%d)", getItemCountACHR());
-
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##62", &show_items_window_auto_achr);
-					} else {
-						if (show_items_window_auto_achr) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemACHRInfo(getItemCountACHR(), getItemsACHR(), RE::FormType::ActorCharacter);
-				}
-				if (getItemCountCONT() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text(ICON_MDI_ARCHIVE_OUTLINE " 箱子(%d)", getItemCountCONT());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##28", &show_items_window_auto_cont);
-					} else {
-						if (show_items_window_auto_cont) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemCONTInfo(getItemCountCONT(), getItemsCONT(), RE::FormType::Container);
-				}
-
-				if (getItemCountACTI() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text(ICON_MDI_COGS " 可互动(%d)", getItemCountACTI());
-
-					buildItemInfo(getItemCountACTI(), getItemsACTI(), RE::FormType::Activator);
-				}
-
-				if (getItemCount() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text("其他：");
-					buildItemInfo(getItemCount(), getItems(), RE::FormType::None);
 				}
 
 				ImGui::TableNextColumn();
@@ -2467,15 +2380,15 @@ namespace menu
 							ImGui::TableNextColumn();
 							ImGui::Checkbox("显示方位", &show_items_window_direction);
 							ImGui::TableNextColumn();
-							ImGui::Checkbox("显示MOD名称", &show_items_window_file);
+							ImGui::Checkbox("显示来自MOD", &show_items_window_file);
 							ImGui::TableNextColumn();
 							ImGui::Checkbox("显示无模型物品", &show_items_window_3D);
 							ImGui::EndTable();
 						}
 
 						ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-						ImGui::DragInt("扫描范围(本地)", &show_items_window_auto_dis_local, 1, 10, 2000, "%d米");
-						ImGui::DragInt("扫描范围(天际)", &show_items_window_auto_dis_skyrim, 1, 20, 10000, "%d米");
+						ImGui::DragInt("显示范围(本地)", &show_items_window_auto_dis_local, 1, 10, 2000, "%d米");
+						ImGui::DragInt("显示范围(天际)", &show_items_window_auto_dis_skyrim, 1, 20, 10000, "%d米");
 						ImGui::PopItemWidth();
 
 						ImGui::Checkbox("忽略项目", &show_items_window_ignore);
@@ -2722,11 +2635,11 @@ namespace menu
 							ImGui::TreePop();
 						}
 
-						
 #ifndef NDEBUG
 
-
 						if (ImGui::TreeNodeEx(ICON_MDI_HOME_MODERN " 龙裔艺术馆", ImGuiTreeNodeFlags_DefaultOpen)) {
+							ImGui::Checkbox("艺术馆物品板块", &lotd::isShow);
+
 							static ImGuiTableFlags flagsItem =
 								ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
 							const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
@@ -2895,7 +2808,6 @@ namespace menu
 							ImGui::TreePop();
 						}
 
-						
 #endif
 						ImGui::EndChild();
 					}
@@ -3218,16 +3130,7 @@ namespace menu
 									commandStr.append(invValuesCode[getInv_selectIndex]);
 									commandStr.append(" ");
 									commandStr.append(std::to_string(getInv_nowValue));
-
-									// 调用控制台
-									const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
-									const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
-									if (script) {
-										const auto selectedRef = RE::Console::GetSelectedRef();
-										script->SetCommand(commandStr);
-										script->CompileAndRun(selectedRef.get());
-										delete script;
-									}
+									ScriptUtil::ExecuteCommand(commandStr);
 								}
 
 								ImGui::EndTable();
@@ -3355,19 +3258,6 @@ namespace menu
 				ImGui::End();
 			}
 		}
-
-		/*if (deleteREFRs.size() > 0) {
-			RE::PlayerCharacter* player2 = RE::PlayerCharacter::GetSingleton();
-			for (auto item : deleteREFRs) {
-				player2->PickUpObject(item, 1);
-				if (show_items_window_auto_notification) {
-					char buf[80];
-					snprintf(buf, 80, "%s 已自动拾取", item->GetDisplayFullName());
-					RE::DebugNotification(buf, NULL, false);
-				}
-			}
-			deleteREFRs.clear();
-		}*/
 	}
 
 }

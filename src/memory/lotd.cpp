@@ -18,12 +18,21 @@ namespace lotd
 	bool isShow = false;
 	int nowItemIndex = 0;
 
-	std::vector<Form>& getItems(std::string& roomName)
+	bool compareForLotdItem(const LotdInfo& info1, const LotdInfo& info2)
+	{
+		if (info1.gold != info2.gold) {
+			return info1.gold > info2.gold;
+		} else {
+			return info1.baseFormId < info2.baseFormId;
+		}
+	}
+
+	std::vector<LotdInfo>& getItems(std::string roomName)
 	{
 		return lotdItems[!nowItemIndex].lists[roomName];
 	}
 
-	int getCount(std::string& roomName)
+	int getCount(std::string roomName)
 	{
 		return lotdItems[!nowItemIndex].counts[roomName];
 	}
@@ -78,15 +87,16 @@ namespace lotd
 		}
 	}
 
-	Form* findItem(RE::FormID baseFormId, std::map<std::string, int>& tmpCountMap)
+	LotdInfo* findItem(RE::FormID baseFormId, std::map<std::string, int>& tmpCountMap)
 	{
 		auto& nowMap = lotdItems[nowItemIndex].lists;
 		for (const auto& pair : formIdsR) {
 			if (pair.second.find(baseFormId) != pair.second.end()) {
 				auto& nowItemInfo = nowMap[pair.first];
+				// 去现在的索引
 				int tmpCount = tmpCountMap[pair.first];
 				// 检查一下长度
-				if (tmpCountMap[pair.first] + 1 > nowItemInfo.size()) {
+				if (tmpCount + 1 > nowItemInfo.size()) {
 					nowItemInfo.resize(nowItemInfo.size() + 20);
 				}
 				tmpCountMap[pair.first]++;
@@ -113,15 +123,13 @@ namespace lotd
 
 		{
 			const auto& [map, lock] = RE::TESForm::GetAllForms();
-			const RE::BSReadLockGuard locker{ lock };
+			//const RE::BSReadLockGuard locker{ lock };
+			const RE::BSReadWriteLock locker{ lock };
 			if (!map) {
 				return;
 			}
 			for (auto& [id, form] : *map) {
 				if (form) {
-
-
-
 					if (form->Is(RE::FormType::ActorCharacter)) {
 						auto actor = form->As<RE::Actor>();
 						if (actor && actor->IsDead() && !actor->IsSummoned()) {
@@ -130,18 +138,11 @@ namespace lotd
 								continue;
 							}
 							if (actor->GetCurrentLocation() == currentLocation) {
-
-								if (!show_items_window_3D) {
-									if (!actor->Is3DLoaded()) {
-										continue;
-									}
-								}
-
-								if (actor->IsMarkedForDeletion()) {
+								if (!actor->Is3DLoaded()) {
 									continue;
 								}
-								auto name = actor->GetDisplayFullName();
-								if (strlen(name) == 0) {
+
+								if (actor->IsMarkedForDeletion() || actor->IsIgnored()) {
 									continue;
 								}
 								float distance = ValueUtil::calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
@@ -155,48 +156,47 @@ namespace lotd
 										continue;
 									}
 								}
+								auto name = actor->GetDisplayFullName();
+								if (strlen(name) == 0) {
+									continue;
+								}
 
-								//items[nowItemIndex].itemInfoACHR[tmpCountACHR].ptr = actor;
-								//items[nowItemIndex].itemInfoACHR[tmpCountACHR].baseFormId = actor->GetFormID();
-								//items[nowItemIndex].itemInfoACHR[tmpCountACHR].baseFormIdStr = FormIDToString(actor->GetFormID());
-								//items[nowItemIndex].itemInfoACHR[tmpCountACHR].formId = actor->GetFormID();
-								//items[nowItemIndex].itemInfoACHR[tmpCountACHR].formIdStr = FormIDToString(actor->GetFormID());
-								//items[nowItemIndex].itemInfoACHR[tmpCountACHR].formTypeStr = GetFormTypeName(actor->formType.underlying());
-								//items[nowItemIndex].itemInfoACHR[tmpCountACHR].name = name;
-								////items[nowItemIndex].itemInfoACHR[tmpCountACHR].weight = actor->GetWeight();
-								////items[nowItemIndex].itemInfoACHR[tmpCountACHR].gold = actor->GetGoldValue();
-								//items[nowItemIndex].itemInfoACHR[tmpCountACHR].isCrime = actor->IsCrimeToActivate();
-								////items[nowItemIndex].itemInfoACHR[tmpCountACHR].isEnchanted = actor->IsEnchanted();
+								int direction = 0;
+								if (show_items_window_direction) {
+									direction = ValueUtil::calculateDirection(actor->GetPosition(), player->GetPosition(), player->GetAngle());
+								}
 
-								//if (show_items_window_direction) {
-								//	items[nowItemIndex].itemInfoACHR[tmpCountACHR].distance = distance;
-								//	items[nowItemIndex].itemInfoACHR[tmpCountACHR].direction = ValueUtil::calculateDirection(actor->GetPosition(), player->GetPosition(), player->GetAngle());
-								//}
-
-								int tmpInvCount = 0;
+								bool isCrime = actor->IsCrimeToActivate();
 								auto inv = actor->GetInventory(FormUtil::CanDisplay);
 								for (auto& [obj, data] : inv) {
 									auto& [count, entry] = data;
 									if (count > 0 && entry) {
-#ifndef NDEBUG
-										if (obj->IsIgnored()) {
-											MessageBox(nullptr, obj->GetName(), nullptr, MB_OK);
-										}
-#endif
+										// 放到对应的数组里
+										LotdInfo* itemptr = findItem(obj->GetFormID(), tmpCountMap);
+										if (itemptr) {
+											itemptr->count = count;
+											itemptr->contname = name;
+											itemptr->contptr = actor;
 
-										/*items[nowItemIndex].itemInfoACHR[tmpCountACHR].invs[tmpInvCount].ptr = obj;
-										items[nowItemIndex].itemInfoACHR[tmpCountACHR].invs[tmpInvCount].name = obj->GetName();
-										bool stealing = player->WouldBeStealing(actor);
-										items[nowItemIndex].itemInfoACHR[tmpCountACHR].invs[tmpInvCount].isCrime = !entry.get()->IsOwnedBy(player, !stealing);
-										items[nowItemIndex].itemInfoACHR[tmpCountACHR].invs[tmpInvCount].isEnchanted = entry.get()->IsEnchanted();
-										items[nowItemIndex].itemInfoACHR[tmpCountACHR].invs[tmpInvCount++].count = count;*/
-										if (tmpInvCount == 200) {
-											break;
+											itemptr->ptr = nullptr;
+											itemptr->formId = obj->GetFormID();
+											itemptr->name = obj->GetName();
+											itemptr->baseFormId = obj->GetFormID();
+											itemptr->weight = obj->GetWeight();
+											itemptr->gold = obj->GetGoldValue();
+											itemptr->isCrime = isCrime;
+											itemptr->isEnchanted = entry->IsEnchanted();  // 注意
+
+											if (show_items_window_direction) {
+												itemptr->distance = distance;
+												itemptr->direction = direction;
+											}
+											if (show_items_window_file) {
+												itemptr->filename = obj->GetFile(0)->fileName;
+											}
 										}
 									}
 								}
-								//items[nowItemIndex].itemInfoACHR[tmpCountACHR].invCount = tmpInvCount;
-
 							}
 						}
 					}
@@ -208,6 +208,7 @@ namespace lotd
 								auto baseObj = reff->GetBaseObject();
 								if (baseObj) {
 									switch (baseObj->GetFormType()) {
+									case RE::FormType::Scroll:
 									case RE::FormType::Weapon:
 									case RE::FormType::Armor:
 									case RE::FormType::Ammo:
@@ -215,8 +216,8 @@ namespace lotd
 									case RE::FormType::AlchemyItem:
 									case RE::FormType::Ingredient:
 									case RE::FormType::Misc:
-									case RE::FormType::Tree:
 									case RE::FormType::KeyMaster:
+									case RE::FormType::Note:
 									case RE::FormType::SoulGem:
 										{
 											if (reff->IsMarkedForDeletion() || reff->IsIgnored()) {
@@ -227,11 +228,12 @@ namespace lotd
 												continue;
 											}
 
-											if (show_items_window_ignore) {
-												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
-													continue;
-												}
-											}
+											//if (show_items_window_ignore) {
+											//	if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
+											//		continue;
+											//	}
+											//}
+
 											auto name = reff->GetDisplayFullName();
 											if (strlen(name) == 0) {
 												continue;
@@ -250,51 +252,43 @@ namespace lotd
 											}
 
 											// 放到对应的数组里
-											Form* itemptr = findItem(baseObj->GetFormID(), tmpCountMap);
+											LotdInfo* itemptr = findItem(baseObj->GetFormID(), tmpCountMap);
 											if (itemptr) {
+												itemptr->ptr = reff;
 												itemptr->formId = reff->GetFormID();
 												itemptr->name = name;
-											}
+												itemptr->baseFormId = baseObj->GetFormID();
+												itemptr->weight = reff->GetWeight();
+												itemptr->gold = baseObj->GetGoldValue();
+												itemptr->isCrime = reff->IsCrimeToActivate();
+												itemptr->isEnchanted = reff->IsEnchanted();
 
-											/*items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].ptr = reff;
-											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].baseFormId = baseObj->GetFormID();
-											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].baseFormIdStr = FormIDToString(baseObj->GetFormID());
-											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].formId = reff->GetFormID();
-											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].formIdStr = FormIDToString(reff->GetFormID());
-											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
-											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].name = name;
-											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].weight = reff->GetWeight();
-											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].gold = baseObj->GetGoldValue();
-											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].isCrime = reff->IsCrimeToActivate();
-											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].isEnchanted = reff->IsEnchanted();
-
-											if (show_items_window_direction) {
-												items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].distance = distance;
-												items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+												if (show_items_window_direction) {
+													itemptr->distance = distance;
+													itemptr->direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+												}
+												if (show_items_window_file) {
+													itemptr->filename = baseObj->GetFile(0)->fileName;
+												}
 											}
-											if (show_items_window_file) {
-												items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].filename = baseObj->GetFile(0)->fileName;
-											}*/
 
 											break;
 										}
 
 									case RE::FormType::Container:
 										{
-											if (reff->IsMarkedForDeletion()) {
+											if (reff->IsMarkedForDeletion() || reff->IsIgnored()) {
 												continue;
 											}
 
-#ifndef NDEBUG
-											if (reff->IsIgnored()) {
-												MessageBox(nullptr, reff->GetDisplayFullName(), nullptr, MB_OK);
-											}
-#endif
-
-											if (show_items_window_ignore) {
+											/*if (show_items_window_ignore) {
 												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
 													continue;
 												}
+											}*/
+
+											if (!reff->Is3DLoaded()) {
+												continue;
 											}
 
 											float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
@@ -309,67 +303,56 @@ namespace lotd
 												}
 											}
 
-											/*items[nowItemIndex].itemInfoCONT[tmpCountCONT].ptr = reff;
-											items[nowItemIndex].itemInfoCONT[tmpCountCONT].baseFormId = baseObj->GetFormID();
-											items[nowItemIndex].itemInfoCONT[tmpCountCONT].baseFormIdStr = FormIDToString(baseObj->GetFormID());
-											items[nowItemIndex].itemInfoCONT[tmpCountCONT].formId = reff->GetFormID();
-											items[nowItemIndex].itemInfoCONT[tmpCountCONT].formIdStr = FormIDToString(reff->GetFormID());
-											items[nowItemIndex].itemInfoCONT[tmpCountCONT].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
-											items[nowItemIndex].itemInfoCONT[tmpCountCONT].name = reff->GetDisplayFullName();
-											items[nowItemIndex].itemInfoCONT[tmpCountCONT].weight = reff->GetWeight();
-											items[nowItemIndex].itemInfoCONT[tmpCountCONT].gold = baseObj->GetGoldValue();
-											bool isCrime = reff->IsCrimeToActivate();
-											items[nowItemIndex].itemInfoCONT[tmpCountCONT].isCrime = isCrime;
-											items[nowItemIndex].itemInfoCONT[tmpCountCONT].lockLevel = reff->GetLockLevel();
+											auto name = reff->GetDisplayFullName();
+											if (strlen(name) == 0) {
+												continue;
+											}
+
+											int direction = 0;
 											if (show_items_window_direction) {
-												items[nowItemIndex].itemInfoCONT[tmpCountCONT].distance = distance;
-												items[nowItemIndex].itemInfoCONT[tmpCountCONT].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+												direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
 											}
-											if (show_items_window_file) {
-												items[nowItemIndex].itemInfoCONT[tmpCountCONT].filename = baseObj->GetFile(0)->fileName;
-											}*/
 
-											int tmpInvCount = 0;
+											bool isCrime = reff->IsCrimeToActivate();
+
 											auto inv = reff->GetInventory(FormUtil::CanDisplay);
-
-											// 自动拾取条件1
-											/*bool auto1 = false;
-											if (show_items_window_auto_cont) {
-												if (autoContFormIds.find(baseObj->GetFormID()) != autoContFormIds.end()) {
-													auto1 = true;
-												}
-											}
-											items[nowItemIndex].itemInfoCONT[tmpCountCONT].isAuto = auto1;*/
+											bool stealing = player->WouldBeStealing(reff);
 
 											for (auto& [obj, data] : inv) {
 												auto& [count, entry] = data;
 												if (count > 0 && entry) {
-#ifndef NDEBUG
-													if (obj->IsIgnored()) {
-														MessageBox(nullptr, obj->GetName(), nullptr, MB_OK);
-													}
-#endif
+													// 放到对应的数组里
+													LotdInfo* itemptr = findItem(obj->GetFormID(), tmpCountMap);
+													if (itemptr) {
+														itemptr->count = count;
+														itemptr->contname = name;
+														itemptr->contptr = reff;
 
-													/*items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].ptr = obj;
-													items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].name = obj->GetName();
-													bool stealing = player->WouldBeStealing(reff);
-													items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].isCrime = !entry.get()->IsOwnedBy(player, !stealing);
-													items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount].isEnchanted = entry.get()->IsEnchanted();
-													items[nowItemIndex].itemInfoCONT[tmpCountCONT].invs[tmpInvCount++].count = count;*/
-													if (tmpInvCount == 200) {
-														break;
+														itemptr->ptr = nullptr;
+														itemptr->formId = obj->GetFormID();
+														itemptr->name = obj->GetName();
+														itemptr->baseFormId = obj->GetFormID();
+														itemptr->weight = obj->GetWeight();
+														itemptr->gold = obj->GetGoldValue();
+														itemptr->isCrime = !entry.get()->IsOwnedBy(player, !stealing);
+														itemptr->isEnchanted = entry->IsEnchanted();  // 注意
+
+														if (show_items_window_direction) {
+															itemptr->distance = distance;
+															itemptr->direction = direction;
+														}
+														if (show_items_window_file) {
+															itemptr->filename = obj->GetFile(0)->fileName;
+														}
 													}
 												}
 											}
-
-											//items[nowItemIndex].itemInfoCONT[tmpCountCONT].invCount = tmpInvCount;
-
-
 											break;
 										}
 
-									case RE::FormType::Activator: // 应该不需要
-									case RE::FormType::Flora: // 应该不需要
+									case RE::FormType::Tree:
+									case RE::FormType::Activator:  // 应该不需要
+									case RE::FormType::Flora:      // 应该不需要
 									case RE::FormType::Static:
 									case RE::FormType::Furniture:
 									case RE::FormType::IdleMarker:
@@ -391,10 +374,21 @@ namespace lotd
 							}
 						}
 					}
-
-
 				}
 			}
+		}
+
+		// 1.先清空
+		for (auto& pair : lotdItems[nowItemIndex].counts) {
+			pair.second = 0;
+		}
+
+		// 2.赋值
+		for (const auto& pair : tmpCountMap) {
+			lotdItems[nowItemIndex].counts[pair.first] = pair.second;
+			// 3.排序
+			auto& list = lotdItems[nowItemIndex].lists[pair.first];
+			std::partial_sort(list.begin(), list.begin() + pair.second, list.begin() + pair.second, compareForLotdItem);
 		}
 	}
 }
