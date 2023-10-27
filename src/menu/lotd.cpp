@@ -50,26 +50,26 @@ namespace lotd
 		}
 
 		if (ImGui::BeginTable("tableItem3333", columnCount, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 15, TEXT_BASE_HEIGHT * show_inv_window_height), 0.0f)) {
-			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 80, TableColumn_1);
+			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, TableColumn_1);
 			//ImGui::TableSetupColumn("类型", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40, TableColumn_2);
-			ImGui::TableSetupColumn("价值", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 35, TableColumn_3);
-			ImGui::TableSetupColumn("重量", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 30, TableColumn_4);
+			ImGui::TableSetupColumn("价值", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 35.0f * ImGui::GetIO().FontGlobalScale, TableColumn_3);
+			ImGui::TableSetupColumn("重量", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 30.0f * ImGui::GetIO().FontGlobalScale, TableColumn_4);
 
 			if (show_items_window_direction) {
-				ImGui::TableSetupColumn("方位", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f, TableColumn_5);
+				ImGui::TableSetupColumn("方位", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f * ImGui::GetIO().FontGlobalScale, TableColumn_5);
 			}
 
 			if (show_items_window_refid) {
-				ImGui::TableSetupColumn("REFID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80, TableColumn_6);
+				ImGui::TableSetupColumn("REFID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, TableColumn_6);
 			}
 			if (show_items_window_formid) {
-				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80, TableColumn_7);
+				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, TableColumn_7);
 			}
 			if (show_items_window_file) {
-				ImGui::TableSetupColumn("MOD", ImGuiTableColumnFlags_WidthFixed, 80, TableColumn_8);
+				ImGui::TableSetupColumn("MOD", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, TableColumn_8);
 			}
 			//if (show_items_window_settings) {
-			ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80, TableColumn_9);
+			ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, TableColumn_9);
 			//}
 			ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
 			ImGui::TableHeadersRow();
@@ -159,7 +159,7 @@ namespace lotd
 
 					if (show_items_window_refid) {
 						ImGui::TableNextColumn();
-						ImGui::Text("%s", item.formId);
+						ImGui::Text("%08X", item.formId);
 					}
 					if (show_items_window_formid) {
 						ImGui::TableNextColumn();
@@ -220,7 +220,7 @@ namespace lotd
 
 		if (getCount("DaedricGallery") > 0) {
 			ImGui::TableNextColumn();
-			ImGui::Text(ICON_MDI_HOME " DaedricGallery");
+			ImGui::Text(ICON_MDI_HOME " 魔族大厅");
 			buildItemInfo(getCount("DaedricGallery"), getItems("DaedricGallery"));
 		}
 
@@ -264,20 +264,20 @@ namespace lotd
 			ImGui::Text(ICON_MDI_HOME " 博物馆储藏室");
 			buildItemInfo(getCount("MuseumStoreroom"), getItems("MuseumStoreroom"));
 		}
+		if (getCount("Guildhouse") > 0) {
+			ImGui::TableNextColumn();
+			ImGui::Text(ICON_MDI_HOME " 探险家协会");
+			buildItemInfo(getCount("Guildhouse"), getItems("Guildhouse"));
+		}
 
 		{
 			ImGui::TableNextColumn();
+			ImGui::Text("艺术馆物品数量：%d", formIds.size());
 			ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
 			ImGui::BeginChild("childItemsSetting", ImVec2(ImGui::GetTextLineHeightWithSpacing() * 15, ImGui::GetTextLineHeightWithSpacing() * (14.5f)), true, window_flags);
 
-			ImGui::Text("已识别物品数量：%d", formIds.size());
 			for (const auto& pair : formIdsR) {
-				ImGui::Text(ICON_MDI_HOME " %s：%d(%d)", roomNames[pair.first].c_str(), pair.second.size(), 0);
-			}
-
-			ImGui::Text("已陈列物品");
-			for (const auto& pair : displayIds) {
-				ImGui::Text(ICON_MDI_HOME " %s：%d", pair.first.c_str(), pair.second.size());
+				ImGui::Text(ICON_MDI_HOME " %s：%d(%d)", roomNames[pair.first].c_str(), pair.second.size(), displayIdsR[pair.first].size());
 			}
 
 			ImGui::EndChild();

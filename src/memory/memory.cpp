@@ -1221,14 +1221,15 @@ void __cdecl RefreshItemInfo(void*)
 										}
 									case RE::FormType::Misc:
 										{
-											if (reff->IsMarkedForDeletion()) {
+											if (reff->IsMarkedForDeletion() || reff->IsIgnored()) {
 												continue;
 											}
-#ifndef NDEBUG
-											if (reff->IsIgnored()) {
-												MessageBox(nullptr, reff->GetDisplayFullName(), nullptr, MB_OK);
+
+				
+											if (!reff->GetPlayable()) {
+												continue;
 											}
-#endif
+
 
 											if (show_items_window_ignore) {
 												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
@@ -1425,15 +1426,10 @@ void __cdecl RefreshItemInfo(void*)
 												continue;
 											}
 
-											if (reff->IsMarkedForDeletion()) {
+											if (reff->IsMarkedForDeletion() || reff->IsIgnored()) {
 												continue;
 											}
 
-#ifndef NDEBUG
-											if (reff->IsIgnored()) {
-												MessageBox(nullptr, reff->GetDisplayFullName(), nullptr, MB_OK);
-											}
-#endif
 
 											if (show_items_window_ignore) {
 												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
@@ -1471,6 +1467,12 @@ void __cdecl RefreshItemInfo(void*)
 											}
 											if (show_items_window_file) {
 												items[nowItemIndex].itemInfoCONT[tmpCountCONT].filename = baseObj->GetFile(0)->fileName;
+											}
+											auto owner = reff->GetOwner();
+											if (owner) {
+												items[nowItemIndex].itemInfoCONT[tmpCountCONT].ownerName = owner->GetName();
+											} else {
+												items[nowItemIndex].itemInfoCONT[tmpCountCONT].ownerName = "-";
 											}
 
 											int tmpInvCount = 0;
@@ -1734,15 +1736,10 @@ void __cdecl RefreshItemInfo(void*)
 												continue;
 											}
 
-											if (reff->IsMarkedForDeletion()) {
+											if (reff->IsMarkedForDeletion() || reff->IsIgnored()) {
 												continue;
 											}
 
-#ifndef NDEBUG
-											if (reff->IsIgnored()) {
-												MessageBox(nullptr, reff->GetDisplayFullName(), nullptr, MB_OK);
-											}
-#endif
 
 											auto name = reff->GetDisplayFullName();
 											if (strlen(name) == 0) {

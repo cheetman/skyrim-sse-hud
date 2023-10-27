@@ -191,6 +191,7 @@ struct ItemInfoCONT : public ItemInfo
 {
 	int invCount = 0;
 	ItemInvInfo invs[200];
+	std::string ownerName = "";
 };
 
 struct ExcludeForm

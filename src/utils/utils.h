@@ -274,20 +274,40 @@ namespace ScriptUtil
 	}
 
 	
-	inline void ExecuteCommand(std::string commandStr)
+
+	inline void ExecuteCommand(std::string commandStr, RE::TESObjectREFR* a_targetRef)
 	{
 		// 调用控制台
 		const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
 		const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
 		if (script) {
-			const auto selectedRef = RE::Console::GetSelectedRef();
+			if (!a_targetRef) {
+				a_targetRef = RE::Console::GetSelectedRef().get();
+			}
 			script->SetCommand(commandStr);
-			script->CompileAndRun(selectedRef.get());
+			script->CompileAndRun(a_targetRef);
 			delete script;
 		}
 	}
+	inline void ExecuteCommand(std::string commandStr)
+	{
+		ExecuteCommand(commandStr, nullptr);
+	}
 
 		
+	inline void ExecuteCommand2(std::string commandStr)
+	{
+		// 调用控制台
+		const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
+		const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
+		if (script) {
+			auto player = RE::PlayerCharacter::GetSingleton();
+			//const auto selectedRef = RE::Console::GetSelectedRef();
+			script->SetCommand(commandStr);
+			script->CompileAndRun(player);
+			delete script;
+		}
+	}
 	
 
 }
@@ -347,6 +367,13 @@ namespace FormUtil
 		return true;
 	}
 
+
+	RE::FormID static GetFormId(RE::FormID rawId, std::uint8_t compileIndex, std::uint8_t smallFileCompileIndex)
+	{
+		RE::FormID formId = compileIndex << (3 * 8);
+		formId += smallFileCompileIndex << ((1 * 8) + 4);
+		return formId;
+	}
 }
 
 namespace Detours

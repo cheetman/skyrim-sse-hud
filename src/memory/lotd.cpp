@@ -1,5 +1,6 @@
 #include "lotd.h"
 #include <filesystem>
+#include <fonts/IconsMaterialDesignIcons.h>
 #include <memory/memory.h>
 #include <setting/setting.h>
 #include <utils/GeneralUtil.h>
@@ -15,7 +16,12 @@ namespace lotd
 	std::unordered_set<RE::FormID> formIds;
 
 	std::map<std::string, std::string> roomNames;
-	std::map<std::string, std::unordered_set<RE::FormID>> displayIds;
+	std::map<std::string, std::unordered_set<RE::FormID>> displayIdsC;
+	std::map<std::string, std::unordered_set<RE::FormID>> displayIdsR;
+	std::unordered_set<RE::FormID> displayIds;
+
+	// 艺术馆地点
+	std::unordered_set<RE::FormID> locationIds;
 
 	Lotd2Info* lotdItems = new Lotd2Info[2];
 
@@ -61,11 +67,14 @@ namespace lotd
 		roomNames.insert({ "GalleryLibrary", "艺术馆图书室" });
 		roomNames.insert({ "NaturalScience", "自然科学" });
 		roomNames.insert({ "MuseumStoreroom", "博物馆储藏室" });
+		roomNames.insert({ "Guildhouse", "探险家协会" });
 
-		displayIds["00126087"];
-		displayIds["002ACDD9"];
-		displayIds["006C22C2"];
-		displayIds["002F8E89"];
+		displayIdsC["00126087"];
+		displayIdsC["002ACDD9"];
+		displayIdsC["006C22C2"];
+		displayIdsC["002F8E89"];
+
+
 
 		//初始化艺术馆
 		const auto handler = RE::TESDataHandler::GetSingleton();
@@ -78,6 +87,21 @@ namespace lotd
 		isLoad = true;
 		lotdCompileIndex = file->compileIndex;
 		lotdSmallFileCompileIndex = file->smallFileCompileIndex;
+
+
+		// 地点排除
+		locationIds.insert(FormUtil::GetFormId(0x139074, lotdCompileIndex, lotdSmallFileCompileIndex));
+		locationIds.insert(FormUtil::GetFormId(0x1432E2, lotdCompileIndex, lotdSmallFileCompileIndex));
+		locationIds.insert(FormUtil::GetFormId(0x5D2D82, lotdCompileIndex, lotdSmallFileCompileIndex));
+		locationIds.insert(FormUtil::GetFormId(0x5D2D83, lotdCompileIndex, lotdSmallFileCompileIndex));
+		locationIds.insert(FormUtil::GetFormId(0x5D2D87, lotdCompileIndex, lotdSmallFileCompileIndex));
+		locationIds.insert(FormUtil::GetFormId(0x5D2D88, lotdCompileIndex, lotdSmallFileCompileIndex));
+		locationIds.insert(FormUtil::GetFormId(0x5D7E90, lotdCompileIndex, lotdSmallFileCompileIndex));
+		locationIds.insert(FormUtil::GetFormId(0x5D7E91, lotdCompileIndex, lotdSmallFileCompileIndex));
+		locationIds.insert(FormUtil::GetFormId(0x5D7E92, lotdCompileIndex, lotdSmallFileCompileIndex));
+		locationIds.insert(FormUtil::GetFormId(0x5D7E94, lotdCompileIndex, lotdSmallFileCompileIndex));
+		locationIds.insert(FormUtil::GetFormId(0x5D7E95, lotdCompileIndex, lotdSmallFileCompileIndex));
+
 
 		// 获取物品列表
 		for (auto& listItem : setting::lotdItemLists) {
@@ -135,6 +159,12 @@ namespace lotd
 
 	LotdInfo* findItem(RE::FormID baseFormId, std::map<std::string, int>& tmpCountMap)
 	{
+		// 先判断是否陈列
+		if (displayIds.find(baseFormId) != displayIds.end())
+		{
+			return nullptr;
+		}
+
 		auto& nowMap = lotdItems[nowItemIndex].lists;
 		for (const auto& pair : formIdsR) {
 			if (pair.second.find(baseFormId) != pair.second.end()) {
@@ -152,12 +182,53 @@ namespace lotd
 		return nullptr;
 	}
 
+	void refreshDisplayItems() {
+		// 查询已陈列展品
+		const auto handler = RE::TESDataHandler::GetSingleton();
+
+		// 删除之前的分类(后面改进)
+		for (auto& pair : displayIdsR) {
+			pair.second.clear();
+		}
+		
+		for (auto& pair : displayIdsC) {
+			RE::FormID formId = FormUtil::GetFormId(std::stoi(pair.first, 0, 16), lotdCompileIndex, lotdSmallFileCompileIndex);
+			auto form = RE::TESForm::LookupByID(formId);
+			if (form) {
+				auto reff = form->AsReference();
+				if (reff) {
+					if (reff->GetObjectReference()->Is(RE::FormType::Container)) {
+						auto inv = reff->GetInventory(FormUtil::CanDisplay);
+						for (auto& [obj, data] : inv) {
+							auto& [count, entry] = data;
+							if (count > 0 && entry) {
+								// 无所谓暂时不区分
+								//pair.second.insert(obj->GetFormID());
+								displayIds.insert(obj->GetFormID());
+
+
+								// 显示到对应的房间(后面改进)
+								for (const auto& pair : formIdsR) {
+									if (pair.second.find(obj->GetFormID()) != pair.second.end()) {
+										displayIdsR[pair.first].insert(obj->GetFormID());
+										break;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	void refreshItemInfo()
 	{
 		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 		if (!player) {
 			return;
 		}
+		refreshDisplayItems();
 
 		nowItemIndex = !nowItemIndex;
 		Sleep(100);
@@ -226,8 +297,7 @@ namespace lotd
 											itemptr->contformId = actor->GetFormID();
 
 											itemptr->ptr = nullptr;
-											itemptr->formId = obj->GetFormID();
-											itemptr->name = obj->GetName();
+											itemptr->formId = 0;
 											itemptr->baseFormId = obj->GetFormID();
 											itemptr->weight = obj->GetWeight();
 											itemptr->gold = obj->GetGoldValue();
@@ -240,6 +310,69 @@ namespace lotd
 											}
 											if (show_items_window_file) {
 												itemptr->filename = obj->GetFile(0)->fileName;
+											}
+
+											switch (obj->GetFormType()) {
+											case RE::FormType::Scroll:
+												itemptr->name = ICON_MDI_SWORD " " + std::string(obj->GetName());
+												break;
+											case RE::FormType::Weapon:
+												itemptr->name = ICON_MDI_SWORD " " + std::string(obj->GetName());
+												break;
+											case RE::FormType::Armor:
+												itemptr->name = ICON_MDI_SHIELD " " + std::string(obj->GetName());
+												break;
+											case RE::FormType::Ammo:
+												itemptr->name = ICON_MDI_ARROW_PROJECTILE " " + std::string(obj->GetName());
+												break;
+											case RE::FormType::Book:
+												itemptr->name = ICON_MDI_BOOK_OPEN_VARIANT " " + std::string(obj->GetName());
+												break;
+											case RE::FormType::AlchemyItem:
+												{
+													auto alchemyItem = obj->As<RE::AlchemyItem>();
+													if (alchemyItem->IsFood()) {
+														itemptr->name = ICON_MDI_FOOD_DRUMSTICK " " + std::string(obj->GetName());
+													} else {
+														itemptr->name = ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE " " + std::string(obj->GetName());
+													}
+													break;
+												}
+											case RE::FormType::Ingredient:
+												itemptr->name = ICON_MDI_SOURCE_BRANCH " " + std::string(obj->GetName());
+												break;
+											case RE::FormType::Misc:
+												{
+													auto misc = obj->As<RE::TESObjectMISC>();
+													if (misc) {
+														// 宝石
+														if (FormUtil::HasKeyword(misc, VendorItemGem)) {
+															itemptr->name = ICON_MDI_DIAMOND_STONE " " + std::string(obj->GetName());
+														} else if (FormUtil::HasKeyword(misc, VendorItemOreIngot)) {
+															itemptr->name = ICON_MDI_ANVIL " " + std::string(obj->GetName());
+														} else if (FormUtil::HasKeyword(misc, VendorItemAnimalHide)) {
+															itemptr->name = ICON_MDI_BOX_CUTTER " " + std::string(obj->GetName());
+														} else if (FormUtil::HasKeyword(misc, VendorItemAnimalPart)) {
+															itemptr->name = ICON_MDI_RABBIT " " + std::string(obj->GetName());
+														} else if (FormUtil::HasKeyword(misc, VendorItemTool)) {
+															itemptr->name = ICON_MDI_TOOLS " " + std::string(obj->GetName());
+														} else {
+															itemptr->name = ICON_MDI_PACKAGE_VARIANT_CLOSED " " + std::string(obj->GetName());
+														}
+													}
+													break;
+												}
+											case RE::FormType::KeyMaster:
+												itemptr->name = ICON_MDI_KEY " " + std::string(obj->GetName());
+												break;
+											case RE::FormType::Note:
+												itemptr->name = ICON_MDI_BOOK_OPEN_VARIANT " " + std::string(obj->GetName());
+												break;
+											case RE::FormType::SoulGem:
+												itemptr->name = ICON_MDI_CARDS_DIAMOND " " + std::string(obj->GetName());
+												break;
+											default:
+												break;
 											}
 										}
 									}
@@ -275,12 +408,6 @@ namespace lotd
 												continue;
 											}
 
-											//if (show_items_window_ignore) {
-											//	if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
-											//		continue;
-											//	}
-											//}
-
 											auto name = reff->GetDisplayFullName();
 											if (strlen(name) == 0) {
 												continue;
@@ -303,7 +430,6 @@ namespace lotd
 											if (itemptr) {
 												itemptr->ptr = reff;
 												itemptr->formId = reff->GetFormID();
-												itemptr->name = name;
 												itemptr->baseFormId = baseObj->GetFormID();
 												itemptr->weight = reff->GetWeight();
 												itemptr->gold = baseObj->GetGoldValue();
@@ -319,6 +445,69 @@ namespace lotd
 												if (show_items_window_file) {
 													itemptr->filename = baseObj->GetFile(0)->fileName;
 												}
+
+												switch (baseObj->GetFormType()) {
+												case RE::FormType::Scroll:
+													itemptr->name = ICON_MDI_SWORD " " + std::string(name);
+													break;
+												case RE::FormType::Weapon:
+													itemptr->name = ICON_MDI_SWORD " " + std::string(name);
+													break;
+												case RE::FormType::Armor:
+													itemptr->name = ICON_MDI_SHIELD " " + std::string(name);
+													break;
+												case RE::FormType::Ammo:
+													itemptr->name = ICON_MDI_ARROW_PROJECTILE " " + std::string(name);
+													break;
+												case RE::FormType::Book:
+													itemptr->name = ICON_MDI_BOOK_OPEN_VARIANT " " + std::string(name);
+													break;
+												case RE::FormType::AlchemyItem:
+													{
+														auto alchemyItem = baseObj->As<RE::AlchemyItem>();
+														if (alchemyItem->IsFood()) {
+															itemptr->name = ICON_MDI_FOOD_DRUMSTICK " " + std::string(name);
+														} else {
+															itemptr->name = ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE " " + std::string(name);
+														}
+														break;
+													}
+												case RE::FormType::Ingredient:
+													itemptr->name = ICON_MDI_SOURCE_BRANCH " " + std::string(name);
+													break;
+												case RE::FormType::Misc:
+													{
+														auto misc = baseObj->As<RE::TESObjectMISC>();
+														if (misc) {
+															// 宝石
+															if (FormUtil::HasKeyword(misc, VendorItemGem)) {
+																itemptr->name = ICON_MDI_DIAMOND_STONE " " + std::string(name);
+															} else if (FormUtil::HasKeyword(misc, VendorItemOreIngot)) {
+																itemptr->name = ICON_MDI_ANVIL " " + std::string(name);
+															} else if (FormUtil::HasKeyword(misc, VendorItemAnimalHide)) {
+																itemptr->name = ICON_MDI_BOX_CUTTER " " + std::string(name);
+															} else if (FormUtil::HasKeyword(misc, VendorItemAnimalPart)) {
+																itemptr->name = ICON_MDI_RABBIT " " + std::string(name);
+															} else if (FormUtil::HasKeyword(misc, VendorItemTool)) {
+																itemptr->name = ICON_MDI_TOOLS " " + std::string(name);
+															} else {
+																itemptr->name = ICON_MDI_PACKAGE_VARIANT_CLOSED " " + std::string(name);
+															}
+														}
+														break;
+													}
+												case RE::FormType::KeyMaster:
+													itemptr->name = ICON_MDI_KEY " " + std::string(name);
+													break;
+												case RE::FormType::Note:
+													itemptr->name = ICON_MDI_BOOK_OPEN_VARIANT " " + std::string(name);
+													break;
+												case RE::FormType::SoulGem:
+													itemptr->name = ICON_MDI_CARDS_DIAMOND " " + std::string(name);
+													break;
+												default:
+													break;
+												}
 											}
 
 											break;
@@ -329,12 +518,6 @@ namespace lotd
 											if (reff->IsMarkedForDeletion() || reff->IsIgnored()) {
 												continue;
 											}
-
-											/*if (show_items_window_ignore) {
-												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
-													continue;
-												}
-											}*/
 
 											if (!reff->Is3DLoaded()) {
 												continue;
@@ -379,8 +562,8 @@ namespace lotd
 														itemptr->contformId = reff->GetFormID();
 
 														itemptr->ptr = nullptr;
-														itemptr->formId = obj->GetFormID();
-														itemptr->name = obj->GetName();
+														itemptr->formId = 0x0;
+														//itemptr->name = obj->GetName();
 														itemptr->baseFormId = obj->GetFormID();
 														itemptr->weight = obj->GetWeight();
 														itemptr->gold = obj->GetGoldValue();
@@ -393,6 +576,69 @@ namespace lotd
 														}
 														if (show_items_window_file) {
 															itemptr->filename = obj->GetFile(0)->fileName;
+														}
+
+														switch (obj->GetFormType()) {
+														case RE::FormType::Scroll:
+															itemptr->name = ICON_MDI_SWORD " " + std::string(obj->GetName());
+															break;
+														case RE::FormType::Weapon:
+															itemptr->name = ICON_MDI_SWORD " " + std::string(obj->GetName());
+															break;
+														case RE::FormType::Armor:
+															itemptr->name = ICON_MDI_SHIELD " " + std::string(obj->GetName());
+															break;
+														case RE::FormType::Ammo:
+															itemptr->name = ICON_MDI_ARROW_PROJECTILE " " + std::string(obj->GetName());
+															break;
+														case RE::FormType::Book:
+															itemptr->name = ICON_MDI_BOOK_OPEN_VARIANT " " + std::string(obj->GetName());
+															break;
+														case RE::FormType::AlchemyItem:
+															{
+																auto alchemyItem = obj->As<RE::AlchemyItem>();
+																if (alchemyItem->IsFood()) {
+																	itemptr->name = ICON_MDI_FOOD_DRUMSTICK " " + std::string(obj->GetName());
+																} else {
+																	itemptr->name = ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE " " + std::string(obj->GetName());
+																}
+																break;
+															}
+														case RE::FormType::Ingredient:
+															itemptr->name = ICON_MDI_SOURCE_BRANCH " " + std::string(obj->GetName());
+															break;
+														case RE::FormType::Misc:
+															{
+																auto misc = obj->As<RE::TESObjectMISC>();
+																if (misc) {
+																	// 宝石
+																	if (FormUtil::HasKeyword(misc, VendorItemGem)) {
+																		itemptr->name = ICON_MDI_DIAMOND_STONE " " + std::string(obj->GetName());
+																	} else if (FormUtil::HasKeyword(misc, VendorItemOreIngot)) {
+																		itemptr->name = ICON_MDI_ANVIL " " + std::string(obj->GetName());
+																	} else if (FormUtil::HasKeyword(misc, VendorItemAnimalHide)) {
+																		itemptr->name = ICON_MDI_BOX_CUTTER " " + std::string(obj->GetName());
+																	} else if (FormUtil::HasKeyword(misc, VendorItemAnimalPart)) {
+																		itemptr->name = ICON_MDI_RABBIT " " + std::string(obj->GetName());
+																	} else if (FormUtil::HasKeyword(misc, VendorItemTool)) {
+																		itemptr->name = ICON_MDI_TOOLS " " + std::string(obj->GetName());
+																	} else {
+																		itemptr->name = ICON_MDI_PACKAGE_VARIANT_CLOSED " " + std::string(obj->GetName());
+																	}
+																}
+																break;
+															}
+														case RE::FormType::KeyMaster:
+															itemptr->name = ICON_MDI_KEY " " + std::string(obj->GetName());
+															break;
+														case RE::FormType::Note:
+															itemptr->name = ICON_MDI_BOOK_OPEN_VARIANT " " + std::string(obj->GetName());
+															break;
+														case RE::FormType::SoulGem:
+															itemptr->name = ICON_MDI_CARDS_DIAMOND " " + std::string(obj->GetName());
+															break;
+														default:
+															break;
 														}
 													}
 												}
@@ -441,28 +687,5 @@ namespace lotd
 			std::partial_sort(list.begin(), list.begin() + pair.second, list.begin() + pair.second, compareForLotdItem);
 		}
 
-		const auto handler = RE::TESDataHandler::GetSingleton();
-		// 查询已陈列展品
-		for (auto& pair : displayIds) {
-			RE::FormID formId = lotdCompileIndex << (3 * 8);
-			formId += lotdSmallFileCompileIndex << ((1 * 8) + 4);
-			formId += std::stoi(pair.first, 0, 16);
-
-			auto form = RE::TESForm::LookupByID(formId);
-			if (form) {
-				auto reff = form->AsReference();
-				if (reff) {
-					if (reff->GetObjectReference()->Is(RE::FormType::Container)) {
-						auto inv = reff->GetInventory(FormUtil::CanDisplay);
-						for (auto& [obj, data] : inv) {
-							auto& [count, entry] = data;
-							if (count > 0 && entry) {
-								pair.second.insert(obj->GetFormID());
-							}
-						}
-					}
-				}
-			}
-		}
 	}
 }

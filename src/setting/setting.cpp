@@ -341,6 +341,12 @@ namespace setting
 					if (j2.contains("show_items_window_auto_weap_price")) {
 						show_items_window_auto_weap_price = j2["show_items_window_auto_weap_price"].get<bool>();
 					}
+					if (j2.contains("show_items_window_auto_weap_priceweight")) {
+						show_items_window_auto_weap_priceweight = j2["show_items_window_auto_weap_priceweight"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_armo_priceweight")) {
+						show_items_window_auto_armo_priceweight = j2["show_items_window_auto_armo_priceweight"].get<bool>();
+					}
 					if (j2.contains("show_items_window_auto_weap_enchant")) {
 						show_items_window_auto_weap_enchant = j2["show_items_window_auto_weap_enchant"].get<bool>();
 					}
@@ -352,6 +358,12 @@ namespace setting
 					}
 					if (j2.contains("show_items_window_auto_armo_price_value")) {
 						show_items_window_auto_armo_price_value = j2["show_items_window_auto_armo_price_value"].get<int>();
+					}
+					if (j2.contains("show_items_window_auto_weap_priceweight_value")) {
+						show_items_window_auto_weap_priceweight_value = j2["show_items_window_auto_weap_priceweight_value"].get<int>();
+					}
+					if (j2.contains("show_items_window_auto_armo_priceweight_value")) {
+						show_items_window_auto_armo_priceweight_value = j2["show_items_window_auto_armo_priceweight_value"].get<int>();
 					}
 				}
 
@@ -604,7 +616,10 @@ namespace setting
 															 { "show_items_window_auto_armo_price", show_items_window_auto_armo_price },
 															 { "show_items_window_auto_weap_price_value", show_items_window_auto_weap_price_value },
 															 { "show_items_window_auto_armo_price_value", show_items_window_auto_armo_price_value },
-
+															 { "show_items_window_auto_weap_priceweight_value", show_items_window_auto_weap_priceweight_value },
+															 { "show_items_window_auto_armo_priceweight_value", show_items_window_auto_armo_priceweight_value },
+															 { "show_items_window_auto_weap_priceweight", show_items_window_auto_weap_priceweight },
+															 { "show_items_window_auto_armo_priceweight", show_items_window_auto_armo_priceweight },
 															 { "show_items_window_auto_conttype", show_items_window_auto_conttype },
 														 } }
 

@@ -87,11 +87,16 @@ namespace lotd
 	extern std::map<std::string, std::string> roomNames;
 
 	// 已展示
-	extern std::map<std::string, std::unordered_set<RE::FormID>> displayIds;
+	extern std::map<std::string, std::unordered_set<RE::FormID>> displayIdsC;
+	extern std::map<std::string, std::unordered_set<RE::FormID>> displayIdsR;
+	extern std::unordered_set<RE::FormID> displayIds;
 
 	void init();
 	void refreshItemInfo();
 	std::vector<LotdInfo>& getItems(std::string roomName);
 	int getCount(std::string roomName);
 
+	
+	// 艺术馆地点
+	extern std::unordered_set<RE::FormID> locationIds;
 }

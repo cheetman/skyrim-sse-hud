@@ -408,7 +408,7 @@ namespace menu
 
 		const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
 
-		int columnCount = 3;
+		int columnCount = 4;
 
 		if (show_items_window_direction) {
 			columnCount++;
@@ -435,24 +435,26 @@ namespace menu
 		}
 
 		if (ImGui::BeginTable("tableItemCONT", columnCount, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 15, tableHeight), 0.0f)) {
-			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60, PlayerInfoColumnID_1);
-			ImGui::TableSetupColumn("类型", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f, PlayerInfoColumnID_2);
-			ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 30, PlayerInfoColumnID_3);
+			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60 * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_1);
+			ImGui::TableSetupColumn("类型", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_2);
+			ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 30.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_3);
 
 			if (show_items_window_direction) {
-				ImGui::TableSetupColumn("方位", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f, PlayerInfoColumnID_7);
-			}
-			if (show_items_window_refid) {
-				ImGui::TableSetupColumn("REFID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80, PlayerInfoColumnID_8);
-			}
-			if (show_items_window_formid) {
-				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80, PlayerInfoColumnID_4);
-			}
-			if (show_items_window_file) {
-				ImGui::TableSetupColumn("MOD", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_6);
+				ImGui::TableSetupColumn("方位", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_7);
 			}
 
-			ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_5);
+			ImGui::TableSetupColumn("拥有者", ImGuiTableColumnFlags_WidthFixed , 70.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_9);
+			if (show_items_window_refid) {
+				ImGui::TableSetupColumn("REFID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_8);
+			}
+			if (show_items_window_formid) {
+				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_4);
+			}
+			if (show_items_window_file) {
+				ImGui::TableSetupColumn("MOD", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_6);
+			}
+
+			ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_5);
 
 			/*if (show_items_window_settings) {
 			}*/
@@ -575,6 +577,9 @@ namespace menu
 					}
 				}
 
+				ImGui::TableNextColumn();
+				ImGui::Text("%s", item.ownerName.c_str());
+
 				if (show_items_window_refid) {
 					ImGui::TableNextColumn();
 					ImGui::Text("%s", item.formIdStr.c_str());
@@ -638,13 +643,13 @@ namespace menu
 		if (show_items_window_settings && show_items_window_auto_cont) {
 			if (show_items_window_auto_conttype) {
 				float tableHeight2 = TEXT_BASE_HEIGHT * (show_inv_window_height_half - 1);
-				ImGui::Checkbox(ICON_MDI_AUTORENEW " 容器类型过滤", &show_items_window_auto_conttype);
+				ImGui::Checkbox(ICON_MDI_AUTORENEW " 容器类型过滤(点击" ICON_MDI_AUTORENEW "按钮添加拾取白名单)", &show_items_window_auto_conttype);
 
 				int columnCount2 = 3;
 				if (ImGui::BeginTable("tableItemCONTauto", columnCount2, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 15, tableHeight2), 0.0f)) {
-					ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 80, TableColumn_1);
-					ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60, TableColumn_2);
-					ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 40, TableColumn_3);
+					ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, TableColumn_1);
+					ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60.0f * ImGui::GetIO().FontGlobalScale, TableColumn_2);
+					ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 40.0f * ImGui::GetIO().FontGlobalScale, TableColumn_3);
 
 					ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
 					ImGui::TableHeadersRow();
@@ -705,18 +710,18 @@ namespace menu
 		columnCount++;
 
 		if (ImGui::BeginTable("tableItemACHR", columnCount, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 15, TEXT_BASE_HEIGHT * show_inv_window_height), 0.0f)) {
-			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_1);
+			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_1);
 			//ImGui::TableSetupColumn("类型", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_2);
-			ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 30, PlayerInfoColumnID_3);
+			ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 30.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_3);
 
 			if (show_items_window_direction) {
-				ImGui::TableSetupColumn("方位", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f, PlayerInfoColumnID_7);
+				ImGui::TableSetupColumn("方位", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_7);
 			}
 			if (show_items_window_formid) {
-				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80, PlayerInfoColumnID_4);
+				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_4);
 			}
 
-			ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80, PlayerInfoColumnID_5);
+			ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_5);
 			/*if (show_items_window_settings) {
 			}*/
 
@@ -859,26 +864,26 @@ namespace menu
 		}
 
 		if (ImGui::BeginTable(("tableItem3" + std::to_string((int)formType)).c_str(), columnCount, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 15, TEXT_BASE_HEIGHT * show_inv_window_height), 0.0f)) {
-			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_1);
-			ImGui::TableSetupColumn("类型", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40, PlayerInfoColumnID_5);
-			ImGui::TableSetupColumn("价值", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 35, PlayerInfoColumnID_2);
-			ImGui::TableSetupColumn("重量", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 30, PlayerInfoColumnID_3);
+			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_1);
+			ImGui::TableSetupColumn("类型", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_5);
+			ImGui::TableSetupColumn("价值", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 35.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_2);
+			ImGui::TableSetupColumn("重量", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 30.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_3);
 
 			if (show_items_window_direction) {
-				ImGui::TableSetupColumn("方位", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f, PlayerInfoColumnID_8);
+				ImGui::TableSetupColumn("方位", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_8);
 			}
 
 			if (show_items_window_refid) {
-				ImGui::TableSetupColumn("REFID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80, PlayerInfoColumnID_9);
+				ImGui::TableSetupColumn("REFID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_9);
 			}
 			if (show_items_window_formid) {
-				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80, PlayerInfoColumnID_4);
+				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_4);
 			}
 			if (show_items_window_file) {
-				ImGui::TableSetupColumn("MOD", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_7);
+				ImGui::TableSetupColumn("MOD", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_7);
 			}
 			//if (show_items_window_settings) {
-			ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_6);
+			ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_6);
 			//}
 			ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
 			ImGui::TableHeadersRow();
@@ -1054,7 +1059,7 @@ namespace menu
 
 		if (ImGui::BeginTable(("tableItem3" + std::to_string((int)formType)).c_str(), columnCount, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 15, TEXT_BASE_HEIGHT * show_inv_window_height), 0.0f)) {
 			//ImGui::TableSetupColumn("已装备", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_ID);
-			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_1);
+			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_1);
 			switch (formType) {
 			case RE::FormType::Flora:
 			case RE::FormType::Tree:
@@ -1062,7 +1067,7 @@ namespace menu
 			case RE::FormType::KeyMaster:
 				break;
 			default:
-				ImGui::TableSetupColumn("价值", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 35, PlayerInfoColumnID_2);
+				ImGui::TableSetupColumn("价值", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 35.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_2);
 				break;
 			}
 			switch (formType) {
@@ -1074,40 +1079,40 @@ namespace menu
 			case RE::FormType::KeyMaster:
 				break;
 			default:
-				ImGui::TableSetupColumn("重量", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 30, PlayerInfoColumnID_3);
+				ImGui::TableSetupColumn("重量", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 30.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_3);
 				break;
 			}
 			switch (formType) {
 			case RE::FormType::Container:
-				ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 30, PlayerInfoColumnID_2);
+				ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 30.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_2);
 				break;
 			default:
 				break;
 			}
 
 			if (show_items_window_direction) {
-				ImGui::TableSetupColumn("方位", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f, PlayerInfoColumnID_8);
+				ImGui::TableSetupColumn("方位", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_8);
 			}
 
 			switch (formType) {
 			case RE::FormType::None:
-				ImGui::TableSetupColumn("类型", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40, PlayerInfoColumnID_5);
+				ImGui::TableSetupColumn("类型", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_5);
 				break;
 			default:
 				break;
 			}
 
 			if (show_items_window_refid) {
-				ImGui::TableSetupColumn("REFID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80, PlayerInfoColumnID_9);
+				ImGui::TableSetupColumn("REFID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_9);
 			}
 			if (show_items_window_formid) {
-				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80, PlayerInfoColumnID_4);
+				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_4);
 			}
 			if (show_items_window_file) {
-				ImGui::TableSetupColumn("MOD", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_7);
+				ImGui::TableSetupColumn("MOD", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_7);
 			}
 			//if (show_items_window_settings) {
-			ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80, PlayerInfoColumnID_6);
+			ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_6);
 			//}
 			ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
 			ImGui::TableHeadersRow();
@@ -1143,20 +1148,13 @@ namespace menu
 										}
 									}
 								} else if (formType == RE::FormType::Activator) {
-									if (!(item.ptr->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
-										auto acti = item.ptr->GetBaseObject()->As<RE::TESObjectACTI>();
-										if (acti) {
-											//auto player = RE::PlayerCharacter::GetSingleton();
-											//acti->Activate(item.ptr, player, 0, acti, 1);
-										}
-									}
+										char buf[120];
+										snprintf(buf, 120, "%X.Activate player", item.formId);
+										ScriptUtil::ExecuteCommand(buf);
 								} else {
-									//if (!item.isDeleted) {
 									if (!item.ptr->IsMarkedForDeletion()) {
 										addItem(nullptr, item.ptr, 1);
-										//item.isDeleted = true;
 									}
-									//}
 								}
 							}
 						}
@@ -1181,20 +1179,13 @@ namespace menu
 										}
 									}
 								} else if (formType == RE::FormType::Activator) {
-									if (!(item.ptr->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
-										auto acti = item.ptr->GetBaseObject()->As<RE::TESObjectACTI>();
-										if (acti) {
-											//auto player = RE::PlayerCharacter::GetSingleton();
-											//acti->Activate(item.ptr, player, 0, acti, 1);
-										}
-									}
+											char buf[120];
+											snprintf(buf, 120, "%X.Activate player", item.formId);
+											ScriptUtil::ExecuteCommand(buf);
 								} else {
-									//if (!item.isDeleted) {
 									if (!item.ptr->IsMarkedForDeletion()) {
 										addItem(nullptr, item.ptr, 1);
-										//item.isDeleted = true;
 									}
-									//}
 								}
 							}
 
@@ -1294,11 +1285,6 @@ namespace menu
 
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 						if (ImGui::SmallButton("\uf101")) {
-							/*	char buf[80];
-							snprintf(buf, 80, "%0.2f, %0.2f, %0.2f", x * screenWidth, y * screenHeight, z);
-							RE::DebugNotification(buf, NULL, false);*/
-
-							//return;
 							std::string commandStr = "player.moveto ";
 							commandStr.append(item.formIdStr);
 							ScriptUtil::ExecuteCommand(commandStr);
@@ -2010,9 +1996,8 @@ namespace menu
 				}
 			}
 
-
 			if (lotd::isLoad) {
-				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x * 3);
 				if (lotd::isShow) {
 					if (ImGui::SmallButton("艺术馆模式")) {
 						lotd::isShow = !lotd::isShow;
@@ -2024,8 +2009,6 @@ namespace menu
 					}
 				}
 			}
-			
-			
 
 			if (ImGui::BeginTable("tableItem", 5)) {
 				if (lotd::isShow) {
@@ -2414,9 +2397,9 @@ namespace menu
 
 								const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
 								if (ImGui::BeginTable("tableItemIngore", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
-									ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_1);
-									ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60, PlayerInfoColumnID_2);
-									ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 40, PlayerInfoColumnID_3);
+									ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_1);
+									ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_2);
+									ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 40.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_3);
 
 									ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
 									ImGui::TableHeadersRow();
@@ -2557,16 +2540,33 @@ namespace menu
 									}
 									ImGui::PopItemWidth();
 
+									ImGui::Checkbox("设置拾取价重比", &show_items_window_auto_weap_priceweight);
+									ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
+									if (show_items_window_auto_weap_priceweight) {
+										ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+										ImGui::DragInt("##设置价重比", &show_items_window_auto_weap_priceweight_value, 1, 2, 500, " >%d");
+									}
+									ImGui::PopItemWidth();
+
 									ImGui::TreePop();
 								}
 
 								if (ImGui::TreeNodeEx(ICON_MDI_SHIELD_HALF_FULL " 装备过滤", ImGuiTreeNodeFlags_DefaultOpen)) {
 									ImGui::Checkbox("只拾取附魔装备", &show_items_window_auto_armo_enchant);
+
 									ImGui::Checkbox("设置拾取价值##2", &show_items_window_auto_armo_price);
 									ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
 									if (show_items_window_auto_armo_price) {
 										ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 										ImGui::DragInt("##设置价格2", &show_items_window_auto_armo_price_value, 1, 100, 10000, " >%d");
+									}
+									ImGui::PopItemWidth();
+
+									ImGui::Checkbox("设置拾取价重比##2", &show_items_window_auto_armo_priceweight);
+									ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
+									if (show_items_window_auto_armo_priceweight) {
+										ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+										ImGui::DragInt("##设置价重比2", &show_items_window_auto_armo_priceweight_value, 1, 2, 500, " >%d");
 									}
 									ImGui::PopItemWidth();
 
@@ -2604,9 +2604,9 @@ namespace menu
 
 									const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
 									if (ImGui::BeginTable("tableItemLocationIngore", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
-										ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_1);
-										ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60, PlayerInfoColumnID_2);
-										ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 40, PlayerInfoColumnID_3);
+										ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_1);
+										ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_2);
+										ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 40.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_3);
 
 										ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
 										ImGui::TableHeadersRow();
@@ -2826,10 +2826,7 @@ namespace menu
 							ImGui::EndChild();
 						}
 					}
-
-
 				}
-
 
 				ImGui::EndTable();
 			}
@@ -3015,7 +3012,7 @@ namespace menu
 
 						if (ImGui::TreeNodeEx("修改属性一", ImGuiTreeNodeFlags_DefaultOpen)) {
 							if (ImGui::BeginTable("split", 2, 0)) {
-								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80);
+								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale);
 								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch, 0.0f);
 
 								ImGui::TableNextRow();
@@ -3075,7 +3072,7 @@ namespace menu
 
 						if (ImGui::TreeNodeEx("修改属性二(永久)", ImGuiTreeNodeFlags_DefaultOpen)) {
 							if (ImGui::BeginTable("split", 2, 0)) {
-								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80);
+								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale);
 								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch, 0.0f);
 
 								ImGui::TableNextRow();
@@ -3126,7 +3123,7 @@ namespace menu
 
 						if (ImGui::TreeNodeEx("常用素材获取", ImGuiTreeNodeFlags_DefaultOpen)) {
 							if (ImGui::BeginTable("split", 2, 0)) {
-								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80);
+								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale);
 								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch, 0.0f);
 
 								ImGui::TableNextRow();
@@ -3201,10 +3198,10 @@ namespace menu
 
 							const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
 							if (ImGui::BeginTable("tableWeather", 4, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 16, TEXT_BASE_HEIGHT * 9), 0.0f)) {
-								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 20, PlayerInfoColumnID_3);
-								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 20, PlayerInfoColumnID_4);
-								ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 130, PlayerInfoColumnID_2);
-								ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 90, PlayerInfoColumnID_1);
+								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 20.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_3);
+								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 20.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_4);
+								ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 130.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_2);
+								ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 90.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_1);
 
 								ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
 								ImGui::TableHeadersRow();

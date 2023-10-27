@@ -68,10 +68,14 @@ extern bool show_items_window_auto_notification;
 
 extern bool show_items_window_auto_weap_enchant;
 extern bool show_items_window_auto_weap_price;
+extern bool show_items_window_auto_weap_priceweight;
 extern bool show_items_window_auto_armo_enchant;
 extern bool show_items_window_auto_armo_price;
+extern bool show_items_window_auto_armo_priceweight;
 extern int show_items_window_auto_weap_price_value;
 extern int show_items_window_auto_armo_price_value;
+extern int show_items_window_auto_weap_priceweight_value;
+extern int show_items_window_auto_armo_priceweight_value;
 
 extern int refresh_time_auto;
 extern int show_items_window_auto_every_max;

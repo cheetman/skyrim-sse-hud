@@ -1,5 +1,6 @@
 #include "autotake.h"
 #include "memory.h"
+#include "lotd.h"
 #include <event/BSTMenuEvent.h>
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
@@ -63,10 +64,14 @@ bool show_items_window_auto_cont_tool = false;
 
 bool show_items_window_auto_weap_enchant = false;
 bool show_items_window_auto_weap_price = false;
+bool show_items_window_auto_weap_priceweight = false;
 bool show_items_window_auto_armo_enchant = false;
 bool show_items_window_auto_armo_price = false;
+bool show_items_window_auto_armo_priceweight = false;
 int show_items_window_auto_weap_price_value = 500;
 int show_items_window_auto_armo_price_value = 500;
+int show_items_window_auto_weap_priceweight_value = 20;
+int show_items_window_auto_armo_priceweight_value = 20;
 
 int show_items_window_auto_dis = 2;
 
@@ -108,6 +113,16 @@ bool __fastcall autoTakeArmo(RE::TESObjectREFR* reff, RE::PlayerCharacter* playe
 
 					if (show_items_window_auto_armo_price) {
 						if (reff->GetObjectReference()->GetGoldValue() < show_items_window_auto_armo_price_value) {
+							return false;
+						}
+					}
+
+					if (show_items_window_auto_armo_priceweight) {
+						float weight = reff->GetObjectReference()->GetWeight();
+						if (weight == 0) {
+							return false;
+						}
+						if ((reff->GetObjectReference()->GetGoldValue() / weight) < show_items_window_auto_armo_priceweight_value) {
 							return false;
 						}
 					}
@@ -158,6 +173,16 @@ bool __fastcall autoTakeWeap(RE::TESObjectREFR* reff, RE::PlayerCharacter* playe
 
 					if (show_items_window_auto_weap_price) {
 						if (reff->GetObjectReference()->GetGoldValue() < show_items_window_auto_weap_price_value) {
+							return false;
+						}
+					}
+
+					if (show_items_window_auto_weap_priceweight) {
+						float weight = reff->GetObjectReference()->GetWeight();
+						if (weight == 0) {
+							return false;
+						}
+						if ((reff->GetObjectReference()->GetGoldValue() / weight) < show_items_window_auto_weap_priceweight_value) {
 							return false;
 						}
 					}
@@ -519,11 +544,17 @@ void __cdecl TimerAutoPick(void*)
 		if (show_items_window_auto_ignore) {
 			// 判断地点忽略
 			int formID = 0;
-			if (player->currentLocation) {
-				formID = player->currentLocation->GetFormID();
+			if (currentLocation) {
+				formID = currentLocation->GetFormID();
 			}
 			// 不存在
 			if (excludeLocationFormIds.find(formID) != excludeLocationFormIds.end()) {
+				continue;
+			}
+		}
+		// 艺术馆地点排除
+		if (lotd::isLoad) {
+			if (lotd::locationIds.find(currentLocation->GetFormID()) != lotd::locationIds.end()) {
 				continue;
 			}
 		}
@@ -597,6 +628,17 @@ void __cdecl TimerAutoPick(void*)
 															break;
 														}
 													}
+
+													if (show_items_window_auto_weap_priceweight) {
+														float weight = obj->GetWeight();
+														if (weight == 0) {
+															break;
+														}
+														if ((obj->GetGoldValue() / weight) < show_items_window_auto_weap_priceweight_value) {
+															break;
+														}
+													}
+
 													if (autoTakeForACHR(actor, obj, count, player)) {
 														continue;
 													}
@@ -612,6 +654,16 @@ void __cdecl TimerAutoPick(void*)
 
 													if (show_items_window_auto_armo_price) {
 														if (obj->GetGoldValue() < show_items_window_auto_armo_price_value) {
+															break;
+														}
+													}
+
+													if (show_items_window_auto_armo_priceweight) {
+														float weight = obj->GetWeight();
+														if (weight == 0) {
+															break;
+														}
+														if ((obj->GetGoldValue() / weight) < show_items_window_auto_armo_priceweight_value) {
 															break;
 														}
 													}
@@ -1000,14 +1052,21 @@ void __cdecl TimerAutoPick(void*)
 												continue;
 											}
 
-											if (reff->IsMarkedForDeletion()) {
+											if (reff->IsMarkedForDeletion()||  reff->IsIgnored()) {
 												continue;
 											}
+
+											if (!reff->GetPlayable()) {
+												continue;
+											}
+
 											if (show_items_window_ignore) {
 												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
 													continue;
 												}
 											}
+
+
 											auto name = reff->GetDisplayFullName();
 											if (strlen(name) == 0) {
 												continue;
@@ -1146,6 +1205,16 @@ void __cdecl TimerAutoPick(void*)
 																			break;
 																		}
 																	}
+																	if (show_items_window_auto_weap_priceweight) {
+																		float weight = obj->GetWeight();
+																		if (weight == 0) {
+																			break;
+																		}
+																		if ((obj->GetGoldValue() / weight) < show_items_window_auto_weap_priceweight_value) {
+																			break;
+																		}
+																	}
+
 																	if (autoTakeForCONT(reff, obj, count, player)) {
 																		continue;
 																	}
@@ -1161,6 +1230,16 @@ void __cdecl TimerAutoPick(void*)
 
 																	if (show_items_window_auto_armo_price) {
 																		if (obj->GetGoldValue() < show_items_window_auto_armo_price_value) {
+																			break;
+																		}
+																	}
+
+																	if (show_items_window_auto_armo_priceweight) {
+																		float weight = obj->GetWeight();
+																		if (weight == 0) {
+																			break;
+																		}
+																		if ((obj->GetGoldValue() / weight) < show_items_window_auto_armo_priceweight_value) {
 																			break;
 																		}
 																	}
