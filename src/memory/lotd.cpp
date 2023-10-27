@@ -74,8 +74,6 @@ namespace lotd
 		displayIdsC["006C22C2"];
 		displayIdsC["002F8E89"];
 
-
-
 		//初始化艺术馆
 		const auto handler = RE::TESDataHandler::GetSingleton();
 
@@ -87,7 +85,6 @@ namespace lotd
 		isLoad = true;
 		lotdCompileIndex = file->compileIndex;
 		lotdSmallFileCompileIndex = file->smallFileCompileIndex;
-
 
 		// 地点排除
 		locationIds.insert(FormUtil::GetFormId(0x139074, lotdCompileIndex, lotdSmallFileCompileIndex));
@@ -101,7 +98,6 @@ namespace lotd
 		locationIds.insert(FormUtil::GetFormId(0x5D7E92, lotdCompileIndex, lotdSmallFileCompileIndex));
 		locationIds.insert(FormUtil::GetFormId(0x5D7E94, lotdCompileIndex, lotdSmallFileCompileIndex));
 		locationIds.insert(FormUtil::GetFormId(0x5D7E95, lotdCompileIndex, lotdSmallFileCompileIndex));
-
 
 		// 获取物品列表
 		for (auto& listItem : setting::lotdItemLists) {
@@ -160,8 +156,7 @@ namespace lotd
 	LotdInfo* findItem(RE::FormID baseFormId, std::map<std::string, int>& tmpCountMap)
 	{
 		// 先判断是否陈列
-		if (displayIds.find(baseFormId) != displayIds.end())
-		{
+		if (displayIds.find(baseFormId) != displayIds.end()) {
 			return nullptr;
 		}
 
@@ -182,7 +177,8 @@ namespace lotd
 		return nullptr;
 	}
 
-	void refreshDisplayItems() {
+	void refreshDisplayItems()
+	{
 		// 查询已陈列展品
 		const auto handler = RE::TESDataHandler::GetSingleton();
 
@@ -190,7 +186,7 @@ namespace lotd
 		for (auto& pair : displayIdsR) {
 			pair.second.clear();
 		}
-		
+
 		for (auto& pair : displayIdsC) {
 			RE::FormID formId = FormUtil::GetFormId(std::stoi(pair.first, 0, 16), lotdCompileIndex, lotdSmallFileCompileIndex);
 			auto form = RE::TESForm::LookupByID(formId);
@@ -205,7 +201,6 @@ namespace lotd
 								// 无所谓暂时不区分
 								//pair.second.insert(obj->GetFormID());
 								displayIds.insert(obj->GetFormID());
-
 
 								// 显示到对应的房间(后面改进)
 								for (const auto& pair : formIdsR) {
@@ -238,7 +233,8 @@ namespace lotd
 
 		auto currentLocation = player->currentLocation;
 
-		{
+		// 艺术馆地点排除
+		if (lotd::locationIds.find(currentLocation->GetFormID()) == lotd::locationIds.end()) {
 			const auto& [map, lock] = RE::TESForm::GetAllForms();
 			//const RE::BSReadLockGuard locker{ lock };
 			const RE::BSReadWriteLock locker{ lock };
@@ -686,6 +682,5 @@ namespace lotd
 			auto& list = lotdItems[nowItemIndex].lists[pair.first];
 			std::partial_sort(list.begin(), list.begin() + pair.second, list.begin() + pair.second, compareForLotdItem);
 		}
-
 	}
 }

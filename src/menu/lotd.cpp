@@ -8,7 +8,6 @@
 
 namespace lotd
 {
-	static int show_inv_window_height = 15;
 
 	enum TableColumn
 	{
@@ -274,7 +273,7 @@ namespace lotd
 			ImGui::TableNextColumn();
 			ImGui::Text("艺术馆物品数量：%d", formIds.size());
 			ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
-			ImGui::BeginChild("childItemsSetting", ImVec2(ImGui::GetTextLineHeightWithSpacing() * 15, ImGui::GetTextLineHeightWithSpacing() * (14.5f)), true, window_flags);
+			ImGui::BeginChild("childItemsSetting", ImVec2(ImGui::GetTextLineHeightWithSpacing() * 15, ImGui::GetTextLineHeightWithSpacing() * ((float)show_inv_window_height - 0.5f)), true, window_flags);
 
 			for (const auto& pair : formIdsR) {
 				ImGui::Text(ICON_MDI_HOME " %s：%d(%d)", roomNames[pair.first].c_str(), pair.second.size(), displayIdsR[pair.first].size());

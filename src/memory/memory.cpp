@@ -28,6 +28,7 @@ bool show_player_mod_window = false;
 bool show_player_info_window = false;
 bool show_player_armor_window = false;
 bool show_player_weapon_window = false;
+int show_inv_window_height = 15;
 
 void __cdecl RefreshGameInfo(void*)
 {
@@ -1225,8 +1226,7 @@ void __cdecl RefreshItemInfo(void*)
 												continue;
 											}
 
-				
-											if (!reff->GetPlayable()) {
+											if (!baseObj->GetPlayable()) {
 												continue;
 											}
 
@@ -1795,15 +1795,10 @@ void __cdecl RefreshItemInfo(void*)
 												continue;
 											}
 
-											if (reff->IsMarkedForDeletion()) {
+											if (reff->IsMarkedForDeletion() || reff->IsIgnored()) {
 												continue;
 											}
 
-#ifndef NDEBUG
-											if (reff->IsIgnored()) {
-												MessageBox(nullptr, reff->GetDisplayFullName(), nullptr, MB_OK);
-											}
-#endif
 											if (show_items_window_ignore) {
 												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
 													continue;

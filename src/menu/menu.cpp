@@ -67,8 +67,7 @@ namespace menu
 	//static bool show_npc_window_dis = false;
 	//static int show_npc_window_dis_meter = 30;
 	extern bool show_npc_window_formid = false;
-	static int show_inv_window_height = 15;
-	static float show_inv_window_height_half = 6.7f;
+	//static float show_inv_window_height_half = 6.7f;
 	static bool show_inv_window_active = true;
 	static bool show_crosshair = false;
 
@@ -428,9 +427,9 @@ namespace menu
 		float tableHeight = TEXT_BASE_HEIGHT * show_inv_window_height;
 		if (show_items_window_settings && show_items_window_auto_cont) {
 			if (show_items_window_auto_conttype) {
-				tableHeight = TEXT_BASE_HEIGHT * (show_inv_window_height_half + 1);
+				tableHeight = TEXT_BASE_HEIGHT * (((float)show_inv_window_height) / 2 + 1.0f);
 			} else {
-				tableHeight = TEXT_BASE_HEIGHT * 13.5;
+				tableHeight = TEXT_BASE_HEIGHT * ((float)show_inv_window_height - 1.5f);
 			}
 		}
 
@@ -443,7 +442,7 @@ namespace menu
 				ImGui::TableSetupColumn("方位", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_7);
 			}
 
-			ImGui::TableSetupColumn("拥有者", ImGuiTableColumnFlags_WidthFixed , 70.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_9);
+			ImGui::TableSetupColumn("拥有者", ImGuiTableColumnFlags_WidthFixed, 70.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_9);
 			if (show_items_window_refid) {
 				ImGui::TableSetupColumn("REFID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_8);
 			}
@@ -642,7 +641,7 @@ namespace menu
 
 		if (show_items_window_settings && show_items_window_auto_cont) {
 			if (show_items_window_auto_conttype) {
-				float tableHeight2 = TEXT_BASE_HEIGHT * (show_inv_window_height_half - 1);
+				float tableHeight2 = TEXT_BASE_HEIGHT * (((float)show_inv_window_height / 2) - 1.0f);
 				ImGui::Checkbox(ICON_MDI_AUTORENEW " 容器类型过滤(点击" ICON_MDI_AUTORENEW "按钮添加拾取白名单)", &show_items_window_auto_conttype);
 
 				int columnCount2 = 3;
@@ -1148,9 +1147,9 @@ namespace menu
 										}
 									}
 								} else if (formType == RE::FormType::Activator) {
-										char buf[120];
-										snprintf(buf, 120, "%X.Activate player", item.formId);
-										ScriptUtil::ExecuteCommand(buf);
+									char buf[120];
+									snprintf(buf, 120, "%X.Activate player", item.formId);
+									ScriptUtil::ExecuteCommand(buf);
 								} else {
 									if (!item.ptr->IsMarkedForDeletion()) {
 										addItem(nullptr, item.ptr, 1);
@@ -1179,9 +1178,9 @@ namespace menu
 										}
 									}
 								} else if (formType == RE::FormType::Activator) {
-											char buf[120];
-											snprintf(buf, 120, "%X.Activate player", item.formId);
-											ScriptUtil::ExecuteCommand(buf);
+									char buf[120];
+									snprintf(buf, 120, "%X.Activate player", item.formId);
+									ScriptUtil::ExecuteCommand(buf);
 								} else {
 									if (!item.ptr->IsMarkedForDeletion()) {
 										addItem(nullptr, item.ptr, 1);
@@ -2033,6 +2032,7 @@ namespace menu
 							}
 						}
 						buildItemInfo(getItemCountWEAP(), getItemsWEAP(), RE::FormType::Weapon);
+						ImGui::Spacing();
 					}
 					if (getItemCountARMO() > 0) {
 						ImGui::TableNextColumn();
@@ -2052,6 +2052,7 @@ namespace menu
 							}
 						}
 						buildItemInfo(getItemCountARMO(), getItemsARMO(), RE::FormType::Armor);
+						ImGui::Spacing();
 					}
 					if (getItemCountAMMO() > 0) {
 						ImGui::TableNextColumn();
@@ -2070,6 +2071,7 @@ namespace menu
 							}
 						}
 						buildItemInfo(getItemCountAMMO(), getItemsAMMO(), RE::FormType::Ammo);
+						ImGui::Spacing();
 					}
 					if (getItemCountBOOK() > 0) {
 						ImGui::TableNextColumn();
@@ -2100,6 +2102,7 @@ namespace menu
 							}
 						}
 						buildItemInfo(getItemCountALCH(), getItemsALCH(), RE::FormType::AlchemyItem);
+						ImGui::Spacing();
 					}
 					if (getItemCountFOOD() > 0) {
 						ImGui::TableNextColumn();
@@ -2118,6 +2121,7 @@ namespace menu
 							}
 						}
 						buildItemInfo(getItemCountFOOD(), getItemsFOOD(), RE::FormType::PluginInfo);  // 临时用PluginInfo
+						ImGui::Spacing();
 					}
 					if (getItemCountINGR() > 0) {
 						ImGui::TableNextColumn();
@@ -2136,6 +2140,7 @@ namespace menu
 							}
 						}
 						buildItemInfo(getItemCountINGR(), getItemsINGR(), RE::FormType::Ingredient);
+						ImGui::Spacing();
 					}
 					if (getItemCountSGEM() > 0) {
 						ImGui::TableNextColumn();
@@ -2166,6 +2171,7 @@ namespace menu
 							}
 						}
 						buildItemInfo(getItemCountKEYM(), getItemsKEYM(), RE::FormType::KeyMaster);
+						ImGui::Spacing();
 					}
 					if (getItemCountSTON() > 0) {
 						ImGui::TableNextColumn();
@@ -2184,6 +2190,7 @@ namespace menu
 							}
 						}
 						buildItemInfo(getItemCountSTON(), getItemsSTON(), RE::FormType::Misc);
+						ImGui::Spacing();
 					}
 					if (getItemCountANVI() > 0) {
 						ImGui::TableNextColumn();
@@ -2202,6 +2209,7 @@ namespace menu
 							}
 						}
 						buildItemInfo(getItemCountANVI(), getItemsANVI(), RE::FormType::Misc);
+						ImGui::Spacing();
 					}
 					if (getItemCountANHD() > 0) {
 						ImGui::TableNextColumn();
@@ -2220,6 +2228,7 @@ namespace menu
 							}
 						}
 						buildItemInfo(getItemCountANHD(), getItemsANHD(), RE::FormType::Misc);
+						ImGui::Spacing();
 					}
 					if (getItemCountANPA() > 0) {
 						ImGui::TableNextColumn();
@@ -2238,6 +2247,7 @@ namespace menu
 							}
 						}
 						buildItemInfo(getItemCountANPA(), getItemsANPA(), RE::FormType::Misc);
+						ImGui::Spacing();
 					}
 					if (getItemCountTOOL() > 0) {
 						ImGui::TableNextColumn();
@@ -2256,6 +2266,7 @@ namespace menu
 							}
 						}
 						buildItemInfo(getItemCountTOOL(), getItemsTOOL(), RE::FormType::Misc);
+						ImGui::Spacing();
 					}
 					if (getItemCountMISC() > 0) {
 						ImGui::TableNextColumn();
@@ -2274,6 +2285,7 @@ namespace menu
 							}
 						}
 						buildItemInfo(getItemCountMISC(), getItemsMISC(), RE::FormType::Misc);
+						ImGui::Spacing();
 					}
 					if (getItemCountFLOR() > 0) {
 						ImGui::TableNextColumn();
@@ -2292,6 +2304,7 @@ namespace menu
 							}
 						}
 						buildItemInfo(getItemCountFLOR(), getItemsFLOR(), RE::FormType::Flora);
+						ImGui::Spacing();
 					}
 					if (getItemCountTREE() > 0) {
 						ImGui::TableNextColumn();
@@ -2310,6 +2323,7 @@ namespace menu
 							}
 						}
 						buildItemInfo(getItemCountTREE(), getItemsTREE(), RE::FormType::Tree);
+						ImGui::Spacing();
 					}
 					if (getItemCountACHR() > 0) {
 						ImGui::TableNextColumn();
@@ -2325,6 +2339,7 @@ namespace menu
 							}
 						}
 						buildItemACHRInfo(getItemCountACHR(), getItemsACHR(), RE::FormType::ActorCharacter);
+						ImGui::Spacing();
 					}
 					if (getItemCountCONT() > 0) {
 						ImGui::TableNextColumn();
@@ -2339,17 +2354,20 @@ namespace menu
 							}
 						}
 						buildItemCONTInfo(getItemCountCONT(), getItemsCONT(), RE::FormType::Container);
+						ImGui::Spacing();
 					}
 					if (getItemCountACTI() > 0) {
 						ImGui::TableNextColumn();
 						ImGui::Text(ICON_MDI_COGS " 可互动(%d)", getItemCountACTI());
 
 						buildItemInfo(getItemCountACTI(), getItemsACTI(), RE::FormType::Activator);
+						ImGui::Spacing();
 					}
 					if (getItemCount() > 0) {
 						ImGui::TableNextColumn();
 						ImGui::Text("其他：");
 						buildItemInfo(getItemCount(), getItems(), RE::FormType::None);
+						ImGui::Spacing();
 					}
 
 					ImGui::TableNextColumn();
@@ -2369,7 +2387,7 @@ namespace menu
 						{
 							ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
 
-							ImGui::BeginChild("childItemsSetting", ImVec2(ImGui::GetTextLineHeightWithSpacing() * 15, ImGui::GetTextLineHeightWithSpacing() * (14.5f)), true, window_flags);
+							ImGui::BeginChild("childItemsSetting", ImVec2(ImGui::GetTextLineHeightWithSpacing() * 15, ImGui::GetTextLineHeightWithSpacing() * ((float)show_inv_window_height - 0.5f)), true, window_flags);
 
 							if (ImGui::BeginTable("tableItemsSetting", 2)) {
 								ImGui::TableNextColumn();
@@ -2386,6 +2404,7 @@ namespace menu
 							}
 
 							ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
+							ImGui::DragInt("表格高度", &show_inv_window_height, 1, 5, 20, "%d行");
 							ImGui::DragInt("显示范围(本地)", &show_items_window_auto_dis_local, 1, 10, 2000, "%d米");
 							ImGui::DragInt("显示范围(天际)", &show_items_window_auto_dis_skyrim, 1, 20, 10000, "%d米");
 							ImGui::PopItemWidth();
