@@ -95,6 +95,8 @@ namespace lotd
 	extern std::map<std::string, std::vector<Form>> listsR;
 	extern std::map<std::string, std::unordered_set<RE::FormID>> formIdsR;
 	extern std::unordered_set<RE::FormID> formIds;
+	// 集合 按照mod区分
+	extern std::map<std::string, std::unordered_set<RE::FormID>> formIdsM;
 	// 多语言
 	extern std::map<std::string, std::string> roomNames;
 
@@ -117,10 +119,6 @@ namespace lotd
 	std::vector<LotdInfo>& getItemsAttached();
 	int getCountAttached();
 
-	/// <summary>
-	/// 刷新陈列品物品
-	/// </summary>
-	void refreshDisplayItems();
 
 	// 艺术馆地点
 	extern std::unordered_set<RE::FormID> locationIds;
@@ -138,7 +136,12 @@ namespace lotd
 	/// <summary>
 	/// 刷新身上物品
 	/// </summary>
-	void refreshInvItems();
+	void refreshInvItemsCache();
+	/// <summary>
+	/// 刷新陈列品物品
+	/// </summary>
+	void refreshDisplayItemsCache();
+
 	// 身上物品
 	extern std::unordered_set<RE::FormID> playerInvIds;
 }

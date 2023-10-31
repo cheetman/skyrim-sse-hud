@@ -39,6 +39,12 @@ namespace setting
 					if (obj.contains("roomName")) {
 						data.roomName = obj["roomName"];
 					}
+
+					if (obj.contains("modName")) {
+						data.modName = obj["modName"];
+					}
+
+					
 					/*if (obj.contains("formids")) {
 						for (const auto& formid : obj["formids"]) {
 							std::string formidstr = formid;

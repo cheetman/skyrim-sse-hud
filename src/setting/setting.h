@@ -8,6 +8,7 @@ namespace setting
 		std::string listEditorId;
 		std::string roomName;
 		std::string listFormId;
+		std::string modName;
 	};
 	struct GalleryData
 	{

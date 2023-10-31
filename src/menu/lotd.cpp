@@ -227,10 +227,12 @@ namespace lotd
 		if (show_items_window_file) {
 			columnCount++;
 		}
+		ImGui::PushStyleColor(ImGuiCol_TableHeaderBg, ImVec4(0.2f, 0.6f, 0.4f, 0.80f));
+		ImGui::PushStyleColor(ImGuiCol_TableBorderStrong, ImVec4(0.1f, 0.4f, 0.2f, 1.0f));
+		/*ImGui::PushStyleColor(ImGuiCol_TableHeaderBg, ImVec4(0.19f, 0.39f, 0.76f, 0.63f));
+		ImGui::PushStyleColor(ImGuiCol_TableBorderStrong, ImVec4(0.15f, 0.46f, 0.8f, 1.0f));*/
 
-		ImGui::PushStyleColor(ImGuiCol_TableBorderStrong, ImVec4(0.0f, 0.7f, 0.0f, 1.0f));
-
-		if (ImGui::BeginTable("tableItem444", columnCount, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 15, TEXT_BASE_HEIGHT * show_inv_window_height), 0.0f)) {
+		if (ImGui::BeginTable("tableItemLOTD", columnCount, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 15, TEXT_BASE_HEIGHT * show_inv_window_height), 0.0f)) {
 			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, TableColumn_1);
 			ImGui::TableSetupColumn("房间", ImGuiTableColumnFlags_WidthFixed , 50.0f * ImGui::GetIO().FontGlobalScale, TableColumn_2);
 			/*ImGui::TableSetupColumn("价值", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 35.0f * ImGui::GetIO().FontGlobalScale, TableColumn_3);
@@ -309,7 +311,7 @@ namespace lotd
 					}
 
 					ImGui::TableNextColumn();
-					ImGui::Text("%s", item.roomName.c_str());
+					ImGui::Text("%s", roomNames[item.roomName].c_str());
 
 					/*ImGui::TableNextColumn();
 					ImGui::Text("%d", item.gold);
@@ -385,7 +387,9 @@ namespace lotd
 		}
 
 		ImGui::PopStyleColor();
+		ImGui::PopStyleColor();
 	}
+
 	void __fastcall render()
 	{
 		if (getCount("Armory") > 0) {
@@ -465,12 +469,8 @@ namespace lotd
 				ImGui::Checkbox("排除军械库物品", &isArmoryIgnore);
 				ImGui::Spacing();
 
-				ImGui::Separator();
-				ImGui::Spacing();
-				ImGui::Text("艺术馆物品总数量：%d", formIds.size());
-				for (const auto& pair : formIdsR) {
-					ImGui::Text(ICON_MDI_HOME " %s：%d(%d)", roomNames[pair.first].c_str(), pair.second.size(), displayIdsR[pair.first].size());
-				}
+				/*ImGui::Separator();
+				ImGui::Spacing();*/
 				ImGui::EndChild();
 			}
 		}

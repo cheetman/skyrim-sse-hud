@@ -154,15 +154,15 @@ namespace menu
 			{
 				ImGuiStyle& mStyle = ImGui::GetStyle();
 				//mStyle.WindowMinSize = ImVec2(160, 20);
-				mStyle.FramePadding = ImVec2(4, 2);
+			/*	mStyle.FramePadding = ImVec2(4, 2);
 				mStyle.ItemSpacing = ImVec2(6, 2);
-				mStyle.ItemInnerSpacing = ImVec2(6, 4);
+				mStyle.ItemInnerSpacing = ImVec2(6, 4);*/
 				mStyle.Alpha = 0.95f;
 				mStyle.WindowRounding = 4.0f;
 				mStyle.FrameRounding = 2.0f;
-				mStyle.IndentSpacing = 6.0f;
+				/*mStyle.IndentSpacing = 6.0f;
 				mStyle.ItemInnerSpacing = ImVec2(2, 4);
-				mStyle.ColumnsMinSpacing = 50.0f;
+				mStyle.ColumnsMinSpacing = 50.0f;*/
 				mStyle.GrabMinSize = 14.0f;
 				mStyle.GrabRounding = 16.0f;
 				mStyle.ScrollbarSize = 12.0f;

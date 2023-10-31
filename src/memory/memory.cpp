@@ -636,10 +636,10 @@ int getItemCountTOOL()
 	return items[!nowItemIndex].itemCountTOOL;
 }
 
-bool clearFlag = false;
-void clearItemInfo()
+//bool clearFlag = false;
+void clearItemInfoCache()
 {
-	if (!clearFlag) {
+	//if (!clearFlag) {
 		items[0].itemCount = 0;
 		items[0].itemCountWEAP = 0;
 		items[0].itemCountARMO = 0;
@@ -661,6 +661,7 @@ void clearItemInfo()
 		items[0].itemCountANHD = 0;
 		items[0].itemCountANPA = 0;
 		items[0].itemCountTOOL = 0;
+
 		items[1].itemCount = 0;
 		items[1].itemCountWEAP = 0;
 		items[1].itemCountARMO = 0;
@@ -682,8 +683,8 @@ void clearItemInfo()
 		items[1].itemCountANHD = 0;
 		items[1].itemCountANPA = 0;
 		items[1].itemCountTOOL = 0;
-		clearFlag = true;
-	}
+		//clearFlag = true;
+	//}
 }
 
 void __cdecl RefreshItemInfo(void*)
@@ -701,10 +702,8 @@ void __cdecl RefreshItemInfo(void*)
 		}
 
 		if (!activeItems) {
-			clearItemInfo();
 			continue;
 		}
-		clearFlag = false;
 
 		if (isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu) {
 			continue;

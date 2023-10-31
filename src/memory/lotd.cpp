@@ -14,6 +14,7 @@ namespace lotd
 	std::vector<List> lists;
 	std::map<std::string, std::vector<Form>> listsR;
 	std::map<std::string, std::unordered_set<RE::FormID>> formIdsR;
+	std::map<std::string, std::unordered_set<RE::FormID>> formIdsM;
 	std::unordered_set<RE::FormID> formIds;
 
 	std::map<std::string, std::string> roomNames;
@@ -37,7 +38,7 @@ namespace lotd
 	bool isShow = false;
 	bool isShowAttached = false;
 	bool isInvIgnore = true;
-	bool isCrimeIgnore = true;
+	bool isCrimeIgnore = false;
 	bool isArmoryIgnore = true;
 
 	std::uint8_t lotdCompileIndex;
@@ -114,14 +115,14 @@ namespace lotd
 		//初始化艺术馆
 		const auto handler = RE::TESDataHandler::GetSingleton();
 
-		auto file = handler->LookupModByName("LegacyoftheDragonborn.esm");
-		if (!file || file->compileIndex == 0xFF) {
+		auto fileLotd = handler->LookupModByName("LegacyoftheDragonborn.esm");
+		if (!fileLotd || fileLotd->compileIndex == 0xFF) {
 			return;
 		}
 
 		isLoad = true;
-		lotdCompileIndex = file->compileIndex;
-		lotdSmallFileCompileIndex = file->smallFileCompileIndex;
+		lotdCompileIndex = fileLotd->compileIndex;
+		lotdSmallFileCompileIndex = fileLotd->smallFileCompileIndex;
 
 		// 地点排除
 		locationIds.insert(FormUtil::GetFormId(0x139074, lotdCompileIndex, lotdSmallFileCompileIndex));
@@ -153,6 +154,10 @@ namespace lotd
 				std::unordered_set<RE::FormID> formids;
 				formIdsR.insert({ listItem.roomName, formids });
 			}
+			if (formIdsM.find(listItem.modName) == formIdsM.end()) {
+				std::unordered_set<RE::FormID> formids;
+				formIdsM.insert({ listItem.modName, formids });
+			}
 
 			RE::BGSListForm* listform = RE::TESForm::LookupByEditorID<RE::BGSListForm>(listItem.listEditorId);
 			if (listform) {
@@ -176,6 +181,8 @@ namespace lotd
 									listsR[listItem.roomName].push_back({ form2->formID, form2->formType.get(), form2->GetName(), GetFormTypeName(form2->formType.underlying()), listItem.roomName });
 									formIdsR[listItem.roomName].insert(form2->formID);
 									formIds.insert(form2->formID);
+									// 集合 按照mod区分
+									formIdsM[listItem.modName].insert(form2->formID);
 								}
 							}
 						}
@@ -188,6 +195,8 @@ namespace lotd
 						listsR[listItem.roomName].push_back({ form->formID, form->formType.get(), form->GetName(), GetFormTypeName(form->formType.underlying()), listItem.roomName });
 						formIdsR[listItem.roomName].insert(form->formID);
 						formIds.insert(form->formID);
+						// 集合 按照mod区分
+						formIdsM[listItem.modName].insert(form->formID);
 					}
 				}
 			}
@@ -292,7 +301,7 @@ namespace lotd
 		return nullptr;
 	}
 
-	void refreshInvItems()
+	void refreshInvItemsCache()
 	{
 		if (isInvIgnore) {
 			if (isPlayerInvChanged) {
@@ -314,7 +323,7 @@ namespace lotd
 		}
 	}
 
-	void refreshDisplayItems()
+	void refreshDisplayItemsCache()
 	{
 		if (islotdContChanged) {
 
@@ -366,10 +375,10 @@ namespace lotd
 		}
 
 		// 缓存身上物品
-		refreshInvItems();
+		refreshInvItemsCache();
 
 		// 缓存陈列品
-		refreshDisplayItems();
+		refreshDisplayItemsCache();
 
 		nowItemIndex = !nowItemIndex;
 		Sleep(100);
@@ -861,10 +870,10 @@ namespace lotd
 		}
 
 		// 缓存身上物品
-		refreshInvItems();
+		refreshInvItemsCache();
 
 		// 缓存陈列品
-		refreshDisplayItems();
+		refreshDisplayItemsCache();
 
 		nowItemIndex = !nowItemIndex;
 		Sleep(100);
@@ -1340,8 +1349,12 @@ namespace lotd
 	void refreshCount()
 	{
 		if (showlocationItemCount) {
+
 			// 缓存身上物品
-			refreshInvItems();
+			refreshInvItemsCache();
+
+			// 缓存陈列品
+			refreshDisplayItemsCache();
 
 			locationItemIds.clear();
 
@@ -1401,6 +1414,7 @@ namespace lotd
 										auto& [count, entry] = data;
 										if (count > 0 && entry) {
 											if (checkItem(obj->GetFormID())) {
+
 												locationItemIds.insert(obj->GetFormID());
 											}
 										}
@@ -1454,6 +1468,12 @@ namespace lotd
 												}
 
 												if (checkItem(baseObj->GetFormID())) {
+													if (isCrimeIgnore) {
+														bool isCrime = reff->IsCrimeToActivate();
+														if (isCrime) {
+															continue;
+														}
+													}
 													locationItemIds.insert(baseObj->GetFormID());
 												}
 												break;
@@ -1486,12 +1506,19 @@ namespace lotd
 													continue;
 												}
 
+												bool stealing = player->WouldBeStealing(reff);
 												auto inv = reff->GetInventory(FormUtil::CanDisplay);
 												for (auto& [obj, data] : inv) {
 													auto& [count, entry] = data;
 													if (count > 0 && entry) {
 														// 放到对应的数组里
 														if (checkItem(obj->GetFormID())) {
+															if (isCrimeIgnore) {
+																bool isCrime = !entry.get()->IsOwnedBy(player, !stealing);
+																if (isCrime) {
+																	continue;
+																}
+															}
 															locationItemIds.insert(obj->GetFormID());
 														}
 													}

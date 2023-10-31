@@ -1160,6 +1160,8 @@ namespace menu
 									ScriptUtil::ExecuteCommand(buf);
 								} else {
 									if (!item.ptr->IsMarkedForDeletion()) {
+										//auto player = RE::PlayerCharacter::GetSingleton();
+										//player->StealAlarm(item.ptr, item.ptr->GetObjectReference(), 1, item.ptr->GetGoldValue() * 2, item.ptr->GetOwner(), true);
 										addItem(nullptr, item.ptr, 1);
 									}
 								}
@@ -2035,7 +2037,7 @@ namespace menu
 					lotd::render();
 
 				} else {
-					{
+					/*	{
 						ImGui::TableNextColumn();
 
 						char buff[20];
@@ -2110,12 +2112,12 @@ namespace menu
 
 							ImGui::EndTable();
 						}
-					}
+					}*/
 
 					if (lotd::isShowAttached) {
 						if (lotd::getCountAttached()) {
 							ImGui::TableNextColumn();
-							ImGui::Text(ICON_MDI_HOME " 艺术馆(%d)", lotd::getCountAttached());
+							ImGui::Text(ICON_MDI_GREENHOUSE " 艺术馆藏品(%d)", lotd::getCountAttached());
 							lotd::buildItemInfoAttached(lotd::getCountAttached(), lotd::getItemsAttached());
 							ImGui::Spacing();
 						}
@@ -2480,7 +2482,7 @@ namespace menu
 					ImGui::TableNextColumn();
 					ImGui::Checkbox("更多", &show_items_window_settings);
 					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, 8.5f * ImGui::GetTextLineHeightWithSpacing());
+						ImGui::SameLine(0.0f, 8.0f * ImGui::GetTextLineHeightWithSpacing());
 
 						if (ImGui::Button(ICON_MDI_CONTENT_SAVE " 保存设置##2")) {
 							auto colorPlotHistogram = style.Colors[ImGuiCol_PlotHistogram];
@@ -2511,7 +2513,7 @@ namespace menu
 							}
 
 							ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-							ImGui::DragInt("表格高度", &show_inv_window_height, 1, 5, 20, "%d行");
+							ImGui::DragInt("表格高度", &show_inv_window_height, 1, 7, 18, "%d行");
 							ImGui::DragInt("显示范围(本地)", &show_items_window_auto_dis_local, 1, 10, 2000, "%d米");
 							ImGui::DragInt("显示范围(天际)", &show_items_window_auto_dis_skyrim, 1, 20, 10000, "%d米");
 							ImGui::PopItemWidth();
@@ -2787,34 +2789,6 @@ namespace menu
 									ImGui::Checkbox("排除军械库物品", &lotd::isArmoryIgnore);
 									ImGui::Checkbox("显示附近藏品数量", &lotd::showlocationItemCount);
 
-#ifndef NDEBUG
-									static ImGuiTableFlags flagsItem =
-										ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
-									const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
-									if (ImGui::BeginTable("tableLotd", 2, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
-										ImGui::TableSetupColumn("List", ImGuiTableColumnFlags_WidthFixed, 80, 1);
-										ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 30, 2);
-										ImGui::TableSetupScrollFreeze(0, 1);
-										ImGui::TableHeadersRow();
-
-										ImGuiListClipper clipper;
-										clipper.Begin(lotd::lists.size());
-										while (clipper.Step())
-											for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
-												lotd::List& item = lotd::lists[row_n];
-												ImGui::PushID(item.name.c_str());
-												ImGui::TableNextRow();
-												ImGui::TableNextColumn();
-												ImGui::Text("%s", item.name.c_str());
-												ImGui::TableNextColumn();
-												ImGui::Text("%d-%d-%d_%d-%d-%d", item.size, item.sizeACTI, item.sizeFLST, item.size2, item.sizeACTI2, item.sizeFLST2);
-												ImGui::PopID();
-											}
-										ImGui::EndTable();
-									}
-
-#endif
-
 									//	ImGui::Checkbox("艺术馆物品板块", &show_items_window_gallery);
 
 									//	ImGui::Text("MOD清单 [已识别%d(%d)件物品,%d(%d)个MOD]", galleryItemCount, galleryItemTotalCount, galleryModCount, galleryModTotalCount);
@@ -2989,7 +2963,7 @@ namespace menu
 				ImGui::ShowDemoWindow(&show_demo_window);
 
 			{
-				ImGui::Begin("ItemFinderPlus v0.7##0", nullptr, 0);
+				ImGui::Begin("ItemFinderPlus v0.7.2##0", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
 				ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 				if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
@@ -3040,10 +3014,87 @@ namespace menu
 
 							setting::save_settings();
 						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+						/*ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 						ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGui::CalcTextSize("v0.7.2-beta").x - 3);
-						myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "v0.7.2-beta");
+						myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "v0.7.2-beta");*/
 						ImGui::EndTabItem();
+					}
+
+					if (lotd::isLoad) {
+						if (ImGui::BeginTabItem(ICON_MDI_GREENHOUSE " 龙裔艺术馆", 0, 0)) {
+							ImGui::Text("艺术馆物品总数量：%d个", lotd::formIds.size());
+
+							ImGui::Spacing();
+							ImGui::Separator();
+							ImGui::Spacing();
+
+							ImGui::Text("MOD物品统计");
+
+							if (ImGui::BeginTable("splitLotdMod", 2)) {
+								for (const auto& pair : lotd::formIdsM) {
+									ImGui::TableNextColumn();
+									ImGui::Text("%s", pair.first.c_str());
+									ImGui::TableNextColumn();
+
+									if (pair.second.size() == 0) {
+										myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "未安装");
+									} else {
+										myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%d个", pair.second.size());
+									}
+								}
+								ImGui::EndTable();
+							}
+							ImGui::Spacing();
+							ImGui::Separator();
+							ImGui::Spacing();
+							ImGui::Text("房间物品统计");
+
+							if (ImGui::BeginTable("splitLotdRoom", 2)) {
+								for (const auto& pair : lotd::formIdsR) {
+									ImGui::TableNextColumn();
+									ImGui::Text(" %s", lotd::roomNames[pair.first].c_str());
+
+									ImGui::TableNextColumn();
+									ImGui::Text("%d(%d)个", pair.second.size(), lotd::displayIdsR[pair.first].size());
+								}
+								ImGui::EndTable();
+							}
+
+#ifndef NDEBUG
+
+							ImGui::Spacing();
+							ImGui::Separator();
+							ImGui::Spacing();
+							ImGui::Text("[调试]艺术馆物品清单：");
+							static ImGuiTableFlags flagsItem =
+								ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
+							const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+							if (ImGui::BeginTable("tableLotd", 2, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 7), 0.0f)) {
+								ImGui::TableSetupColumn("List", ImGuiTableColumnFlags_WidthFixed, 100.0f, 1);
+								ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 40.0f, 2);
+								ImGui::TableSetupScrollFreeze(0, 1);
+								ImGui::TableHeadersRow();
+
+								ImGuiListClipper clipper;
+								clipper.Begin(lotd::lists.size());
+								while (clipper.Step())
+									for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
+										lotd::List& item = lotd::lists[row_n];
+										ImGui::PushID(item.name.c_str());
+										ImGui::TableNextRow();
+										ImGui::TableNextColumn();
+										ImGui::Text("%s", item.name.c_str());
+										ImGui::TableNextColumn();
+										ImGui::Text("%d-%d-%d_%d-%d-%d", item.size, item.sizeACTI, item.sizeFLST, item.size2, item.sizeACTI2, item.sizeFLST2);
+										ImGui::PopID();
+									}
+								ImGui::EndTable();
+							}
+
+#endif
+
+							ImGui::EndTabItem();
+						}
 					}
 
 					if (ImGui::BeginTabItem(ICON_MDI_TABLE_OF_CONTENTS " HUD", 0, 0)) {
@@ -3146,7 +3197,7 @@ namespace menu
 						ImGui::Separator();
 
 						if (ImGui::TreeNodeEx("修改属性一", ImGuiTreeNodeFlags_DefaultOpen)) {
-							if (ImGui::BeginTable("split", 2, 0)) {
+							if (ImGui::BeginTable("split", 2)) {
 								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale);
 								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch, 0.0f);
 
