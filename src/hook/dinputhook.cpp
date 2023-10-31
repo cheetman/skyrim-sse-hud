@@ -4,6 +4,7 @@
 #include <imgui/imgui.h>
 #include <menu/menu.h>
 #include <memory/memory.h>
+#include <memory/lotd.h>
 #include <event/BSTMenuEvent.h>
 
 namespace dinputhook
@@ -466,6 +467,12 @@ namespace dinputhook
 							activeItems = active = false;
 							_DispatchInputEvent(a_dispatcher, dummy);
 							return;
+						}
+					}
+
+					if (activeItems && btnEvent->GetIDCode() == 15) {
+						if (lotd::isLoad) {
+							lotd::isShow = !lotd::isShow;
 						}
 					}
 

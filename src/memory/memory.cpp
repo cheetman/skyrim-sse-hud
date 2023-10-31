@@ -28,7 +28,7 @@ bool show_player_mod_window = false;
 bool show_player_info_window = false;
 bool show_player_armor_window = false;
 bool show_player_weapon_window = false;
-int show_inv_window_height = 15;
+int show_inv_window_height = 14;
 
 void __cdecl RefreshGameInfo(void*)
 {
@@ -406,8 +406,6 @@ void __cdecl RefreshGameInfo(void*)
 	}
 }
 
-
-
 bool compareForItem(const ItemInfo& info1, const ItemInfo& info2)
 {
 	if (info1.gold != info2.gold) {
@@ -426,9 +424,6 @@ bool compareForItemCONT(const ItemInfoCONT& info1, const ItemInfoCONT& info2)
 	}
 }
 
-
-
-
 bool show_items_window = false;
 bool show_items_window_settings = false;
 bool show_items_window_formid = false;
@@ -444,7 +439,6 @@ int show_items_window_auto_dis_local = 160;
 
 // 艺术馆
 bool show_items_window_gallery = false;
-
 
 Item2Info* items = new Item2Info[2];
 int nowItemIndex = 0;
@@ -642,6 +636,56 @@ int getItemCountTOOL()
 	return items[!nowItemIndex].itemCountTOOL;
 }
 
+bool clearFlag = false;
+void clearItemInfo()
+{
+	if (!clearFlag) {
+		items[0].itemCount = 0;
+		items[0].itemCountWEAP = 0;
+		items[0].itemCountARMO = 0;
+		items[0].itemCountAMMO = 0;
+		items[0].itemCountBOOK = 0;
+		items[0].itemCountALCH = 0;
+		items[0].itemCountINGR = 0;
+		items[0].itemCountMISC = 0;
+		items[0].itemCountCONT = 0;
+		items[0].itemCountFLOR = 0;
+		items[0].itemCountFOOD = 0;
+		items[0].itemCountKEYM = 0;
+		items[0].itemCountTREE = 0;
+		items[0].itemCountSGEM = 0;
+		items[0].itemCountACTI = 0;
+		items[0].itemCountACHR = 0;
+		items[0].itemCountSTON = 0;
+		items[0].itemCountANVI = 0;
+		items[0].itemCountANHD = 0;
+		items[0].itemCountANPA = 0;
+		items[0].itemCountTOOL = 0;
+		items[1].itemCount = 0;
+		items[1].itemCountWEAP = 0;
+		items[1].itemCountARMO = 0;
+		items[1].itemCountAMMO = 0;
+		items[1].itemCountBOOK = 0;
+		items[1].itemCountALCH = 0;
+		items[1].itemCountINGR = 0;
+		items[1].itemCountMISC = 0;
+		items[1].itemCountCONT = 0;
+		items[1].itemCountFLOR = 0;
+		items[1].itemCountFOOD = 0;
+		items[1].itemCountKEYM = 0;
+		items[1].itemCountTREE = 0;
+		items[1].itemCountSGEM = 0;
+		items[1].itemCountACTI = 0;
+		items[1].itemCountACHR = 0;
+		items[1].itemCountSTON = 0;
+		items[1].itemCountANVI = 0;
+		items[1].itemCountANHD = 0;
+		items[1].itemCountANPA = 0;
+		items[1].itemCountTOOL = 0;
+		clearFlag = true;
+	}
+}
+
 void __cdecl RefreshItemInfo(void*)
 {
 	while (true) {
@@ -657,18 +701,23 @@ void __cdecl RefreshItemInfo(void*)
 		}
 
 		if (!activeItems) {
+			clearItemInfo();
 			continue;
 		}
+		clearFlag = false;
 
 		if (isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu) {
 			continue;
 		}
 
-
 		// 以区分艺术馆
 		if (lotd::isShow) {
 			lotd::refreshItemInfo();
 			continue;
+		}
+
+		if (lotd::isShowAttached) {
+			lotd::refreshItemInfoAttached();
 		}
 
 		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
@@ -1230,7 +1279,6 @@ void __cdecl RefreshItemInfo(void*)
 												continue;
 											}
 
-
 											if (show_items_window_ignore) {
 												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
 													continue;
@@ -1429,7 +1477,6 @@ void __cdecl RefreshItemInfo(void*)
 											if (reff->IsMarkedForDeletion() || reff->IsIgnored()) {
 												continue;
 											}
-
 
 											if (show_items_window_ignore) {
 												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
@@ -1739,7 +1786,6 @@ void __cdecl RefreshItemInfo(void*)
 											if (reff->IsMarkedForDeletion() || reff->IsIgnored()) {
 												continue;
 											}
-
 
 											auto name = reff->GetDisplayFullName();
 											if (strlen(name) == 0) {

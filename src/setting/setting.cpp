@@ -15,9 +15,17 @@ namespace setting
 	std::filesystem::path settings_path_lotd_item_list = "data\\skse\\plugins\\ItemFinderPlus-LotdItemList.json";
 	//std::vector<GalleryData> galleryList;
 	std::vector<LotdItemList> lotdItemLists;
+	std::vector<std::uint32_t> displayConts;
 
 	bool load_settings_lotd()
 	{
+		displayConts.clear();
+		displayConts.push_back(0x00126087);
+		displayConts.push_back(0x002ACDD9);
+		displayConts.push_back(0x006C22C2);
+		displayConts.push_back(0x002F8E89);
+
+
 		try {
 			std::ifstream i(settings_path_lotd_item_list);
 			nlohmann::json json;
@@ -160,6 +168,9 @@ namespace setting
 				if (j.contains("ItemMenuInfo")) {
 					auto const& j2 = j["ItemMenuInfo"];
 
+					if (j2.contains("show_inv_window_height")) {
+						show_inv_window_height = j2["show_inv_window_height"].get<int>();
+					}
 					if (j2.contains("show_items_window_auto_dis")) {
 						show_items_window_auto_dis = j2["show_items_window_auto_dis"].get<int>();
 					}
@@ -554,6 +565,7 @@ namespace setting
 													} },
 									   { "ItemMenuInfo", {
 															 { "show_items_window_auto_dis", show_items_window_auto_dis },
+															 { "show_inv_window_height", show_inv_window_height },
 															 { "show_items_window_auto_dis_skyrim", show_items_window_auto_dis_skyrim },
 															 { "show_items_window_auto_dis_local", show_items_window_auto_dis_local },
 															 { "show_items_window_direction", show_items_window_direction },

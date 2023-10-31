@@ -496,10 +496,6 @@ void __cdecl TimerAutoPick(void*)
 			continue;
 		}
 
-		if (!show_items_window && !show_items_window_auto_ammo && !show_items_window_auto_flor && !show_items_window_auto_food && !show_items_window_auto_ingr && !show_items_window_auto_alch && !show_items_window_auto_misc && !show_items_window_auto_tree && !show_items_window_auto_sgem && !show_items_window_auto_achr && !show_items_window_auto_cont && !show_items_window_auto_ston && !show_items_window_auto_anvi && !show_items_window_auto_anhd && !show_items_window_auto_anpa && !show_items_window_auto_tool) {
-			Sleep(1000);
-			continue;
-		}
 
 		if (isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu) {
 			Sleep(1000);
@@ -509,6 +505,17 @@ void __cdecl TimerAutoPick(void*)
 		if (activeItems) {
 			continue;
 		}
+
+
+		if (!show_items_window && !show_items_window_auto_ammo && !show_items_window_auto_flor && !show_items_window_auto_food && !show_items_window_auto_ingr && !show_items_window_auto_alch && !show_items_window_auto_misc && !show_items_window_auto_tree && !show_items_window_auto_sgem && !show_items_window_auto_achr && !show_items_window_auto_cont && !show_items_window_auto_ston && !show_items_window_auto_anvi && !show_items_window_auto_anhd && !show_items_window_auto_anpa && !show_items_window_auto_tool) {
+			Sleep(1000);
+			lotd::refreshCount(); // 暂时挂在这里
+			continue;
+		} else {
+			lotd::refreshCount();  // 暂时挂在这里
+		}
+
+
 
 		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 		if (!player) {
@@ -540,21 +547,23 @@ void __cdecl TimerAutoPick(void*)
 
 		auto currentLocation = player->currentLocation;
 
+		
+		int currentLocationFormId = 0;
 		// 地点忽略结果
 		if (show_items_window_auto_ignore) {
 			// 判断地点忽略
-			int formID = 0;
 			if (currentLocation) {
-				formID = currentLocation->GetFormID();
+				currentLocationFormId = currentLocation->GetFormID();
 			}
 			// 不存在
-			if (excludeLocationFormIds.find(formID) != excludeLocationFormIds.end()) {
+			if (excludeLocationFormIds.find(currentLocationFormId) != excludeLocationFormIds.end()) {
 				continue;
 			}
 		}
+
 		// 艺术馆地点排除
 		if (lotd::isLoad) {
-			if (lotd::locationIds.find(currentLocation->GetFormID()) != lotd::locationIds.end()) {
+			if (lotd::locationIds.find(currentLocationFormId) != lotd::locationIds.end()) {
 				continue;
 			}
 		}

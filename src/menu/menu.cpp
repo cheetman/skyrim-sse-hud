@@ -17,6 +17,8 @@
 
 namespace menu
 {
+	std::map<int, std::vector<EquipmentItem>> equipments;
+
 	int trackX1 = 0;
 	int trackY1 = 0;
 	int trackX2 = 0;
@@ -49,7 +51,7 @@ namespace menu
 	bool no_titlebar = true;
 	bool no_resize = false;
 	bool no_collapse = false;
-	bool no_background = false;
+	bool no_background = true;
 	bool no_background_items = false;
 	bool auto_resize = true;
 
@@ -97,7 +99,10 @@ namespace menu
 		"耐力恢复 [KStaminaRate]",
 		"行走速度 [kSpeedMult]",
 		"武器基础伤害 [kMeleeDamage]",
-		"空手基础伤害 [kUnarmedDamage]"
+		"空手基础伤害 [kUnarmedDamage]",
+		"生命值 [kHealth]",
+		"魔法值 [kMagicka]",
+		"耐力值 [kStamina]"
 	};
 	RE::ActorValue actorValuesIndex[] = {
 		RE::ActorValue::kCarryWeight,
@@ -107,6 +112,9 @@ namespace menu
 		RE::ActorValue::kSpeedMult,
 		RE::ActorValue::kMeleeDamage,
 		RE::ActorValue::kUnarmedDamage,
+		RE::ActorValue::kHealth,
+		RE::ActorValue::kMagicka,
+		RE::ActorValue::kStamina,
 	};
 
 	const char* perActorValues[] = {
@@ -427,7 +435,7 @@ namespace menu
 		float tableHeight = TEXT_BASE_HEIGHT * show_inv_window_height;
 		if (show_items_window_settings && show_items_window_auto_cont) {
 			if (show_items_window_auto_conttype) {
-				tableHeight = TEXT_BASE_HEIGHT * (((float)show_inv_window_height) / 2 + 1.0f);
+				tableHeight = TEXT_BASE_HEIGHT * (((float)show_inv_window_height) / 2 + 0.5f);
 			} else {
 				tableHeight = TEXT_BASE_HEIGHT * ((float)show_inv_window_height - 1.5f);
 			}
@@ -641,8 +649,8 @@ namespace menu
 
 		if (show_items_window_settings && show_items_window_auto_cont) {
 			if (show_items_window_auto_conttype) {
-				float tableHeight2 = TEXT_BASE_HEIGHT * (((float)show_inv_window_height / 2) - 1.0f);
-				ImGui::Checkbox(ICON_MDI_AUTORENEW " 容器类型过滤(点击" ICON_MDI_AUTORENEW "按钮添加拾取白名单)", &show_items_window_auto_conttype);
+				float tableHeight2 = TEXT_BASE_HEIGHT * (((float)show_inv_window_height / 2) - 2.0f);
+				ImGui::Checkbox(ICON_MDI_AUTORENEW " 容器类型过滤(点击" ICON_MDI_AUTORENEW "按钮添加白名单)", &show_items_window_auto_conttype);
 
 				int columnCount2 = 3;
 				if (ImGui::BeginTable("tableItemCONTauto", columnCount2, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 15, tableHeight2), 0.0f)) {
@@ -1969,6 +1977,19 @@ namespace menu
 			ImGui::End();*/
 		}
 
+		if (lotd::showlocationItemCount) {
+			ImGui::Begin("附近艺术馆藏品数量", nullptr, window_flags);
+
+			ImGui::Text("藏品数量：");
+			ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+			if (lotd::locationItemCount > 0) {
+				myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%d", lotd::locationItemCount);
+			} else {
+				myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "%d", lotd::locationItemCount);
+			}
+			ImGui::End();
+		}
+
 		if (activeItems) {
 			ImGuiWindowFlags window_flags2 = 0;
 			if (no_titlebar)
@@ -2014,6 +2035,92 @@ namespace menu
 					lotd::render();
 
 				} else {
+					{
+						ImGui::TableNextColumn();
+
+						char buff[20];
+						if (ImGui::BeginTable("loadsave", 3)) {
+							for (int i = 0; i < 8; i++) {
+								ImGui::TableNextColumn();
+								ImGui::Text(ICON_MDI_HOME "%d", i);
+
+								ImGui::TableNextColumn();
+								snprintf(buff, 20, ICON_MDI_UPLOAD " 写入 %d", i);
+								if (ImGui::Button(buff)) {
+									equipments[i].clear();
+									auto player = RE::PlayerCharacter::GetSingleton();
+									const auto inv = player->GetInventory([](RE::TESBoundObject& a_object) {
+										return a_object.IsArmor();
+									});
+									for (const auto& [item, invData] : inv) {
+										const auto& [count, entry] = invData;
+										if (count > 0 && entry->IsWorn()) {
+											const auto armor = item->As<RE::TESObjectARMO>();
+											EquipmentItem item2;
+											item2.item = item;
+											item2.slotMask = (int)armor->GetSlotMask();
+											equipments[i].push_back(item2);
+										}
+									}
+								}
+
+								ImGui::TableNextColumn();
+
+								snprintf(buff, 20, ICON_MDI_DOWNLOAD " 读取 %d", i);
+								if (ImGui::Button(buff)) {
+									std::vector<EquipmentItem> copiedVector(equipments[i]);
+									auto player = RE::PlayerCharacter::GetSingleton();
+									auto actorEquipManager = RE::ActorEquipManager::GetSingleton();
+									const auto inv = player->GetInventory([](RE::TESBoundObject& a_object) {
+										return a_object.IsArmor();
+									});
+
+									for (const auto& [item, invData] : inv) {
+										const auto& [count, entry] = invData;
+										if (count > 0 && entry->IsWorn()) {
+											const auto armor = item->As<RE::TESObjectARMO>();
+											actorEquipManager->UnequipObject(player, item);
+										}
+									}
+
+									for (const auto& [item, invData] : inv) {
+										const auto& [count, entry] = invData;
+										if (count > 0 && !entry->IsWorn()) {
+											const auto armor = item->As<RE::TESObjectARMO>();
+
+											RE::TESBoundObject* deletePtr = nullptr;
+											for (const auto& item2 : copiedVector) {
+												if (item2.item == item) {
+													actorEquipManager->EquipObject(player, item);
+													deletePtr = item;
+													break;
+												}
+											}
+											if (deletePtr) {
+												copiedVector.erase(std::remove_if(copiedVector.begin(), copiedVector.end(),
+																	   [&deletePtr](const EquipmentItem& x) {
+																		   return x.item == deletePtr;
+																	   }),
+													copiedVector.end());
+											}
+										}
+									}
+								}
+							}
+
+							ImGui::EndTable();
+						}
+					}
+
+					if (lotd::isShowAttached) {
+						if (lotd::getCountAttached()) {
+							ImGui::TableNextColumn();
+							ImGui::Text(ICON_MDI_HOME " 艺术馆(%d)", lotd::getCountAttached());
+							lotd::buildItemInfoAttached(lotd::getCountAttached(), lotd::getItemsAttached());
+							ImGui::Spacing();
+						}
+					}
+
 					if (getItemCountWEAP() > 0) {
 						ImGui::TableNextColumn();
 						ImGui::Text(ICON_MDI_SWORD " 武器(%d)", getItemCountWEAP());
@@ -2373,7 +2480,7 @@ namespace menu
 					ImGui::TableNextColumn();
 					ImGui::Checkbox("更多", &show_items_window_settings);
 					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, 9.1f * ImGui::GetTextLineHeightWithSpacing());
+						ImGui::SameLine(0.0f, 8.5f * ImGui::GetTextLineHeightWithSpacing());
 
 						if (ImGui::Button(ICON_MDI_CONTENT_SAVE " 保存设置##2")) {
 							auto colorPlotHistogram = style.Colors[ImGuiCol_PlotHistogram];
@@ -2457,6 +2564,7 @@ namespace menu
 								}
 							}
 
+							ImGui::Spacing();
 							if (ImGui::TreeNodeEx(ICON_MDI_AUTORENEW " 自动拾取", ImGuiTreeNodeFlags_DefaultOpen)) {
 								ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
 								ImGui::DragInt("拾取范围", &show_items_window_auto_dis, 1, 1, 100, "%d米");
@@ -2670,178 +2778,186 @@ namespace menu
 								ImGui::TreePop();
 							}
 
+							if (lotd::isLoad) {
+								ImGui::Spacing();
+								if (ImGui::TreeNodeEx(ICON_MDI_HOME_MODERN " 龙裔艺术馆", ImGuiTreeNodeFlags_DefaultOpen)) {
+									ImGui::Checkbox("显示艺术馆板块", &lotd::isShowAttached);
+									ImGui::Checkbox("排除背包物品", &lotd::isInvIgnore);
+									ImGui::Checkbox("排除犯罪物品", &lotd::isCrimeIgnore);
+									ImGui::Checkbox("排除军械库物品", &lotd::isArmoryIgnore);
+									ImGui::Checkbox("显示附近藏品数量", &lotd::showlocationItemCount);
+
 #ifndef NDEBUG
+									static ImGuiTableFlags flagsItem =
+										ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
+									const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+									if (ImGui::BeginTable("tableLotd", 2, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
+										ImGui::TableSetupColumn("List", ImGuiTableColumnFlags_WidthFixed, 80, 1);
+										ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 30, 2);
+										ImGui::TableSetupScrollFreeze(0, 1);
+										ImGui::TableHeadersRow();
 
-							if (ImGui::TreeNodeEx(ICON_MDI_HOME_MODERN " 龙裔艺术馆", ImGuiTreeNodeFlags_DefaultOpen)) {
-								static ImGuiTableFlags flagsItem =
-									ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
-								const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
-								if (ImGui::BeginTable("tableLotd", 2, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
-									ImGui::TableSetupColumn("List", ImGuiTableColumnFlags_WidthFixed, 80, 1);
-									ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 30, 2);
-									ImGui::TableSetupScrollFreeze(0, 1);
-									ImGui::TableHeadersRow();
-
-									ImGuiListClipper clipper;
-									clipper.Begin(lotd::lists.size());
-									while (clipper.Step())
-										for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
-											lotd::List& item = lotd::lists[row_n];
-											ImGui::PushID(item.name.c_str());
-											ImGui::TableNextRow();
-											ImGui::TableNextColumn();
-											ImGui::Text("%s", item.name.c_str());
-											ImGui::TableNextColumn();
-											ImGui::Text("%d-%d-%d_%d-%d-%d", item.size, item.sizeACTI, item.sizeFLST, item.size2, item.sizeACTI2, item.sizeFLST2);
-											ImGui::PopID();
-										}
-									ImGui::EndTable();
-								}
-
-								//	ImGui::Checkbox("艺术馆物品板块", &show_items_window_gallery);
-
-								//	ImGui::Text("MOD清单 [已识别%d(%d)件物品,%d(%d)个MOD]", galleryItemCount, galleryItemTotalCount, galleryModCount, galleryModTotalCount);
-
-								//	static ImGuiTableFlags flagsItem =
-								//		ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
-								//	const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
-								//	if (ImGui::BeginTable("tableGalleryMod", 4, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
-								//		ImGui::TableSetupColumn("Index", ImGuiTableColumnFlags_WidthFixed, 30, PlayerInfoColumnID_1);
-								//		ImGui::TableSetupColumn("MOD", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_2);
-								//		ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 40, PlayerInfoColumnID_4);
-								//		ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60, PlayerInfoColumnID_3);
-
-								//		ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
-								//		ImGui::TableHeadersRow();
-
-								//		int deleteFormId = 0;
-
-								//		ImGuiListClipper clipper;
-								//		clipper.Begin(galleryFormModData.size());
-								//		while (clipper.Step())
-								//			for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
-								//				GalleryModForm item = galleryFormModData[row_n];
-								//				ImGui::PushID(item.filename.c_str());
-								//				ImGui::TableNextRow();
-
-								//				if (item.compileIndex != -1) {
-								//					ImGui::TableNextColumn();
-								//					if (item.compileIndex == 0xFE) {
-								//						ImGui::Text("%02X:%03X", item.compileIndex, item.smallFileCompileIndex);
-								//					} else {
-								//						ImGui::Text("%02X", item.compileIndex);
-								//					}
-
-								//					ImGui::TableNextColumn();
-								//					ImGui::Text("%s", item.filename.c_str());
-								//					ImGui::TableNextColumn();
-								//					ImGui::Text("%d(%d)", item.itemCount, item.totalItemCount);
-								//					ImGui::TableNextColumn();
-								//					ImGui::Text("%s", item.name.c_str());
-								//				} else {
-								//					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
-								//					ImGui::TableNextColumn();
-
-								//					ImGui::TableNextColumn();
-								//					ImGui::Text("%s", item.filename.c_str());
-								//					ImGui::TableNextColumn();
-								//					ImGui::Text("%d(%d)", item.itemCount, item.totalItemCount);
-								//					ImGui::TableNextColumn();
-								//					ImGui::Text("%s", item.name.c_str());
-								//					ImGui::PopStyleColor();
-								//				}
-
-								//				ImGui::PopID();
-								//			}
-								//		ImGui::EndTable();
-								//	}
-
-								//	static char str0[128] = "93F97";
-								//	if (ImGui::Button(ICON_MDI_CONTENT_SAVE " 生成配置文件")) {
-								//		std::string formidstr = str0;
-								//		auto form = RE::TESForm::LookupByID(std::stoi(formidstr, 0, 16));
-								//		if (form) {
-								//			if (form->Is(RE::FormType::Reference)) {
-								//				auto reff = form->AsReference();
-								//				if (reff) {
-								//					auto baseObj = reff->GetBaseObject();
-								//					if (baseObj) {
-								//						if (baseObj->GetFormType() == RE::FormType::Container) {
-								//							auto inv = reff->GetInventory(CanDisplay);
-
-								//							std::vector<setting::GalleryDataGen> galleryList;
-								//							for (auto& [obj, data] : inv) {
-								//								auto& [count, entry] = data;
-								//								if (count > 0 && entry) {
-								//									bool flag = false;
-								//									// 检查一下mod是否存在
-								//									for (auto& data : galleryList) {
-								//										if (data.filename == obj->GetFile(0)->fileName) {
-								//											// 存在直接加
-								//											flag = true;
-
-								//											int formid = obj->GetFormID();
-								//											if (obj->GetFile(0)->IsLight()) {
-								//												formid &= 0x00000FFF;
-								//											} else {
-								//												formid &= 0x00FFFFFF;
-								//											}
-								//											char buf[80];
-								//											snprintf(buf, 80, "%08X", formid);
-								//											data.formids.push_back(buf);
-								//											break;
-								//										}
-								//									}
-								//									if (!flag) {
-								//										setting::GalleryDataGen data;
-								//										data.filename = obj->GetFile(0)->fileName;
-								//										data.name = obj->GetFile(0)->fileName;
-
-								//										int formid = obj->GetFormID();
-								//										if (obj->GetFile(0)->IsLight()) {
-								//											formid &= 0x00000FFF;
-								//										} else {
-								//											formid &= 0x00FFFFFF;
-								//										}
-								//										char buf[80];
-								//										snprintf(buf, 80, "%08X", formid);
-								//										data.formids.push_back(buf);
-								//										galleryList.push_back(data);
-								//									}
-								//								}
-								//							}
-
-								//							std::filesystem::path settings_path = "data\\skse\\plugins\\ItemFinderPlus-GalleryList-Gen.json";
-
-								//							nlohmann::json arr = nlohmann::json::array();
-
-								//							for (const auto& data : galleryList) {
-								//								nlohmann::json obj = nlohmann::json::object();
-								//								obj["filename"] = data.filename;
-								//								obj["name"] = data.name;
-								//								nlohmann::json arr2 = nlohmann::json::array();
-								//								for (const auto& formid : data.formids) {
-								//									arr2.push_back(formid);
-								//								}
-								//								obj["formids"] = arr2;
-								//								arr.push_back(obj);
-								//							}
-
-								//							std::ofstream o(settings_path);
-								//							o << std::setw(4) << arr << std::endl;
-								//						}
-								//					}
-								//				}
-								//			}
-								//		}
-								//	}
-								//	ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-								//	ImGui::InputText("ID:", str0, IM_ARRAYSIZE(str0));
-
-								ImGui::TreePop();
-							}
+										ImGuiListClipper clipper;
+										clipper.Begin(lotd::lists.size());
+										while (clipper.Step())
+											for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
+												lotd::List& item = lotd::lists[row_n];
+												ImGui::PushID(item.name.c_str());
+												ImGui::TableNextRow();
+												ImGui::TableNextColumn();
+												ImGui::Text("%s", item.name.c_str());
+												ImGui::TableNextColumn();
+												ImGui::Text("%d-%d-%d_%d-%d-%d", item.size, item.sizeACTI, item.sizeFLST, item.size2, item.sizeACTI2, item.sizeFLST2);
+												ImGui::PopID();
+											}
+										ImGui::EndTable();
+									}
 
 #endif
+
+									//	ImGui::Checkbox("艺术馆物品板块", &show_items_window_gallery);
+
+									//	ImGui::Text("MOD清单 [已识别%d(%d)件物品,%d(%d)个MOD]", galleryItemCount, galleryItemTotalCount, galleryModCount, galleryModTotalCount);
+
+									//	static ImGuiTableFlags flagsItem =
+									//		ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
+									//	const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+									//	if (ImGui::BeginTable("tableGalleryMod", 4, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
+									//		ImGui::TableSetupColumn("Index", ImGuiTableColumnFlags_WidthFixed, 30, PlayerInfoColumnID_1);
+									//		ImGui::TableSetupColumn("MOD", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_2);
+									//		ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 40, PlayerInfoColumnID_4);
+									//		ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60, PlayerInfoColumnID_3);
+
+									//		ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
+									//		ImGui::TableHeadersRow();
+
+									//		int deleteFormId = 0;
+
+									//		ImGuiListClipper clipper;
+									//		clipper.Begin(galleryFormModData.size());
+									//		while (clipper.Step())
+									//			for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
+									//				GalleryModForm item = galleryFormModData[row_n];
+									//				ImGui::PushID(item.filename.c_str());
+									//				ImGui::TableNextRow();
+
+									//				if (item.compileIndex != -1) {
+									//					ImGui::TableNextColumn();
+									//					if (item.compileIndex == 0xFE) {
+									//						ImGui::Text("%02X:%03X", item.compileIndex, item.smallFileCompileIndex);
+									//					} else {
+									//						ImGui::Text("%02X", item.compileIndex);
+									//					}
+
+									//					ImGui::TableNextColumn();
+									//					ImGui::Text("%s", item.filename.c_str());
+									//					ImGui::TableNextColumn();
+									//					ImGui::Text("%d(%d)", item.itemCount, item.totalItemCount);
+									//					ImGui::TableNextColumn();
+									//					ImGui::Text("%s", item.name.c_str());
+									//				} else {
+									//					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+									//					ImGui::TableNextColumn();
+
+									//					ImGui::TableNextColumn();
+									//					ImGui::Text("%s", item.filename.c_str());
+									//					ImGui::TableNextColumn();
+									//					ImGui::Text("%d(%d)", item.itemCount, item.totalItemCount);
+									//					ImGui::TableNextColumn();
+									//					ImGui::Text("%s", item.name.c_str());
+									//					ImGui::PopStyleColor();
+									//				}
+
+									//				ImGui::PopID();
+									//			}
+									//		ImGui::EndTable();
+									//	}
+
+									//	static char str0[128] = "93F97";
+									//	if (ImGui::Button(ICON_MDI_CONTENT_SAVE " 生成配置文件")) {
+									//		std::string formidstr = str0;
+									//		auto form = RE::TESForm::LookupByID(std::stoi(formidstr, 0, 16));
+									//		if (form) {
+									//			if (form->Is(RE::FormType::Reference)) {
+									//				auto reff = form->AsReference();
+									//				if (reff) {
+									//					auto baseObj = reff->GetBaseObject();
+									//					if (baseObj) {
+									//						if (baseObj->GetFormType() == RE::FormType::Container) {
+									//							auto inv = reff->GetInventory(CanDisplay);
+
+									//							std::vector<setting::GalleryDataGen> galleryList;
+									//							for (auto& [obj, data] : inv) {
+									//								auto& [count, entry] = data;
+									//								if (count > 0 && entry) {
+									//									bool flag = false;
+									//									// 检查一下mod是否存在
+									//									for (auto& data : galleryList) {
+									//										if (data.filename == obj->GetFile(0)->fileName) {
+									//											// 存在直接加
+									//											flag = true;
+
+									//											int formid = obj->GetFormID();
+									//											if (obj->GetFile(0)->IsLight()) {
+									//												formid &= 0x00000FFF;
+									//											} else {
+									//												formid &= 0x00FFFFFF;
+									//											}
+									//											char buf[80];
+									//											snprintf(buf, 80, "%08X", formid);
+									//											data.formids.push_back(buf);
+									//											break;
+									//										}
+									//									}
+									//									if (!flag) {
+									//										setting::GalleryDataGen data;
+									//										data.filename = obj->GetFile(0)->fileName;
+									//										data.name = obj->GetFile(0)->fileName;
+
+									//										int formid = obj->GetFormID();
+									//										if (obj->GetFile(0)->IsLight()) {
+									//											formid &= 0x00000FFF;
+									//										} else {
+									//											formid &= 0x00FFFFFF;
+									//										}
+									//										char buf[80];
+									//										snprintf(buf, 80, "%08X", formid);
+									//										data.formids.push_back(buf);
+									//										galleryList.push_back(data);
+									//									}
+									//								}
+									//							}
+
+									//							std::filesystem::path settings_path = "data\\skse\\plugins\\ItemFinderPlus-GalleryList-Gen.json";
+
+									//							nlohmann::json arr = nlohmann::json::array();
+
+									//							for (const auto& data : galleryList) {
+									//								nlohmann::json obj = nlohmann::json::object();
+									//								obj["filename"] = data.filename;
+									//								obj["name"] = data.name;
+									//								nlohmann::json arr2 = nlohmann::json::array();
+									//								for (const auto& formid : data.formids) {
+									//									arr2.push_back(formid);
+									//								}
+									//								obj["formids"] = arr2;
+									//								arr.push_back(obj);
+									//							}
+
+									//							std::ofstream o(settings_path);
+									//							o << std::setw(4) << arr << std::endl;
+									//						}
+									//					}
+									//				}
+									//			}
+									//		}
+									//	}
+									//	ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									//	ImGui::InputText("ID:", str0, IM_ARRAYSIZE(str0));
+
+									ImGui::TreePop();
+								}
+							}
 							ImGui::EndChild();
 						}
 					}
@@ -2925,8 +3041,8 @@ namespace menu
 							setting::save_settings();
 						}
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGui::CalcTextSize("v0.7-beta").x - 3);
-						myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "v0.7-beta");
+						ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGui::CalcTextSize("v0.7.2-beta").x - 3);
+						myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "v0.7.2-beta");
 						ImGui::EndTabItem();
 					}
 

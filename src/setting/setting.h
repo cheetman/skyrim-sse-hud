@@ -27,6 +27,7 @@ namespace setting
 	extern std::filesystem::path settings_path_gallery;
 	extern std::filesystem::path settings_path_lotd_item_list;
 	extern std::vector<LotdItemList> lotdItemLists;
+	extern std::vector<std::uint32_t> displayConts;
 	//extern std::vector<GalleryData> galleryList;
 	bool save_settings();
 	bool load_settings();

@@ -372,6 +372,7 @@ namespace FormUtil
 	{
 		RE::FormID formId = compileIndex << (3 * 8);
 		formId += smallFileCompileIndex << ((1 * 8) + 4);
+		formId += rawId;
 		return formId;
 	}
 }

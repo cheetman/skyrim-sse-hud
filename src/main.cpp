@@ -20,6 +20,7 @@
 #include <event/BSTEquipEvent.h>
 #include <setting/setting.h>
 #include <memory/lotd.h>
+#include <event/BSTContainerChangedEvent.h>
 
 
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
@@ -125,6 +126,9 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 			if (trackActorPtrs.size() > 0) {
 				trackActorPtrs.clear();
 			}			
+
+			isPlayerInvChanged = true;
+			islotdContChanged = true;
 			break;
 		}
 	case SKSE::MessagingInterface::kNewGame:
@@ -138,6 +142,9 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 			if (trackActorPtrs.size() > 0) {
 				trackActorPtrs.clear();
 			}
+
+			isPlayerInvChanged = true;
+			islotdContChanged = true;
 			break;
 		}
 	case SKSE::MessagingInterface::kSaveGame:
@@ -176,6 +183,7 @@ void __cdecl installimgui(void*)
 	
 	MenuOpenCloseEvent::Register();
 	EquipEvent::Register();
+	BSTContainerChangedEvent::Register();
 	//BSTCrosshairRefEvent::Register();  
 }
 
@@ -184,7 +192,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 {
 	logger::info("SKSEPlugin_Load"sv);
 #ifndef NDEBUG
-	MessageBoxA(nullptr, "SKSEPlugin_Load", nullptr, MB_OK);
+	//MessageBoxA(nullptr, "SKSEPlugin_Load", nullptr, MB_OK);
 	Sleep(1000);
 #endif
 

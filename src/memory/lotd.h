@@ -71,8 +71,20 @@ namespace lotd
 		std::map<std::string, std::vector<LotdInfo>> lists;
 	};
 
+	// 给前面的用
+	struct Lotd2InfoAttached
+	{
+		int count = 0;
+		std::vector<LotdInfo> list;
+	};
+
 	extern bool isLoad;
 	extern bool isShow;
+	extern bool isShowAttached;
+	extern bool isInvIgnore;
+	extern bool isCrimeIgnore;
+	extern bool isArmoryIgnore;
+	
 	extern std::uint8_t lotdCompileIndex;
 	extern std::uint8_t lotdSmallFileCompileIndex;
 	extern int nowItemIndex;
@@ -87,16 +99,47 @@ namespace lotd
 	extern std::map<std::string, std::string> roomNames;
 
 	// 已展示
-	extern std::map<std::string, std::unordered_set<RE::FormID>> displayIdsC;
+	extern std::map<std::uint32_t, std::unordered_set<RE::FormID>> displayIdsC;
 	extern std::map<std::string, std::unordered_set<RE::FormID>> displayIdsR;
 	extern std::unordered_set<RE::FormID> displayIds;
+
+	// 身上物品
+	extern std::unordered_set<RE::FormID> playerInvIds;
+
+
 
 	void init();
 	void refreshItemInfo();
 	std::vector<LotdInfo>& getItems(std::string roomName);
 	int getCount(std::string roomName);
 
-	
+		void refreshItemInfoAttached();
+	std::vector<LotdInfo>& getItemsAttached();
+	int getCountAttached();
+
+	/// <summary>
+	/// 刷新陈列品物品
+	/// </summary>
+	void refreshDisplayItems();
+
 	// 艺术馆地点
 	extern std::unordered_set<RE::FormID> locationIds;
+
+	// 附近藏品数量
+	extern bool showlocationItemCount;
+	extern std::unordered_set<RE::FormID> locationItemIds;
+	extern int locationItemCount;
+
+	/// <summary>
+	/// 统计区域内的数量
+	/// </summary>
+	void refreshCount();
+
+	/// <summary>
+	/// 刷新身上物品
+	/// </summary>
+	void refreshInvItems();
+	// 身上物品
+	extern std::unordered_set<RE::FormID> playerInvIds;
 }
+
