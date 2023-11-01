@@ -20,6 +20,7 @@ struct ActorInfo
 
 	std::string formIdStr = "";
 	RE::FormID formId = 0;
+	RE::FormID baseFormId = 0;
 	std::string name = "";         // 玩家名
 	std::string ArrowDamage = "";  //弓箭伤害
 	std::string DamageRight = "";  //右手伤害
@@ -116,6 +117,12 @@ extern bool show_npc_window_dead_hidden;
 extern bool show_enemy_window;
 extern bool show_inv_window;
 extern bool show_npc_window;
+
+extern bool show_npc_window_ignore;
+
+
+extern std::unordered_set<int> excludeNpcFormIds;
+extern std::vector<ExcludeForm> excludeNpcForms;
 
 
 ActorInfo* getTeammateData();

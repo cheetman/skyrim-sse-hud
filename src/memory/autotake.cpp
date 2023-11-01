@@ -5,6 +5,7 @@
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
 #include <utils/PlayerDataProvider.h>
+#include <memory/stat.h>
 
 bool show_items_window_auto_ignore = true;
 bool show_items_window_auto_notification = true;
@@ -374,6 +375,7 @@ bool __fastcall autoTakeForACHR(RE::Actor* actor, RE::TESBoundObject* obj, int c
 }
 
 bool __fastcall autoTakeForCONT(RE::TESObjectREFR* reff, RE::TESBoundObject* obj, int count, RE::PlayerCharacter* player)
+
 {
 	if (show_items_window_ignore) {
 		if (excludeFormIds.find(obj->GetFormID()) != excludeFormIds.end()) {
@@ -402,10 +404,13 @@ void RemoveItemACHR(RE::PlayerCharacter* contReff, RE::TESObjectREFR* actor, RE:
 	contReff->PlayPickUpSound(obj, true, false);
 	char buf[100];
 	if (autoTake) {
-		if (count > 1) {
-			snprintf(buf, 100, "%s(%d) 从%s尸体中自动拾取", obj->GetName(), count, actor->GetDisplayFullName());
-		} else {
-			snprintf(buf, 100, "%s 从%s尸体中自动拾取", obj->GetName(), actor->GetDisplayFullName());
+		if (show_items_window_auto_notification) {
+			if (count > 1) {
+				snprintf(buf, 100, "%s(%d) 从%s尸体中自动拾取", obj->GetName(), count, actor->GetDisplayFullName());
+			} else {
+				snprintf(buf, 100, "%s 从%s尸体中自动拾取", obj->GetName(), actor->GetDisplayFullName());
+			}
+			RE::DebugNotification(buf, NULL, false);
 		}
 	} else {
 		if (count > 1) {
@@ -413,8 +418,8 @@ void RemoveItemACHR(RE::PlayerCharacter* contReff, RE::TESObjectREFR* actor, RE:
 		} else {
 			snprintf(buf, 100, "%s 从%s尸体中拾取", obj->GetName(), actor->GetDisplayFullName());
 		}
+		RE::DebugNotification(buf, NULL, false);
 	}
-	RE::DebugNotification(buf, NULL, false);
 	ScriptUtil::RemoveItem(nullptr, 0, actor, obj, count, true, contReff);
 }
 
@@ -430,10 +435,13 @@ void RemoveItemCONT(RE::PlayerCharacter* contReff, RE::TESObjectREFR* actor, RE:
 	contReff->PlayPickUpSound(obj, true, false);
 	char buf[100];
 	if (autoTake) {
-		if (count > 1) {
-			snprintf(buf, 100, "%s(%d) 从%s中自动拾取", obj->GetName(), count, actor->GetDisplayFullName());
-		} else {
-			snprintf(buf, 100, "%s 从%s中自动拾取", obj->GetName(), actor->GetDisplayFullName());
+		if (show_items_window_auto_notification) {
+			if (count > 1) {
+				snprintf(buf, 100, "%s(%d) 从%s中自动拾取", obj->GetName(), count, actor->GetDisplayFullName());
+			} else {
+				snprintf(buf, 100, "%s 从%s中自动拾取", obj->GetName(), actor->GetDisplayFullName());
+			}
+			RE::DebugNotification(buf, NULL, false);
 		}
 	} else {
 		if (count > 1) {
@@ -441,8 +449,8 @@ void RemoveItemCONT(RE::PlayerCharacter* contReff, RE::TESObjectREFR* actor, RE:
 		} else {
 			snprintf(buf, 100, "%s 从%s中拾取", obj->GetName(), actor->GetDisplayFullName());
 		}
+		RE::DebugNotification(buf, NULL, false);
 	}
-	RE::DebugNotification(buf, NULL, false);
 	ScriptUtil::RemoveItem(nullptr, 0, actor, obj, count, true, contReff);
 }
 
@@ -509,10 +517,18 @@ void __cdecl TimerAutoPick(void*)
 
 		if (!show_items_window && !show_items_window_auto_ammo && !show_items_window_auto_flor && !show_items_window_auto_food && !show_items_window_auto_ingr && !show_items_window_auto_alch && !show_items_window_auto_misc && !show_items_window_auto_tree && !show_items_window_auto_sgem && !show_items_window_auto_achr && !show_items_window_auto_cont && !show_items_window_auto_ston && !show_items_window_auto_anvi && !show_items_window_auto_anhd && !show_items_window_auto_anpa && !show_items_window_auto_tool) {
 			Sleep(1000);
-			lotd::refreshCount(); // 暂时挂在这里
+			// 暂时挂在这里
+			if (lotd::isLoad) {
+				lotd::refreshCount();
+			}
+			stats::refreshCount();
 			continue;
 		} else {
-			lotd::refreshCount();  // 暂时挂在这里
+			// 暂时挂在这里
+			if (lotd::isLoad) {
+				lotd::refreshCount();
+			}
+			stats::refreshCount();
 		}
 
 

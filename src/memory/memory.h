@@ -390,7 +390,7 @@ extern bool show_player_info_window;
 
 extern int show_items_window_auto_dis_skyrim;
 extern int show_items_window_auto_dis_local;
-
+extern int show_item_window_track_icon_scale;
 extern int show_inv_window_height;
 
 void initData();

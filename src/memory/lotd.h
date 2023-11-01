@@ -123,6 +123,9 @@ namespace lotd
 	// 艺术馆地点
 	extern std::unordered_set<RE::FormID> locationIds;
 
+	// 挖掘点
+	extern std::unordered_set<RE::FormID> excavationIds;
+
 	// 附近藏品数量
 	extern bool showlocationItemCount;
 	extern std::unordered_set<RE::FormID> locationItemIds;

@@ -7,14 +7,18 @@
 #include <menu/menu.h>
 #include <nlohmann/json.hpp>
 #include <menu/theme.h>
+#include <memory/lotd.h>
+#include <memory/stat.h>
 
 namespace setting
 {
 	std::filesystem::path settings_path = "data\\skse\\plugins\\sse-hud.json";
 	std::filesystem::path settings_path_gallery = "";
 	std::filesystem::path settings_path_lotd_item_list = "data\\skse\\plugins\\ItemFinderPlus-LotdItemList.json";
+	std::filesystem::path settings_path_lotd_item_display_list = "data\\skse\\plugins\\ItemFinderPlus-LotdItemDisplayList.json";
 	//std::vector<GalleryData> galleryList;
 	std::vector<LotdItemList> lotdItemLists;
+	std::vector<LotdItemDisplayCont> lotdItemDisplayLists;
 	std::vector<std::uint32_t> displayConts;
 
 	bool load_settings_lotd()
@@ -24,6 +28,7 @@ namespace setting
 		displayConts.push_back(0x002ACDD9);
 		displayConts.push_back(0x006C22C2);
 		displayConts.push_back(0x002F8E89);
+		//displayConts.push_back(0x00000911);
 
 
 		try {
@@ -54,6 +59,38 @@ namespace setting
 					lotdItemLists.push_back(data);
 				}
 			}
+
+
+
+		} catch (std::exception const& ex) {
+			logger::error(ex.what());
+			return false;
+		}
+		return true;
+	}
+
+	bool load_settings_lotd_display()
+	{
+
+		try {
+			std::ifstream i(settings_path_lotd_item_display_list);
+			nlohmann::json json;
+			i >> json;
+
+			for (const auto& obj : json) {
+				if (obj.contains("contId")) {
+					LotdItemDisplayCont data;
+					std::string formidstr = obj["contId"];
+					data.contId = std::stoi(formidstr, 0, 16);
+
+					if (obj.contains("modName")) {
+						data.modName = obj["modName"];
+					}
+
+					lotdItemDisplayLists.push_back(data);
+				}
+			}
+
 		} catch (std::exception const& ex) {
 			logger::error(ex.what());
 			return false;
@@ -382,6 +419,42 @@ namespace setting
 					if (j2.contains("show_items_window_auto_armo_priceweight_value")) {
 						show_items_window_auto_armo_priceweight_value = j2["show_items_window_auto_armo_priceweight_value"].get<int>();
 					}
+
+
+
+					
+					if (j2.contains("show_item_window_track_icon_scale")) {
+						show_item_window_track_icon_scale = j2["show_item_window_track_icon_scale"].get<int>();
+					}
+
+					if (j2.contains("isShowAttached")) {
+						lotd::isShowAttached = j2["isShowAttached"].get<bool>();
+					}
+					if (j2.contains("isInvIgnore")) {
+						lotd::isInvIgnore = j2["isInvIgnore"].get<bool>();
+					}
+					if (j2.contains("isCrimeIgnore")) {
+						lotd::isCrimeIgnore = j2["isCrimeIgnore"].get<bool>();
+					}
+
+					if (j2.contains("isArmoryIgnore")) {
+						lotd::isArmoryIgnore = j2["isArmoryIgnore"].get<bool>();
+					}
+					if (j2.contains("showlocationItemCount")) {
+						lotd::showlocationItemCount = j2["showlocationItemCount"].get<bool>();
+					}
+					if (j2.contains("showlocationExCount")) {
+						stats::showlocationExCount = j2["showlocationExCount"].get<bool>();
+					}
+					if (j2.contains("showlocationNirnRootCount")) {
+						stats::showlocationNirnRootCount = j2["showlocationNirnRootCount"].get<bool>();
+					}
+					if (j2.contains("showlocationNirnRootRedCount")) {
+						stats::showlocationNirnRootRedCount = j2["showlocationNirnRootRedCount"].get<bool>();
+					}
+					if (j2.contains("showlocationOreCount")) {
+						stats::showlocationOreCount = j2["showlocationOreCount"].get<bool>();
+					}
 				}
 
 				if (j.contains("playerBaseInfo")) {
@@ -453,6 +526,12 @@ namespace setting
 			if (json.contains("autoContFormIDs")) {
 				for (auto const& j : json["autoContFormIDs"]) {
 					autoContFormIds.insert(j.get<int>());
+				}
+			}
+
+			if (json.contains("excludeNpcFormIds")) {
+				for (auto const& j : json["excludeNpcFormIds"]) {
+					excludeNpcFormIds.insert(j.get<int>());
 				}
 			}
 
@@ -639,6 +718,15 @@ namespace setting
 															 { "show_items_window_auto_weap_priceweight", show_items_window_auto_weap_priceweight },
 															 { "show_items_window_auto_armo_priceweight", show_items_window_auto_armo_priceweight },
 															 { "show_items_window_auto_conttype", show_items_window_auto_conttype },
+															 { "showlocationOreCount", stats::showlocationOreCount },
+															 { "showlocationNirnRootRedCount", stats::showlocationNirnRootRedCount },
+															 { "showlocationNirnRootCount", stats::showlocationNirnRootCount },
+															 { "showlocationExCount", stats::showlocationExCount },
+															 { "showlocationItemCount", lotd::showlocationItemCount },
+															 { "isArmoryIgnore", lotd::isArmoryIgnore },
+															 { "isCrimeIgnore", lotd::isCrimeIgnore },
+															 { "isInvIgnore", lotd::isInvIgnore },
+															 { "isShowAttached", lotd::isShowAttached },
 														 } }
 
 								   } }
@@ -649,6 +737,7 @@ namespace setting
 			nlohmann::json arr = nlohmann::json::array();
 			nlohmann::json arrLocation = nlohmann::json::array();
 			nlohmann::json arrAutoCont = nlohmann::json::array();
+			nlohmann::json arrNpc = nlohmann::json::array();
 
 			for (auto id : excludeFormIds) {
 				arr.push_back(id);
@@ -664,6 +753,12 @@ namespace setting
 				arrAutoCont.push_back(id);
 			}
 			json["autoContFormIDs"] = arrAutoCont;
+
+			
+			for (auto id : excludeNpcFormIds) {
+				arrNpc.push_back(id);
+			}
+			json["excludeNpcFormIds"] = arrNpc;
 
 			std::ofstream o(settings_path);
 			o << std::setw(4) << json << std::endl;

@@ -1,9 +1,9 @@
 #pragma once
 #include <PCH.h>
-#include <string>
-#include <windows.h>
 #include <iostream>
 #include <stdlib.h>
+#include <string>
+#include <windows.h>
 
 namespace StringUtil
 {
@@ -42,7 +42,6 @@ namespace StringUtil
 		return fmt::format(FMT_STRING("{}{}{}"), getStringValueFromFloat(a_v1), v_d, getStringValueFromFloat(a_v2));
 	}
 
-	
 	static std::string Utf8ToGbk(const char* src_str)
 	{
 		int len = MultiByteToWideChar(CP_UTF8, 0, src_str, -1, NULL, 0);
@@ -65,7 +64,7 @@ namespace StringUtil
 
 namespace ValueUtil
 {
-	#define M_PI 3.14159265358979323846
+#define M_PI 3.14159265358979323846
 
 	static int calculateDirection(const RE::NiPoint3& p1, const RE::NiPoint3& p2, const RE::NiPoint3& a2)
 	{
@@ -264,8 +263,8 @@ namespace ScriptUtil
 		REL::Relocation<func_t> func{ REL::ID(54856) };
 		return func(vm, stackID, type);
 	}
-	//(RE::BSFixedString& a_stat, 
-	
+	//(RE::BSFixedString& a_stat,
+
 	inline float GetRealHoursPassed(RE::BSScript::IVirtualMachine* vm, RE::VMStackID stackID)
 	{
 		using func_t = decltype(GetRealHoursPassed);
@@ -273,7 +272,6 @@ namespace ScriptUtil
 		return func(vm, stackID);
 	}
 
-	
 
 	inline void ExecuteCommand(std::string commandStr, RE::TESObjectREFR* a_targetRef)
 	{
@@ -294,7 +292,6 @@ namespace ScriptUtil
 		ExecuteCommand(commandStr, nullptr);
 	}
 
-		
 	inline void ExecuteCommand2(std::string commandStr)
 	{
 		// 调用控制台
@@ -308,12 +305,33 @@ namespace ScriptUtil
 			delete script;
 		}
 	}
-	
 
 }
 
 namespace FormUtil
 {
+	inline std::string_view GetActiTypeName(RE::TESObjectREFR* reff, RE::TESBoundObject* baseObj)
+	{
+		auto linkedReff = reff->GetLinkedRef(nullptr);
+		if (linkedReff) {
+			auto linkedBaseObj = linkedReff->GetBaseObject();
+			if (linkedBaseObj) {
+				if (linkedBaseObj->GetFormID() == 0x000613A6 || linkedBaseObj->GetFormID() == 0x000613A7) {
+					return "矿脉";
+				}
+			}
+		}
+		auto acti = baseObj->As<RE::TESObjectACTI>();
+		if (acti) {
+			if (acti->soundActivate) {
+				if (acti->soundActivate->GetFormID() == 0x10F21C) {
+					return "鱼";
+				}
+			}
+		}
+		return "-";
+	}
+
 	bool static inline HasKeyword(RE::BGSKeywordForm* o, RE::FormID formID)
 	{
 		bool result = false;
@@ -366,7 +384,6 @@ namespace FormUtil
 
 		return true;
 	}
-
 
 	RE::FormID static GetFormId(RE::FormID rawId, std::uint8_t compileIndex, std::uint8_t smallFileCompileIndex)
 	{

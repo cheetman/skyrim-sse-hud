@@ -7,6 +7,7 @@
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
 #include <utils/PlayerDataProvider.h>
+#include <memory/npc.h>
 
 bool active = false;
 bool activeItems = false;
@@ -436,6 +437,7 @@ int show_items_window_array_max_length = 2998;
 
 int show_items_window_auto_dis_skyrim = 100;
 int show_items_window_auto_dis_local = 160;
+int show_item_window_track_icon_scale = 1;
 
 // 艺术馆
 bool show_items_window_gallery = false;
@@ -710,12 +712,12 @@ void __cdecl RefreshItemInfo(void*)
 		}
 
 		// 以区分艺术馆
-		if (lotd::isShow) {
+		if (lotd::isLoad && lotd::isShow) {
 			lotd::refreshItemInfo();
 			continue;
 		}
 
-		if (lotd::isShowAttached) {
+		if (lotd::isLoad && lotd::isShowAttached) {
 			lotd::refreshItemInfoAttached();
 		}
 
@@ -1814,7 +1816,6 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].baseFormIdStr = FormIDToString(baseObj->GetFormID());
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].formId = reff->GetFormID();
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].formIdStr = FormIDToString(reff->GetFormID());
-											items[nowItemIndex].itemInfoACTI[tmpCountACTI].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].name = reff->GetDisplayFullName();
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].gold = baseObj->GetGoldValue();
@@ -1828,8 +1829,11 @@ void __cdecl RefreshItemInfo(void*)
 												items[nowItemIndex].itemInfoACTI[tmpCountACTI].filename = baseObj->GetFile(0)->fileName;
 											}
 
-											items[nowItemIndex].itemInfoACTI[tmpCountACTI].isHarvested = (reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested);
-
+											items[nowItemIndex].itemInfoACTI[tmpCountACTI].isHarvested = (reff->formFlags & RE::TESForm::RecordFlags::kDestroyed);
+											// 分类
+											items[nowItemIndex].itemInfoACTI[tmpCountACTI].formTypeStr = FormUtil::GetActiTypeName(reff,baseObj);
+										
+											
 											tmpCountACTI++;
 
 											break;
@@ -2025,6 +2029,13 @@ void initData()
 		auto form = RE::TESForm::LookupByID(id);
 		if (form) {
 			excludeForms.push_back({ form->GetFormID(), form->GetName(), "" });
+		}
+	}
+
+	for (auto id : excludeNpcFormIds) {
+		auto form = RE::TESForm::LookupByID(id);
+		if (form) {
+			excludeNpcForms.push_back({ form->GetFormID(), form->GetName(), "" });
 		}
 	}
 

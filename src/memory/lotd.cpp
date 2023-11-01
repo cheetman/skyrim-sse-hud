@@ -31,6 +31,9 @@ namespace lotd
 	// 艺术馆地点
 	std::unordered_set<RE::FormID> locationIds;
 
+	// 挖掘点
+	std::unordered_set<RE::FormID> excavationIds;
+
 	Lotd2Info* lotdItems = new Lotd2Info[2];
 	Lotd2InfoAttached* lotdItemsAttached = new Lotd2InfoAttached[2];
 
@@ -136,6 +139,11 @@ namespace lotd
 		locationIds.insert(FormUtil::GetFormId(0x5D7E92, lotdCompileIndex, lotdSmallFileCompileIndex));
 		locationIds.insert(FormUtil::GetFormId(0x5D7E94, lotdCompileIndex, lotdSmallFileCompileIndex));
 		locationIds.insert(FormUtil::GetFormId(0x5D7E95, lotdCompileIndex, lotdSmallFileCompileIndex));
+
+		// 挖掘点
+		excavationIds.insert(FormUtil::GetFormId(0x51FCCB, lotdCompileIndex, lotdSmallFileCompileIndex));
+		excavationIds.insert(FormUtil::GetFormId(0x51FCD1, lotdCompileIndex, lotdSmallFileCompileIndex));
+		excavationIds.insert(FormUtil::GetFormId(0x51FCD2, lotdCompileIndex, lotdSmallFileCompileIndex));
 
 		// 陈列品箱子
 		for (auto& contId : setting::displayConts) {

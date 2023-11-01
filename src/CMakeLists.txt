@@ -97,6 +97,8 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/setting/setting.cpp"
 	"${SOURCE_DIR}/memory/autotake.h"
 	"${SOURCE_DIR}/memory/autotake.cpp"
+	"${SOURCE_DIR}/memory/stat.h"
+	"${SOURCE_DIR}/memory/stat.cpp"
 )
 
 source_group(TREE "${ROOT_DIR}" FILES ${SOURCE_FILES})

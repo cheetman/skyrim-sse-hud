@@ -1,9 +1,7 @@
-#include <memory/npc.h>
-#include <utils/utils.h>
-#include <utils/GeneralUtil.h>
 #include <event/BSTMenuEvent.h>
-
-
+#include <memory/npc.h>
+#include <utils/GeneralUtil.h>
+#include <utils/utils.h>
 
 bool show_npc_window_dead_hidden = false;
 int show_npc_window_dis_meter = 30;
@@ -13,7 +11,10 @@ int show_npc_window_array_max_length = 98;
 bool show_enemy_window = false;
 bool show_inv_window = false;
 bool show_npc_window = false;
+bool show_npc_window_ignore = false;
 
+std::unordered_set<int> excludeNpcFormIds;
+std::vector<ExcludeForm> excludeNpcForms;
 
 Actor2Info* actorInfo = new Actor2Info[2];
 int nowIndex = 0;
@@ -52,14 +53,12 @@ int getTeammateCount()
 	return actorInfo[!nowIndex].teammateCount;
 }
 
-
 auto IsSentient2(RE::Actor* actor) -> uint32_t
 {
 	using func_t = decltype(&IsSentient2);
 	REL::Relocation<func_t> func{ REL::ID(36889) };
 	return func(actor);
 }
-
 
 bool compareByLevel(const ActorInfo& info1, const ActorInfo& info2)
 {
@@ -80,7 +79,6 @@ bool compareForInventory(const InventoryInfo& info1, const InventoryInfo& info2)
 		return info1.formId < info2.formId;
 	}
 }
-
 
 PlayerInventoryInfo* MyInventoryInfo = new PlayerInventoryInfo[2];
 
@@ -158,7 +156,6 @@ InventoryInfo* getPlayerInvData(int i)
 {
 	return &MyInventoryInfo[!nowIndex].inventorys[i];
 }
-
 
 void __fastcall buildPlayerInvData(InventoryInfo inv[], int& i, RE::TESBoundObject* item, RE::InventoryEntryData* entry, std::int32_t count)
 {
@@ -239,7 +236,6 @@ void RefreshInventory(RE::Actor* actor, ActorInfo* actorInfo, int tmpIndex)
 
 	actorInfo[tmpIndex].inventoryCount = i;
 }
-
 
 void __cdecl RefreshActorInfo(void*)
 {
@@ -362,6 +358,17 @@ void __cdecl RefreshActorInfo(void*)
 							continue;
 						}
 
+						auto baseObj = actor->GetActorBase();
+						if (baseObj) {
+							if (show_npc_window_ignore) {
+								if (excludeNpcFormIds.find(baseObj->GetFormID()) != excludeNpcFormIds.end()) {
+									continue;
+								}
+							}
+							actorInfo[nowIndex].teammateInfo[tmpTeammateCount].baseFormId = baseObj->GetFormID();
+							//baseObj->GetRace();
+						}
+
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].formId = actor->GetFormID();
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].formIdStr = FormIDToString(actor->GetFormID());
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].ptr = actor;
@@ -397,6 +404,17 @@ void __cdecl RefreshActorInfo(void*)
 								continue;
 							}
 						}
+
+						auto baseObj = actor->GetActorBase();
+						if (baseObj) {
+							if (show_npc_window_ignore) {
+								if (excludeNpcFormIds.find(baseObj->GetFormID()) != excludeNpcFormIds.end()) {
+									continue;
+								}
+							}
+							actorInfo[nowIndex].enemyInfo[tmpEnemyCount].baseFormId = baseObj->GetFormID();
+						}
+
 						if (show_npc_window_direction) {
 							actorInfo[nowIndex].enemyInfo[tmpEnemyCount].distance = dis;
 							actorInfo[nowIndex].enemyInfo[tmpEnemyCount].direction = ValueUtil::calculateDirection(actor->GetPosition(), player->GetPosition(), player->GetAngle());
@@ -430,6 +448,17 @@ void __cdecl RefreshActorInfo(void*)
 								continue;
 							}
 						}
+
+						auto baseObj = actor->GetActorBase();
+						if (baseObj) {
+							if (show_npc_window_ignore) {
+								if (excludeNpcFormIds.find(baseObj->GetFormID()) != excludeNpcFormIds.end()) {
+									continue;
+								}
+							}
+							actorInfo[nowIndex].horseInfo[tmpHorseCount].baseFormId = baseObj->GetFormID();
+						}
+
 						if (show_npc_window_direction) {
 							actorInfo[nowIndex].horseInfo[tmpHorseCount].distance = dis;
 							actorInfo[nowIndex].horseInfo[tmpHorseCount].direction = ValueUtil::calculateDirection(actor->GetPosition(), player->GetPosition(), player->GetAngle());
@@ -462,6 +491,16 @@ void __cdecl RefreshActorInfo(void*)
 							if (dis > show_npc_window_dis_meter) {
 								continue;
 							}
+						}
+
+						auto baseObj = actor->GetActorBase();
+						if (baseObj) {
+							if (show_npc_window_ignore) {
+								if (excludeNpcFormIds.find(baseObj->GetFormID()) != excludeNpcFormIds.end()) {
+									continue;
+								}
+							}
+							actorInfo[nowIndex].npcInfo[tmpNpcCount].baseFormId = baseObj->GetFormID();
 						}
 
 						if (show_npc_window_direction) {

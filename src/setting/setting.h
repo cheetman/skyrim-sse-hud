@@ -3,6 +3,12 @@
 
 namespace setting
 {
+	struct LotdItemDisplayCont
+	{
+		std::uint32_t contId;
+		std::string modName;
+	};
+
 	struct LotdItemList
 	{
 		std::string listEditorId;
@@ -28,6 +34,7 @@ namespace setting
 	extern std::filesystem::path settings_path_gallery;
 	extern std::filesystem::path settings_path_lotd_item_list;
 	extern std::vector<LotdItemList> lotdItemLists;
+	extern std::vector<LotdItemDisplayCont> lotdItemDisplayLists;
 	extern std::vector<std::uint32_t> displayConts;
 	//extern std::vector<GalleryData> galleryList;
 	bool save_settings();
