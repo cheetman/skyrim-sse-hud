@@ -22,6 +22,7 @@
 #include <memory/lotd.h>
 #include <event/BSTContainerChangedEvent.h>
 #include <event/BSTPositionPlayerEvent.h>
+#include <memory/data.h>
 
 
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
@@ -166,7 +167,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 	case SKSE::MessagingInterface::kDataLoaded:
 		{
 			logger::info("kDataLoaded"sv);
-			initData();
+			data::init();
 			lotd::init();
 
 			

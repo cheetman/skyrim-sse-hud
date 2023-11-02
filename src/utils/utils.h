@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string>
 #include <windows.h>
+#include <memory\memory.h>
 
 namespace StringUtil
 {

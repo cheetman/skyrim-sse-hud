@@ -8,6 +8,7 @@
 #include <memory/memory.h>
 #include <memory/npc.h>
 #include <memory/stat.h>
+#include <memory/player.h>
 #include <menu/lotd.h>
 #include <menu/menu.h>
 #include <menu/theme.h>
@@ -1676,7 +1677,7 @@ namespace menu
 									ImGui::SetWindowFontScale(menu::font_scale + (float)show_item_window_track_icon_scale);
 									ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %0.1fm", ValueUtil::calculateDistance(ptr->GetPosition(), player->GetPosition()) / 100.0f);
 									ImGui::SetWindowFontScale(menu::font_scale);
-									
+
 									ImGui::End();
 								}
 							}
@@ -2168,11 +2169,41 @@ namespace menu
 			ImGui::End();*/
 		}
 
+		if (show_player_gold_window) {
+			ImGui::Begin("金钱", nullptr, window_flags);
+			ImGui::Text(ICON_MDI_CURRENCY_CNY " %d", playerInfo.gold);
+			ImGui::End();
+		}
+
+		if (show_player_carryweight_window) {
+			ImGui::Begin("负重", nullptr, window_flags);
+			ImGui::Text(ICON_MDI_WEIGHT " %.1f/%.0f", playerInfo.equippedWeight, playerInfo.carryWeight);
+			ImGui::End();
+		}
+
+		if (show_player_xp_window) {
+			ImGui::Begin("经验值", nullptr, window_flags);
+			ImGui::Text(ICON_MDI_TRANSFER_UP " %.0f/%.0f", playerInfo.xp, playerInfo.levelThreshold);
+			ImGui::End();
+		}
+
+		if (stats::show_playtime_window) {
+			ImGui::Begin("游玩时间", nullptr, window_flags);
+			ImGui::Text(ICON_MDI_CLOCK_OUTLINE " %02d:%02d:%02d", stats::playtime_hours, stats::playtime_minutes, stats::playtime_seconds);
+			ImGui::End();
+		}
+
+		if (stats::show_gametime_window) {
+			ImGui::Begin("游戏时间", nullptr, window_flags);
+			ImGui::Text(ICON_MDI_CLOCK_OUTLINE " %02d:%02d:%02d", stats::gametime_hours, stats::gametime_minutes, stats::gametime_seconds);
+			ImGui::End();
+		}
+
 		if (lotd::showlocationItemCount || stats::showlocationExCount) {
 			ImGui::Begin("附近艺术馆藏品数量", nullptr, window_flags);
 
 			if (lotd::showlocationItemCount) {
-				ImGui::Text(ICON_MDI_TREASURE_CHEST_OUTLINE " 藏品数量：");
+				ImGui::Text(ICON_MDI_TREASURE_CHEST_OUTLINE " 藏品数：");
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 				if (lotd::locationItemCount > 0) {
 					myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%d", lotd::locationItemCount);
@@ -2182,7 +2213,7 @@ namespace menu
 			}
 
 			if (stats::showlocationExCount) {
-				ImGui::Text(ICON_MDI_SPADE " 挖掘点数量：");
+				ImGui::Text(ICON_MDI_SPADE " 考古点：");
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 				if (stats::locationExCount > 0) {
 					myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%d", stats::locationExCount);
@@ -2206,7 +2237,7 @@ namespace menu
 			ImGui::Begin("附近物品数量", nullptr, window_flags);
 
 			if (stats::showlocationNirnRootCount) {
-				ImGui::Text(ICON_MDI_SPA_OUTLINE " 奈恩根数量：");
+				ImGui::Text(ICON_MDI_SPA_OUTLINE " 奈恩根：");
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 				if (stats::locationNirnRootCount > 0) {
 					myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%d", stats::locationNirnRootCount);
@@ -2216,7 +2247,7 @@ namespace menu
 			}
 
 			if (stats::showlocationNirnRootRedCount) {
-				ImGui::Text(ICON_MDI_SPA " 深红奈恩根数量：");
+				ImGui::Text(ICON_MDI_SPA " 深红奈恩根：");
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 				if (stats::locationNirnRootRedCount > 0) {
 					myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%d", stats::locationNirnRootRedCount);
@@ -2227,7 +2258,7 @@ namespace menu
 
 			if (stats::showlocationOreCount) {
 				//ImGui::Text(ICON_MDI_GOLD " 矿脉数量：");
-				ImGui::Text(ICON_MDI_TERRAIN " 矿脉数量：");
+				ImGui::Text(ICON_MDI_TERRAIN " 矿脉：");
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 				if (stats::locationOreCount > 0) {
 					myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%d", stats::locationOreCount);
@@ -2242,7 +2273,6 @@ namespace menu
 				} else {
 					myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "0");
 				}
-				
 			}
 
 			ImGui::End();
@@ -3388,18 +3418,18 @@ namespace menu
 
 							ImGui::TableNextColumn();
 							ImGui::TableNextColumn();
-							ImGui::Checkbox("人物属性", &show_player_info_window);
+							ImGui::Checkbox("显示人物属性", &show_player_info_window);
 							ImGui::TableNextColumn();
-							ImGui::Checkbox("人物属性2", &show_player_mod_window);
+							ImGui::Checkbox("显示人物属性2", &show_player_mod_window);
 							ImGui::TableNextColumn();
-							ImGui::Checkbox("武器信息", &show_player_weapon_window);
+							ImGui::Checkbox("显示武器信息", &show_player_weapon_window);
 							ImGui::TableNextColumn();
-							ImGui::Checkbox("防具信息", &show_player_armor_window);
+							ImGui::Checkbox("显示防具信息", &show_player_armor_window);
 							ImGui::TableNextColumn();
-							ImGui::Checkbox("其他信息", &show_player_debug_window);
+							ImGui::Checkbox("显示其他信息", &show_player_debug_window);
 
 							ImGui::TableNextColumn();
-							ImGui::Checkbox("NPC信息", &show_npc_window);
+							ImGui::Checkbox("显示NPC信息", &show_npc_window);
 							if (show_npc_window) {
 								if (ImGui::TreeNodeEx("设置##1", ImGuiTreeNodeFlags_DefaultOpen)) {
 									ImGui::Checkbox("只显示距离内NPC", &show_npc_window_dis);
@@ -3463,6 +3493,16 @@ namespace menu
 									ImGui::TreePop();
 								}
 							}
+
+							ImGui::TableNextColumn();
+							ImGui::Checkbox("显示金钱", &show_player_gold_window);
+							ImGui::TableNextColumn();
+							ImGui::Checkbox("显示游玩时间", &stats::show_playtime_window);
+							ImGui::TableNextColumn();
+							ImGui::Checkbox("显示负重", &show_player_carryweight_window);
+							ImGui::TableNextColumn();
+							ImGui::Checkbox("显示游戏时间", &stats::show_gametime_window);
+
 							/*ImGui::TableNextColumn();
 								ImGui::Checkbox("物品栏信息", &show_inv_window);
 								if (show_inv_window) {

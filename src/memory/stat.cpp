@@ -9,7 +9,6 @@ namespace stats
 	bool showlocationNirnRootCount = false;
 	bool showlocationOreCount = false;
 	bool showlocationExCount = false;
-
 	std::unordered_set<RE::TESObjectREFR*> locationNirnRootRedIds;
 	std::unordered_set<RE::TESObjectREFR*> locationNirnRootIds;
 	std::unordered_set<RE::TESObjectREFR*> locationOreIds;
@@ -19,6 +18,41 @@ namespace stats
 	std::uint32_t locationNirnRootCount;
 	std::uint32_t locationOreCount;
 	std::uint32_t locationExCount;
+
+	float playtime = 0;
+	int playtime_hours = 0;
+	int playtime_minutes = 0;
+	int playtime_seconds = 0;
+	bool show_playtime_window = false;
+
+	
+	int gametime_hours = 0;
+	int gametime_minutes = 0;
+	int gametime_seconds = 0;
+	bool show_gametime_window = false;
+
+	void refreshStats() {
+		// 时间
+		if (stats::show_playtime_window) {
+			float time = ScriptUtil::GetRealHoursPassed(nullptr, 0);
+			//stats::playtime = time;
+			stats::playtime_hours = static_cast<int>(time);
+			stats::playtime_minutes = static_cast<int>((time - stats::playtime_hours) * 60);
+			stats::playtime_seconds = static_cast<int>((time - stats::playtime_hours - stats::playtime_minutes / 60.0) * 3600);
+		}
+
+		// 时间
+		if (stats::show_gametime_window) {
+			auto calendar = RE::Calendar::GetSingleton();
+			if (calendar) {
+				auto time = calendar->gameHour->value;
+				stats::gametime_hours = static_cast<int>(time);
+				stats::gametime_minutes = static_cast<int>((time - stats::gametime_hours) * 60);
+				stats::gametime_seconds = static_cast<int>((time - stats::gametime_hours - stats::gametime_minutes / 60.0) * 3600);
+			}
+		}
+
+	}
 
 	void refreshCount()
 	{
@@ -127,4 +161,5 @@ namespace stats
 			locationExCount = locationExIds.size();
 		}
 	}
+
 }

@@ -3,39 +3,67 @@
 #include <memory/autotake.h>
 #include <memory/lotd.h>
 #include <memory/npc.h>
+#include <memory/player.h>
+#include <memory/stat.h>
 #include <setting/setting.h>
 #include <unordered_set>
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
 #include <utils/PlayerDataProvider.h>
 
-
-
-
 bool isCrimeIgnore = false;
-
 
 bool active = false;
 bool activeItems = false;
 int refresh_time_data = 500;
 bool startflag = false;
-WeaponInfo leftWeaponInfo;
-WeaponInfo rightWeaponInfo;
-WeaponInfo ammoInfo;
-ArmorInfo wornArmos[32];
-PlayerInfo playerInfo;
 
 bool isGameLoading = false;
 
 int screenWidth = 0;
 int screenHeight = 0;
 
-bool show_player_base_info_window = false;
-bool show_player_mod_window = false;
-bool show_player_info_window = false;
-bool show_player_armor_window = false;
-bool show_player_weapon_window = false;
 int show_inv_window_height = 14;
+
+bool show_items_window = false;
+bool show_items_window_settings = false;
+bool show_items_window_formid = false;
+bool show_items_window_refid = false;
+bool show_items_window_direction = false;
+bool show_items_window_file = false;
+bool show_items_window_3D = false;
+bool show_items_window_ignore = true;
+int show_items_window_array_max_length = 2998;
+
+int show_items_window_auto_dis_skyrim = 100;
+int show_items_window_auto_dis_local = 160;
+int show_item_window_track_icon_scale = 1;
+
+Item2Info* items = new Item2Info[2];
+int nowItemIndex = 0;
+
+// 物品排除
+std::unordered_set<int> excludeFormIds;
+std::vector<ExcludeForm> excludeForms;
+
+// 商贩容器
+std::unordered_set<RE::FormID> merchantContFormIds;
+bool merchantContIgnore = true;
+
+// 龙爪
+std::unordered_set<RE::FormID> clawFormIds;
+
+// 矿脉
+std::unordered_set<RE::FormID> oreFormIds;
+
+// 天气
+std::vector<WeatherForm> weatherForms;
+RE::FormID currentWeather = 0;
+
+//std::vector<ItemInfo> tracks;
+std::unordered_set<RE::TESObjectREFR*> trackPtrs;
+std::unordered_set<RE::Actor*> trackActorPtrs;
+//bool excludeFormsInitFlag = true;
 
 void __cdecl RefreshGameInfo(void*)
 {
@@ -45,7 +73,6 @@ void __cdecl RefreshGameInfo(void*)
 	for (int i = 0; i <= 31; i++) {
 		wornArmos[i].equipSlotName = GetEquipSlotName(i);
 	}
-	bool initFlag = true;
 
 	while (true) {
 		if (refresh_time_data < 50) {
@@ -64,351 +91,16 @@ void __cdecl RefreshGameInfo(void*)
 		}
 
 		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
-
 		if (player) {
-			//playerInfo.name = player->GetName();
-			auto currentLocation = player->currentLocation;
-			if (currentLocation) {
-				playerInfo.location = currentLocation->GetFullName();
-				playerInfo.locationId = currentLocation->GetFormID();
-				if (currentLocation->parentLoc) {
-					playerInfo.parentLocation = currentLocation->parentLoc->GetFullName();
-					playerInfo.parentLocationId = currentLocation->parentLoc->GetFormID();
-				} else {
-					playerInfo.parentLocationId = -1;
-				}
-			} else {
-				playerInfo.location = "天际";
-				playerInfo.parentLocationId = -1;
-			}
-
-			auto sky = RE::Sky::GetSingleton();
-			if (sky) {
-				auto weather = sky->currentWeather;
+			/*sky->currentWeather;
 				if (weather) {
-				}
-				weather->data.flags.any(RE::TESWeather::WeatherDataFlag::kCloudy);
-			}
+					weather->data.flags.any(RE::TESWeather::WeatherDataFlag::kCloudy);*/
 
-			playerInfo.Angle = player->GetAngle();
-			playerInfo.Position = player->GetPosition();
+			// 更新玩家信息
+			refreshPlayerInfo();
 
-			{
-				if (initFlag) {
-					// 初始化天气
-					auto dataHandler = RE::TESDataHandler::GetSingleton();
-					if (dataHandler) {
-						for (auto form : dataHandler->GetFormArray<RE::TESWeather>()) {
-							if (!form) {
-								continue;
-							}
-							weatherForms.push_back({ form->GetFormID(), form->GetFormEditorID(), form->data.flags.get() });
-						}
-						initFlag = false;
-					}
-				}
-			}
-
-			//__try {
-			//auto playerFormEditorID = player->GetFormEditorID();
-			//auto playerFormID = player->GetFormID();
-			//auto playerGoldValue = player->GetGoldValue();
-			// 用不到
-			//auto playerGoldAmount = player->GetGoldAmount();
-			//auto playerDisplayFullName = player->GetDisplayFullName();
-
-			//auto playerLevel = player->GetLevel();
-			//auto playerRace = player->GetRace();
-			//if (playerRace) {
-			//playerRaceName = player->GetRace()->GetFullName();
-			//}
-
-			//auto playerAttackingWeapon = player->GetAttackingWeapon();
-			//auto playerEquippedEntryDataLeft = player->GetEquippedEntryData(true);
-			//auto playerEquippedEntryDataRight = player->GetEquippedEntryData(false);
-			//auto playerEquippedObjectLeft = player->GetEquippedObject(true);
-			//auto playerEquippedObjectRight = player->GetEquippedObject(false);
-
-			//auto id = player->GetCrimeGoldValue();
-			//auto factionOwner = player->GetFactionOwner();
-			//if (factionOwner) {
-			//	auto factionOwnerName = factionOwner->GetFullName();
-			//}
-			// 轻甲等级
-			//lightArmor = player->GetActorValue(RE::ActorValue::kLightArmor);
-			//// 重甲等级
-			//heavyArmor = player->GetActorValue(RE::ActorValue::kHeavyArmor);
-			//
-			//player->GetLevel();
-
-			// 天气信息
-
-			if (active) {
-				float ddd = ScriptUtil::GetRealHoursPassed(nullptr, 0);
-				float dd = ddd;
-			}
-
-			// 基础信息
-			if (show_player_base_info_window) {
-				//playerInfo.equippedWeight = player->equippedWeight;
-				//playerInfo.carryWeight = player->GetActorValue(RE::ActorValue::kCarryWeight);
-
-				playerInfo.kHealth = player->GetActorValue(RE::ActorValue::kHealth);
-				playerInfo.kMagicka = player->GetActorValue(RE::ActorValue::kMagicka);
-				playerInfo.kStamina = player->GetActorValue(RE::ActorValue::kStamina);
-
-				playerInfo.kHealthBase = player->GetPermanentActorValue(RE::ActorValue::kHealth);
-				playerInfo.kStaminaBase = player->GetPermanentActorValue(RE::ActorValue::kStamina);
-				playerInfo.kMagickaBase = player->GetPermanentActorValue(RE::ActorValue::kMagicka);
-			}
-
-			// 生命恢复速率
-			//auto kHealRate = player->GetActorValue(RE::ActorValue::kHealRate);
-			// 战斗中生命恢复速率
-			//auto kCombatHealthRegenMultiply = player->GetActorValue(RE::ActorValue::kCombatHealthRegenMultiply);
-			// 魔法恢复速率
-			//auto kMagickaRate = player->GetActorValue(RE::ActorValue::kMagickaRate);
-			// 体力恢复速率
-			//auto KStaminaRate = player->GetActorValue(RE::ActorValue::KStaminaRate);
-
-			if (show_player_mod_window) {
-				playerInfo.kOneHandedModifier = player->GetActorValue(RE::ActorValue::kOneHandedModifier);
-				playerInfo.kTwoHandedModifier = player->GetActorValue(RE::ActorValue::kTwoHandedModifier);
-				playerInfo.kMarksmanModifier = player->GetActorValue(RE::ActorValue::kMarksmanModifier);
-				playerInfo.kSmithingModifier = player->GetActorValue(RE::ActorValue::kSmithingModifier);
-				playerInfo.kSmithingPowerModifier = player->GetActorValue(RE::ActorValue::kSmithingPowerModifier);
-				playerInfo.kSmithingSkillAdvance = player->GetActorValue(RE::ActorValue::kSmithingSkillAdvance);
-				playerInfo.kAlchemyModifier = player->GetActorValue(RE::ActorValue::kAlchemyModifier);
-				playerInfo.kAlchemySkillAdvance = player->GetActorValue(RE::ActorValue::kAlchemySkillAdvance);
-				playerInfo.kAlchemyPowerModifier = player->GetActorValue(RE::ActorValue::kAlchemyPowerModifier);
-				playerInfo.kEnchantingModifier = player->GetActorValue(RE::ActorValue::kEnchantingModifier);
-				playerInfo.kEnchantingPowerModifier = player->GetActorValue(RE::ActorValue::kEnchantingPowerModifier);
-				playerInfo.kEnchantingSkillAdvance = player->GetActorValue(RE::ActorValue::kEnchantingSkillAdvance);
-			}
-			// 武器伤害
-			//kMeleeDamage = player->GetActorValue(RE::ActorValue::kMeleeDamage);
-			// 空手伤害
-			//kUnarmedDamage = player->GetActorValue(RE::ActorValue::kUnarmedDamage);
-
-			if (show_player_info_window) {
-				// 弓箭伤害
-				playerInfo.ArrowDamage = PlayerDataProvider::getArrowDamage(player);
-				// 右手伤害
-				playerInfo.DamageRight = PlayerDataProvider::getDamage(player, false);
-				// 左手伤害
-				playerInfo.DamageLeft = PlayerDataProvider::getDamage(player, true);
-
-				// 显示伤害
-				std::string tmp = "";
-				if (playerInfo.DamageLeft.empty()) {
-					if (playerInfo.DamageRight.empty()) {
-						tmp = "0";
-					} else {
-						tmp = playerInfo.DamageRight;
-					}
-				} else {
-					if (playerInfo.DamageRight.empty()) {
-						tmp = playerInfo.DamageLeft;
-					} else {
-						tmp.append(playerInfo.DamageLeft);
-						tmp.append(" | ");
-						tmp.append(playerInfo.DamageRight);
-					}
-				}
-				if (!playerInfo.ArrowDamage.empty()) {
-					tmp.append("   - 箭:");
-					tmp.append(playerInfo.ArrowDamage);
-				}
-				playerInfo.DamageStr = tmp;
-
-				// 护甲
-				playerInfo.kDamageResist = player->GetActorValue(RE::ActorValue::kDamageResist);
-				// 暴击几率
-				//kCriticalChance = player->GetActorValue(RE::ActorValue::kCriticalChance);
-				// 毒抗
-				playerInfo.kPoisonResist = player->GetActorValue(RE::ActorValue::kPoisonResist);
-				// 火炕
-				playerInfo.kResistFire = player->GetActorValue(RE::ActorValue::kResistFire);
-				playerInfo.kResistShock = player->GetActorValue(RE::ActorValue::kResistShock);
-				playerInfo.kResistMagic = player->GetActorValue(RE::ActorValue::kResistMagic);
-				playerInfo.kResistFrost = player->GetActorValue(RE::ActorValue::kResistFrost);
-				playerInfo.kResistDisease = player->GetActorValue(RE::ActorValue::kResistDisease);
-			}
-
-			// 装备信息
-			if (show_player_armor_window) {
-				const auto inv = player->GetInventory([](RE::TESBoundObject& a_object) {
-					return a_object.IsArmor();
-				});
-
-				int removeIndexs = 0;  // 最后需要移除的元素索引
-				for (const auto& [item, invData] : inv) {
-					const auto& [count, entry] = invData;
-					if (count > 0 && entry->IsWorn()) {
-						const auto armor = item->As<RE::TESObjectARMO>();
-						// 插槽名称(所有)
-						//std::string slotNames = "";
-						int parts = (int)armor->GetSlotMask();
-
-						removeIndexs += parts;
-
-						//int slotIndex = 0;
-						for (int i = 0; i <= 31; i++) {
-							int mask = 1 << i;
-							if ((parts & mask) == mask) {
-								/*if (slotIndex == 0) {
-									slotIndex = i;
-									removeIndexs += parts;
-									slotNames.append(GetEquipSlotName(i));
-									slotNames.append(" ");
-								}*/
-								wornArmos[i].isExist = true;
-								wornArmos[i].name = armor->GetName();
-								wornArmos[i].formID = FormIDToString(armor->GetFormID());
-								wornArmos[i].formTypeName = GetFormTypeName(armor->formType.underlying());
-								wornArmos[i].goldValue = armor->GetGoldValue();
-								wornArmos[i].value = armor->value;
-								wornArmos[i].armorRating = armor->GetArmorRating();
-								wornArmos[i].armorTypeName = GetArmorTypeName(armor->GetArmorType());
-								//wornArmos[i].equipSlotName = slotNames;
-								//wornArmos[i].equipSlotName = GetEquipSlotName(i);
-								wornArmos[i].weight = armor->weight;
-								std::string tmp = wornArmos[i].name;
-								tmp.append(" - ");
-								tmp.append(wornArmos[i].armorTypeName);
-								tmp.append(" | ");
-								tmp.append(wornArmos[i].equipSlotName);
-								wornArmos[i].treeId = tmp;
-							}
-						}
-						//if (slotIndex > 0) {
-						//}
-					}
-				}
-				// 删除未占用插槽的元素
-				for (int i = 0; i <= 31; i++) {
-					int mask = 1 << i;
-					if ((removeIndexs & mask) != mask) {
-						wornArmos[i].isExist = false;
-					}
-				}
-			}
-
-			// 武器信息
-			if (show_player_weapon_window) {
-				auto leftWeapon = player->GetEquippedObject(true);
-				if (leftWeapon) {
-					leftWeaponInfo.formType = leftWeapon->GetFormType();
-					leftWeaponInfo.formTypeName = GetFormTypeName(leftWeapon->formType.underlying());
-					leftWeaponInfo.name = leftWeapon->GetName();
-					leftWeaponInfo.formID = FormIDToString(leftWeapon->GetFormID());
-					if (leftWeapon->IsWeapon()) {
-						auto item = leftWeapon->As<RE::TESObjectWEAP>();
-						leftWeaponInfo.isExist = true;
-						leftWeaponInfo.goldValue = item->GetGoldValue();
-						leftWeaponInfo.value = item->value;
-						leftWeaponInfo.weaponTypeName = GetWeaponAnimationTypeName(item->GetWeaponType());
-						leftWeaponInfo.damage = item->GetAttackDamage();
-						leftWeaponInfo.critDamage = item->GetCritDamage();
-						leftWeaponInfo.weight = item->weight;
-						std::string tmp = std::string(leftWeaponInfo.name);
-						tmp.append(" - ");
-						tmp.append(leftWeaponInfo.weaponTypeName);
-						leftWeaponInfo.treeId = tmp;
-					} else if (leftWeapon->Is(RE::FormType::Spell)) {
-						auto item = leftWeapon->As<RE::MagicItem>();
-						leftWeaponInfo.isExist = true;
-						leftWeaponInfo.goldValue = item->GetGoldValue();
-						leftWeaponInfo.castingTypeName = GetCastingTypeName(item->GetCastingType());
-						leftWeaponInfo.spellTypeName = GetSpellTypeName(item->GetSpellType());
-						leftWeaponInfo.cost = item->CalculateMagickaCost(player);
-						leftWeaponInfo.time = item->GetChargeTime();
-						auto tmp = std::string(leftWeaponInfo.name);
-						tmp.append(" - ");
-						tmp.append(leftWeaponInfo.castingTypeName);
-						leftWeaponInfo.treeId = tmp;
-					} else {
-						leftWeaponInfo.isExist = false;
-					}
-				} else {
-					leftWeaponInfo.isExist = false;
-				}
-
-				auto rightWeapon = player->GetEquippedObject(false);
-				if (rightWeapon) {
-					rightWeaponInfo.formType = rightWeapon->GetFormType();
-					rightWeaponInfo.formTypeName = GetFormTypeName(rightWeapon->formType.underlying());
-					rightWeaponInfo.name = rightWeapon->GetName();
-					rightWeaponInfo.formID = FormIDToString(rightWeapon->GetFormID());
-					if (rightWeapon->IsWeapon()) {
-						auto item = rightWeapon->As<RE::TESObjectWEAP>();
-						rightWeaponInfo.isExist = true;
-						rightWeaponInfo.goldValue = item->GetGoldValue();
-						rightWeaponInfo.value = item->value;
-						rightWeaponInfo.weaponTypeName = GetWeaponAnimationTypeName(item->GetWeaponType());
-						rightWeaponInfo.damage = item->GetAttackDamage();
-						rightWeaponInfo.critDamage = item->GetCritDamage();
-						rightWeaponInfo.weight = item->weight;
-
-						if (item->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandSword ||
-							item->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandAxe ||
-							item->GetWeaponType() == RE::WEAPON_TYPE::kBow ||
-							item->GetWeaponType() == RE::WEAPON_TYPE::kCrossbow) {
-							rightWeaponInfo.isTwoHand = true;
-						} else {
-							rightWeaponInfo.isTwoHand = false;
-						}
-
-						auto tmp = std::string(rightWeaponInfo.name);
-						tmp.append(" - ");
-						tmp.append(rightWeaponInfo.weaponTypeName);
-						rightWeaponInfo.treeId = tmp;
-					} else if (rightWeapon->Is(RE::FormType::Spell)) {
-						auto item = rightWeapon->As<RE::MagicItem>();
-
-						rightWeaponInfo.isExist = true;
-						rightWeaponInfo.goldValue = item->GetGoldValue();
-						rightWeaponInfo.castingTypeName = GetCastingTypeName(item->GetCastingType());
-						rightWeaponInfo.spellTypeName = GetSpellTypeName(item->GetSpellType());
-						rightWeaponInfo.cost = item->CalculateMagickaCost(player);
-						rightWeaponInfo.time = item->GetChargeTime();
-						rightWeaponInfo.isTwoHand = item->IsTwoHanded();
-
-						auto tmp = std::string(rightWeaponInfo.name);
-						tmp.append(" - ");
-						tmp.append(rightWeaponInfo.castingTypeName);
-						rightWeaponInfo.treeId = tmp;
-					} else {
-						rightWeaponInfo.isExist = false;
-					}
-
-				} else {
-					rightWeaponInfo.isExist = false;
-				}
-				// 弹药
-				auto ammo = player->GetCurrentAmmo();
-				if (ammo) {
-					const auto item = ammo->As<RE::TESAmmo>();
-					ammoInfo.isExist = true;
-					ammoInfo.formType = item->GetFormType();
-					ammoInfo.formTypeName = GetFormTypeName(item->formType.underlying());
-					ammoInfo.name = item->GetName();
-					ammoInfo.formID = FormIDToString(item->GetFormID());
-					ammoInfo.goldValue = item->GetGoldValue();
-					ammoInfo.value = item->value;
-					ammoInfo.damage = item->data.damage;
-					ammoInfo.weight = item->weight;
-					auto tmp = std::string(ammoInfo.name);
-					/*tmp.append(" - ");
-					tmp.append(rightWeaponInfo.castingTypeName);*/
-					ammoInfo.treeId = tmp;
-				} else {
-					ammoInfo.isExist = false;
-				}
-			}
-
-		} else {
-			logger::info("no player"sv);
+			// 更新其他信息
+			stats::refreshStats();
 		}
 	}
 }
@@ -430,61 +122,6 @@ bool compareForItemCONT(const ItemInfoCONT& info1, const ItemInfoCONT& info2)
 		return info1.invCount > info2.invCount;
 	}
 }
-
-bool show_items_window = false;
-bool show_items_window_settings = false;
-bool show_items_window_formid = false;
-bool show_items_window_refid = false;
-bool show_items_window_direction = false;
-bool show_items_window_file = false;
-bool show_items_window_3D = false;
-bool show_items_window_ignore = true;
-int show_items_window_array_max_length = 2998;
-
-int show_items_window_auto_dis_skyrim = 100;
-int show_items_window_auto_dis_local = 160;
-int show_item_window_track_icon_scale = 1;
-
-// 艺术馆
-bool show_items_window_gallery = false;
-
-
-
-Item2Info* items = new Item2Info[2];
-int nowItemIndex = 0;
-
-// 物品排除
-std::unordered_set<int> excludeFormIds;
-std::vector<ExcludeForm> excludeForms;
-
-// 商贩容器
-std::unordered_set<RE::FormID> merchantContFormIds;
-bool merchantContIgnore = true;
-
-
-// 龙爪
-std::unordered_set<RE::FormID> clawFormIds;
-
-// 矿脉
-std::unordered_set<RE::FormID> oreFormIds;
-
-// 艺术馆
-//std::unordered_set<int> galleryFormIds;
-//std::vector<GalleryForm> galleryFormData;
-//std::vector<GalleryModForm> galleryFormModData;
-//int galleryModTotalCount = 0;
-//int galleryModCount = 0;
-//int galleryItemTotalCount = 0;
-//int galleryItemCount = 0;
-
-// 天气
-std::vector<WeatherForm> weatherForms;
-RE::FormID currentWeather = 0;
-
-//std::vector<ItemInfo> tracks;
-std::unordered_set<RE::TESObjectREFR*> trackPtrs;
-std::unordered_set<RE::Actor*> trackActorPtrs;
-//bool excludeFormsInitFlag = true;
 
 ItemInfo* getItems()
 {
@@ -648,19 +285,19 @@ int getItemCountANHD()
 {
 	return items[!nowItemIndex].itemCountANHD;
 }
+
 int getItemCountANPA()
 {
 	return items[!nowItemIndex].itemCountANPA;
 }
+
 int getItemCountTOOL()
 {
 	return items[!nowItemIndex].itemCountTOOL;
 }
 
-//bool clearFlag = false;
 void clearItemInfoCache()
 {
-	//if (!clearFlag) {
 	items[0].itemCount = 0;
 	items[0].itemCountWEAP = 0;
 	items[0].itemCountARMO = 0;
@@ -704,8 +341,6 @@ void clearItemInfoCache()
 	items[1].itemCountANHD = 0;
 	items[1].itemCountANPA = 0;
 	items[1].itemCountTOOL = 0;
-	//clearFlag = true;
-	//}
 }
 
 void __cdecl RefreshItemInfo(void*)
@@ -819,6 +454,13 @@ void __cdecl RefreshItemInfo(void*)
 									}
 								}
 
+								bool isCrime = actor->IsCrimeToActivate();
+								if (isCrimeIgnore) {
+									if (isCrime) {
+										continue;
+									}
+								}
+
 								items[nowItemIndex].itemInfoACHR[tmpCountACHR].ptr = actor;
 								items[nowItemIndex].itemInfoACHR[tmpCountACHR].baseFormId = actor->GetFormID();
 								items[nowItemIndex].itemInfoACHR[tmpCountACHR].baseFormIdStr = FormIDToString(actor->GetFormID());
@@ -828,7 +470,7 @@ void __cdecl RefreshItemInfo(void*)
 								items[nowItemIndex].itemInfoACHR[tmpCountACHR].name = name;
 								//items[nowItemIndex].itemInfoACHR[tmpCountACHR].weight = actor->GetWeight();
 								//items[nowItemIndex].itemInfoACHR[tmpCountACHR].gold = actor->GetGoldValue();
-								items[nowItemIndex].itemInfoACHR[tmpCountACHR].isCrime = actor->IsCrimeToActivate();
+								items[nowItemIndex].itemInfoACHR[tmpCountACHR].isCrime = isCrime;
 								//items[nowItemIndex].itemInfoACHR[tmpCountACHR].isEnchanted = actor->IsEnchanted();
 
 								if (show_items_window_direction) {
@@ -916,6 +558,13 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
+											bool isCrime = reff->IsCrimeToActivate();
+											if (isCrimeIgnore) {
+												if (isCrime) {
+													continue;
+												}
+											}
+
 											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].ptr = reff;
 											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].baseFormId = baseObj->GetFormID();
 											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].baseFormIdStr = FormIDToString(baseObj->GetFormID());
@@ -925,7 +574,7 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].name = name;
 											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].gold = baseObj->GetGoldValue();
-											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].isCrime = reff->IsCrimeToActivate();
+											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].isCrime = isCrime;
 											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].isEnchanted = reff->IsEnchanted();
 
 											if (show_items_window_direction) {
@@ -978,6 +627,13 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
+											bool isCrime = reff->IsCrimeToActivate();
+											if (isCrimeIgnore) {
+												if (isCrime) {
+													continue;
+												}
+											}
+
 											items[nowItemIndex].itemInfoARMO[tmpCountARMO].ptr = reff;
 											items[nowItemIndex].itemInfoARMO[tmpCountARMO].baseFormId = baseObj->GetFormID();
 											items[nowItemIndex].itemInfoARMO[tmpCountARMO].baseFormIdStr = FormIDToString(baseObj->GetFormID());
@@ -987,7 +643,7 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoARMO[tmpCountARMO].name = name;
 											items[nowItemIndex].itemInfoARMO[tmpCountARMO].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfoARMO[tmpCountARMO].gold = baseObj->GetGoldValue();
-											items[nowItemIndex].itemInfoARMO[tmpCountARMO].isCrime = reff->IsCrimeToActivate();
+											items[nowItemIndex].itemInfoARMO[tmpCountARMO].isCrime = isCrime;
 											items[nowItemIndex].itemInfoARMO[tmpCountARMO].isEnchanted = reff->IsEnchanted();
 
 											if (show_items_window_direction) {
@@ -1039,6 +695,13 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
+											bool isCrime = reff->IsCrimeToActivate();
+											if (isCrimeIgnore) {
+												if (isCrime) {
+													continue;
+												}
+											}
+
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].distance = distance;
 												items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
@@ -1053,7 +716,7 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].name = name;
 											items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].gold = baseObj->GetGoldValue();
-											items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].isCrime = reff->IsCrimeToActivate();
+											items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].isCrime = isCrime;
 
 											if (show_items_window_file) {
 												items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].filename = baseObj->GetFile(0)->fileName;
@@ -1096,6 +759,13 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
+											bool isCrime = reff->IsCrimeToActivate();
+											if (isCrimeIgnore) {
+												if (isCrime) {
+													continue;
+												}
+											}
+
 											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].ptr = reff;
 											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].baseFormId = baseObj->GetFormID();
 											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].baseFormIdStr = FormIDToString(baseObj->GetFormID());
@@ -1104,7 +774,7 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].name = reff->GetDisplayFullName();
 											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].gold = baseObj->GetGoldValue();
-											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].isCrime = reff->IsCrimeToActivate();
+											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].isCrime = isCrime;
 
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].distance = distance;
@@ -1172,6 +842,13 @@ void __cdecl RefreshItemInfo(void*)
 													}
 												}
 
+												bool isCrime = reff->IsCrimeToActivate();
+												if (isCrimeIgnore) {
+													if (isCrime) {
+														continue;
+													}
+												}
+
 												if (show_items_window_direction) {
 													items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].distance = distance;
 													items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
@@ -1186,7 +863,7 @@ void __cdecl RefreshItemInfo(void*)
 												items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].name = name;
 												items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].weight = reff->GetWeight();
 												items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].gold = baseObj->GetGoldValue();
-												items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].isCrime = reff->IsCrimeToActivate();
+												items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].isCrime = isCrime;
 
 												if (show_items_window_file) {
 													items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].filename = baseObj->GetFile(0)->fileName;
@@ -1209,6 +886,13 @@ void __cdecl RefreshItemInfo(void*)
 													}
 												}
 
+												bool isCrime = reff->IsCrimeToActivate();
+												if (isCrimeIgnore) {
+													if (isCrime) {
+														continue;
+													}
+												}
+
 												if (show_items_window_direction) {
 													items[nowItemIndex].itemInfoALCH[tmpCountALCH].distance = distance;
 													items[nowItemIndex].itemInfoALCH[tmpCountALCH].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
@@ -1223,7 +907,7 @@ void __cdecl RefreshItemInfo(void*)
 												items[nowItemIndex].itemInfoALCH[tmpCountALCH].name = name;
 												items[nowItemIndex].itemInfoALCH[tmpCountALCH].weight = reff->GetWeight();
 												items[nowItemIndex].itemInfoALCH[tmpCountALCH].gold = baseObj->GetGoldValue();
-												items[nowItemIndex].itemInfoALCH[tmpCountALCH].isCrime = reff->IsCrimeToActivate();
+												items[nowItemIndex].itemInfoALCH[tmpCountALCH].isCrime = isCrime;
 
 												if (show_items_window_file) {
 													items[nowItemIndex].itemInfoALCH[tmpCountALCH].filename = baseObj->GetFile(0)->fileName;
@@ -1267,6 +951,13 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
+											bool isCrime = reff->IsCrimeToActivate();
+											if (isCrimeIgnore) {
+												if (isCrime) {
+													continue;
+												}
+											}
+
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfoINGR[tmpCountINGR].distance = distance;
 												items[nowItemIndex].itemInfoINGR[tmpCountINGR].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
@@ -1281,7 +972,7 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoINGR[tmpCountINGR].name = reff->GetDisplayFullName();
 											items[nowItemIndex].itemInfoINGR[tmpCountINGR].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfoINGR[tmpCountINGR].gold = baseObj->GetGoldValue();
-											items[nowItemIndex].itemInfoINGR[tmpCountINGR].isCrime = reff->IsCrimeToActivate();
+											items[nowItemIndex].itemInfoINGR[tmpCountINGR].isCrime = isCrime;
 
 											if (show_items_window_file) {
 												items[nowItemIndex].itemInfoINGR[tmpCountINGR].filename = baseObj->GetFile(0)->fileName;
@@ -1322,6 +1013,15 @@ void __cdecl RefreshItemInfo(void*)
 												continue;
 											}
 
+											
+											
+											bool isCrime = reff->IsCrimeToActivate();
+											if (isCrimeIgnore) {
+												if (isCrime) {
+													continue;
+												}
+											}
+
 											// 判断宝石和矿锭
 
 											auto misc = baseObj->As<RE::TESObjectMISC>();
@@ -1346,7 +1046,7 @@ void __cdecl RefreshItemInfo(void*)
 													items[nowItemIndex].itemInfoSTON[tmpCountSTON].name = name;
 													items[nowItemIndex].itemInfoSTON[tmpCountSTON].weight = reff->GetWeight();
 													items[nowItemIndex].itemInfoSTON[tmpCountSTON].gold = baseObj->GetGoldValue();
-													items[nowItemIndex].itemInfoSTON[tmpCountSTON].isCrime = reff->IsCrimeToActivate();
+													items[nowItemIndex].itemInfoSTON[tmpCountSTON].isCrime = isCrime;
 
 													if (show_items_window_file) {
 														items[nowItemIndex].itemInfoSTON[tmpCountSTON].filename = baseObj->GetFile(0)->fileName;
@@ -1373,7 +1073,7 @@ void __cdecl RefreshItemInfo(void*)
 													items[nowItemIndex].itemInfoANVI[tmpCountANVI].name = name;
 													items[nowItemIndex].itemInfoANVI[tmpCountANVI].weight = reff->GetWeight();
 													items[nowItemIndex].itemInfoANVI[tmpCountANVI].gold = baseObj->GetGoldValue();
-													items[nowItemIndex].itemInfoANVI[tmpCountANVI].isCrime = reff->IsCrimeToActivate();
+													items[nowItemIndex].itemInfoANVI[tmpCountANVI].isCrime = isCrime;
 
 													if (show_items_window_file) {
 														items[nowItemIndex].itemInfoANVI[tmpCountANVI].filename = baseObj->GetFile(0)->fileName;
@@ -1399,7 +1099,7 @@ void __cdecl RefreshItemInfo(void*)
 													items[nowItemIndex].itemInfoANHD[tmpCountANHD].name = name;
 													items[nowItemIndex].itemInfoANHD[tmpCountANHD].weight = reff->GetWeight();
 													items[nowItemIndex].itemInfoANHD[tmpCountANHD].gold = baseObj->GetGoldValue();
-													items[nowItemIndex].itemInfoANHD[tmpCountANHD].isCrime = reff->IsCrimeToActivate();
+													items[nowItemIndex].itemInfoANHD[tmpCountANHD].isCrime = isCrime;
 
 													if (show_items_window_file) {
 														items[nowItemIndex].itemInfoANHD[tmpCountANHD].filename = baseObj->GetFile(0)->fileName;
@@ -1426,7 +1126,7 @@ void __cdecl RefreshItemInfo(void*)
 													items[nowItemIndex].itemInfoANPA[tmpCountANPA].name = name;
 													items[nowItemIndex].itemInfoANPA[tmpCountANPA].weight = reff->GetWeight();
 													items[nowItemIndex].itemInfoANPA[tmpCountANPA].gold = baseObj->GetGoldValue();
-													items[nowItemIndex].itemInfoANPA[tmpCountANPA].isCrime = reff->IsCrimeToActivate();
+													items[nowItemIndex].itemInfoANPA[tmpCountANPA].isCrime = isCrime;
 
 													if (show_items_window_file) {
 														items[nowItemIndex].itemInfoANPA[tmpCountANPA].filename = baseObj->GetFile(0)->fileName;
@@ -1452,7 +1152,7 @@ void __cdecl RefreshItemInfo(void*)
 													items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].name = name;
 													items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].weight = reff->GetWeight();
 													items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].gold = baseObj->GetGoldValue();
-													items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].isCrime = reff->IsCrimeToActivate();
+													items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].isCrime = isCrime;
 
 													if (show_items_window_file) {
 														items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].filename = baseObj->GetFile(0)->fileName;
@@ -1477,7 +1177,7 @@ void __cdecl RefreshItemInfo(void*)
 													items[nowItemIndex].itemInfoMISC[tmpCountMISC].name = name;
 													items[nowItemIndex].itemInfoMISC[tmpCountMISC].weight = reff->GetWeight();
 													items[nowItemIndex].itemInfoMISC[tmpCountMISC].gold = baseObj->GetGoldValue();
-													items[nowItemIndex].itemInfoMISC[tmpCountMISC].isCrime = reff->IsCrimeToActivate();
+													items[nowItemIndex].itemInfoMISC[tmpCountMISC].isCrime = isCrime;
 
 													if (show_items_window_file) {
 														items[nowItemIndex].itemInfoMISC[tmpCountMISC].filename = baseObj->GetFile(0)->fileName;
@@ -1522,6 +1222,15 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
+											
+											bool isCrime = reff->IsCrimeToActivate();
+											if (isCrimeIgnore) {
+												if (isCrime) {
+													continue;
+												}
+											}
+
+
 											items[nowItemIndex].itemInfoCONT[tmpCountCONT].ptr = reff;
 											items[nowItemIndex].itemInfoCONT[tmpCountCONT].baseFormId = baseObj->GetFormID();
 											items[nowItemIndex].itemInfoCONT[tmpCountCONT].baseFormIdStr = FormIDToString(baseObj->GetFormID());
@@ -1531,7 +1240,6 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoCONT[tmpCountCONT].name = reff->GetDisplayFullName();
 											items[nowItemIndex].itemInfoCONT[tmpCountCONT].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfoCONT[tmpCountCONT].gold = baseObj->GetGoldValue();
-											bool isCrime = reff->IsCrimeToActivate();
 											items[nowItemIndex].itemInfoCONT[tmpCountCONT].isCrime = isCrime;
 											items[nowItemIndex].itemInfoCONT[tmpCountCONT].lockLevel = reff->GetLockLevel();
 											if (show_items_window_direction) {
@@ -1634,6 +1342,14 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
+											
+											bool isCrime = reff->IsCrimeToActivate();
+											if (isCrimeIgnore) {
+												if (isCrime) {
+													continue;
+												}
+											}
+
 											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].ptr = reff;
 											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].baseFormId = baseObj->GetFormID();
 											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].baseFormIdStr = FormIDToString(baseObj->GetFormID());
@@ -1643,7 +1359,7 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].name = reff->GetDisplayFullName();
 											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].gold = baseObj->GetGoldValue();
-											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].isCrime = reff->IsCrimeToActivate();
+											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].isCrime = isCrime;
 
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].distance = distance;
@@ -1730,6 +1446,14 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
+											
+											bool isCrime = reff->IsCrimeToActivate();
+											if (isCrimeIgnore) {
+												if (isCrime) {
+													continue;
+												}
+											}
+
 											items[nowItemIndex].itemInfoTREE[tmpCountTREE].ptr = reff;
 											items[nowItemIndex].itemInfoTREE[tmpCountTREE].baseFormId = baseObj->GetFormID();
 											items[nowItemIndex].itemInfoTREE[tmpCountTREE].baseFormIdStr = FormIDToString(baseObj->GetFormID());
@@ -1739,7 +1463,7 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoTREE[tmpCountTREE].name = reff->GetDisplayFullName();
 											items[nowItemIndex].itemInfoTREE[tmpCountTREE].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfoTREE[tmpCountTREE].gold = baseObj->GetGoldValue();
-											items[nowItemIndex].itemInfoTREE[tmpCountTREE].isCrime = reff->IsCrimeToActivate();
+											items[nowItemIndex].itemInfoTREE[tmpCountTREE].isCrime = isCrime;
 
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfoTREE[tmpCountTREE].distance = distance;
@@ -1788,6 +1512,13 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
+											bool isCrime = reff->IsCrimeToActivate();
+											if (isCrimeIgnore) {
+												if (isCrime) {
+													continue;
+												}
+											}
+
 											items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].ptr = reff;
 											items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].baseFormId = baseObj->GetFormID();
 											items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].baseFormIdStr = FormIDToString(baseObj->GetFormID());
@@ -1797,7 +1528,7 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].name = reff->GetDisplayFullName();
 											items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].gold = baseObj->GetGoldValue();
-											items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].isCrime = reff->IsCrimeToActivate();
+											items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].isCrime = isCrime;
 
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].distance = distance;
@@ -1843,6 +1574,13 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
+											bool isCrime = reff->IsCrimeToActivate();
+											if (isCrimeIgnore) {
+												if (isCrime) {
+													continue;
+												}
+											}
+
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].ptr = reff;
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].baseFormId = baseObj->GetFormID();
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].baseFormIdStr = FormIDToString(baseObj->GetFormID());
@@ -1851,7 +1589,7 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].name = reff->GetDisplayFullName();
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].gold = baseObj->GetGoldValue();
-											items[nowItemIndex].itemInfoACTI[tmpCountACTI].isCrime = reff->IsCrimeToActivate();
+											items[nowItemIndex].itemInfoACTI[tmpCountACTI].isCrime = isCrime;
 
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfoACTI[tmpCountACTI].distance = distance;
@@ -1901,6 +1639,14 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
+											bool isCrime = reff->IsCrimeToActivate();
+											if (isCrimeIgnore) {
+												if (isCrime) {
+													continue;
+												}
+											}
+
+
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].distance = distance;
 												items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
@@ -1918,7 +1664,7 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].name = name;
 											items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].gold = baseObj->GetGoldValue();
-											items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].isCrime = reff->IsCrimeToActivate();
+											items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].isCrime = isCrime;
 
 											tmpCountSGEM++;
 
@@ -1973,6 +1719,13 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
+											bool isCrime = reff->IsCrimeToActivate();
+											if (isCrimeIgnore) {
+												if (isCrime) {
+													continue;
+												}
+											}
+
 											items[nowItemIndex].itemInfo[tmpCount].ptr = reff;
 											items[nowItemIndex].itemInfo[tmpCount].baseFormId = baseObj->GetFormID();
 											items[nowItemIndex].itemInfo[tmpCount].baseFormIdStr = FormIDToString(baseObj->GetFormID());
@@ -1983,7 +1736,7 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfo[tmpCount].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfo[tmpCount].gold = baseObj->GetGoldValue();
 											//items[nowItemIndex].itemInfo[tmpCount].lockLevel = reff->GetLockLevel();
-											items[nowItemIndex].itemInfo[tmpCount].isCrime = reff->IsCrimeToActivate();
+											items[nowItemIndex].itemInfo[tmpCount].isCrime = isCrime;
 
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfo[tmpCount].distance = distance;
@@ -2053,108 +1806,3 @@ void __cdecl RefreshItemInfo(void*)
 		items[nowItemIndex].itemCountTOOL = tmpCountTOOL;
 	}
 }
-
-void initData()
-{
-	for (auto id : excludeFormIds) {
-		auto form = RE::TESForm::LookupByID(id);
-		if (form) {
-			excludeForms.push_back({ form->GetFormID(), form->GetName(), "" });
-		}
-	}
-
-	for (auto id : excludeNpcFormIds) {
-		auto form = RE::TESForm::LookupByID(id);
-		if (form) {
-			excludeNpcForms.push_back({ form->GetFormID(), form->GetName(), "" });
-		}
-	}
-
-	for (auto id : autoContFormIds) {
-		auto form = RE::TESForm::LookupByID(id);
-		if (form) {
-			autoContForms.push_back({ form->GetFormID(), form->GetName(), "" });
-		}
-	}
-
-	for (auto id : excludeLocationFormIds) {
-		if (id == 0) {
-			excludeLocationForms.push_back({ 0, "天际", "" });
-			continue;
-		}
-		auto form = RE::TESForm::LookupByID(id);
-		if (form) {
-			excludeLocationForms.push_back({ form->GetFormID(), form->GetName(), "" });
-		}
-	}
-
-	// 查询商贩的箱子
-
-	const auto handler = RE::TESDataHandler::GetSingleton();
-	auto& facts = handler->GetFormArray<RE::TESFaction>();
-	for (RE::TESFaction*& item : facts) {
-		if (item->IsVendor()) {
-			auto merchantContainer = item->vendorData.merchantContainer;
-			if (merchantContainer) {
-				merchantContFormIds.insert(merchantContainer->GetFormID());
-			}
-		}
-	}
-
-
-	
-	clawFormIds.insert(0x04B56C);
-	clawFormIds.insert(0x0AB7BB);
-	clawFormIds.insert(0x07C260);
-	clawFormIds.insert(0x05AF48);
-	clawFormIds.insert(0x0ED417);
-	clawFormIds.insert(0x0AB375);
-	clawFormIds.insert(0x08CDFA);
-	clawFormIds.insert(0x0B634C);
-	clawFormIds.insert(0x0999E7);
-	clawFormIds.insert(0x0663D7);
-	clawFormIds.insert(0x039647);
-
-	oreFormIds.insert(0x000613A6);
-	oreFormIds.insert(0x000613A7);
-	oreFormIds.insert(0x000E2BC7);
-
-}
-
-// 初始化艺术馆
-//const auto handler = RE::TESDataHandler::GetSingleton();
-
-//for (auto item : setting::galleryList) {
-//	galleryModTotalCount++;
-//	galleryItemTotalCount += item.formids.size();
-//	// 先检查一下有没有mod
-//	auto file = handler->LookupModByName(item.filename);
-//	if (!file || file->compileIndex == 0xFF) {
-//		galleryFormModData.push_back({ -1, -1, item.filename, item.name, item.formids.size(), 0 });
-//		continue;
-//	}
-
-//	size_t itemCount = 0;
-//	for (auto rawFormID : item.formids) {
-//		RE::FormID formID = file->compileIndex << (3 * 8);
-//		formID += file->smallFileCompileIndex << ((1 * 8) + 4);
-//		formID += rawFormID;
-//		auto form = RE::TESForm::LookupByID(formID);
-//		if (form) {
-//			galleryFormIds.insert(formID);
-//			galleryFormData.push_back({ formID, form->GetName(), item.filename });
-//			itemCount++;
-//			galleryItemCount++;
-//		}
-//	}
-//	galleryFormModData.push_back({ file->compileIndex, file->smallFileCompileIndex, item.filename, item.name, item.formids.size(), itemCount });
-
-//	galleryModCount++;
-//}
-//// 排序
-//std::sort(galleryFormModData.begin(), galleryFormModData.end(), [](const GalleryModForm& a, const GalleryModForm& b) {
-//	if (a.compileIndex != b.compileIndex) {
-//		return a.compileIndex < b.compileIndex;
-//	}
-//	return a.smallFileCompileIndex < b.smallFileCompileIndex;
-//});

@@ -6,6 +6,7 @@
 #include <memory/memory.h>
 #include <memory/npc.h>
 #include <memory/stat.h>
+#include <memory/player.h>
 #include <menu/menu.h>
 #include <menu/theme.h>
 #include <nlohmann/json.hpp>
@@ -162,6 +163,18 @@ namespace setting
 				if (j.contains("playerInfo")) {
 					auto const& j2 = j["playerInfo"];
 					show_player_info_window = j2["isShow"].get<bool>();
+
+					
+					if (j2.contains("show_player_gold_window")) {
+						show_player_gold_window = j2["show_player_gold_window"].get<bool>();
+					}
+
+					if (j2.contains("show_player_carryweight_window")) {
+						show_player_carryweight_window = j2["show_player_carryweight_window"].get<bool>();
+					}
+					if (j2.contains("show_player_xp_window")) {
+						show_player_xp_window = j2["show_player_xp_window"].get<bool>();
+					}
 				}
 				if (j.contains("DebugInfo")) {
 					auto const& j2 = j["DebugInfo"];
@@ -171,10 +184,8 @@ namespace setting
 					auto const& j2 = j["playerModInfo"];
 					show_player_mod_window = j2["isShow"].get<bool>();
 				}
-				/*			if (j.contains("EnemyInfo")) {
-					auto const& j2 = j["EnemyInfo"];
-					show_enemy_window = j2["isShow"].get<bool>();
-				}*/
+
+
 				if (j.contains("NpcInfo")) {
 					auto const& j2 = j["NpcInfo"];
 					show_npc_window = j2["isShow"].get<bool>();
@@ -434,6 +445,9 @@ namespace setting
 					if (j2.contains("isCrimeIgnore")) {
 						isCrimeIgnore = j2["isCrimeIgnore"].get<bool>();
 					}
+					if (j2.contains("merchantContIgnore")) {
+						merchantContIgnore = j2["merchantContIgnore"].get<bool>();
+					}
 				}
 
 				
@@ -455,6 +469,18 @@ namespace setting
 					if (j2.contains("showlocationItemCount")) {
 						lotd::showlocationItemCount = j2["showlocationItemCount"].get<bool>();
 					}
+				}
+
+				
+				if (j.contains("StatInfo")) {
+					auto const& j2 = j["StatInfo"];
+					if (j2.contains("show_gametime_window")) {
+						stats::show_gametime_window = j2["show_gametime_window"].get<bool>();
+					}
+					if (j2.contains("show_playtime_window")) {
+						stats::show_playtime_window = j2["show_playtime_window"].get<bool>();
+					}
+
 				}
 				if (j.contains("playerBaseInfo")) {
 					auto const& j2 = j["playerBaseInfo"];
@@ -577,7 +603,6 @@ namespace setting
 		return true;
 	}
 
-	//
 
 	bool save_settings()
 	{
@@ -622,6 +647,10 @@ namespace setting
 
 									   { "playerInfo", {
 														   { "isShow", show_player_info_window },
+														   { "show_player_gold_window", show_player_gold_window }, 
+															{ "show_player_carryweight_window", show_player_carryweight_window }, 
+															{ "show_player_xp_window", show_player_xp_window }, 
+														   
 													   } },
 
 									   { "ArmorInfo", {
@@ -723,6 +752,7 @@ namespace setting
 															 { "showlocationExCount", stats::showlocationExCount },
 															 { "show_item_window_track_icon_scale", show_item_window_track_icon_scale },
 															 { "isCrimeIgnore", isCrimeIgnore },
+															 { "merchantContIgnore", merchantContIgnore },
 														 } },
 									   { "LotdInfo", {
 															 { "showlocationItemCount", lotd::showlocationItemCount },
@@ -730,7 +760,11 @@ namespace setting
 															 { "isCrimeIgnore", lotd::isCrimeIgnore },
 															 { "isInvIgnore", lotd::isInvIgnore },
 															 { "isShowAttached", lotd::isShowAttached },
-														 } }
+														 } },
+									   { "StatInfo", {
+														 { "show_gametime_window", stats::show_gametime_window },
+														 { "show_playtime_window", stats::show_playtime_window },
+													} }
 
 								   } }
 
