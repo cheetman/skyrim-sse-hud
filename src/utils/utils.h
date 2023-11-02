@@ -272,7 +272,6 @@ namespace ScriptUtil
 		return func(vm, stackID);
 	}
 
-
 	inline void ExecuteCommand(std::string commandStr, RE::TESObjectREFR* a_targetRef)
 	{
 		// 调用控制台
@@ -316,7 +315,7 @@ namespace FormUtil
 		if (linkedReff) {
 			auto linkedBaseObj = linkedReff->GetBaseObject();
 			if (linkedBaseObj) {
-				if (linkedBaseObj->GetFormID() == 0x000613A6 || linkedBaseObj->GetFormID() == 0x000613A7) {
+				if (oreFormIds.find(linkedBaseObj->GetFormID()) != oreFormIds.end()) {
 					return "矿脉";
 				}
 			}

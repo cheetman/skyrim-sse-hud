@@ -2765,6 +2765,10 @@ namespace menu
 								ImGui::Checkbox("显示来自MOD", &show_items_window_file);
 								ImGui::TableNextColumn();
 								ImGui::Checkbox("显示无模型物品", &show_items_window_3D);
+								ImGui::TableNextColumn();
+								ImGui::Checkbox("忽略偷窃物品", &isCrimeIgnore);
+								ImGui::TableNextColumn();
+								ImGui::Checkbox("忽略商贩箱子", &merchantContIgnore);
 								ImGui::EndTable();
 							}
 

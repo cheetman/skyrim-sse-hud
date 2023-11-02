@@ -1,14 +1,14 @@
 #include "setting.h"
 #include <fstream>
 #include <iostream>
-#include <memory/memory.h>
 #include <memory/autotake.h>
-#include <memory/npc.h>
-#include <menu/menu.h>
-#include <nlohmann/json.hpp>
-#include <menu/theme.h>
 #include <memory/lotd.h>
+#include <memory/memory.h>
+#include <memory/npc.h>
 #include <memory/stat.h>
+#include <menu/menu.h>
+#include <menu/theme.h>
+#include <nlohmann/json.hpp>
 
 namespace setting
 {
@@ -30,7 +30,6 @@ namespace setting
 		displayConts.push_back(0x002F8E89);
 		//displayConts.push_back(0x00000911);
 
-
 		try {
 			std::ifstream i(settings_path_lotd_item_list);
 			nlohmann::json json;
@@ -49,7 +48,6 @@ namespace setting
 						data.modName = obj["modName"];
 					}
 
-					
 					/*if (obj.contains("formids")) {
 						for (const auto& formid : obj["formids"]) {
 							std::string formidstr = formid;
@@ -60,8 +58,6 @@ namespace setting
 				}
 			}
 
-
-
 		} catch (std::exception const& ex) {
 			logger::error(ex.what());
 			return false;
@@ -71,7 +67,6 @@ namespace setting
 
 	bool load_settings_lotd_display()
 	{
-
 		try {
 			std::ifstream i(settings_path_lotd_item_display_list);
 			nlohmann::json json;
@@ -142,7 +137,6 @@ namespace setting
 				if (j.contains("imgui_font_index")) {
 					menu::imgui_font_index = j["imgui_font_index"].get<int>();
 				}
-
 			}
 
 			if (json.contains("gameSetting")) {
@@ -420,13 +414,31 @@ namespace setting
 						show_items_window_auto_armo_priceweight_value = j2["show_items_window_auto_armo_priceweight_value"].get<int>();
 					}
 
-
-
-					
 					if (j2.contains("show_item_window_track_icon_scale")) {
 						show_item_window_track_icon_scale = j2["show_item_window_track_icon_scale"].get<int>();
 					}
 
+					
+					if (j2.contains("showlocationExCount")) {
+						stats::showlocationExCount = j2["showlocationExCount"].get<bool>();
+					}
+					if (j2.contains("showlocationNirnRootCount")) {
+						stats::showlocationNirnRootCount = j2["showlocationNirnRootCount"].get<bool>();
+					}
+					if (j2.contains("showlocationNirnRootRedCount")) {
+						stats::showlocationNirnRootRedCount = j2["showlocationNirnRootRedCount"].get<bool>();
+					}
+					if (j2.contains("showlocationOreCount")) {
+						stats::showlocationOreCount = j2["showlocationOreCount"].get<bool>();
+					}
+					if (j2.contains("isCrimeIgnore")) {
+						isCrimeIgnore = j2["isCrimeIgnore"].get<bool>();
+					}
+				}
+
+				
+				if (j.contains("LotdInfo")) {
+					auto const& j2 = j["LotdInfo"];
 					if (j2.contains("isShowAttached")) {
 						lotd::isShowAttached = j2["isShowAttached"].get<bool>();
 					}
@@ -443,20 +455,7 @@ namespace setting
 					if (j2.contains("showlocationItemCount")) {
 						lotd::showlocationItemCount = j2["showlocationItemCount"].get<bool>();
 					}
-					if (j2.contains("showlocationExCount")) {
-						stats::showlocationExCount = j2["showlocationExCount"].get<bool>();
-					}
-					if (j2.contains("showlocationNirnRootCount")) {
-						stats::showlocationNirnRootCount = j2["showlocationNirnRootCount"].get<bool>();
-					}
-					if (j2.contains("showlocationNirnRootRedCount")) {
-						stats::showlocationNirnRootRedCount = j2["showlocationNirnRootRedCount"].get<bool>();
-					}
-					if (j2.contains("showlocationOreCount")) {
-						stats::showlocationOreCount = j2["showlocationOreCount"].get<bool>();
-					}
 				}
-
 				if (j.contains("playerBaseInfo")) {
 					auto const& j2 = j["playerBaseInfo"];
 					show_player_base_info_window = j2["isShow"].get<bool>();
@@ -722,6 +721,10 @@ namespace setting
 															 { "showlocationNirnRootRedCount", stats::showlocationNirnRootRedCount },
 															 { "showlocationNirnRootCount", stats::showlocationNirnRootCount },
 															 { "showlocationExCount", stats::showlocationExCount },
+															 { "show_item_window_track_icon_scale", show_item_window_track_icon_scale },
+															 { "isCrimeIgnore", isCrimeIgnore },
+														 } },
+									   { "LotdInfo", {
 															 { "showlocationItemCount", lotd::showlocationItemCount },
 															 { "isArmoryIgnore", lotd::isArmoryIgnore },
 															 { "isCrimeIgnore", lotd::isCrimeIgnore },
@@ -754,7 +757,6 @@ namespace setting
 			}
 			json["autoContFormIDs"] = arrAutoCont;
 
-			
 			for (auto id : excludeNpcFormIds) {
 				arrNpc.push_back(id);
 			}
