@@ -5,9 +5,6 @@
 #include <string>
 #include <unordered_set>
 
-
-
-
 // 人物属性
 struct PlayerInfo
 {
@@ -109,13 +106,10 @@ struct WeaponInfo
 	bool isTwoHand = false;            // 是否占用双手
 };
 
-
-
 extern bool active;
 extern bool activeItems;
 
 extern PlayerInfo playerInfo;
-
 
 extern WeaponInfo leftWeaponInfo;
 extern WeaponInfo rightWeaponInfo;
@@ -126,9 +120,6 @@ extern bool startflag;
 
 void __cdecl RefreshGameInfo(void*);
 void __cdecl RefreshItemInfo(void*);
-
-
-
 
 // 临时
 extern bool isGameLoading;
@@ -218,9 +209,6 @@ struct WeatherForm
 	}
 };
 
-
-
-
 struct IncludeForm
 {
 	RE::FormID formId = 0;
@@ -303,9 +291,9 @@ struct Item2Info
 	ItemInfo itemInfoACTI[3000];
 	ItemInfo itemInfoSTON[3000];
 	ItemInfo itemInfoANVI[3000];
-	ItemInfo itemInfoANHD[3000]; // 皮毛
-	ItemInfo itemInfoANPA[3000]; // 组织
-	ItemInfo itemInfoTOOL[3000]; // 工具
+	ItemInfo itemInfoANHD[3000];  // 皮毛
+	ItemInfo itemInfoANPA[3000];  // 组织
+	ItemInfo itemInfoTOOL[3000];  // 工具
 
 	ItemInfoCONT itemInfoACHR[3000];
 };
@@ -354,11 +342,27 @@ ItemInfo* getItemsANHD();
 ItemInfo* getItemsANPA();
 ItemInfo* getItemsTOOL();
 
+/// <summary>
+/// 排除物品
+/// </summary>
 extern std::unordered_set<int> excludeFormIds;
 extern std::vector<ExcludeForm> excludeForms;
 
+/// <summary>
+/// 追踪物品
+/// </summary>
 extern std::unordered_set<RE::TESObjectREFR*> trackPtrs;
 extern std::unordered_set<RE::Actor*> trackActorPtrs;
+
+/// <summary>
+/// 商贩物品
+/// </summary>
+extern std::unordered_set<RE::FormID> merchantContFormIds;
+extern bool merchantContIgnore;
+
+extern std::unordered_set<RE::FormID> clawFormIds;
+
+extern std::unordered_set<RE::FormID> oreFormIds;
 
 //extern std::unordered_set<int> galleryFormIds;
 //extern std::vector<GalleryForm> galleryFormData;
@@ -374,13 +378,11 @@ extern RE::FormID currentWeather;
 extern int screenWidth;
 extern int screenHeight;
 
-
 static const RE::FormID VendorItemOreIngot = 0x000914EC;
 static const RE::FormID VendorItemGem = 0x000914ED;
 static const RE::FormID VendorItemAnimalHide = 0x000914EA;
 static const RE::FormID VendorItemAnimalPart = 0x000914EB;
 static const RE::FormID VendorItemTool = 0x000914EE;
-
 
 extern bool show_player_base_info_window;
 extern bool show_player_armor_window;
@@ -396,3 +398,5 @@ extern int show_inv_window_height;
 void initData();
 
 void clearItemInfoCache();
+
+extern bool isCrimeIgnore;

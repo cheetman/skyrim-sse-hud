@@ -2,12 +2,18 @@
 #include <event/BSTMenuEvent.h>
 #include <memory/autotake.h>
 #include <memory/lotd.h>
+#include <memory/npc.h>
 #include <setting/setting.h>
 #include <unordered_set>
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
 #include <utils/PlayerDataProvider.h>
-#include <memory/npc.h>
+
+
+
+
+bool isCrimeIgnore = false;
+
 
 bool active = false;
 bool activeItems = false;
@@ -442,12 +448,25 @@ int show_item_window_track_icon_scale = 1;
 // 艺术馆
 bool show_items_window_gallery = false;
 
+
+
 Item2Info* items = new Item2Info[2];
 int nowItemIndex = 0;
 
 // 物品排除
 std::unordered_set<int> excludeFormIds;
 std::vector<ExcludeForm> excludeForms;
+
+// 商贩容器
+std::unordered_set<RE::FormID> merchantContFormIds;
+bool merchantContIgnore = true;
+
+
+// 龙爪
+std::unordered_set<RE::FormID> clawFormIds;
+
+// 矿脉
+std::unordered_set<RE::FormID> oreFormIds;
 
 // 艺术馆
 //std::unordered_set<int> galleryFormIds;
@@ -642,50 +661,50 @@ int getItemCountTOOL()
 void clearItemInfoCache()
 {
 	//if (!clearFlag) {
-		items[0].itemCount = 0;
-		items[0].itemCountWEAP = 0;
-		items[0].itemCountARMO = 0;
-		items[0].itemCountAMMO = 0;
-		items[0].itemCountBOOK = 0;
-		items[0].itemCountALCH = 0;
-		items[0].itemCountINGR = 0;
-		items[0].itemCountMISC = 0;
-		items[0].itemCountCONT = 0;
-		items[0].itemCountFLOR = 0;
-		items[0].itemCountFOOD = 0;
-		items[0].itemCountKEYM = 0;
-		items[0].itemCountTREE = 0;
-		items[0].itemCountSGEM = 0;
-		items[0].itemCountACTI = 0;
-		items[0].itemCountACHR = 0;
-		items[0].itemCountSTON = 0;
-		items[0].itemCountANVI = 0;
-		items[0].itemCountANHD = 0;
-		items[0].itemCountANPA = 0;
-		items[0].itemCountTOOL = 0;
+	items[0].itemCount = 0;
+	items[0].itemCountWEAP = 0;
+	items[0].itemCountARMO = 0;
+	items[0].itemCountAMMO = 0;
+	items[0].itemCountBOOK = 0;
+	items[0].itemCountALCH = 0;
+	items[0].itemCountINGR = 0;
+	items[0].itemCountMISC = 0;
+	items[0].itemCountCONT = 0;
+	items[0].itemCountFLOR = 0;
+	items[0].itemCountFOOD = 0;
+	items[0].itemCountKEYM = 0;
+	items[0].itemCountTREE = 0;
+	items[0].itemCountSGEM = 0;
+	items[0].itemCountACTI = 0;
+	items[0].itemCountACHR = 0;
+	items[0].itemCountSTON = 0;
+	items[0].itemCountANVI = 0;
+	items[0].itemCountANHD = 0;
+	items[0].itemCountANPA = 0;
+	items[0].itemCountTOOL = 0;
 
-		items[1].itemCount = 0;
-		items[1].itemCountWEAP = 0;
-		items[1].itemCountARMO = 0;
-		items[1].itemCountAMMO = 0;
-		items[1].itemCountBOOK = 0;
-		items[1].itemCountALCH = 0;
-		items[1].itemCountINGR = 0;
-		items[1].itemCountMISC = 0;
-		items[1].itemCountCONT = 0;
-		items[1].itemCountFLOR = 0;
-		items[1].itemCountFOOD = 0;
-		items[1].itemCountKEYM = 0;
-		items[1].itemCountTREE = 0;
-		items[1].itemCountSGEM = 0;
-		items[1].itemCountACTI = 0;
-		items[1].itemCountACHR = 0;
-		items[1].itemCountSTON = 0;
-		items[1].itemCountANVI = 0;
-		items[1].itemCountANHD = 0;
-		items[1].itemCountANPA = 0;
-		items[1].itemCountTOOL = 0;
-		//clearFlag = true;
+	items[1].itemCount = 0;
+	items[1].itemCountWEAP = 0;
+	items[1].itemCountARMO = 0;
+	items[1].itemCountAMMO = 0;
+	items[1].itemCountBOOK = 0;
+	items[1].itemCountALCH = 0;
+	items[1].itemCountINGR = 0;
+	items[1].itemCountMISC = 0;
+	items[1].itemCountCONT = 0;
+	items[1].itemCountFLOR = 0;
+	items[1].itemCountFOOD = 0;
+	items[1].itemCountKEYM = 0;
+	items[1].itemCountTREE = 0;
+	items[1].itemCountSGEM = 0;
+	items[1].itemCountACTI = 0;
+	items[1].itemCountACHR = 0;
+	items[1].itemCountSTON = 0;
+	items[1].itemCountANVI = 0;
+	items[1].itemCountANHD = 0;
+	items[1].itemCountANPA = 0;
+	items[1].itemCountTOOL = 0;
+	//clearFlag = true;
 	//}
 }
 
@@ -1485,6 +1504,12 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
+											if (merchantContIgnore) {
+												if (merchantContFormIds.find(reff->GetFormID()) != merchantContFormIds.end()) {
+													continue;
+												}
+											}
+
 											float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 											if (!currentLocation) {
@@ -1522,6 +1547,13 @@ void __cdecl RefreshItemInfo(void*)
 											} else {
 												items[nowItemIndex].itemInfoCONT[tmpCountCONT].ownerName = "-";
 											}
+
+											/*auto factionOwner = reff->GetFactionOwner();
+											if (factionOwner) {
+												items[nowItemIndex].itemInfoCONT[tmpCountCONT].ownerName = factionOwner->GetFormID();
+											} else {
+												items[nowItemIndex].itemInfoCONT[tmpCountCONT].ownerName = "-";
+											}*/
 
 											int tmpInvCount = 0;
 											auto inv = reff->GetInventory(FormUtil::CanDisplay);
@@ -1831,9 +1863,8 @@ void __cdecl RefreshItemInfo(void*)
 
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].isHarvested = (reff->formFlags & RE::TESForm::RecordFlags::kDestroyed);
 											// 分类
-											items[nowItemIndex].itemInfoACTI[tmpCountACTI].formTypeStr = FormUtil::GetActiTypeName(reff,baseObj);
-										
-											
+											items[nowItemIndex].itemInfoACTI[tmpCountACTI].formTypeStr = FormUtil::GetActiTypeName(reff, baseObj);
+
 											tmpCountACTI++;
 
 											break;
@@ -2057,41 +2088,73 @@ void initData()
 		}
 	}
 
-	// 初始化艺术馆
-	//const auto handler = RE::TESDataHandler::GetSingleton();
+	// 查询商贩的箱子
 
-	//for (auto item : setting::galleryList) {
-	//	galleryModTotalCount++;
-	//	galleryItemTotalCount += item.formids.size();
-	//	// 先检查一下有没有mod
-	//	auto file = handler->LookupModByName(item.filename);
-	//	if (!file || file->compileIndex == 0xFF) {
-	//		galleryFormModData.push_back({ -1, -1, item.filename, item.name, item.formids.size(), 0 });
-	//		continue;
-	//	}
+	const auto handler = RE::TESDataHandler::GetSingleton();
+	auto& facts = handler->GetFormArray<RE::TESFaction>();
+	for (RE::TESFaction*& item : facts) {
+		if (item->IsVendor()) {
+			auto merchantContainer = item->vendorData.merchantContainer;
+			if (merchantContainer) {
+				merchantContFormIds.insert(merchantContainer->GetFormID());
+			}
+		}
+	}
 
-	//	size_t itemCount = 0;
-	//	for (auto rawFormID : item.formids) {
-	//		RE::FormID formID = file->compileIndex << (3 * 8);
-	//		formID += file->smallFileCompileIndex << ((1 * 8) + 4);
-	//		formID += rawFormID;
-	//		auto form = RE::TESForm::LookupByID(formID);
-	//		if (form) {
-	//			galleryFormIds.insert(formID);
-	//			galleryFormData.push_back({ formID, form->GetName(), item.filename });
-	//			itemCount++;
-	//			galleryItemCount++;
-	//		}
-	//	}
-	//	galleryFormModData.push_back({ file->compileIndex, file->smallFileCompileIndex, item.filename, item.name, item.formids.size(), itemCount });
 
-	//	galleryModCount++;
-	//}
-	//// 排序
-	//std::sort(galleryFormModData.begin(), galleryFormModData.end(), [](const GalleryModForm& a, const GalleryModForm& b) {
-	//	if (a.compileIndex != b.compileIndex) {
-	//		return a.compileIndex < b.compileIndex;
-	//	}
-	//	return a.smallFileCompileIndex < b.smallFileCompileIndex;
-	//});
+	
+	clawFormIds.insert(0x04B56C);
+	clawFormIds.insert(0x0AB7BB);
+	clawFormIds.insert(0x07C260);
+	clawFormIds.insert(0x05AF48);
+	clawFormIds.insert(0x0ED417);
+	clawFormIds.insert(0x0AB375);
+	clawFormIds.insert(0x08CDFA);
+	clawFormIds.insert(0x0B634C);
+	clawFormIds.insert(0x0999E7);
+	clawFormIds.insert(0x0663D7);
+	clawFormIds.insert(0x039647);
+
+	oreFormIds.insert(0x000613A6);
+	oreFormIds.insert(0x000613A7);
+	oreFormIds.insert(0x000E2BC7);
+
 }
+
+// 初始化艺术馆
+//const auto handler = RE::TESDataHandler::GetSingleton();
+
+//for (auto item : setting::galleryList) {
+//	galleryModTotalCount++;
+//	galleryItemTotalCount += item.formids.size();
+//	// 先检查一下有没有mod
+//	auto file = handler->LookupModByName(item.filename);
+//	if (!file || file->compileIndex == 0xFF) {
+//		galleryFormModData.push_back({ -1, -1, item.filename, item.name, item.formids.size(), 0 });
+//		continue;
+//	}
+
+//	size_t itemCount = 0;
+//	for (auto rawFormID : item.formids) {
+//		RE::FormID formID = file->compileIndex << (3 * 8);
+//		formID += file->smallFileCompileIndex << ((1 * 8) + 4);
+//		formID += rawFormID;
+//		auto form = RE::TESForm::LookupByID(formID);
+//		if (form) {
+//			galleryFormIds.insert(formID);
+//			galleryFormData.push_back({ formID, form->GetName(), item.filename });
+//			itemCount++;
+//			galleryItemCount++;
+//		}
+//	}
+//	galleryFormModData.push_back({ file->compileIndex, file->smallFileCompileIndex, item.filename, item.name, item.formids.size(), itemCount });
+
+//	galleryModCount++;
+//}
+//// 排序
+//std::sort(galleryFormModData.begin(), galleryFormModData.end(), [](const GalleryModForm& a, const GalleryModForm& b) {
+//	if (a.compileIndex != b.compileIndex) {
+//		return a.compileIndex < b.compileIndex;
+//	}
+//	return a.smallFileCompileIndex < b.smallFileCompileIndex;
+//});

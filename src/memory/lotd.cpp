@@ -697,6 +697,13 @@ namespace lotd
 												continue;
 											}
 
+											
+											if (merchantContIgnore) {
+												if (merchantContFormIds.find(reff->GetFormID()) != merchantContFormIds.end()) {
+													continue;
+												}
+											}
+
 											float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 											if (!currentLocation) {
@@ -1189,6 +1196,12 @@ namespace lotd
 												continue;
 											}
 
+											if (merchantContIgnore) {
+												if (merchantContFormIds.find(reff->GetFormID()) != merchantContFormIds.end()) {
+													continue;
+												}
+											}
+
 											float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
 											if (!currentLocation) {
@@ -1495,6 +1508,12 @@ namespace lotd
 
 												if (!reff->Is3DLoaded()) {
 													continue;
+												}
+
+												if (merchantContIgnore) {
+													if (merchantContFormIds.find(reff->GetFormID()) != merchantContFormIds.end()) {
+														continue;
+													}
 												}
 
 												float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;

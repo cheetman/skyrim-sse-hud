@@ -100,7 +100,7 @@ namespace stats
 											if (linkedReff) {
 												auto linkedBaseObj = linkedReff->GetBaseObject();
 												if (linkedBaseObj) {
-													if (linkedBaseObj->GetFormID() == 0x000613A6 || linkedBaseObj->GetFormID() == 0x000613A7) {
+													if (oreFormIds.find(linkedBaseObj->GetFormID()) != oreFormIds.end()) {
 														locationOreIds.insert(reff);
 														continue;
 													}

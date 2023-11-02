@@ -1,11 +1,11 @@
 #include "autotake.h"
-#include "memory.h"
 #include "lotd.h"
+#include "memory.h"
 #include <event/BSTMenuEvent.h>
+#include <memory/stat.h>
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
 #include <utils/PlayerDataProvider.h>
-#include <memory/stat.h>
 
 bool show_items_window_auto_ignore = true;
 bool show_items_window_auto_notification = true;
@@ -83,6 +83,7 @@ int show_items_window_auto_every = 0;
 // 地点排除
 std::unordered_set<int> excludeLocationFormIds;
 std::vector<ExcludeForm> excludeLocationForms;
+
 // 容器类型
 std::unordered_set<int> autoContFormIds;
 std::vector<IncludeForm> autoContForms;
@@ -504,7 +505,6 @@ void __cdecl TimerAutoPick(void*)
 			continue;
 		}
 
-
 		if (isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu) {
 			Sleep(1000);
 			continue;
@@ -513,7 +513,6 @@ void __cdecl TimerAutoPick(void*)
 		if (activeItems) {
 			continue;
 		}
-
 
 		if (!show_items_window && !show_items_window_auto_ammo && !show_items_window_auto_flor && !show_items_window_auto_food && !show_items_window_auto_ingr && !show_items_window_auto_alch && !show_items_window_auto_misc && !show_items_window_auto_tree && !show_items_window_auto_sgem && !show_items_window_auto_achr && !show_items_window_auto_cont && !show_items_window_auto_ston && !show_items_window_auto_anvi && !show_items_window_auto_anhd && !show_items_window_auto_anpa && !show_items_window_auto_tool) {
 			Sleep(1000);
@@ -530,8 +529,6 @@ void __cdecl TimerAutoPick(void*)
 			}
 			stats::refreshCount();
 		}
-
-
 
 		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 		if (!player) {
@@ -563,7 +560,6 @@ void __cdecl TimerAutoPick(void*)
 
 		auto currentLocation = player->currentLocation;
 
-		
 		int currentLocationFormId = 0;
 		// 地点忽略结果
 		if (show_items_window_auto_ignore) {
@@ -1077,7 +1073,7 @@ void __cdecl TimerAutoPick(void*)
 												continue;
 											}
 
-											if (reff->IsMarkedForDeletion()||  reff->IsIgnored()) {
+											if (reff->IsMarkedForDeletion() || reff->IsIgnored()) {
 												continue;
 											}
 
@@ -1090,7 +1086,6 @@ void __cdecl TimerAutoPick(void*)
 													continue;
 												}
 											}
-
 
 											auto name = reff->GetDisplayFullName();
 											if (strlen(name) == 0) {
@@ -1149,6 +1144,10 @@ void __cdecl TimerAutoPick(void*)
 													}
 												} else {
 													if (show_items_window_auto_misc) {
+
+														if (clawFormIds.find(baseObj->GetFormID()) != clawFormIds.end()) {
+															continue;
+														}
 														// 自动拾取判断
 														if (autoTake(reff, player, show_items_window_auto_misc, distance)) {
 															continue;
@@ -1178,6 +1177,10 @@ void __cdecl TimerAutoPick(void*)
 												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
 													continue;
 												}
+											}
+
+											if (merchantContFormIds.find(reff->GetFormID()) != merchantContFormIds.end()) {
+												continue;
 											}
 
 											float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
