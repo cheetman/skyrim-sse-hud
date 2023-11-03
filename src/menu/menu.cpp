@@ -7,8 +7,8 @@
 #include <memory/lotd.h>
 #include <memory/memory.h>
 #include <memory/npc.h>
-#include <memory/stat.h>
 #include <memory/player.h>
+#include <memory/stat.h>
 #include <menu/lotd.h>
 #include <menu/menu.h>
 #include <menu/theme.h>
@@ -414,15 +414,15 @@ namespace menu
 
 				if (activeItems) {
 					if (trackActorPtrs.find(item.ptr) == trackActorPtrs.end()) {
-						auto player = RE::PlayerCharacter::GetSingleton();
-						if (item.ptr->GetCurrentLocation() == player->currentLocation) {
+						//auto player = RE::PlayerCharacter::GetSingleton();
+						//if (item.ptr->GetCurrentLocation() == player->currentLocation) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							ImGui::PushID(i + 3000);
 							if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
 								trackActorPtrs.insert(item.ptr);
 							}
 							ImGui::PopID();
-						}
+						//}
 					}
 				}
 			}
@@ -1610,75 +1610,78 @@ namespace menu
 		style.WindowBorderSize = window_border ? 1.0f : 0.0f;
 		style.FrameBorderSize = frame_border ? 1.0f : 0.0f;
 
-		// 追踪
-		if (trackPtrs.size() > 0 || trackActorPtrs.size() > 0) {
-			if (!(isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu)) {
-				RE::NiPointer<RE::NiCamera> camera = getCamera();
-				RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
-				if (camera) {
-					RE::NiCamera* ca = camera.get();
-					if (ca) {
-						for (const auto& ptr : trackPtrs) {
-							float x1;
-							float y1;
-							float z1;
-							if (ptr->IsDeleted() || ptr->IsDestroyed() || ptr->IsIgnored() || !ptr->Is3DLoaded() || player->currentLocation != ptr->GetCurrentLocation()) {
-								trackPtrs.erase(ptr);
-								break;
-							}
-							auto p = ptr->GetPosition();
-							bool result = ca->WorldPtToScreenPt3(ca->worldToCam, ca->port, p, x1, y1, z1, 1e-5f);
-							if (!result) {
-								int i = 1;
-							}
-							if (x1 > 0 && y1 > 0 && z1 > 0) {
-								trackX1 = x1 * screenWidth;
-								trackY1 = screenHeight - y1 * screenHeight;
-								if (trackX1 > 0 && trackX1 < screenWidth && trackY1 > 0 && trackY1 < screenHeight) {
-									ImGui::SetNextWindowPos(ImVec2(trackX1 - 40, trackY1));
+		{
+			// 追踪
+			std::lock_guard<std::mutex> lock(mtxTrack);
+			if (trackPtrs.size() > 0 || trackActorPtrs.size() > 0) {
+				if (!(isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu)) {
+					RE::NiPointer<RE::NiCamera> camera = getCamera();
+					RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
+					if (camera) {
+						RE::NiCamera* ca = camera.get();
+						if (ca) {
+							for (const auto& ptr : trackPtrs) {
+								float x1;
+								float y1;
+								float z1;
+								if (ptr->IsDeleted() || ptr->IsDestroyed() || ptr->IsIgnored() || !ptr->Is3DLoaded() || player->currentLocation != ptr->GetCurrentLocation()) {
+									trackPtrs.erase(ptr);
+									break;
+								}
+								auto p = ptr->GetPosition();
+								bool result = ca->WorldPtToScreenPt3(ca->worldToCam, ca->port, p, x1, y1, z1, 1e-5f);
+								if (!result) {
+									int i = 1;
+								}
+								if (x1 > 0 && y1 > 0 && z1 > 0) {
+									trackX1 = x1 * screenWidth;
+									trackY1 = screenHeight - y1 * screenHeight;
+									if (trackX1 > 0 && trackX1 < screenWidth && trackY1 > 0 && trackY1 < screenHeight) {
+										ImGui::SetNextWindowPos(ImVec2(trackX1 - 40, trackY1));
 
-									char buf[32];
-									snprintf(buf, 32, "%p", ptr);
-									ImGui::Begin(buf, nullptr,
-										ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize);
+										char buf[32];
+										snprintf(buf, 32, "%p", ptr);
+										ImGui::Begin(buf, nullptr,
+											ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize);
 
-									ImGui::SetWindowFontScale(menu::font_scale + (float)show_item_window_track_icon_scale);
-									ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %0.1fm", ValueUtil::calculateDistance(ptr->GetPosition(), player->GetPosition()) / 100.0f);
-									ImGui::SetWindowFontScale(menu::font_scale);
+										ImGui::SetWindowFontScale(menu::font_scale + (float)show_item_window_track_icon_scale);
+										ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %0.1fm", ValueUtil::calculateDistance(ptr->GetPosition(), player->GetPosition()) / 100.0f);
+										ImGui::SetWindowFontScale(menu::font_scale);
 
-									ImGui::End();
+										ImGui::End();
+									}
 								}
 							}
-						}
-						for (const auto& ptr : trackActorPtrs) {
-							float x1;
-							float y1;
-							float z1;
-							if (ptr->IsDeleted() || ptr->IsIgnored() || player->currentLocation != ptr->GetCurrentLocation()) {
-								trackActorPtrs.erase(ptr);
-								break;
-							}
-							auto p = ptr->GetPosition();
-							bool result = ca->WorldPtToScreenPt3(ca->worldToCam, ca->port, p, x1, y1, z1, 1e-5f);
-							if (!result) {
-								int i = 1;
-							}
-							if (x1 > 0 && y1 > 0 && z1 > 0) {
-								trackX1 = x1 * screenWidth;
-								trackY1 = screenHeight - y1 * screenHeight;
-								if (trackX1 > 0 && trackX1 < screenWidth && trackY1 > 0 && trackY1 < screenHeight) {
-									ImGui::SetNextWindowPos(ImVec2(trackX1 - 40, trackY1));
+							for (const auto& ptr : trackActorPtrs) {
+								float x1;
+								float y1;
+								float z1;
+								if (ptr->IsDeleted() || ptr->IsIgnored() || !ptr->Is3DLoaded() || player->currentLocation != ptr->GetCurrentLocation()) {
+									trackActorPtrs.erase(ptr);
+									break;
+								}
+								auto p = ptr->GetPosition();
+								bool result = ca->WorldPtToScreenPt3(ca->worldToCam, ca->port, p, x1, y1, z1, 1e-5f);
+								if (!result) {
+									int i = 1;
+								}
+								if (x1 > 0 && y1 > 0 && z1 > 0) {
+									trackX1 = x1 * screenWidth;
+									trackY1 = screenHeight - y1 * screenHeight;
+									if (trackX1 > 0 && trackX1 < screenWidth && trackY1 > 0 && trackY1 < screenHeight) {
+										ImGui::SetNextWindowPos(ImVec2(trackX1 - 40, trackY1));
 
-									char buf[32];
-									snprintf(buf, 32, "%p", ptr);
-									ImGui::Begin(buf, nullptr,
-										ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar);
+										char buf[32];
+										snprintf(buf, 32, "%p", ptr);
+										ImGui::Begin(buf, nullptr,
+											ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar);
 
-									ImGui::SetWindowFontScale(menu::font_scale + (float)show_item_window_track_icon_scale);
-									ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %0.1fm", ValueUtil::calculateDistance(ptr->GetPosition(), player->GetPosition()) / 100.0f);
-									ImGui::SetWindowFontScale(menu::font_scale);
+										ImGui::SetWindowFontScale(menu::font_scale + (float)show_item_window_track_icon_scale);
+										ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %0.1fm", ValueUtil::calculateDistance(ptr->GetPosition(), player->GetPosition()) / 100.0f);
+										ImGui::SetWindowFontScale(menu::font_scale);
 
-									ImGui::End();
+										ImGui::End();
+									}
 								}
 							}
 						}
@@ -1686,7 +1689,6 @@ namespace menu
 				}
 			}
 		}
-
 		if (show_player_base_info_window) {
 			if (show_player_base_info_window_sep) {
 				progress = playerInfo.kHealth / (playerInfo.kHealthBase == 0 ? 1 : playerInfo.kHealthBase);
@@ -2169,21 +2171,48 @@ namespace menu
 			ImGui::End();*/
 		}
 
+		if (show_player_effects_window) {
+			if (getEffectsCount()) {
+				ImGui::Begin("BUFF", nullptr, window_flags);
+
+				auto& effects = getEffects();
+				for (int i = 0; i < getEffectsCount(); i++) {
+					auto& item = effects[i];
+					if (item.magnitude >= 0) {
+						if (item.duration == 0) {
+							ImGui::Text("%s", item.text.c_str());
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%s", item.text2.c_str());
+						} else {
+							myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%s", item.text.c_str());
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%s", item.text2.c_str());
+						}
+					} else {
+						myTextColored(ImVec4(1, 0.0f, 0.0f, 1.0f), "%s", item.text.c_str());
+						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+						myTextColored(ImVec4(1, 0.0f, 0.0f, 1.0f), "%s", item.text2.c_str());
+					}
+				}
+				ImGui::End();
+			}
+		}
+
 		if (show_player_gold_window) {
 			ImGui::Begin("金钱", nullptr, window_flags);
-			ImGui::Text(ICON_MDI_CURRENCY_CNY " %d", playerInfo.gold);
+			ImGui::Text(ICON_MDI_CURRENCY_USD " %d", playerInfo.gold);
 			ImGui::End();
 		}
 
 		if (show_player_carryweight_window) {
 			ImGui::Begin("负重", nullptr, window_flags);
-			ImGui::Text(ICON_MDI_WEIGHT " %.1f/%.0f", playerInfo.equippedWeight, playerInfo.carryWeight);
+			ImGui::Text(ICON_MDI_WEIGHT " %.1f / %.0f", playerInfo.equippedWeight, playerInfo.carryWeight);
 			ImGui::End();
 		}
 
 		if (show_player_xp_window) {
 			ImGui::Begin("经验值", nullptr, window_flags);
-			ImGui::Text(ICON_MDI_TRANSFER_UP " %.0f/%.0f", playerInfo.xp, playerInfo.levelThreshold);
+			ImGui::Text(ICON_MDI_TRANSFER_UP " %.0f / %.0f", playerInfo.xp, playerInfo.levelThreshold);
 			ImGui::End();
 		}
 
@@ -2196,6 +2225,12 @@ namespace menu
 		if (stats::show_gametime_window) {
 			ImGui::Begin("游戏时间", nullptr, window_flags);
 			ImGui::Text(ICON_MDI_CLOCK_OUTLINE " %02d:%02d:%02d", stats::gametime_hours, stats::gametime_minutes, stats::gametime_seconds);
+			ImGui::End();
+		}
+
+		if (stats::show_computertime_window) {
+			ImGui::Begin("计算机时间", nullptr, window_flags);
+			ImGui::Text(ICON_MDI_CLOCK_OUTLINE " %s", stats::computertime);
 			ImGui::End();
 		}
 
@@ -3081,146 +3116,6 @@ namespace menu
 									ImGui::Checkbox("显示附近藏品数量", &lotd::showlocationItemCount);
 									ImGui::Checkbox("显示附近挖掘点数量", &stats::showlocationExCount);
 
-									//	ImGui::Checkbox("艺术馆物品板块", &show_items_window_gallery);
-
-									//	ImGui::Text("MOD清单 [已识别%d(%d)件物品,%d(%d)个MOD]", galleryItemCount, galleryItemTotalCount, galleryModCount, galleryModTotalCount);
-
-									//	static ImGuiTableFlags flagsItem =
-									//		ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
-									//	const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
-									//	if (ImGui::BeginTable("tableGalleryMod", 4, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
-									//		ImGui::TableSetupColumn("Index", ImGuiTableColumnFlags_WidthFixed, 30, PlayerInfoColumnID_1);
-									//		ImGui::TableSetupColumn("MOD", ImGuiTableColumnFlags_WidthFixed, 80, PlayerInfoColumnID_2);
-									//		ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 40, PlayerInfoColumnID_4);
-									//		ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60, PlayerInfoColumnID_3);
-
-									//		ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
-									//		ImGui::TableHeadersRow();
-
-									//		int deleteFormId = 0;
-
-									//		ImGuiListClipper clipper;
-									//		clipper.Begin(galleryFormModData.size());
-									//		while (clipper.Step())
-									//			for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
-									//				GalleryModForm item = galleryFormModData[row_n];
-									//				ImGui::PushID(item.filename.c_str());
-									//				ImGui::TableNextRow();
-
-									//				if (item.compileIndex != -1) {
-									//					ImGui::TableNextColumn();
-									//					if (item.compileIndex == 0xFE) {
-									//						ImGui::Text("%02X:%03X", item.compileIndex, item.smallFileCompileIndex);
-									//					} else {
-									//						ImGui::Text("%02X", item.compileIndex);
-									//					}
-
-									//					ImGui::TableNextColumn();
-									//					ImGui::Text("%s", item.filename.c_str());
-									//					ImGui::TableNextColumn();
-									//					ImGui::Text("%d(%d)", item.itemCount, item.totalItemCount);
-									//					ImGui::TableNextColumn();
-									//					ImGui::Text("%s", item.name.c_str());
-									//				} else {
-									//					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
-									//					ImGui::TableNextColumn();
-
-									//					ImGui::TableNextColumn();
-									//					ImGui::Text("%s", item.filename.c_str());
-									//					ImGui::TableNextColumn();
-									//					ImGui::Text("%d(%d)", item.itemCount, item.totalItemCount);
-									//					ImGui::TableNextColumn();
-									//					ImGui::Text("%s", item.name.c_str());
-									//					ImGui::PopStyleColor();
-									//				}
-
-									//				ImGui::PopID();
-									//			}
-									//		ImGui::EndTable();
-									//	}
-
-									//	static char str0[128] = "93F97";
-									//	if (ImGui::Button(ICON_MDI_CONTENT_SAVE " 生成配置文件")) {
-									//		std::string formidstr = str0;
-									//		auto form = RE::TESForm::LookupByID(std::stoi(formidstr, 0, 16));
-									//		if (form) {
-									//			if (form->Is(RE::FormType::Reference)) {
-									//				auto reff = form->AsReference();
-									//				if (reff) {
-									//					auto baseObj = reff->GetBaseObject();
-									//					if (baseObj) {
-									//						if (baseObj->GetFormType() == RE::FormType::Container) {
-									//							auto inv = reff->GetInventory(CanDisplay);
-
-									//							std::vector<setting::GalleryDataGen> galleryList;
-									//							for (auto& [obj, data] : inv) {
-									//								auto& [count, entry] = data;
-									//								if (count > 0 && entry) {
-									//									bool flag = false;
-									//									// 检查一下mod是否存在
-									//									for (auto& data : galleryList) {
-									//										if (data.filename == obj->GetFile(0)->fileName) {
-									//											// 存在直接加
-									//											flag = true;
-
-									//											int formid = obj->GetFormID();
-									//											if (obj->GetFile(0)->IsLight()) {
-									//												formid &= 0x00000FFF;
-									//											} else {
-									//												formid &= 0x00FFFFFF;
-									//											}
-									//											char buf[80];
-									//											snprintf(buf, 80, "%08X", formid);
-									//											data.formids.push_back(buf);
-									//											break;
-									//										}
-									//									}
-									//									if (!flag) {
-									//										setting::GalleryDataGen data;
-									//										data.filename = obj->GetFile(0)->fileName;
-									//										data.name = obj->GetFile(0)->fileName;
-
-									//										int formid = obj->GetFormID();
-									//										if (obj->GetFile(0)->IsLight()) {
-									//											formid &= 0x00000FFF;
-									//										} else {
-									//											formid &= 0x00FFFFFF;
-									//										}
-									//										char buf[80];
-									//										snprintf(buf, 80, "%08X", formid);
-									//										data.formids.push_back(buf);
-									//										galleryList.push_back(data);
-									//									}
-									//								}
-									//							}
-
-									//							std::filesystem::path settings_path = "data\\skse\\plugins\\ItemFinderPlus-GalleryList-Gen.json";
-
-									//							nlohmann::json arr = nlohmann::json::array();
-
-									//							for (const auto& data : galleryList) {
-									//								nlohmann::json obj = nlohmann::json::object();
-									//								obj["filename"] = data.filename;
-									//								obj["name"] = data.name;
-									//								nlohmann::json arr2 = nlohmann::json::array();
-									//								for (const auto& formid : data.formids) {
-									//									arr2.push_back(formid);
-									//								}
-									//								obj["formids"] = arr2;
-									//								arr.push_back(obj);
-									//							}
-
-									//							std::ofstream o(settings_path);
-									//							o << std::setw(4) << arr << std::endl;
-									//						}
-									//					}
-									//				}
-									//			}
-									//		}
-									//	}
-									//	ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									//	ImGui::InputText("ID:", str0, IM_ARRAYSIZE(str0));
-
 									ImGui::TreePop();
 								}
 							}
@@ -3263,7 +3158,7 @@ namespace menu
 				ImGui::ShowDemoWindow(&show_demo_window);
 
 			{
-				ImGui::Begin("ItemFinderPlus v0.7.2##0", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+				ImGui::Begin("ItemFinderPlus v0.7.4##0", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
 				ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 				if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
@@ -3305,6 +3200,11 @@ namespace menu
 						ImGui::Checkbox("demo", &show_demo_window);
 #endif
 
+#ifndef NDEBUG
+
+						if (ImGui::Button(" 测试", ImVec2(0, 0))) {
+						}
+#endif
 						if (ImGui::Button(ICON_MDI_CONTENT_SAVE " 保存配置", ImVec2(0, 0))) {
 							auto colorPlotHistogram = style.Colors[ImGuiCol_PlotHistogram];
 							colorPlotHistogramX = colorPlotHistogram.x;
@@ -3426,7 +3326,15 @@ namespace menu
 							ImGui::TableNextColumn();
 							ImGui::Checkbox("显示防具信息", &show_player_armor_window);
 							ImGui::TableNextColumn();
-							ImGui::Checkbox("显示其他信息", &show_player_debug_window);
+
+							ImGui::Checkbox("显示BUFF信息", &show_player_effects_window);
+							if (show_player_effects_window) {
+								if (ImGui::TreeNodeEx("设置##5", ImGuiTreeNodeFlags_DefaultOpen)) {
+									ImGui::Checkbox("不显示永久Buff", &show_player_effects_ignore_permanent);
+									ImGui::Checkbox("保留负面Buff", &show_player_effects_negative);
+									ImGui::TreePop();
+								}
+							}
 
 							ImGui::TableNextColumn();
 							ImGui::Checkbox("显示NPC信息", &show_npc_window);
@@ -3495,6 +3403,10 @@ namespace menu
 							}
 
 							ImGui::TableNextColumn();
+
+							ImGui::Checkbox("显示其他信息", &show_player_debug_window);
+							ImGui::TableNextColumn();
+							ImGui::TableNextColumn();
 							ImGui::Checkbox("显示金钱", &show_player_gold_window);
 							ImGui::TableNextColumn();
 							ImGui::Checkbox("显示游玩时间", &stats::show_playtime_window);
@@ -3502,6 +3414,10 @@ namespace menu
 							ImGui::Checkbox("显示负重", &show_player_carryweight_window);
 							ImGui::TableNextColumn();
 							ImGui::Checkbox("显示游戏时间", &stats::show_gametime_window);
+							ImGui::TableNextColumn();
+							ImGui::Checkbox("显示经验", &show_player_xp_window);
+							ImGui::TableNextColumn();
+							ImGui::Checkbox("显示计算机时间", &stats::show_computertime_window);
 
 							/*ImGui::TableNextColumn();
 								ImGui::Checkbox("物品栏信息", &show_inv_window);

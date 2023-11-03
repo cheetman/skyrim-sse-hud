@@ -28,6 +28,8 @@ namespace stats
 	extern int gametime_seconds;
 	extern bool show_gametime_window;
 
+	extern char computertime[100];
+	extern bool show_computertime_window;
 	void refreshStats();
 	void refreshCount();
 }

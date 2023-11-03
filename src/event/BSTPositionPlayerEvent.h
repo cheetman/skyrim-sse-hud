@@ -13,7 +13,7 @@ public:
 		}
 
 		if (a_event->type == RE::PositionPlayerEvent::EVENT_TYPE::kPost) {
-		/*	{
+			{
 				std::lock_guard<std::mutex> lock(mtxTrack);
 				if (trackPtrs.size() > 0) {
 					trackPtrs.clear();
@@ -21,7 +21,7 @@ public:
 				if (trackActorPtrs.size() > 0) {
 					trackActorPtrs.clear();
 				}
-			}*/
+			}
 
 			clearItemInfoCache();
 		}

@@ -249,6 +249,7 @@ extern std::vector<ExcludeForm> excludeForms;
 /// </summary>
 extern std::unordered_set<RE::TESObjectREFR*> trackPtrs;
 extern std::unordered_set<RE::Actor*> trackActorPtrs;
+extern std::mutex mtxTrack;
 
 /// <summary>
 /// 商贩物品

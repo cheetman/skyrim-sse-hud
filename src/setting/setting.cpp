@@ -5,8 +5,8 @@
 #include <memory/lotd.h>
 #include <memory/memory.h>
 #include <memory/npc.h>
-#include <memory/stat.h>
 #include <memory/player.h>
+#include <memory/stat.h>
 #include <menu/menu.h>
 #include <menu/theme.h>
 #include <nlohmann/json.hpp>
@@ -164,7 +164,6 @@ namespace setting
 					auto const& j2 = j["playerInfo"];
 					show_player_info_window = j2["isShow"].get<bool>();
 
-					
 					if (j2.contains("show_player_gold_window")) {
 						show_player_gold_window = j2["show_player_gold_window"].get<bool>();
 					}
@@ -175,6 +174,15 @@ namespace setting
 					if (j2.contains("show_player_xp_window")) {
 						show_player_xp_window = j2["show_player_xp_window"].get<bool>();
 					}
+					if (j2.contains("show_player_effects_window")) {
+						show_player_effects_window = j2["show_player_effects_window"].get<bool>();
+					}
+					if (j2.contains("show_player_effects_ignore_permanent")) {
+						show_player_effects_ignore_permanent = j2["show_player_effects_ignore_permanent"].get<bool>();
+					}
+					if (j2.contains("show_player_effects_negative")) {
+						show_player_effects_negative = j2["show_player_effects_negative"].get<bool>();
+					}
 				}
 				if (j.contains("DebugInfo")) {
 					auto const& j2 = j["DebugInfo"];
@@ -184,7 +192,6 @@ namespace setting
 					auto const& j2 = j["playerModInfo"];
 					show_player_mod_window = j2["isShow"].get<bool>();
 				}
-
 
 				if (j.contains("NpcInfo")) {
 					auto const& j2 = j["NpcInfo"];
@@ -211,6 +218,10 @@ namespace setting
 					}
 					if (j2.contains("show_horse")) {
 						menu::show_horse = j2["show_horse"].get<bool>();
+					}
+
+					if (j2.contains("show_npc_window_ignore")) {
+						show_npc_window_ignore = j2["show_npc_window_ignore"].get<bool>();
 					}
 				}
 				if (j.contains("ItemMenuInfo")) {
@@ -429,7 +440,6 @@ namespace setting
 						show_item_window_track_icon_scale = j2["show_item_window_track_icon_scale"].get<int>();
 					}
 
-					
 					if (j2.contains("showlocationExCount")) {
 						stats::showlocationExCount = j2["showlocationExCount"].get<bool>();
 					}
@@ -450,7 +460,6 @@ namespace setting
 					}
 				}
 
-				
 				if (j.contains("LotdInfo")) {
 					auto const& j2 = j["LotdInfo"];
 					if (j2.contains("isShowAttached")) {
@@ -471,7 +480,6 @@ namespace setting
 					}
 				}
 
-				
 				if (j.contains("StatInfo")) {
 					auto const& j2 = j["StatInfo"];
 					if (j2.contains("show_gametime_window")) {
@@ -480,7 +488,9 @@ namespace setting
 					if (j2.contains("show_playtime_window")) {
 						stats::show_playtime_window = j2["show_playtime_window"].get<bool>();
 					}
-
+					if (j2.contains("show_computertime_window")) {
+						stats::show_computertime_window = j2["show_computertime_window"].get<bool>();
+					}
 				}
 				if (j.contains("playerBaseInfo")) {
 					auto const& j2 = j["playerBaseInfo"];
@@ -603,7 +613,6 @@ namespace setting
 		return true;
 	}
 
-
 	bool save_settings()
 	{
 		try {
@@ -647,10 +656,13 @@ namespace setting
 
 									   { "playerInfo", {
 														   { "isShow", show_player_info_window },
-														   { "show_player_gold_window", show_player_gold_window }, 
-															{ "show_player_carryweight_window", show_player_carryweight_window }, 
-															{ "show_player_xp_window", show_player_xp_window }, 
-														   
+														   { "show_player_gold_window", show_player_gold_window },
+														   { "show_player_carryweight_window", show_player_carryweight_window },
+														   { "show_player_xp_window", show_player_xp_window },
+														   { "show_player_effects_window", show_player_effects_window },
+														   { "show_player_effects_ignore_permanent", show_player_effects_ignore_permanent },
+														   { "show_player_effects_negative", show_player_effects_negative },
+
 													   } },
 
 									   { "ArmorInfo", {
@@ -675,6 +687,8 @@ namespace setting
 														{ "show_teammate", menu::show_teammate },
 														{ "show_npc", menu::show_npc },
 														{ "show_horse", menu::show_horse },
+														{ "show_npc_window_ignore", show_npc_window_ignore },
+
 													} },
 									   { "ItemMenuInfo", {
 															 { "show_items_window_auto_dis", show_items_window_auto_dis },
@@ -755,16 +769,17 @@ namespace setting
 															 { "merchantContIgnore", merchantContIgnore },
 														 } },
 									   { "LotdInfo", {
-															 { "showlocationItemCount", lotd::showlocationItemCount },
-															 { "isArmoryIgnore", lotd::isArmoryIgnore },
-															 { "isCrimeIgnore", lotd::isCrimeIgnore },
-															 { "isInvIgnore", lotd::isInvIgnore },
-															 { "isShowAttached", lotd::isShowAttached },
-														 } },
+														 { "showlocationItemCount", lotd::showlocationItemCount },
+														 { "isArmoryIgnore", lotd::isArmoryIgnore },
+														 { "isCrimeIgnore", lotd::isCrimeIgnore },
+														 { "isInvIgnore", lotd::isInvIgnore },
+														 { "isShowAttached", lotd::isShowAttached },
+													 } },
 									   { "StatInfo", {
 														 { "show_gametime_window", stats::show_gametime_window },
 														 { "show_playtime_window", stats::show_playtime_window },
-													} }
+														 { "show_computertime_window", stats::show_computertime_window },
+													 } }
 
 								   } }
 

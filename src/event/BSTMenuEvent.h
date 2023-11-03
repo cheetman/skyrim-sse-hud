@@ -26,6 +26,7 @@ public:
 		} else if (a_event->menuName == RE::InterfaceStrings::GetSingleton()->mainMenu) {
 			isMainMenu = a_event->opening;
 			if (isMainMenu) {
+				std::lock_guard<std::mutex> lock(mtxTrack);
 				if (trackPtrs.size() > 0) {
 					trackPtrs.clear();
 				}

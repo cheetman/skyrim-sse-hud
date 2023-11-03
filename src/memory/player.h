@@ -3,6 +3,8 @@
 
 
 
+
+
 // 人物属性
 struct PlayerInfo
 {
@@ -106,6 +108,23 @@ struct WeaponInfo
 };
 
 
+struct EffectInfo
+{
+	float elapsedSeconds;
+	float duration;      
+	float magnitude;   
+	std::string name;
+	std::string spellName;
+	std::string text;
+	std::string text2;
+};
+
+struct Effects2Info
+{
+	int count = 0;
+	std::vector<EffectInfo> list;
+};
+
 
 extern WeaponInfo leftWeaponInfo;
 extern WeaponInfo rightWeaponInfo;
@@ -122,8 +141,16 @@ extern bool show_player_info_window;
 extern bool show_player_gold_window;
 extern bool show_player_carryweight_window;
 extern bool show_player_xp_window;
+extern bool show_player_effects_window;
+extern bool show_player_effects_ignore_permanent;
+extern bool show_player_effects_negative;
+
 
 /// <summary>
 /// 刷新玩家信息
 /// </summary>
 void refreshPlayerInfo();
+
+
+std::vector<EffectInfo>& getEffects();
+int getEffectsCount();

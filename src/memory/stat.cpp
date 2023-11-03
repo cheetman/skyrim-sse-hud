@@ -1,7 +1,7 @@
 #include "stat.h"
+#include <memory/lotd.h>
 #include <memory/memory.h>
 #include <utils/utils.h>
-#include <memory/lotd.h>
 
 namespace stats
 {
@@ -25,13 +25,16 @@ namespace stats
 	int playtime_seconds = 0;
 	bool show_playtime_window = false;
 
-	
 	int gametime_hours = 0;
 	int gametime_minutes = 0;
 	int gametime_seconds = 0;
 	bool show_gametime_window = false;
 
-	void refreshStats() {
+	char computertime[100];
+	bool show_computertime_window = false;
+
+	void refreshStats()
+	{
 		// 时间
 		if (stats::show_playtime_window) {
 			float time = ScriptUtil::GetRealHoursPassed(nullptr, 0);
@@ -52,6 +55,16 @@ namespace stats
 			}
 		}
 
+		if (stats::show_computertime_window) {
+			time_t currentTime;
+			struct tm* timeInfo;
+			// 获取当前时间
+			time(&currentTime);
+			// 将当前时间转换为时间结构
+			timeInfo = localtime(&currentTime);
+			// 将时间结构格式化为可读的时间字符串
+			strftime(computertime, sizeof(computertime), "%H:%M:%S", timeInfo);
+		}
 	}
 
 	void refreshCount()

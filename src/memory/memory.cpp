@@ -63,6 +63,7 @@ RE::FormID currentWeather = 0;
 //std::vector<ItemInfo> tracks;
 std::unordered_set<RE::TESObjectREFR*> trackPtrs;
 std::unordered_set<RE::Actor*> trackActorPtrs;
+std::mutex mtxTrack;
 //bool excludeFormsInitFlag = true;
 
 void __cdecl RefreshGameInfo(void*)
@@ -760,8 +761,16 @@ void __cdecl RefreshItemInfo(void*)
 											}
 
 											bool isCrime = reff->IsCrimeToActivate();
+											
+
+											bool isRead;
+											auto book = baseObj->As<RE::TESObjectBOOK>();
+											if (book) {
+												isRead = book->IsRead();
+											}
+
 											if (isCrimeIgnore) {
-												if (isCrime) {
+												if (isCrime && isRead) {
 													continue;
 												}
 											}
@@ -784,7 +793,6 @@ void __cdecl RefreshItemInfo(void*)
 												items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].filename = baseObj->GetFile(0)->fileName;
 											}
 
-											auto book = baseObj->As<RE::TESObjectBOOK>();
 											if (book) {
 												if (book->TeachesSpell()) {
 													items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].formTypeStr = "魔法";
@@ -796,7 +804,7 @@ void __cdecl RefreshItemInfo(void*)
 													items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].formTypeStr = "-";
 												}
 
-												items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].isRead = book->IsRead();
+												items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].isRead = isRead;
 											}
 
 											tmpCountBOOK++;
@@ -1013,8 +1021,6 @@ void __cdecl RefreshItemInfo(void*)
 												continue;
 											}
 
-											
-											
 											bool isCrime = reff->IsCrimeToActivate();
 											if (isCrimeIgnore) {
 												if (isCrime) {
@@ -1222,14 +1228,12 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
-											
 											bool isCrime = reff->IsCrimeToActivate();
 											if (isCrimeIgnore) {
 												if (isCrime) {
 													continue;
 												}
 											}
-
 
 											items[nowItemIndex].itemInfoCONT[tmpCountCONT].ptr = reff;
 											items[nowItemIndex].itemInfoCONT[tmpCountCONT].baseFormId = baseObj->GetFormID();
@@ -1342,7 +1346,6 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
-											
 											bool isCrime = reff->IsCrimeToActivate();
 											if (isCrimeIgnore) {
 												if (isCrime) {
@@ -1446,7 +1449,6 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
-											
 											bool isCrime = reff->IsCrimeToActivate();
 											if (isCrimeIgnore) {
 												if (isCrime) {
@@ -1645,7 +1647,6 @@ void __cdecl RefreshItemInfo(void*)
 													continue;
 												}
 											}
-
 
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].distance = distance;

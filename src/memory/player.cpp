@@ -1,9 +1,10 @@
 #include "player.h"
+#include <fonts/IconsMaterialDesignIcons.h>
+#include <memory/stat.h>
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
 #include <utils/PlayerDataProvider.h>
 #include <utils/utils.h>
-#include <memory/stat.h>
 
 bool show_player_base_info_window = false;
 bool show_player_mod_window = false;
@@ -13,12 +14,28 @@ bool show_player_weapon_window = false;
 bool show_player_gold_window = false;
 bool show_player_carryweight_window = false;
 bool show_player_xp_window = false;
+bool show_player_effects_window = false;
+bool show_player_effects_ignore_permanent = false;
+bool show_player_effects_negative = true;
 
 PlayerInfo playerInfo;
 WeaponInfo leftWeaponInfo;
 WeaponInfo rightWeaponInfo;
 WeaponInfo ammoInfo;
 ArmorInfo wornArmos[32];
+
+Effects2Info* effectsInfo = new Effects2Info[2];
+int nowEffectsIndex = 0;
+
+std::vector<EffectInfo>& getEffects()
+{
+	return effectsInfo[!nowEffectsIndex].list;
+}
+
+int getEffectsCount()
+{
+	return effectsInfo[!nowEffectsIndex].count;
+}
 
 void refreshPlayerInfo()
 {
@@ -56,8 +73,6 @@ void refreshPlayerInfo()
 
 	auto player = RE::PlayerCharacter::GetSingleton();
 	if (player) {
-
-
 		auto currentLocation = player->currentLocation;
 		if (currentLocation) {
 			playerInfo.location = currentLocation->GetFullName();
@@ -72,7 +87,6 @@ void refreshPlayerInfo()
 			playerInfo.location = "天际";
 			playerInfo.parentLocationId = -1;
 		}
-
 
 		playerInfo.Angle = player->GetAngle();
 		playerInfo.Position = player->GetPosition();
@@ -339,7 +353,6 @@ void refreshPlayerInfo()
 			}
 		}
 
-
 		// 金钱
 		if (show_player_gold_window) {
 			playerInfo.gold = player->GetGoldAmount();
@@ -352,11 +365,81 @@ void refreshPlayerInfo()
 			playerInfo.carryWeight = player->GetActorValue(RE::ActorValue::kCarryWeight);
 		}
 
-		
 		// 经验
 		if (show_player_xp_window) {
 			playerInfo.xp = player->skills->data->xp;
 			playerInfo.levelThreshold = player->skills->data->levelThreshold;
+		}
+
+		// buff
+		/*auto effects = player->GetActiveEffectList();
+		if (effects) {
+			for (const auto& effect : *effects) {
+				auto formid = effect->GetBaseObject()->GetFormID();
+
+				effect->magnitude;
+			}
+		}*/
+
+		if (show_player_effects_window) {
+			auto& effects2Info = effectsInfo[nowEffectsIndex].list;
+			int tmpCount = 0;
+			auto effects = player->GetActiveEffectList();
+			if (effects) {
+				for (const auto& effect : *effects) {
+					auto duration = effect->duration;
+					float magnitude = effect->magnitude;
+					if (duration > 0 || 1 == 1) {
+						RE::EffectSetting* effectSetting = effect->GetBaseObject();
+						if (effectSetting->data.flags.any(RE::EffectSetting::EffectSettingData::Flag::kHideInUI)) {
+							continue;
+						}
+						if (effect->flags.any(RE::ActiveEffect::Flag::kInactive)) {
+							continue;
+						}
+						if (show_player_effects_ignore_permanent) {
+							if (duration == 0) {
+								if (magnitude >= 0 || !show_player_effects_negative) {
+									continue;
+								}
+							}
+						}
+
+						RE::MagicItem* magicItem = effect->spell;
+						if (effectSetting && magicItem) {
+							if (tmpCount + 1 > effects2Info.size()) {
+								effects2Info.resize(effects2Info.size() + 20);
+							}
+							effects2Info[tmpCount].duration = duration;
+							effects2Info[tmpCount].magnitude = magnitude;
+							effects2Info[tmpCount].elapsedSeconds = effect->elapsedSeconds;
+							effects2Info[tmpCount].name = effectSetting->GetFullName();
+							effects2Info[tmpCount].spellName = magicItem->GetFullName();
+
+							std::stringstream ss;
+							ss << effectSetting->GetFullName() << "[" << magicItem->GetFullName() << "] ";
+							effects2Info[tmpCount].text = ss.str();
+
+							std::stringstream ss2;
+							if (magnitude > 0) {
+								ss2 << ICON_MDI_TRANSFER_UP << std::fixed << std::setprecision(0) << magnitude << "%";
+							} else if (magnitude == 0) {
+								ss2 << ICON_MDI_TRANSFER_UP;
+							} else {
+								magnitude = -magnitude;
+								ss2 << ICON_MDI_TRANSFER_DOWN << std::fixed << std::setprecision(0) << magnitude << "%";
+							}
+							if (duration > 0) {
+								ss2 << " " << std::fixed << std::setprecision(0) << (duration - effect->elapsedSeconds) << "s";
+							}
+							effects2Info[tmpCount].text2 = ss2.str();
+							tmpCount++;
+						}
+					}
+				}
+			}
+			effectsInfo[nowEffectsIndex].count = tmpCount;
+			nowEffectsIndex = !nowEffectsIndex;
 		}
 	}
 }
