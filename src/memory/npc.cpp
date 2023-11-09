@@ -12,6 +12,13 @@ bool show_enemy_window = false;
 bool show_inv_window = false;
 bool show_npc_window = false;
 bool show_npc_window_ignore = false;
+bool show_npc_window_process = false;
+bool show_npc_window_process_combat = true;
+
+
+ImVec4 colorProgressNpc1(0.0f, 0.8f, 0.0f, 1.0f);
+ImVec4 colorProgressNpc2(1.0f, 0.5f, 0.0f, 1.0f);
+ImVec4 colorProgressNpc3(0.8f, 0.0f, 0.0f, 1.0f);
 
 std::unordered_set<int> excludeNpcFormIds;
 std::vector<ExcludeForm> excludeNpcForms;

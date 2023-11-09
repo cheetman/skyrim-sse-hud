@@ -32,10 +32,6 @@ namespace menu
 	extern bool show_teammate ;
 	extern bool show_horse ;
 
-	extern float colorPlotHistogramX ;
-	extern float colorPlotHistogramY;
-	extern float colorPlotHistogramZ;
-	extern float colorPlotHistogramW;
 
 	extern bool show_player_base_info_window_sep;
 	extern bool flag_process;
@@ -47,4 +43,22 @@ namespace menu
 		RE::TESBoundObject* item;
 		int slotMask; 
 	};
+
+	extern ImVec4 colorProgressHp;
+	extern ImVec4 colorProgressMp;
+	extern ImVec4 colorProgressSp;
+
+
+	static const std::unordered_map<int, std::string> hotkey_items = {
+		{ 0, "Insert" },
+		{ 1, "F11" },
+		{ 2, "F12" },
+		{ 3, "Shift+Q" },
+		{ 4, "Alt+Q" }
+	};
+
+	
+	extern float grabRounding;
+	extern float frameRounding;
+	extern float windowRounding;
 }

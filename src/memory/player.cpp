@@ -17,6 +17,13 @@ bool show_player_xp_window = false;
 bool show_player_effects_window = false;
 bool show_player_effects_ignore_permanent = false;
 bool show_player_effects_negative = true;
+bool show_player_effects_listignore = false;
+bool show_player_effects_ignore_spell = false;
+bool show_player_effects_process = false;
+
+ImVec4 colorProgressEffect1(0.0f, 0.8f, 0.0f, 1.0f);
+//ImVec4 colorProgressEffect2(1.0f, 0.5f, 0.0f, 1.0f);
+ImVec4 colorProgressEffect3(0.8f, 0.0f, 0.0f, 1.0f);
 
 PlayerInfo playerInfo;
 WeaponInfo leftWeaponInfo;
@@ -36,6 +43,9 @@ int getEffectsCount()
 {
 	return effectsInfo[!nowEffectsIndex].count;
 }
+
+std::unordered_set<ExcludeFormEffectIds, ExcludeFormEffectIdsHash> excludeEffectFormIds;
+std::vector<ExcludeFormEffect> excludeEffectForms;
 
 void refreshPlayerInfo()
 {
@@ -103,6 +113,14 @@ void refreshPlayerInfo()
 			playerInfo.kHealthBase = player->GetPermanentActorValue(RE::ActorValue::kHealth);
 			playerInfo.kStaminaBase = player->GetPermanentActorValue(RE::ActorValue::kStamina);
 			playerInfo.kMagickaBase = player->GetPermanentActorValue(RE::ActorValue::kMagicka);
+
+			playerInfo.kHealthBase = player->GetBaseActorValue(RE::ActorValue::kHealth);
+			playerInfo.kStaminaBase = player->GetBaseActorValue(RE::ActorValue::kStamina);
+			playerInfo.kMagickaBase = player->GetBaseActorValue(RE::ActorValue::kMagicka);
+
+			playerInfo.kHealthBase = player->GetClampedActorValue(RE::ActorValue::kHealth);
+			playerInfo.kStaminaBase = player->GetClampedActorValue(RE::ActorValue::kStamina);
+			playerInfo.kMagickaBase = player->GetClampedActorValue(RE::ActorValue::kMagicka);
 
 			// 生命恢复速率
 			//auto kHealRate = player->GetActorValue(RE::ActorValue::kHealRate);
@@ -404,8 +422,15 @@ void refreshPlayerInfo()
 								}
 							}
 						}
-
 						RE::MagicItem* magicItem = effect->spell;
+						// 忽略
+						if (show_player_effects_listignore) {
+							ExcludeFormEffectIds ids{ effectSetting->GetFormID(), magicItem->GetFormID() };
+							if (excludeEffectFormIds.find(ids) != excludeEffectFormIds.end()) {
+								continue;
+							}
+						}
+
 						if (effectSetting && magicItem) {
 							if (tmpCount + 1 > effects2Info.size()) {
 								effects2Info.resize(effects2Info.size() + 20);
@@ -415,9 +440,60 @@ void refreshPlayerInfo()
 							effects2Info[tmpCount].elapsedSeconds = effect->elapsedSeconds;
 							effects2Info[tmpCount].name = effectSetting->GetFullName();
 							effects2Info[tmpCount].spellName = magicItem->GetFullName();
+							effects2Info[tmpCount].effectId = effectSetting->GetFormID();
+							effects2Info[tmpCount].spellId = magicItem->GetFormID();
 
 							std::stringstream ss;
-							ss << effectSetting->GetFullName() << "[" << magicItem->GetFullName() << "] ";
+
+							auto spellType = magicItem->GetSpellType();
+							switch (spellType) {
+							case RE::MagicSystem::SpellType::kSpell:
+								ss << ICON_MDI_CREATION << " ";
+								//ss << ICON_MDI_MAGIC_STAFF << " ";
+								break;
+							case RE::MagicSystem::SpellType::kDisease:
+								ss << ICON_MDI_BACTERIA_OUTLINE << " ";
+								break;
+							case RE::MagicSystem::SpellType::kPower:
+								break;
+							case RE::MagicSystem::SpellType::kLesserPower:
+								break;
+							case RE::MagicSystem::SpellType::kAbility:
+								ss << ICON_MDI_ACCOUNT_ARROW_UP << " ";
+								break;
+							case RE::MagicSystem::SpellType::kPoison:
+								ss << ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE << " ";
+								break;
+							case RE::MagicSystem::SpellType::kEnchantment:
+								ss << ICON_MDI_SHIELD_HALF_FULL << " ";
+								break;
+							case RE::MagicSystem::SpellType::kAlchemy:
+								ss << ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE << " ";
+								break;
+							case RE::MagicSystem::SpellType::kIngredient:
+								ss << ICON_MDI_BOWL_MIX << " ";
+								break;
+							case RE::MagicSystem::SpellType::kLeveledSpell:
+								break;
+							case RE::MagicSystem::SpellType::kAddiction:
+								break;
+							case RE::MagicSystem::SpellType::kVoicePower:
+								break;
+							case RE::MagicSystem::SpellType::kStaffEnchantment:
+								break;
+							case RE::MagicSystem::SpellType::kScroll:
+								ss << ICON_MDI_SCRIPT_TEXT << " ";
+								break;
+							default:
+								break;
+							}
+
+
+							if (show_player_effects_ignore_spell) {
+								ss << effectSetting->GetFullName() << " ";
+							} else {
+								ss << effectSetting->GetFullName() << "[" << magicItem->GetFullName() << "] ";
+							}
 							effects2Info[tmpCount].text = ss.str();
 
 							std::stringstream ss2;
@@ -430,7 +506,13 @@ void refreshPlayerInfo()
 								ss2 << ICON_MDI_TRANSFER_DOWN << std::fixed << std::setprecision(0) << magnitude << "%";
 							}
 							if (duration > 0) {
-								ss2 << " " << std::fixed << std::setprecision(0) << (duration - effect->elapsedSeconds) << "s";
+								if (!show_player_effects_process) {
+									float sy = (duration - effect->elapsedSeconds);
+									if (sy > 999.0f) {
+										sy = 999.0f;
+									}
+									ss2 << " " << std::fixed << std::setprecision(0) << sy << "s";
+								}
 							}
 							effects2Info[tmpCount].text2 = ss2.str();
 							tmpCount++;

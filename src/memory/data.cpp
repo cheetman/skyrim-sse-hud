@@ -4,6 +4,7 @@
 #include <memory/memory.h>
 #include <memory/npc.h>
 #include <utils/utils.h>
+#include <memory/player.h>
 
 namespace data
 {
@@ -77,6 +78,20 @@ namespace data
 				continue;
 			}
 			weatherForms.push_back({ form->GetFormID(), form->GetFormEditorID(), form->data.flags.get() });
+		}
+
+		
+		for (auto ids : excludeEffectFormIds) {
+			auto form = RE::TESForm::LookupByID(ids.effectId);
+			auto formSpell = RE::TESForm::LookupByID(ids.spellId);
+			if (form && formSpell) {
+				excludeEffectForms.push_back({ 
+					form->GetFormID(),
+					formSpell->GetFormID(),
+					form->GetName(),
+					formSpell->GetName()
+				});
+			}
 		}
 	}
 }

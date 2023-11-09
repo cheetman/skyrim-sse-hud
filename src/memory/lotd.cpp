@@ -167,45 +167,59 @@ namespace lotd
 				formIdsM.insert({ listItem.modName, formids });
 			}
 
-			RE::BGSListForm* listform = RE::TESForm::LookupByEditorID<RE::BGSListForm>(listItem.listEditorId);
-			if (listform) {
-				for (auto form : listform->forms) {
-					if (form->Is(RE::FormType::Activator)) {
-						list.sizeACTI++;
-					} else if (form->Is(RE::FormType::FormList)) {
-						list.sizeFLST++;
-						auto listform2 = form->As<RE::BGSListForm>();
-						if (listform2) {
-							for (auto form2 : listform2->forms) {
-								if (form2->Is(RE::FormType::Activator)) {
-									list.sizeACTI2++;
-								} else if (form2->Is(RE::FormType::FormList)) {
-									list.sizeFLST2++;
-								} else {
-									list.size2++;
-									// 集合 按照他的FLST区分
-									list.forms.push_back({ form2->formID, form2->formType.get(), form2->GetName(), GetFormTypeName(form2->formType.underlying()), listItem.roomName });
-									// 集合 按照房间区分
-									listsR[listItem.roomName].push_back({ form2->formID, form2->formType.get(), form2->GetName(), GetFormTypeName(form2->formType.underlying()), listItem.roomName });
-									formIdsR[listItem.roomName].insert(form2->formID);
-									formIds.insert(form2->formID);
-									// 集合 按照mod区分
-									formIdsM[listItem.modName].insert(form2->formID);
+			// 换成用id获取
+			auto fileLotd2 = handler->LookupModByName(listItem.modName);
+			if (fileLotd2 && fileLotd2->compileIndex != 0xFF) {
+				auto lotdCompileIndex2 = fileLotd2->compileIndex;
+				auto lotdSmallFileCompileIndex2 = fileLotd2->smallFileCompileIndex;
+
+				//auto listtest = handler->LookupForm(listItem.listFormId, listItem.modName);
+
+				auto formid = FormUtil::GetFormId(listItem.listFormId, lotdCompileIndex2, lotdSmallFileCompileIndex2);
+				RE::BGSListForm* listform = RE::TESForm::LookupByID<RE::BGSListForm>(formid);
+				//RE::BGSListForm* listform2 = RE::TESForm::LookupByEditorID<RE::BGSListForm>(listItem.listEditorId);
+				
+				if (listform) {
+					for (auto form : listform->forms) {
+						if (form->Is(RE::FormType::Activator)) {
+							list.sizeACTI++;
+						} else if (form->Is(RE::FormType::FormList)) {
+							list.sizeFLST++;
+							auto listform2 = form->As<RE::BGSListForm>();
+							if (listform2) {
+								for (auto form2 : listform2->forms) {
+									if (form2->Is(RE::FormType::Activator)) {
+										list.sizeACTI2++;
+									} else if (form2->Is(RE::FormType::FormList)) {
+										list.sizeFLST2++;
+									} else {
+										list.size2++;
+										// 集合 按照他的FLST区分
+										list.forms.push_back({ form2->formID, form2->formType.get(), form2->GetName(), GetFormTypeName(form2->formType.underlying()), listItem.roomName });
+										// 集合 按照房间区分
+										listsR[listItem.roomName].push_back({ form2->formID, form2->formType.get(), form2->GetName(), GetFormTypeName(form2->formType.underlying()), listItem.roomName });
+										formIdsR[listItem.roomName].insert(form2->formID);
+										formIds.insert(form2->formID);
+										// 集合 按照mod区分
+										formIdsM[listItem.modName].insert(form2->formID);
+									}
 								}
 							}
-						}
 
-					} else {
-						list.size++;
-						// 集合 按照他的FLST区分
-						list.forms.push_back({ form->formID, form->formType.get(), form->GetName(), GetFormTypeName(form->formType.underlying()), listItem.roomName });
-						// 集合 按照房间区分
-						listsR[listItem.roomName].push_back({ form->formID, form->formType.get(), form->GetName(), GetFormTypeName(form->formType.underlying()), listItem.roomName });
-						formIdsR[listItem.roomName].insert(form->formID);
-						formIds.insert(form->formID);
-						// 集合 按照mod区分
-						formIdsM[listItem.modName].insert(form->formID);
+						} else {
+							list.size++;
+							// 集合 按照他的FLST区分
+							list.forms.push_back({ form->formID, form->formType.get(), form->GetName(), GetFormTypeName(form->formType.underlying()), listItem.roomName });
+							// 集合 按照房间区分
+							listsR[listItem.roomName].push_back({ form->formID, form->formType.get(), form->GetName(), GetFormTypeName(form->formType.underlying()), listItem.roomName });
+							formIdsR[listItem.roomName].insert(form->formID);
+							formIds.insert(form->formID);
+							// 集合 按照mod区分
+							formIdsM[listItem.modName].insert(form->formID);
+						}
 					}
+				} else {
+					int d = 1;
 				}
 			}
 			lists.push_back(list);
@@ -334,14 +348,12 @@ namespace lotd
 	void refreshDisplayItemsCache()
 	{
 		if (islotdContChanged) {
-
 			// 1.清空
 			displayIds.clear();
 			// 删除之前的分类(后面改进)
 			for (auto& pair : displayIdsR) {
 				pair.second.clear();
 			}
-
 
 			for (auto& pair : displayIdsC) {
 				auto form = RE::TESForm::LookupByID(pair.first);
@@ -697,7 +709,6 @@ namespace lotd
 												continue;
 											}
 
-											
 											if (merchantContIgnore) {
 												if (merchantContFormIds.find(reff->GetFormID()) != merchantContFormIds.end()) {
 													continue;
@@ -1370,7 +1381,6 @@ namespace lotd
 	void refreshCount()
 	{
 		if (showlocationItemCount) {
-
 			// 缓存身上物品
 			refreshInvItemsCache();
 
@@ -1435,7 +1445,6 @@ namespace lotd
 										auto& [count, entry] = data;
 										if (count > 0 && entry) {
 											if (checkItem(obj->GetFormID())) {
-
 												locationItemIds.insert(obj->GetFormID());
 											}
 										}
@@ -1569,5 +1578,4 @@ namespace lotd
 			locationItemCount = locationItemIds.size();
 		}
 	}
-
 }

@@ -10,8 +10,15 @@ namespace menu
 	int imgui_font_index = 3;
 	std::vector<ImFont*> fonts;
 
+	
+
 	void initFonts()
 	{
+		ImGuiStyle& style = ImGui::GetStyle();
+		style.GrabRounding = grabRounding;
+		style.FrameRounding = frameRounding;
+		style.WindowRounding = windowRounding;
+
 		if (std::filesystem::exists(fontFilePath)) {
 			ImGuiIO& io = ImGui::GetIO();
 
@@ -88,10 +95,10 @@ namespace menu
 				style.Alpha = 1.0;
 				/*style.WindowFillAlphaDefault = 0.83;
 			style.ChildWindowRounding = 3;*/
-				style.WindowRounding = 3;
-				style.GrabRounding = 1;
+				//style.WindowRounding = 3;
+				//style.GrabRounding = 1;
 				style.GrabMinSize = 20;
-				style.FrameRounding = 3;
+				//style.FrameRounding = 3;
 
 				style.Colors[ImGuiCol_Text] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
 				style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.00f, 0.40f, 0.41f, 1.00f);
@@ -154,19 +161,19 @@ namespace menu
 			{
 				ImGuiStyle& mStyle = ImGui::GetStyle();
 				//mStyle.WindowMinSize = ImVec2(160, 20);
-			/*	mStyle.FramePadding = ImVec2(4, 2);
+				/*	mStyle.FramePadding = ImVec2(4, 2);
 				mStyle.ItemSpacing = ImVec2(6, 2);
 				mStyle.ItemInnerSpacing = ImVec2(6, 4);*/
 				mStyle.Alpha = 0.95f;
-				mStyle.WindowRounding = 4.0f;
-				mStyle.FrameRounding = 2.0f;
+				//mStyle.WindowRounding = 4.0f;
+				//mStyle.FrameRounding = 2.0f;
 				/*mStyle.IndentSpacing = 6.0f;
 				mStyle.ItemInnerSpacing = ImVec2(2, 4);
 				mStyle.ColumnsMinSpacing = 50.0f;*/
 				mStyle.GrabMinSize = 14.0f;
-				mStyle.GrabRounding = 16.0f;
+				//mStyle.GrabRounding = 16.0f;
 				mStyle.ScrollbarSize = 12.0f;
-				mStyle.ScrollbarRounding = 16.0f;
+				//mStyle.ScrollbarRounding = 16.0f;
 
 				ImGuiStyle& style = mStyle;
 				style.Colors[ImGuiCol_Text] = ImVec4(0.86f, 0.93f, 0.89f, 0.78f);
@@ -234,7 +241,7 @@ namespace menu
 				style->FramePadding = ImVec2(4, 4);*/
 
 				// Rounded slider grabber
-				style->GrabRounding = 12.0f;
+				//style->GrabRounding = 12.0f;
 
 				// Window
 				colors[ImGuiCol_WindowBg] = ImVec4{ 0.118f, 0.118f, 0.118f, 0.784f };

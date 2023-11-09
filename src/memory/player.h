@@ -1,9 +1,6 @@
 #pragma once
 #include <memory/memory.h>
-
-
-
-
+#include <imgui/imgui.h>
 
 // 人物属性
 struct PlayerInfo
@@ -54,7 +51,6 @@ struct PlayerInfo
 	std::string parentLocation = "";
 	RE::FormID parentLocationId = 0;
 
-	
 	float xp = 0.0f;
 	float levelThreshold = 0.0f;
 
@@ -81,7 +77,6 @@ struct ArmorInfo
 	float weight = 0;                // 重量
 };
 
-
 // 装备武器、弹药信息
 struct WeaponInfo
 {
@@ -107,14 +102,15 @@ struct WeaponInfo
 	bool isTwoHand = false;            // 是否占用双手
 };
 
-
 struct EffectInfo
 {
 	float elapsedSeconds;
-	float duration;      
-	float magnitude;   
+	float duration;
+	float magnitude;
 	std::string name;
 	std::string spellName;
+	RE::FormID effectId;
+	RE::FormID spellId;
 	std::string text;
 	std::string text2;
 };
@@ -124,7 +120,6 @@ struct Effects2Info
 	int count = 0;
 	std::vector<EffectInfo> list;
 };
-
 
 extern WeaponInfo leftWeaponInfo;
 extern WeaponInfo rightWeaponInfo;
@@ -144,13 +139,56 @@ extern bool show_player_xp_window;
 extern bool show_player_effects_window;
 extern bool show_player_effects_ignore_permanent;
 extern bool show_player_effects_negative;
+extern bool show_player_effects_listignore;
+extern bool show_player_effects_ignore_spell;
+extern bool show_player_effects_process;
 
+extern ImVec4 colorProgressEffect1;
+//extern ImVec4 colorProgressEffect2;
+extern ImVec4 colorProgressEffect3;
 
-/// <summary>
+	/// <summary>
 /// 刷新玩家信息
 /// </summary>
 void refreshPlayerInfo();
 
-
 std::vector<EffectInfo>& getEffects();
 int getEffectsCount();
+
+struct ExcludeFormEffect
+{
+	RE::FormID effectId = 0;
+	RE::FormID spellId = 0;
+	std::string effectName = "";
+	std::string spellName = "";
+
+};
+
+struct ExcludeFormEffectIds
+{
+	RE::FormID effectId = 0;
+	RE::FormID spellId = 0;
+
+	bool operator==(const ExcludeFormEffectIds& other) const
+	{
+		return effectId == other.effectId && spellId == other.spellId;
+	}
+
+//public:
+//	ExcludeFormEffectIds(RE::FormID effectId, RE::FormID spellId)
+//	{
+//		this->effectId = effectId;
+//		this->spellId = spellId;
+//	}
+};
+struct ExcludeFormEffectIdsHash
+{
+	std::size_t operator()(const ExcludeFormEffectIds& s) const
+	{
+		// 这里可以自定义哈希函数，比如将两个 id 合并成一个哈希值
+		return std::hash<RE::FormID>()(s.effectId) ^ std::hash<RE::FormID>()(s.spellId);
+	}
+};
+
+extern std::unordered_set<ExcludeFormEffectIds, ExcludeFormEffectIdsHash> excludeEffectFormIds;
+extern std::vector<ExcludeFormEffect> excludeEffectForms;

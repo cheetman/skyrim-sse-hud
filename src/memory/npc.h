@@ -1,5 +1,6 @@
 #pragma once
 #include <memory/memory.h>
+#include <imgui/imgui.h>
 
 struct InventoryInfo
 {
@@ -117,9 +118,13 @@ extern bool show_npc_window_dead_hidden;
 extern bool show_enemy_window;
 extern bool show_inv_window;
 extern bool show_npc_window;
-
+extern bool show_npc_window_process;
+extern bool show_npc_window_process_combat;
 extern bool show_npc_window_ignore;
 
+extern ImVec4 colorProgressNpc1;
+extern ImVec4 colorProgressNpc2;
+extern ImVec4 colorProgressNpc3;
 
 extern std::unordered_set<int> excludeNpcFormIds;
 extern std::vector<ExcludeForm> excludeNpcForms;

@@ -385,7 +385,7 @@ namespace FormUtil
 		return true;
 	}
 
-	RE::FormID static GetFormId(RE::FormID rawId, std::uint8_t compileIndex, std::uint8_t smallFileCompileIndex)
+	RE::FormID static GetFormId(RE::FormID rawId, std::uint8_t compileIndex, std::uint16_t smallFileCompileIndex)
 	{
 		RE::FormID formId = compileIndex << (3 * 8);
 		formId += smallFileCompileIndex << ((1 * 8) + 4);

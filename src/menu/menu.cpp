@@ -62,11 +62,16 @@ namespace menu
 	bool frame_border = true;
 	bool bullet_text = true;
 
+	// 20231108 追加
+	float grabRounding = 0.0f;
+	float frameRounding = 0.0f;
+	float windowRounding = 0.0f;
+
 	//static int refresh_time_show = 1000;
-	float colorPlotHistogramX = 0.9f;
+	/*float colorPlotHistogramX = 0.9f;
 	float colorPlotHistogramY = 0.7f;
 	float colorPlotHistogramZ = 0;
-	float colorPlotHistogramW = 1;
+	float colorPlotHistogramW = 1;*/
 
 	//static bool show_npc_window_dis = false;
 	//static int show_npc_window_dis_meter = 30;
@@ -92,7 +97,9 @@ namespace menu
 	static int getInv_nowValue = 100;
 	static int getInv_selectIndex = 0;
 
-	ImVec4 colorProgress(1.0f, 0.5f, 0.0f, 1.0f);
+	ImVec4 colorProgressHp(1.0f, 0.5f, 0.0f, 1.0f);
+	ImVec4 colorProgressMp(1.0f, 0.5f, 0.0f, 1.0f);
+	ImVec4 colorProgressSp(1.0f, 0.5f, 0.0f, 1.0f);
 
 	const char* actorValues[] = {
 		"负重 [kCarryWeight]",
@@ -366,30 +373,57 @@ namespace menu
 					ImGui::Text("   ");
 				}
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-				ImGui::Text("[%d] %s [", item.level, item.name.c_str());
-				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 
-				if (item.lifeState == RE::ACTOR_LIFE_STATE::kDead) {
-					myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "已死亡");
-				} else {
-					float enemyHealthRate = item.kHealth / (item.kHealthBase == 0 ? 1 : item.kHealthBase);
-					if (enemyHealthRate > 0.85f) {
-						if (item.kHealthBase == item.kHealth) {
-							myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%.0f/%.0f", item.kHealth, item.kHealthBase);
-						} else {
-							myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
-						}
-					} else if (enemyHealthRate < 0.20f) {
-						myTextColored(ImVec4(1, 0.5f, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
-					} else if (enemyHealthRate <= 0) {
-						myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "0/%.0f", item.kHealthBase);
+				if (show_npc_window_process && (!show_npc_window_process_combat || item.isInCombat)) {
+					ImGui::Text("[%d] %s", item.level, item.name.c_str());
+					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+
+					auto progressNpc = item.kHealth / (item.kHealthBase == 0 ? 1 : item.kHealthBase);
+					char buf[32];
+					snprintf(buf, 32, "%d/%d", (int)item.kHealth, (int)item.kHealthBase);
+
+					ImGui::PushItemWidth(ImGui::GetFontSize() * 4);
+
+					float healthRate = item.kHealth / (item.kHealthBase == 0 ? 1 : item.kHealthBase);
+					if (healthRate > 0.75f) {
+						ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colorProgressNpc1);
+					} else if (healthRate < 0.20f) {
+						ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colorProgressNpc3);
 					} else {
-						ImGui::Text("%.1f/%.0f", item.kHealth, item.kHealthBase);
+						ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colorProgressNpc2);
 					}
-				}
+					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+					ImGui::ProgressBar(progressNpc, ImVec2(0.f, 0.f), buf);
+					ImGui::PopStyleVar();
+					ImGui::PopStyleColor();
+					ImGui::PopItemWidth();
 
-				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-				ImGui::Text("]");
+				} else {
+					ImGui::Text("[%d] %s [", item.level, item.name.c_str());
+					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+
+					if (item.lifeState == RE::ACTOR_LIFE_STATE::kDead) {
+						myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "已死亡");
+					} else {
+						float enemyHealthRate = item.kHealth / (item.kHealthBase == 0 ? 1 : item.kHealthBase);
+						if (enemyHealthRate > 0.85f) {
+							if (item.kHealthBase == item.kHealth) {
+								myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%.0f/%.0f", item.kHealth, item.kHealthBase);
+							} else {
+								myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
+							}
+						} else if (enemyHealthRate < 0.20f) {
+							myTextColored(ImVec4(1, 0.5f, 0.0f, 1.0f), "%.1f/%.0f", item.kHealth, item.kHealthBase);
+						} else if (enemyHealthRate <= 0) {
+							myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "0/%.0f", item.kHealthBase);
+						} else {
+							ImGui::Text("%.1f/%.0f", item.kHealth, item.kHealthBase);
+						}
+					}
+
+					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+					ImGui::Text("]");
+				}
 
 				if (show_npc_window_direction) {
 					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -416,12 +450,12 @@ namespace menu
 					if (trackActorPtrs.find(item.ptr) == trackActorPtrs.end()) {
 						//auto player = RE::PlayerCharacter::GetSingleton();
 						//if (item.ptr->GetCurrentLocation() == player->currentLocation) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::PushID(i + 3000);
-							if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
-								trackActorPtrs.insert(item.ptr);
-							}
-							ImGui::PopID();
+						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+						ImGui::PushID(i + 3000);
+						if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
+							trackActorPtrs.insert(item.ptr);
+						}
+						ImGui::PopID();
 						//}
 					}
 				}
@@ -1603,10 +1637,10 @@ namespace menu
 			window_flags |= ImGuiWindowFlags_NoCollapse;
 		if (no_background)
 			window_flags |= ImGuiWindowFlags_NoBackground;
-		if (auto_resize)
-			window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
+		//if (auto_resize)
+		window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
 
-		auto style = ImGui::GetStyle();
+		auto& style = ImGui::GetStyle();
 		style.WindowBorderSize = window_border ? 1.0f : 0.0f;
 		style.FrameBorderSize = frame_border ? 1.0f : 0.0f;
 
@@ -1715,6 +1749,7 @@ namespace menu
 				} else {
 					myTextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "%.1f / %.0f ", playerInfo.kStamina, playerInfo.kStaminaBase);
 				}
+
 				ImGui::End();
 				ImGui::Begin("魔法", nullptr, window_flags);
 
@@ -1738,20 +1773,24 @@ namespace menu
 					ImGui::Text(ICON_MDI_HEART_HALF_FULL " 生命:");
 					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 					char buf[32];
-					sprintf(buf, "%d/%d", (int)playerInfo.kHealth, (int)playerInfo.kHealthBase);
-					ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colorProgress);
+					snprintf(buf, 32, "%d/%d", (int)playerInfo.kHealth, playerInfo.kHealth > playerInfo.kHealthBase ? (int)playerInfo.kHealth : (int)playerInfo.kHealthBase);
+					ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colorProgressHp);
 					ImGui::ProgressBar(progress, ImVec2(0.f, 0.f), buf);
+					ImGui::PopStyleColor();
 
 					ImGui::Text(ICON_MDI_RUN_FAST " 耐力:");
 					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 					char buf2[32];
-					sprintf(buf2, "%d/%d", (int)playerInfo.kStamina, (int)playerInfo.kStaminaBase);
+					snprintf(buf2, 32, "%d/%d", (int)playerInfo.kStamina, playerInfo.kStamina > playerInfo.kStaminaBase ? (int)playerInfo.kStamina : (int)playerInfo.kStaminaBase);
+					ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colorProgressSp);
 					ImGui::ProgressBar(progress2, ImVec2(0.f, 0.f), buf2);
+					ImGui::PopStyleColor();
 
 					ImGui::Text(ICON_MDI_STAR_FOUR_POINTS_OUTLINE " 魔法:");
 					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 					char buf3[32];
-					sprintf(buf3, "%d/%d", (int)playerInfo.kMagicka, (int)playerInfo.kMagickaBase);
+					snprintf(buf3, 32, "%d/%d", (int)playerInfo.kMagicka, playerInfo.kMagicka > playerInfo.kMagickaBase ? (int)playerInfo.kMagicka : (int)playerInfo.kMagickaBase);
+					ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colorProgressMp);
 					ImGui::ProgressBar(progress3, ImVec2(0.f, 0.f), buf3);
 					ImGui::PopStyleColor();
 
@@ -2187,11 +2226,69 @@ namespace menu
 							myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%s", item.text.c_str());
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%s", item.text2.c_str());
+
+							if (show_player_effects_process) {
+								auto sy = item.duration - item.elapsedSeconds;
+								if (sy < 999) {
+									auto progressEffect = sy / item.duration;
+									char buf[32];
+									snprintf(buf, 32, "%0.0fs", sy);
+									//sprintf(buf, "%0.1f/%0.0f", (item.duration - item.elapsedSeconds), item.duration);
+
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::PushItemWidth(ImGui::GetFontSize() * 4);
+									ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colorProgressEffect1);
+									ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+									ImGui::ProgressBar(progressEffect, ImVec2(0.f, 0.f), buf);
+									ImGui::PopStyleVar();
+									ImGui::PopStyleColor();
+									ImGui::PopItemWidth();
+								}
+							}
 						}
 					} else {
 						myTextColored(ImVec4(1, 0.0f, 0.0f, 1.0f), "%s", item.text.c_str());
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 						myTextColored(ImVec4(1, 0.0f, 0.0f, 1.0f), "%s", item.text2.c_str());
+
+						if (item.duration != 0) {
+							if (show_player_effects_process) {
+								auto sy = item.duration - item.elapsedSeconds;
+								if (sy < 999) {
+									auto progressEffect = sy / item.duration;
+									char buf[32];
+									snprintf(buf, 32, "%0.0fs", sy);
+
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::PushItemWidth(ImGui::GetFontSize() * 4);
+									ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colorProgressEffect3);
+									ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+									ImGui::ProgressBar(progressEffect, ImVec2(0.f, 0.f), buf);
+									ImGui::PopStyleVar();
+									ImGui::PopStyleColor();
+									ImGui::PopItemWidth();
+								}
+							}
+						}
+					}
+					if (active && show_player_effects_listignore) {
+						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+						ImGui::PushID(i);
+						if (ImGui::SmallButton(ICON_MDI_EYE_REMOVE_OUTLINE)) {
+							bool exist = false;
+							for (const auto& excludeForm : excludeEffectForms) {
+								if (excludeForm.effectId == item.effectId && excludeForm.spellId == item.spellId) {
+									exist = true;
+									break;
+								}
+							}
+							if (!exist) {
+								excludeEffectForms.push_back({ item.effectId, item.spellId, item.name, item.spellName });
+							}
+							ExcludeFormEffectIds ids{ item.effectId, item.spellId };
+							excludeEffectFormIds.insert(ids);
+						}
+						ImGui::PopID();
 					}
 				}
 				ImGui::End();
@@ -2446,6 +2543,7 @@ namespace menu
 
 					if (getItemCountWEAP() > 0) {
 						ImGui::TableNextColumn();
+						ImGui::AlignTextToFramePadding();
 						ImGui::Text(ICON_MDI_SWORD " 武器(%d)", getItemCountWEAP());
 
 						if (show_items_window_settings) {
@@ -2466,6 +2564,7 @@ namespace menu
 					}
 					if (getItemCountARMO() > 0) {
 						ImGui::TableNextColumn();
+						ImGui::AlignTextToFramePadding();
 						ImGui::Text(ICON_MDI_SHIELD " 装备(%d)", getItemCountARMO());
 
 						if (show_items_window_settings) {
@@ -2486,6 +2585,7 @@ namespace menu
 					}
 					if (getItemCountAMMO() > 0) {
 						ImGui::TableNextColumn();
+						ImGui::AlignTextToFramePadding();
 						ImGui::Text(ICON_MDI_ARROW_PROJECTILE " 弹药(%d)", getItemCountAMMO());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -2505,6 +2605,7 @@ namespace menu
 					}
 					if (getItemCountBOOK() > 0) {
 						ImGui::TableNextColumn();
+						ImGui::AlignTextToFramePadding();
 						ImGui::Text(ICON_MDI_BOOK_OPEN_VARIANT " 书信(%d)", getItemCountBOOK());
 
 						if (show_items_window_settings) {
@@ -2517,6 +2618,7 @@ namespace menu
 					}
 					if (getItemCountALCH() > 0) {
 						ImGui::TableNextColumn();
+						ImGui::AlignTextToFramePadding();
 						ImGui::Text(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE " 药水(%d)", getItemCountALCH());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -2536,6 +2638,7 @@ namespace menu
 					}
 					if (getItemCountFOOD() > 0) {
 						ImGui::TableNextColumn();
+						ImGui::AlignTextToFramePadding();
 						ImGui::Text(ICON_MDI_FOOD_DRUMSTICK " 食物(%d)", getItemCountFOOD());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -2555,6 +2658,7 @@ namespace menu
 					}
 					if (getItemCountINGR() > 0) {
 						ImGui::TableNextColumn();
+						ImGui::AlignTextToFramePadding();
 						ImGui::Text(ICON_MDI_SOURCE_BRANCH " 材料(%d)", getItemCountINGR());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -2574,6 +2678,7 @@ namespace menu
 					}
 					if (getItemCountSGEM() > 0) {
 						ImGui::TableNextColumn();
+						ImGui::AlignTextToFramePadding();
 						ImGui::Text(ICON_MDI_CARDS_DIAMOND " 灵魂石(%d)", getItemCountSGEM());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -2592,6 +2697,7 @@ namespace menu
 					}
 					if (getItemCountKEYM() > 0) {
 						ImGui::TableNextColumn();
+						ImGui::AlignTextToFramePadding();
 						ImGui::Text(ICON_MDI_KEY " 钥匙(%d)", getItemCountKEYM());
 
 						if (show_items_window_settings) {
@@ -2605,6 +2711,7 @@ namespace menu
 					}
 					if (getItemCountSTON() > 0) {
 						ImGui::TableNextColumn();
+						ImGui::AlignTextToFramePadding();
 						ImGui::Text(ICON_MDI_DIAMOND_STONE " 宝石(%d)", getItemCountSTON());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -2624,6 +2731,7 @@ namespace menu
 					}
 					if (getItemCountANVI() > 0) {
 						ImGui::TableNextColumn();
+						ImGui::AlignTextToFramePadding();
 						ImGui::Text(ICON_MDI_ANVIL " 矿锭(%d)", getItemCountANVI());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -2643,6 +2751,7 @@ namespace menu
 					}
 					if (getItemCountANHD() > 0) {
 						ImGui::TableNextColumn();
+						ImGui::AlignTextToFramePadding();
 						ImGui::Text(ICON_MDI_BOX_CUTTER " 兽皮(%d)", getItemCountANHD());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -2662,6 +2771,7 @@ namespace menu
 					}
 					if (getItemCountANPA() > 0) {
 						ImGui::TableNextColumn();
+						ImGui::AlignTextToFramePadding();
 						ImGui::Text(ICON_MDI_RABBIT " 战利品(%d)", getItemCountANPA());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -2681,6 +2791,7 @@ namespace menu
 					}
 					if (getItemCountTOOL() > 0) {
 						ImGui::TableNextColumn();
+						ImGui::AlignTextToFramePadding();
 						ImGui::Text(ICON_MDI_TOOLS " 工具(%d)", getItemCountTOOL());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -2700,6 +2811,7 @@ namespace menu
 					}
 					if (getItemCountMISC() > 0) {
 						ImGui::TableNextColumn();
+						ImGui::AlignTextToFramePadding();
 						ImGui::Text(ICON_MDI_PACKAGE_VARIANT_CLOSED " 杂项(%d)", getItemCountMISC());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -2719,6 +2831,7 @@ namespace menu
 					}
 					if (getItemCountFLOR() > 0) {
 						ImGui::TableNextColumn();
+						ImGui::AlignTextToFramePadding();
 						ImGui::Text(ICON_MDI_BASKET_OUTLINE " 可收获(%d)", getItemCountFLOR());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -2738,6 +2851,7 @@ namespace menu
 					}
 					if (getItemCountTREE() > 0) {
 						ImGui::TableNextColumn();
+						ImGui::AlignTextToFramePadding();
 						ImGui::Text(ICON_MDI_FLOWER_TULIP_OUTLINE " 植物(%d)", getItemCountTREE());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -2757,6 +2871,7 @@ namespace menu
 					}
 					if (getItemCountACHR() > 0) {
 						ImGui::TableNextColumn();
+						ImGui::AlignTextToFramePadding();
 						ImGui::Text(ICON_MDI_HUMAN_MALE " 尸体(%d)", getItemCountACHR());
 
 						if (show_items_window_settings) {
@@ -2773,6 +2888,7 @@ namespace menu
 					}
 					if (getItemCountCONT() > 0) {
 						ImGui::TableNextColumn();
+						ImGui::AlignTextToFramePadding();
 						ImGui::Text(ICON_MDI_ARCHIVE_OUTLINE " 容器(%d)", getItemCountCONT());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -2806,11 +2922,6 @@ namespace menu
 						ImGui::SameLine(0.0f, 8.0f * ImGui::GetTextLineHeightWithSpacing());
 
 						if (ImGui::Button(ICON_MDI_CONTENT_SAVE " 保存设置##2")) {
-							auto colorPlotHistogram = style.Colors[ImGuiCol_PlotHistogram];
-							colorPlotHistogramX = colorPlotHistogram.x;
-							colorPlotHistogramY = colorPlotHistogram.y;
-							colorPlotHistogramZ = colorPlotHistogram.z;
-							colorPlotHistogramW = colorPlotHistogram.w;
 							setting::save_settings();
 						}
 
@@ -2820,6 +2931,8 @@ namespace menu
 							ImGui::BeginChild("childItemsSetting", ImVec2(ImGui::GetTextLineHeightWithSpacing() * 15, ImGui::GetTextLineHeightWithSpacing() * ((float)show_inv_window_height - 0.5f)), true, window_flags);
 
 							if (ImGui::BeginTable("tableItemsSetting", 2)) {
+								ImGui::TableNextColumn();
+								ImGui::Checkbox("背景透明", &no_background_items);
 								ImGui::TableNextColumn();
 								ImGui::Checkbox("显示FORMID", &show_items_window_formid);
 								ImGui::TableNextColumn();
@@ -3158,70 +3271,159 @@ namespace menu
 				ImGui::ShowDemoWindow(&show_demo_window);
 
 			{
-				ImGui::Begin("ItemFinderPlus v0.7.4##0", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+				ImGui::Begin("ItemFinderPlus v0.7.6##0", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
-				ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
-				if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
-					if (ImGui::BeginTabItem(ICON_MDI_TOOLS " MOD设置", 0, 0)) {
-						ImGui::PushItemWidth(ImGui::GetFontSize() * 8);
+				static int selected = 0;
 
-						static int style_idx = imgui_style_index;
-						if (ImGui::Combo("UI主题", &style_idx, theme_items, -1)) {
-							imgui_style_index = style_idx;
-							buildStyle();
+				{
+					ImGui::BeginGroup();
+					ImVec2 size(ImGui::GetFontSize() * 6, 0);
+					//ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
+					if (ImGui::Selectable(ICON_MDI_TOOLS " 通用", selected == 0, 0, size)) {
+						selected = 0;
+					}
+					if (lotd::isLoad) {
+						if (ImGui::Selectable(ICON_MDI_GREENHOUSE " 龙裔艺术馆", selected == 1, 0, size)) {
+							selected = 1;
+						}
+					}
+					if (ImGui::Selectable(ICON_MDI_TABLE_OF_CONTENTS " HUD", selected == 2, 0, size)) {
+						selected = 2;
+					}
+					if (ImGui::Selectable(ICON_MDI_ACCOUNT_EDIT " 其他", selected == 99, 0, size)) {
+						selected = 99;
+					}
+					//ImGui::PopItemWidth();
+					ImGui::EndGroup();
+				}
+
+				ImGui::SameLine();
+
+				ImGui::BeginGroup();
+
+				{
+					if (selected == 0) {
+						if (ImGui::BeginPopupContextItem("PopupThemes")) {
+							for (auto& item : theme_items) {
+								if (ImGui::Selectable(item.second.c_str())) {
+									imgui_style_index = item.first;
+									buildStyle();
+								}
+							}
+							ImGui::EndPopup();
 						}
 
-						if (ImGui::Combo("UI字体", &imgui_font_index, font_items, -1)) {
-							ImGuiIO& io = ImGui::GetIO();
-							io.FontDefault = fonts[imgui_font_index];
+						ImGui::AlignTextToFramePadding();
+						ImGui::Text("主题:");
+						ImGui::SameLine();
+
+						if (ImGui::Button(theme_items.at(imgui_style_index).c_str(), ImVec2(ImGui::GetFontSize() * 6, 0))) {
+							ImGui::OpenPopup("PopupThemes");
 						}
 
-						ImGui::DragFloat("UI缩放", &ImGui::GetIO().FontGlobalScale, 0.005f, 0.5f, 1.8f, "%.2f", 1);
-						ImGui::Combo("窗口热键", &hotkey, "Insert\0F11\0F12\0Shift+Q\0Alt+Q\0", -1);
-						//ImGui::DragInt("数据刷新(ms)", &refresh_time_data, 1, 100, 500, "%d ms");
+						if (ImGui::BeginPopupContextItem("PopupFonts")) {
+							for (auto& item : font_items) {
+								if (ImGui::Selectable(item.second.c_str())) {
+									ImGuiIO& io = ImGui::GetIO();
+									imgui_font_index = item.first;
+									io.FontDefault = fonts[imgui_font_index];
+								}
+							}
+							ImGui::EndPopup();
+						}
+
+						ImGui::AlignTextToFramePadding();
+						ImGui::Text("字体:");
+						ImGui::SameLine();
+						if (ImGui::Button(font_items.at(imgui_font_index).c_str(), ImVec2(ImGui::GetFontSize() * 6, 0))) {
+							ImGui::OpenPopup("PopupFonts");
+						}
+
+						ImGui::SameLine();
+						ImGui::Text("  边框圆角:");
+						ImGui::SameLine();
+						ImGui::PushItemWidth(ImGui::GetFontSize() * 4);
+						ImGui::SliderFloat("##WindowRounding", &style.WindowRounding, 0.0f, 12.0f, "%.0f");
 						ImGui::PopItemWidth();
 
-						if (ImGui::TreeNodeEx(ICON_MDI_TABLE_OF_CONTENTS " HUD", ImGuiTreeNodeFlags_DefaultOpen)) {
-							ImGui::Checkbox("背景透明", &no_background);
-							ImGui::TreePop();
+						ImGui::AlignTextToFramePadding();
+						ImGui::Text("缩放:");
+						ImGui::SameLine();
+						ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
+						ImGui::DragFloat("##UI缩放", &ImGui::GetIO().FontGlobalScale, 0.005f, 0.5f, 1.8f, "%.2f", 1);
+						ImGui::PopItemWidth();
+
+						ImGui::SameLine();
+						ImGui::Text("  控件圆角:");
+						ImGui::SameLine();
+						ImGui::PushItemWidth(ImGui::GetFontSize() * 4);
+						ImGui::SliderFloat("##FrameRounding", &style.FrameRounding, 0.0f, 12.0f, "%.0f");
+						ImGui::PopItemWidth();
+
+						if (ImGui::BeginPopupContextItem("PopupHotkey")) {
+							for (auto& item : hotkey_items) {
+								if (ImGui::Selectable(item.second.c_str())) {
+									hotkey = item.first;
+								}
+							}
+							ImGui::EndPopup();
 						}
 
-						if (ImGui::TreeNodeEx(ICON_MDI_TABLE_SEARCH " 物品菜单", ImGuiTreeNodeFlags_DefaultOpen)) {
-							ImGui::PushItemWidth(ImGui::GetFontSize() * 8);
-							ImGui::Combo("窗口热键", &hotkey2, "Insert\0F11\0F12\0Shift+Q\0Alt+Q\0", -1);
-							ImGui::Checkbox("背景透明", &no_background_items);
-							ImGui::PopItemWidth();
-							ImGui::TreePop();
+						ImGui::AlignTextToFramePadding();
+						ImGui::Text("热键:");
+						ImGui::SameLine();
+						if (ImGui::Button(hotkey_items.at(hotkey).c_str(), ImVec2(ImGui::GetFontSize() * 6, 0))) {
+							ImGui::OpenPopup("PopupHotkey");
 						}
 
+						ImGui::SameLine();
+						ImGui::Text("  滑块圆角:");
+						ImGui::SameLine();
+						ImGui::PushItemWidth(ImGui::GetFontSize() * 4);
+						ImGui::SliderFloat("##GrabRounding", &style.GrabRounding, 0.0f, 12.0f, "%.0f");
+						ImGui::PopItemWidth();
+
+						ImGui::Checkbox("显示控件边框", &frame_border);
+						ImGui::Checkbox("显示窗体边框", &window_border);
+
+						ImGui::Spacing();
 						ImGui::Separator();
 
+						if (ImGui::TreeNodeEx(ICON_MDI_TABLE_SEARCH " 物品菜单", ImGuiTreeNodeFlags_DefaultOpen)) {
+							if (ImGui::BeginPopupContextItem("PopupHotkey2")) {
+								for (auto& item : hotkey_items) {
+									if (ImGui::Selectable(item.second.c_str())) {
+										hotkey2 = item.first;
+									}
+								}
+								ImGui::EndPopup();
+							}
+
+							ImGui::AlignTextToFramePadding();
+							ImGui::Text("热键:");
+							ImGui::SameLine();
+							if (ImGui::Button(hotkey_items.at(hotkey2).c_str(), ImVec2(ImGui::GetFontSize() * 6, 0))) {
+								ImGui::OpenPopup("PopupHotkey2");
+							}
+
+							//ImGui::Combo("窗口热键", &hotkey2, "Insert\0F11\0F12\0Shift+Q\0Alt+Q\0", -1);
+							ImGui::TreePop();
+						}
+
 #ifndef NDEBUG
-						ImGui::Checkbox("demo", &show_demo_window);
+						//ImGui::Checkbox("demo", &show_demo_window);
 #endif
 
 #ifndef NDEBUG
 
-						if (ImGui::Button(" 测试", ImVec2(0, 0))) {
-						}
+						/*	if (ImGui::Button(" 测试", ImVec2(0, 0))) {
+						}*/
 #endif
-						if (ImGui::Button(ICON_MDI_CONTENT_SAVE " 保存配置", ImVec2(0, 0))) {
-							auto colorPlotHistogram = style.Colors[ImGuiCol_PlotHistogram];
-							colorPlotHistogramX = colorPlotHistogram.x;
-							colorPlotHistogramY = colorPlotHistogram.y;
-							colorPlotHistogramZ = colorPlotHistogram.z;
-							colorPlotHistogramW = colorPlotHistogram.w;
-
-							setting::save_settings();
-						}
-						/*ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGui::CalcTextSize("v0.7.2-beta").x - 3);
-						myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "v0.7.2-beta");*/
-						ImGui::EndTabItem();
 					}
 
 					if (lotd::isLoad) {
-						if (ImGui::BeginTabItem(ICON_MDI_GREENHOUSE " 龙裔艺术馆", 0, 0)) {
+						//if (ImGui::BeginTabItem(ICON_MDI_GREENHOUSE " 龙裔艺术馆", 0, 0)) {
+						if (selected == 1) {
 							ImGui::Text("艺术馆物品总数量：%d个", lotd::formIds.size());
 
 							ImGui::Spacing();
@@ -3293,12 +3495,14 @@ namespace menu
 
 #endif
 
-							ImGui::EndTabItem();
+							//ImGui::EndTabItem();
 						}
 					}
 
-					if (ImGui::BeginTabItem(ICON_MDI_TABLE_OF_CONTENTS " HUD", 0, 0)) {
-						if (ImGui::BeginTable("split", 2)) {
+					//if (ImGui::BeginTabItem(ICON_MDI_TABLE_OF_CONTENTS " HUD", 0, 0)) {
+
+					if (selected == 2) {
+						if (ImGui::BeginTable("splitHud", 2)) {
 							ImGui::TableNextColumn();
 							ImGui::Checkbox("人物基本属性", &show_player_base_info_window);
 
@@ -3308,8 +3512,9 @@ namespace menu
 									if (!show_player_base_info_window_sep) {
 										ImGui::Checkbox("显示进度条", &flag_process);
 										if (flag_process) {
-											if (ImGui::ColorEdit4("进度条颜色", &colorProgress.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf))
-												;
+											ImGui::ColorEdit4("HP颜色", &colorProgressHp.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+											ImGui::ColorEdit4("SP颜色", &colorProgressSp.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+											ImGui::ColorEdit4("MP颜色", &colorProgressMp.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
 										}
 									}
 									ImGui::TreePop();
@@ -3332,6 +3537,65 @@ namespace menu
 								if (ImGui::TreeNodeEx("设置##5", ImGuiTreeNodeFlags_DefaultOpen)) {
 									ImGui::Checkbox("不显示永久Buff", &show_player_effects_ignore_permanent);
 									ImGui::Checkbox("保留负面Buff", &show_player_effects_negative);
+									ImGui::Checkbox("不显示来源", &show_player_effects_ignore_spell);
+
+									ImGui::Checkbox("显示进度条", &show_player_effects_process);
+									if (show_player_effects_process) {
+										ImGui::ColorEdit4("颜色1", &colorProgressEffect1.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+										//ImGui::ColorEdit4("颜色2", &colorProgressEffect2.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+										ImGui::ColorEdit4("颜色2", &colorProgressEffect3.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+									}
+									ImGui::Checkbox("忽略Buff", &show_player_effects_listignore);
+
+									if (show_player_effects_listignore) {
+										static ImGuiTableFlags flagsItem =
+											ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
+
+										const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+										if (ImGui::BeginTable("tableItemBuffIngore", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
+											ImGui::TableSetupColumn("来源", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_1);
+											ImGui::TableSetupColumn("效果", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_2);
+											ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 40.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_3);
+
+											ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
+											ImGui::TableHeadersRow();
+
+											int deleteEffectId = 0;
+											int deleteSpellId = 0;
+
+											ImGuiListClipper clipper;
+											clipper.Begin(excludeEffectForms.size());
+											while (clipper.Step())
+												for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
+													ExcludeFormEffect& item = excludeEffectForms[row_n];
+													ImGui::PushID(row_n);
+													ImGui::TableNextRow();
+													ImGui::TableNextColumn();
+													ImGui::Text("%s", item.spellName.c_str());
+													ImGui::TableNextColumn();
+													ImGui::Text("%s", item.effectName.c_str());
+													ImGui::TableNextColumn();
+
+													if (ImGui::SmallButton(ICON_MDI_CLOSE)) {
+														deleteEffectId = item.effectId;
+														deleteSpellId = item.spellId;
+													}
+
+													ImGui::PopID();
+												}
+											ImGui::EndTable();
+											if (deleteEffectId || deleteSpellId) {
+												ExcludeFormEffectIds d{ deleteEffectId, deleteSpellId };
+												excludeEffectFormIds.erase(d);
+												excludeEffectForms.erase(std::remove_if(excludeEffectForms.begin(), excludeEffectForms.end(),
+																			 [&deleteEffectId, &deleteSpellId](const ExcludeFormEffect& x) {
+																				 return x.effectId == deleteEffectId && x.spellId == deleteSpellId;
+																			 }),
+													excludeEffectForms.end());
+											}
+										}
+									}
+
 									ImGui::TreePop();
 								}
 							}
@@ -3350,6 +3614,13 @@ namespace menu
 									ImGui::Checkbox("显示FORMID", &show_npc_window_formid);
 									ImGui::Checkbox("显示方向和距离", &show_npc_window_direction);
 									ImGui::Checkbox("死亡不显示", &show_npc_window_dead_hidden);
+									ImGui::Checkbox("显示血条", &show_npc_window_process);
+									if (show_npc_window_process) {
+										ImGui::Checkbox("战斗显示", &show_npc_window_process_combat);
+										ImGui::ColorEdit4("颜色1", &colorProgressNpc1.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+										ImGui::ColorEdit4("颜色2", &colorProgressNpc2.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+										ImGui::ColorEdit4("颜色3", &colorProgressNpc3.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+									}
 
 									ImGui::Checkbox("忽略NPC", &show_npc_window_ignore);
 									if (show_npc_window_ignore) {
@@ -3436,27 +3707,26 @@ namespace menu
 
 						ImGui::Separator();
 						if (ImGui::BeginTable("split3", 3)) {
+							/*ImGui::TableNextColumn();
+							ImGui::Checkbox("不显示标题", &no_titlebar);*/
+							/*ImGui::TableNextColumn();
+							ImGui::Checkbox("不允许缩放", &no_resize);*/
+							/*ImGui::TableNextColumn();
+							ImGui::Checkbox("不允许折叠", &no_collapse);*/
 							ImGui::TableNextColumn();
-							ImGui::Checkbox("不显示标题", &no_titlebar);
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("不允许缩放", &no_resize);
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("不允许折叠", &no_collapse);
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("不显示背景", &no_background);
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("窗体边框", &window_border);
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("控件边框", &frame_border);
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("是否窗口自适应", &auto_resize);
+							ImGui::Checkbox("背景透明", &no_background);
+							//ImGui::TableNextColumn();
+							/*ImGui::TableNextColumn();
+							ImGui::Checkbox("是否窗口自适应", &auto_resize);*/
 							ImGui::EndTable();
 						}
 
-						ImGui::EndTabItem();
+						//ImGui::EndTabItem();
 					}
 
-					if (ImGui::BeginTabItem(ICON_MDI_ACCOUNT_EDIT " 其他", 0, 0)) {
+					//if (ImGui::BeginTabItem(ICON_MDI_ACCOUNT_EDIT " 其他", 0, 0)) {
+
+					if (selected == 99) {
 						RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 
 						ImGui::Checkbox("是否自动卸除箭袋", &auto_remove_ammo);
@@ -3468,7 +3738,7 @@ namespace menu
 						ImGui::Separator();
 
 						if (ImGui::TreeNodeEx("修改属性一", ImGuiTreeNodeFlags_DefaultOpen)) {
-							if (ImGui::BeginTable("split", 2)) {
+							if (ImGui::BeginTable("split99-1", 2)) {
 								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale);
 								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch, 0.0f);
 
@@ -3528,7 +3798,7 @@ namespace menu
 						ImGui::Separator();
 
 						if (ImGui::TreeNodeEx("修改属性二(永久)", ImGuiTreeNodeFlags_DefaultOpen)) {
-							if (ImGui::BeginTable("split", 2, 0)) {
+							if (ImGui::BeginTable("split99-2", 2, 0)) {
 								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale);
 								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch, 0.0f);
 
@@ -3579,7 +3849,7 @@ namespace menu
 						ImGui::Separator();
 
 						if (ImGui::TreeNodeEx("常用素材获取", ImGuiTreeNodeFlags_DefaultOpen)) {
-							if (ImGui::BeginTable("split", 2, 0)) {
+							if (ImGui::BeginTable("split99-3", 2, 0)) {
 								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale);
 								ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch, 0.0f);
 
@@ -3721,15 +3991,35 @@ namespace menu
 
 							ImGui::TreePop();
 						}
-						ImGui::EndTabItem();
+						//ImGui::EndTabItem();
 					}
 
-					ImGui::EndTabBar();
+					/*	ImGui::EndTabBar();
+				}*/
+
+					//ImGui::EndChild();
+					//ImGui::EndTable();
+					//}
 				}
 
+				ImGui::Separator();
+
+				if (ImGui::BeginPopupModal("信息", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+					ImGui::Text("配置已保存");
+					if (ImGui::Button("确定", ImVec2(120, 0))) {
+						ImGui::CloseCurrentPopup();
+					}
+					ImGui::EndPopup();
+				}
+
+				if (ImGui::Button(ICON_MDI_CONTENT_SAVE " 保存配置##2")) {
+					setting::save_settings();
+					ImGui::OpenPopup("信息");
+				}
+
+				ImGui::EndGroup();
 				ImGui::End();
 			}
 		}
 	}
-
 }

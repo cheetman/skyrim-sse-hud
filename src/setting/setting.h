@@ -13,8 +13,9 @@ namespace setting
 	{
 		std::string listEditorId;
 		std::string roomName;
-		std::string listFormId;
+		//std::string listFormId;
 		std::string modName;
+		RE::FormID listFormId;
 	};
 	struct GalleryData
 	{

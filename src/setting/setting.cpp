@@ -49,6 +49,12 @@ namespace setting
 						data.modName = obj["modName"];
 					}
 
+					if (obj.contains("listFormId")) {
+						std::string formidstr = obj["listFormId"];
+						data.listFormId = std::stoi(formidstr, 0, 16);
+					}
+					
+
 					/*if (obj.contains("formids")) {
 						for (const auto& formid : obj["formids"]) {
 							std::string formidstr = formid;
@@ -138,6 +144,12 @@ namespace setting
 				if (j.contains("imgui_font_index")) {
 					menu::imgui_font_index = j["imgui_font_index"].get<int>();
 				}
+
+				if (j.contains("grabRounding")) {
+					menu::grabRounding = j["grabRounding"].get<float>();
+					menu::frameRounding = j["frameRounding"].get<float>();
+					menu::windowRounding = j["windowRounding"].get<float>();
+				}
 			}
 
 			if (json.contains("gameSetting")) {
@@ -183,6 +195,26 @@ namespace setting
 					if (j2.contains("show_player_effects_negative")) {
 						show_player_effects_negative = j2["show_player_effects_negative"].get<bool>();
 					}
+					if (j2.contains("show_player_effects_listignore")) {
+						show_player_effects_listignore = j2["show_player_effects_listignore"].get<bool>();
+					}
+					if (j2.contains("colorProgressEffect1X")) {
+						colorProgressEffect1.x = j2["colorProgressEffect1X"].get<float>();
+						colorProgressEffect1.y = j2["colorProgressEffect1Y"].get<float>();
+						colorProgressEffect1.z = j2["colorProgressEffect1Z"].get<float>();
+						colorProgressEffect1.w = j2["colorProgressEffect1W"].get<float>();
+						colorProgressEffect3.x = j2["colorProgressEffect3X"].get<float>();
+						colorProgressEffect3.y = j2["colorProgressEffect3Y"].get<float>();
+						colorProgressEffect3.z = j2["colorProgressEffect3Z"].get<float>();
+						colorProgressEffect3.w = j2["colorProgressEffect3W"].get<float>();
+					}
+
+					if (j2.contains("show_player_effects_ignore_spell")) {
+						show_player_effects_ignore_spell = j2["show_player_effects_ignore_spell"].get<bool>();
+					}
+					if (j2.contains("show_player_effects_process")) {
+						show_player_effects_process = j2["show_player_effects_process"].get<bool>();
+					}
 				}
 				if (j.contains("DebugInfo")) {
 					auto const& j2 = j["DebugInfo"];
@@ -222,6 +254,28 @@ namespace setting
 
 					if (j2.contains("show_npc_window_ignore")) {
 						show_npc_window_ignore = j2["show_npc_window_ignore"].get<bool>();
+					}
+					if (j2.contains("show_npc_window_process")) {
+						show_npc_window_process = j2["show_npc_window_process"].get<bool>();
+					}
+					if (j2.contains("show_npc_window_process_combat")) {
+						show_npc_window_process_combat = j2["show_npc_window_process_combat"].get<bool>();
+					}
+
+					
+					if (j2.contains("colorProgressNpc1X")) {
+						colorProgressNpc1.x = j2["colorProgressNpc1X"].get<float>();
+						colorProgressNpc1.y = j2["colorProgressNpc1Y"].get<float>();
+						colorProgressNpc1.z = j2["colorProgressNpc1Z"].get<float>();
+						colorProgressNpc1.w = j2["colorProgressNpc1W"].get<float>();
+						colorProgressNpc2.x = j2["colorProgressNpc2X"].get<float>();
+						colorProgressNpc2.y = j2["colorProgressNpc2Y"].get<float>();
+						colorProgressNpc2.z = j2["colorProgressNpc2Z"].get<float>();
+						colorProgressNpc2.w = j2["colorProgressNpc2W"].get<float>();
+						colorProgressNpc3.x = j2["colorProgressNpc3X"].get<float>();
+						colorProgressNpc3.y = j2["colorProgressNpc3Y"].get<float>();
+						colorProgressNpc3.z = j2["colorProgressNpc3Z"].get<float>();
+						colorProgressNpc3.w = j2["colorProgressNpc3W"].get<float>();
 					}
 				}
 				if (j.contains("ItemMenuInfo")) {
@@ -492,17 +546,26 @@ namespace setting
 						stats::show_computertime_window = j2["show_computertime_window"].get<bool>();
 					}
 				}
+
 				if (j.contains("playerBaseInfo")) {
 					auto const& j2 = j["playerBaseInfo"];
 					show_player_base_info_window = j2["isShow"].get<bool>();
 
 					if (j2.contains("flag_process")) {
 						menu::flag_process = j2["flag_process"].get<bool>();
-						if (j2.contains("colorPlotHistogramX")) {
-							menu::colorPlotHistogramX = j2["colorPlotHistogramX"].get<float>();
-							menu::colorPlotHistogramY = j2["colorPlotHistogramY"].get<float>();
-							menu::colorPlotHistogramZ = j2["colorPlotHistogramZ"].get<float>();
-							menu::colorPlotHistogramW = j2["colorPlotHistogramW"].get<float>();
+						if (j2.contains("colorProgressHpX")) {
+							menu::colorProgressHp.x = j2["colorProgressHpX"].get<float>();
+							menu::colorProgressHp.y = j2["colorProgressHpY"].get<float>();
+							menu::colorProgressHp.z = j2["colorProgressHpZ"].get<float>();
+							menu::colorProgressHp.w = j2["colorProgressHpW"].get<float>();
+							menu::colorProgressMp.x = j2["colorProgressMpX"].get<float>();
+							menu::colorProgressMp.y = j2["colorProgressMpY"].get<float>();
+							menu::colorProgressMp.z = j2["colorProgressMpZ"].get<float>();
+							menu::colorProgressMp.w = j2["colorProgressMpW"].get<float>();
+							menu::colorProgressSp.x = j2["colorProgressSpX"].get<float>();
+							menu::colorProgressSp.y = j2["colorProgressSpY"].get<float>();
+							menu::colorProgressSp.z = j2["colorProgressSpZ"].get<float>();
+							menu::colorProgressSp.w = j2["colorProgressSpW"].get<float>();
 						}
 					}
 
@@ -570,6 +633,15 @@ namespace setting
 				}
 			}
 
+			if (json.contains("excludeEffectFormIds")) {
+				for (auto const& j : json["excludeEffectFormIds"]) {
+					if (j.contains("effectId") && j.contains("spellId")) {
+						ExcludeFormEffectIds item{ j["effectId"].get<RE::FormID>(), j["spellId"].get<RE::FormID>() };
+						excludeEffectFormIds.insert(item);
+					}
+				}
+			}
+
 		} catch (std::exception const& ex) {
 			logger::error(ex.what());
 			//log() << "Unable to save settings file: " << ex.what() << std::endl;
@@ -632,6 +704,9 @@ namespace setting
 									  { "font_scale", ImGui::GetIO().FontGlobalScale },
 									  { "no_background_items", menu::no_background_items },
 									  { "imgui_font_index", menu::imgui_font_index },
+									  { "grabRounding", ImGui::GetStyle().GrabRounding},
+									  { "frameRounding", ImGui::GetStyle().FrameRounding },
+									  { "windowRounding", ImGui::GetStyle().WindowRounding },
 
 								  } },
 
@@ -645,10 +720,19 @@ namespace setting
 															   { "isShow", show_player_base_info_window },
 															   { "show_player_base_info_window_sep", menu::show_player_base_info_window_sep },
 															   { "flag_process", menu::flag_process },
-															   { "colorPlotHistogramX", menu::colorPlotHistogramX },
-															   { "colorPlotHistogramY", menu::colorPlotHistogramY },
-															   { "colorPlotHistogramZ", menu::colorPlotHistogramZ },
-															   { "colorPlotHistogramW", menu::colorPlotHistogramW },
+															   { "colorProgressHpX", menu::colorProgressHp.x },
+															   { "colorProgressHpY", menu::colorProgressHp.y },
+															   { "colorProgressHpZ", menu::colorProgressHp.z },
+															   { "colorProgressHpW", menu::colorProgressHp.w },
+															   { "colorProgressMpX", menu::colorProgressMp.x },
+															   { "colorProgressMpY", menu::colorProgressMp.y },
+															   { "colorProgressMpZ", menu::colorProgressMp.z },
+															   { "colorProgressMpW", menu::colorProgressMp.w },
+															   { "colorProgressSpX", menu::colorProgressSp.x },
+															   { "colorProgressSpY", menu::colorProgressSp.y },
+															   { "colorProgressSpZ", menu::colorProgressSp.z },
+															   { "colorProgressSpW", menu::colorProgressSp.w },
+
 														   } },
 									   { "playerModInfo", {
 															  { "isShow", show_player_mod_window },
@@ -662,6 +746,17 @@ namespace setting
 														   { "show_player_effects_window", show_player_effects_window },
 														   { "show_player_effects_ignore_permanent", show_player_effects_ignore_permanent },
 														   { "show_player_effects_negative", show_player_effects_negative },
+														   { "show_player_effects_listignore", show_player_effects_listignore },
+														   { "colorProgressEffect1X", colorProgressEffect1.x },
+														   { "colorProgressEffect1Y", colorProgressEffect1.y },
+														   { "colorProgressEffect1Z", colorProgressEffect1.z },
+														   { "colorProgressEffect1W", colorProgressEffect1.w },
+														   { "colorProgressEffect3X", colorProgressEffect3.x },
+														   { "colorProgressEffect3Y", colorProgressEffect3.y },
+														   { "colorProgressEffect3Z", colorProgressEffect3.z },
+														   { "colorProgressEffect3W", colorProgressEffect3.w },
+														   { "show_player_effects_ignore_spell", show_player_effects_ignore_spell },
+														   { "show_player_effects_process", show_player_effects_process },
 
 													   } },
 
@@ -688,6 +783,20 @@ namespace setting
 														{ "show_npc", menu::show_npc },
 														{ "show_horse", menu::show_horse },
 														{ "show_npc_window_ignore", show_npc_window_ignore },
+														{ "show_npc_window_process", show_npc_window_process },
+														{ "show_npc_window_process_combat", show_npc_window_process_combat },
+														{ "colorProgressNpc1X", colorProgressNpc1.x },
+														{ "colorProgressNpc1Y", colorProgressNpc1.y },
+														{ "colorProgressNpc1Z", colorProgressNpc1.z },
+														{ "colorProgressNpc1W", colorProgressNpc1.w },
+														{ "colorProgressNpc2X", colorProgressNpc2.x },
+														{ "colorProgressNpc2Y", colorProgressNpc2.y },
+														{ "colorProgressNpc2Z", colorProgressNpc2.z },
+														{ "colorProgressNpc2W", colorProgressNpc2.w },
+														{ "colorProgressNpc3X", colorProgressNpc3.x },
+														{ "colorProgressNpc3Y", colorProgressNpc3.y },
+														{ "colorProgressNpc3Z", colorProgressNpc3.z },
+														{ "colorProgressNpc3W", colorProgressNpc3.w },
 
 													} },
 									   { "ItemMenuInfo", {
@@ -790,6 +899,7 @@ namespace setting
 			nlohmann::json arrLocation = nlohmann::json::array();
 			nlohmann::json arrAutoCont = nlohmann::json::array();
 			nlohmann::json arrNpc = nlohmann::json::array();
+			nlohmann::json arrBuff = nlohmann::json::array();
 
 			for (auto id : excludeFormIds) {
 				arr.push_back(id);
@@ -810,6 +920,14 @@ namespace setting
 				arrNpc.push_back(id);
 			}
 			json["excludeNpcFormIds"] = arrNpc;
+
+			for (auto ids : excludeEffectFormIds) {
+				nlohmann::json obj;
+				obj["effectId"] = ids.effectId;
+				obj["spellId"] = ids.spellId;
+				arrBuff.push_back(obj);
+			}
+			json["excludeEffectFormIds"] = arrBuff;
 
 			std::ofstream o(settings_path);
 			o << std::setw(4) << json << std::endl;

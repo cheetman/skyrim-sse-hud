@@ -131,6 +131,9 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 
 			isPlayerInvChanged = true;
 			islotdContChanged = true;
+
+			
+
 			break;
 		}
 	case SKSE::MessagingInterface::kNewGame:
@@ -169,8 +172,6 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 			logger::info("kDataLoaded"sv);
 			data::init();
 			lotd::init();
-
-			
 			BSTPositionPlayerEvent::Register();
 			break;
 		}
