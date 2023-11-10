@@ -17,10 +17,22 @@ namespace setting
 	std::filesystem::path settings_path_gallery = "";
 	std::filesystem::path settings_path_lotd_item_list = "data\\skse\\plugins\\ItemFinderPlus-LotdItemList.json";
 	std::filesystem::path settings_path_lotd_item_display_list = "data\\skse\\plugins\\ItemFinderPlus-LotdItemDisplayList.json";
+	std::filesystem::path settings_path_lotd_item_display_list_modnames = "data\\skse\\plugins\\ItemFinderPlus-LotdItemList-ModNames.json";
 	//std::vector<GalleryData> galleryList;
 	std::vector<LotdItemList> lotdItemLists;
 	std::vector<LotdItemDisplayCont> lotdItemDisplayLists;
 	std::vector<std::uint32_t> displayConts;
+
+	std::unordered_map<std::string, std::string> LotdItemListModNames;
+
+	std::string getLotdItemListModName(const std::string& key)
+	{
+		if (LotdItemListModNames.find(key) != LotdItemListModNames.end()) {
+			return LotdItemListModNames[key];
+		} else {
+			return key;
+		}
+	}
 
 	bool load_settings_lotd()
 	{
@@ -53,14 +65,7 @@ namespace setting
 						std::string formidstr = obj["listFormId"];
 						data.listFormId = std::stoi(formidstr, 0, 16);
 					}
-					
 
-					/*if (obj.contains("formids")) {
-						for (const auto& formid : obj["formids"]) {
-							std::string formidstr = formid;
-							data.formids.push_back(std::stoi(formidstr, 0, 16));
-						}
-					}*/
 					lotdItemLists.push_back(data);
 				}
 			}
@@ -69,6 +74,25 @@ namespace setting
 			logger::error(ex.what());
 			return false;
 		}
+
+		try {
+			std::ifstream i(settings_path_lotd_item_display_list_modnames);
+			nlohmann::json json;
+			i >> json;
+
+			for (const auto& obj : json) {
+				if (obj.contains("modName") && obj.contains("name")) {
+					std::string modName = obj["modName"];
+					std::string name = obj["name"];
+					LotdItemListModNames.insert(std::pair(modName, name));
+				}
+			}
+
+		} catch (std::exception const& ex) {
+			logger::error(ex.what());
+			return false;
+		}
+
 		return true;
 	}
 
@@ -262,7 +286,6 @@ namespace setting
 						show_npc_window_process_combat = j2["show_npc_window_process_combat"].get<bool>();
 					}
 
-					
 					if (j2.contains("colorProgressNpc1X")) {
 						colorProgressNpc1.x = j2["colorProgressNpc1X"].get<float>();
 						colorProgressNpc1.y = j2["colorProgressNpc1Y"].get<float>();
@@ -704,7 +727,7 @@ namespace setting
 									  { "font_scale", ImGui::GetIO().FontGlobalScale },
 									  { "no_background_items", menu::no_background_items },
 									  { "imgui_font_index", menu::imgui_font_index },
-									  { "grabRounding", ImGui::GetStyle().GrabRounding},
+									  { "grabRounding", ImGui::GetStyle().GrabRounding },
 									  { "frameRounding", ImGui::GetStyle().FrameRounding },
 									  { "windowRounding", ImGui::GetStyle().WindowRounding },
 

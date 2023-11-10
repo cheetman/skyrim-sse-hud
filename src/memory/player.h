@@ -42,7 +42,7 @@ struct PlayerInfo
 	float kMagickaBase = 0.0f;
 	float kStaminaBase = 0.0f;
 
-	std::int32_t gold = 0.0f;
+	std::int32_t gold = 0;
 	float equippedWeight = 0.0f;
 	float carryWeight = 0.0f;
 

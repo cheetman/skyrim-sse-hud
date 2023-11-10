@@ -109,6 +109,7 @@ namespace lotd
 		roomNames.insert({ "NaturalScience", "自然科学" });
 		roomNames.insert({ "MuseumStoreroom", "博物馆储藏室" });
 		roomNames.insert({ "Guildhouse", "探险家协会" });
+		roomNames.insert({ "noknown", "未分类" });
 
 		/*displayIdsC["00126087"];
 		displayIdsC["002ACDD9"];

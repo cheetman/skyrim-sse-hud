@@ -173,6 +173,10 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 			data::init();
 			lotd::init();
 			BSTPositionPlayerEvent::Register();
+
+			// input event
+			//auto inputDeviceManager = RE::BSInputDeviceManager::GetSingleton();
+			//inputDeviceManager->AddEventSink();
 			break;
 		}
 	default:

@@ -763,7 +763,7 @@ void __cdecl RefreshItemInfo(void*)
 											bool isCrime = reff->IsCrimeToActivate();
 											
 
-											bool isRead;
+											bool isRead = false;
 											auto book = baseObj->As<RE::TESObjectBOOK>();
 											if (book) {
 												isRead = book->IsRead();

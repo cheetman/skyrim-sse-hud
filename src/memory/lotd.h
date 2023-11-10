@@ -147,5 +147,7 @@ namespace lotd
 
 	// 身上物品
 	extern std::unordered_set<RE::FormID> playerInvIds;
+
+	void trackAllItem(int count, std::vector<LotdInfo>& items);
 }
 

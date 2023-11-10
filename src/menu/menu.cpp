@@ -1658,19 +1658,26 @@ namespace menu
 								float x1;
 								float y1;
 								float z1;
-								if (ptr->IsDeleted() || ptr->IsDestroyed() || ptr->IsIgnored() || !ptr->Is3DLoaded() || player->currentLocation != ptr->GetCurrentLocation()) {
+								if (ptr->IsDeleted() || ptr->IsDestroyed() || ptr->IsIgnored() || !ptr->Is3DLoaded()) {
 									trackPtrs.erase(ptr);
 									break;
 								}
 								auto p = ptr->GetPosition();
 								bool result = ca->WorldPtToScreenPt3(ca->worldToCam, ca->port, p, x1, y1, z1, 1e-5f);
 								if (!result) {
-									int i = 1;
+									trackPtrs.erase(ptr);
+									break;
 								}
 								if (x1 > 0 && y1 > 0 && z1 > 0) {
 									trackX1 = x1 * screenWidth;
 									trackY1 = screenHeight - y1 * screenHeight;
 									if (trackX1 > 0 && trackX1 < screenWidth && trackY1 > 0 && trackY1 < screenHeight) {
+										auto distance = ValueUtil::calculateDistance(ptr->GetPosition(), player->GetPosition()) / 100.0f;
+										if (distance > show_items_window_auto_dis_local && distance > show_items_window_auto_dis_skyrim) {
+											trackPtrs.erase(ptr);
+											break;
+										}
+
 										ImGui::SetNextWindowPos(ImVec2(trackX1 - 40, trackY1));
 
 										char buf[32];
@@ -1679,7 +1686,7 @@ namespace menu
 											ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize);
 
 										ImGui::SetWindowFontScale(menu::font_scale + (float)show_item_window_track_icon_scale);
-										ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %0.1fm", ValueUtil::calculateDistance(ptr->GetPosition(), player->GetPosition()) / 100.0f);
+										ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %0.1fm", distance);
 										ImGui::SetWindowFontScale(menu::font_scale);
 
 										ImGui::End();
@@ -1690,19 +1697,26 @@ namespace menu
 								float x1;
 								float y1;
 								float z1;
-								if (ptr->IsDeleted() || ptr->IsIgnored() || !ptr->Is3DLoaded() || player->currentLocation != ptr->GetCurrentLocation()) {
+								if (ptr->IsDeleted() || ptr->IsIgnored() || !ptr->Is3DLoaded()) {
 									trackActorPtrs.erase(ptr);
 									break;
 								}
 								auto p = ptr->GetPosition();
 								bool result = ca->WorldPtToScreenPt3(ca->worldToCam, ca->port, p, x1, y1, z1, 1e-5f);
 								if (!result) {
-									int i = 1;
+									trackActorPtrs.erase(ptr);
+									break;
 								}
 								if (x1 > 0 && y1 > 0 && z1 > 0) {
 									trackX1 = x1 * screenWidth;
 									trackY1 = screenHeight - y1 * screenHeight;
 									if (trackX1 > 0 && trackX1 < screenWidth && trackY1 > 0 && trackY1 < screenHeight) {
+										auto distance = ValueUtil::calculateDistance(ptr->GetPosition(), player->GetPosition()) / 100.0f;
+										if (distance > show_items_window_auto_dis_local && distance > show_items_window_auto_dis_skyrim) {
+											trackActorPtrs.erase(ptr);
+											break;
+										}
+
 										ImGui::SetNextWindowPos(ImVec2(trackX1 - 40, trackY1));
 
 										char buf[32];
@@ -1711,7 +1725,7 @@ namespace menu
 											ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar);
 
 										ImGui::SetWindowFontScale(menu::font_scale + (float)show_item_window_track_icon_scale);
-										ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %0.1fm", ValueUtil::calculateDistance(ptr->GetPosition(), player->GetPosition()) / 100.0f);
+										ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %0.1fm", distance);
 										ImGui::SetWindowFontScale(menu::font_scale);
 
 										ImGui::End();
@@ -2450,6 +2464,17 @@ namespace menu
 				}
 			}
 
+			{
+				std::lock_guard<std::mutex> lock(mtxTrack);
+				if (trackPtrs.size() > 0 || trackActorPtrs.size() > 0) {
+					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+					if (ImGui::SmallButton("删除标记")) {
+						trackPtrs.clear();
+						trackActorPtrs.clear();
+					}
+				}
+			}
+
 			if (ImGui::BeginTable("tableItem", 5)) {
 				if (lotd::isShow) {
 					lotd::render();
@@ -2535,7 +2560,12 @@ namespace menu
 					if (lotd::isShowAttached) {
 						if (lotd::getCountAttached()) {
 							ImGui::TableNextColumn();
+							ImGui::AlignTextToFramePadding();
 							ImGui::Text(ICON_MDI_GREENHOUSE " 艺术馆藏品(%d)", lotd::getCountAttached());
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS "##99")) {
+								trackAllItem(lotd::getCountAttached(), lotd::getItemsAttached());
+							}
 							lotd::buildItemInfoAttached(lotd::getCountAttached(), lotd::getItemsAttached());
 							ImGui::Spacing();
 						}
@@ -3271,7 +3301,7 @@ namespace menu
 				ImGui::ShowDemoWindow(&show_demo_window);
 
 			{
-				ImGui::Begin("ItemFinderPlus v0.7.6##0", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+				ImGui::Begin("ItemFinderPlus v0.7.7##0", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
 				static int selected = 0;
 
@@ -3432,10 +3462,10 @@ namespace menu
 
 							ImGui::Text("MOD物品统计");
 
-							if (ImGui::BeginTable("splitLotdMod", 2)) {
+							if (ImGui::BeginTable("splitLotdMod", 4)) {
 								for (const auto& pair : lotd::formIdsM) {
 									ImGui::TableNextColumn();
-									ImGui::Text("%s", pair.first.c_str());
+									ImGui::Text("%s", setting::getLotdItemListModName(pair.first).c_str());
 									ImGui::TableNextColumn();
 
 									if (pair.second.size() == 0) {
@@ -3471,9 +3501,9 @@ namespace menu
 							static ImGuiTableFlags flagsItem =
 								ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
 							const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
-							if (ImGui::BeginTable("tableLotd", 2, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 7), 0.0f)) {
-								ImGui::TableSetupColumn("List", ImGuiTableColumnFlags_WidthFixed, 100.0f, 1);
-								ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 40.0f, 2);
+							if (ImGui::BeginTable("tableLotd", 2, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 20, TEXT_BASE_HEIGHT * 7), 0.0f)) {
+								ImGui::TableSetupColumn("List", ImGuiTableColumnFlags_WidthFixed, 140.0f * ImGui::GetIO().FontGlobalScale, 1);
+								ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 50.0f * ImGui::GetIO().FontGlobalScale, 2);
 								ImGui::TableSetupScrollFreeze(0, 1);
 								ImGui::TableHeadersRow();
 

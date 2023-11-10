@@ -234,7 +234,7 @@ namespace lotd
 
 		if (ImGui::BeginTable("tableItemLOTD", columnCount, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 15, TEXT_BASE_HEIGHT * show_inv_window_height), 0.0f)) {
 			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, TableColumn_1);
-			ImGui::TableSetupColumn("房间", ImGuiTableColumnFlags_WidthFixed , 50.0f * ImGui::GetIO().FontGlobalScale, TableColumn_2);
+			ImGui::TableSetupColumn("房间", ImGuiTableColumnFlags_WidthFixed, 50.0f * ImGui::GetIO().FontGlobalScale, TableColumn_2);
 			/*ImGui::TableSetupColumn("价值", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 35.0f * ImGui::GetIO().FontGlobalScale, TableColumn_3);
 			ImGui::TableSetupColumn("重量", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 30.0f * ImGui::GetIO().FontGlobalScale, TableColumn_4);*/
 
@@ -388,6 +388,20 @@ namespace lotd
 
 		ImGui::PopStyleColor();
 		ImGui::PopStyleColor();
+	}
+
+	void trackAllItem(int count, std::vector<LotdInfo>& items)
+	{
+		for (int row_n = 0; row_n < count; row_n++) {
+			LotdInfo& item = items[row_n];
+			RE::TESObjectREFR* ptr = item.ptr;
+			if (!ptr) {
+				ptr = item.contptr;
+			}
+			if (trackPtrs.find(ptr) == trackPtrs.end()) {
+				trackPtrs.insert(ptr);
+			}
+		}
 	}
 
 	void __fastcall render()
