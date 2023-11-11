@@ -122,11 +122,17 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 			logger::info("kPostLoadGame"sv);
 			isGameLoading = false;
 			startflag = true;
-			if (trackPtrs.size() > 0) {
+			/*if (trackPtrs.size() > 0) {
 				trackPtrs.clear();
 			}
 			if (trackActorPtrs.size() > 0) {
 				trackActorPtrs.clear();
+			}*/
+			if (trackPtrs2.size() > 0) {
+				trackPtrs2.clear();
+			}
+			if (trackActorPtrs2.size() > 0) {
+				trackActorPtrs2.clear();
 			}			
 
 			isPlayerInvChanged = true;
@@ -141,12 +147,18 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 			logger::info("kNewGame"sv);
 			isGameLoading = false;
 			startflag = true;
-			if (trackPtrs.size() > 0) {
+			/*if (trackPtrs.size() > 0) {
 				trackPtrs.clear();
 			}
 			if (trackActorPtrs.size() > 0) {
 				trackActorPtrs.clear();
+			}*/
+			if (trackPtrs2.size() > 0) {
+				trackPtrs2.clear();
 			}
+			if (trackActorPtrs2.size() > 0) {
+				trackActorPtrs2.clear();
+			}		
 
 			isPlayerInvChanged = true;
 			islotdContChanged = true;

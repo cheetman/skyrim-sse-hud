@@ -5,6 +5,7 @@
 #include <memory/lotd.h>
 #include <memory/memory.h>
 #include <utils/utils.h>
+#include <menu/menu.h>
 
 namespace lotd
 {
@@ -187,12 +188,19 @@ namespace lotd
 					if (!ptr) {
 						ptr = item.contptr;
 					}
-					if (trackPtrs.find(ptr) == trackPtrs.end()) {
+					if (trackPtrs2.find(ptr) == trackPtrs2.end()) {
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 						}
 						if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
-							trackPtrs.insert(ptr);
+							trackPtrs2.insert(std::make_pair(ptr, item.name));
+							if (menu::show_item_window_track_highlight) {
+								auto obj3D = item.ptr->Get3D();
+								if (obj3D) {
+									RE::NiColorA color{ menu::colorTrack.x, menu::colorTrack.y, menu::colorTrack.z, menu::colorTrack.w };
+									obj3D->TintScenegraph(color);
+								}
+							}
 						}
 					}
 
@@ -262,7 +270,7 @@ namespace lotd
 			while (clipper.Step())
 				for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
 					LotdInfo& item = items[row_n];
-					ImGui::PushID(item.formId + item.contformId + 0x5000000);
+					ImGui::PushID(row_n);
 					ImGui::TableNextRow();
 					ImGui::TableNextColumn();
 
@@ -297,6 +305,8 @@ namespace lotd
 								if (!item.ptr->IsMarkedForDeletion()) {
 									addItem(nullptr, item.ptr, 1);
 								}
+							} else if (item.contptr) {
+								RemoveItemCONT(nullptr, item.contptr, item.baseObjPtr, item.count, false);
 							}
 						}
 						ImGui::PopStyleColor();
@@ -306,6 +316,8 @@ namespace lotd
 								if (!item.ptr->IsMarkedForDeletion()) {
 									addItem(nullptr, item.ptr, 1);
 								}
+							} else if (item.contptr) {
+								RemoveItemCONT(nullptr, item.contptr, item.baseObjPtr, item.count, false);
 							}
 						}
 					}
@@ -372,12 +384,19 @@ namespace lotd
 					if (!ptr) {
 						ptr = item.contptr;
 					}
-					if (trackPtrs.find(ptr) == trackPtrs.end()) {
+					if (trackPtrs2.find(ptr) == trackPtrs2.end()) {
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 						}
 						if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
-							trackPtrs.insert(ptr);
+							trackPtrs2.insert(std::make_pair(ptr, item.name));
+							if (menu::show_item_window_track_highlight) {
+								auto obj3D = item.ptr->Get3D();
+								if (obj3D) {
+									RE::NiColorA color{ menu::colorTrack.x, menu::colorTrack.y, menu::colorTrack.z, menu::colorTrack.w };
+									obj3D->TintScenegraph(color);
+								}
+							}
 						}
 					}
 
@@ -398,8 +417,15 @@ namespace lotd
 			if (!ptr) {
 				ptr = item.contptr;
 			}
-			if (trackPtrs.find(ptr) == trackPtrs.end()) {
-				trackPtrs.insert(ptr);
+			if (trackPtrs2.find(ptr) == trackPtrs2.end()) {
+				trackPtrs2.insert(std::make_pair(ptr, item.name));
+				if (menu::show_item_window_track_highlight) {
+					auto obj3D = item.ptr->Get3D();
+					if (obj3D) {
+						RE::NiColorA color{ menu::colorTrack.x, menu::colorTrack.y, menu::colorTrack.z, menu::colorTrack.w };
+						obj3D->TintScenegraph(color);
+					}
+				}
 			}
 		}
 	}

@@ -247,8 +247,12 @@ extern std::vector<ExcludeForm> excludeForms;
 /// <summary>
 /// 追踪物品
 /// </summary>
-extern std::unordered_set<RE::TESObjectREFR*> trackPtrs;
-extern std::unordered_set<RE::Actor*> trackActorPtrs;
+//extern std::unordered_set<RE::TESObjectREFR*> trackPtrs;
+//extern std::unordered_set<RE::Actor*> trackActorPtrs;
+
+extern std::unordered_map<RE::TESObjectREFR*, std::string> trackPtrs2;
+extern std::unordered_map<RE::Actor*, std::string> trackActorPtrs2;
+
 extern std::mutex mtxTrack;
 
 /// <summary>

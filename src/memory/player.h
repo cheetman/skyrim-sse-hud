@@ -124,6 +124,7 @@ struct Effects2Info
 extern WeaponInfo leftWeaponInfo;
 extern WeaponInfo rightWeaponInfo;
 extern WeaponInfo ammoInfo;
+extern WeaponInfo powerInfo;
 
 extern ArmorInfo wornArmos[32];
 extern PlayerInfo playerInfo;

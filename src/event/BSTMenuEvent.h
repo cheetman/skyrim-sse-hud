@@ -27,11 +27,17 @@ public:
 			isMainMenu = a_event->opening;
 			if (isMainMenu) {
 				std::lock_guard<std::mutex> lock(mtxTrack);
-				if (trackPtrs.size() > 0) {
+				/*if (trackPtrs.size() > 0) {
 					trackPtrs.clear();
 				}
 				if (trackActorPtrs.size() > 0) {
 					trackActorPtrs.clear();
+				}*/
+				if (trackPtrs2.size() > 0) {
+					trackPtrs2.clear();
+				}
+				if (trackActorPtrs2.size() > 0) {
+					trackActorPtrs2.clear();
 				}
 			}
 		} else if (a_event->menuName == RE::InterfaceStrings::GetSingleton()->loadWaitSpinner) {

@@ -8,6 +8,7 @@
 #include <memory/player.h>
 #include <memory/stat.h>
 #include <menu/menu.h>
+#include <menu/menu_npc.h>
 #include <menu/theme.h>
 #include <nlohmann/json.hpp>
 
@@ -535,6 +536,19 @@ namespace setting
 					if (j2.contains("merchantContIgnore")) {
 						merchantContIgnore = j2["merchantContIgnore"].get<bool>();
 					}
+
+					if (j2.contains("show_item_window_track_icon_name")) {
+						menu::show_item_window_track_icon_name = j2["show_item_window_track_icon_name"].get<bool>();
+					}
+					if (j2.contains("show_item_window_track_highlight")) {
+						menu::show_item_window_track_highlight = j2["show_item_window_track_highlight"].get<bool>();
+					}
+					if (j2.contains("colorTrackX")) {
+						menu::colorTrack.x = j2["colorTrackX"].get<float>();
+						menu::colorTrack.y = j2["colorTrackY"].get<float>();
+						menu::colorTrack.z = j2["colorTrackZ"].get<float>();
+						menu::colorTrack.w = j2["colorTrackW"].get<float>();
+					}
 				}
 
 				if (j.contains("LotdInfo")) {
@@ -899,6 +913,13 @@ namespace setting
 															 { "show_item_window_track_icon_scale", show_item_window_track_icon_scale },
 															 { "isCrimeIgnore", isCrimeIgnore },
 															 { "merchantContIgnore", merchantContIgnore },
+															 { "show_item_window_track_icon_name", menu::show_item_window_track_icon_name },
+															 { "show_item_window_track_highlight", menu::show_item_window_track_highlight },
+															 { "colorTrackX", menu::colorTrack.x },
+															 { "colorTrackY", menu::colorTrack.y },
+															 { "colorTrackZ", menu::colorTrack.z },
+															 { "colorTrackW", menu::colorTrack.w },
+
 														 } },
 									   { "LotdInfo", {
 														 { "showlocationItemCount", lotd::showlocationItemCount },

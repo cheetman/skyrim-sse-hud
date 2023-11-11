@@ -542,3 +542,15 @@ void __cdecl RefreshActorInfo(void*)
 		}
 	}
 }
+
+
+RE::TESBoundObject* GetRootTemplate(RE::TESForm* baseForm)
+{
+	RE::TESNPC* npc = static_cast<RE::TESNPC*>(baseForm);
+	auto npcRoot = npc;
+	while (npcRoot->faceNPC && npcRoot->formID >= 0xFF000000) {
+		npcRoot = npcRoot->faceNPC;
+	}
+
+	return npcRoot;
+}

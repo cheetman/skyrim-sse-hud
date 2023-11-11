@@ -46,6 +46,7 @@ namespace lotd
 		int gold = 0;
 		float weight = 0;
 		RE::FormID baseFormId = 0;
+		RE::TESBoundObject* baseObjPtr = nullptr;
 		std::string formTypeStr = "";
 		std::string filename = "";
 

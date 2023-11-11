@@ -39,6 +39,7 @@ int show_items_window_auto_dis_skyrim = 100;
 int show_items_window_auto_dis_local = 160;
 int show_item_window_track_icon_scale = 1;
 
+
 Item2Info* items = new Item2Info[2];
 int nowItemIndex = 0;
 
@@ -61,8 +62,12 @@ std::vector<WeatherForm> weatherForms;
 RE::FormID currentWeather = 0;
 
 //std::vector<ItemInfo> tracks;
-std::unordered_set<RE::TESObjectREFR*> trackPtrs;
-std::unordered_set<RE::Actor*> trackActorPtrs;
+//std::unordered_set<RE::TESObjectREFR*> trackPtrs;
+//std::unordered_set<RE::Actor*> trackActorPtrs;
+
+std::unordered_map<RE::TESObjectREFR*, std::string> trackPtrs2;
+std::unordered_map<RE::Actor*, std::string> trackActorPtrs2;
+
 std::mutex mtxTrack;
 //bool excludeFormsInitFlag = true;
 

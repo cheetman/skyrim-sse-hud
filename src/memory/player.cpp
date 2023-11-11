@@ -29,6 +29,7 @@ PlayerInfo playerInfo;
 WeaponInfo leftWeaponInfo;
 WeaponInfo rightWeaponInfo;
 WeaponInfo ammoInfo;
+WeaponInfo powerInfo;
 ArmorInfo wornArmos[32];
 
 Effects2Info* effectsInfo = new Effects2Info[2];
@@ -369,6 +370,41 @@ void refreshPlayerInfo()
 			} else {
 				ammoInfo.isExist = false;
 			}
+
+			// 龙吼
+			auto power = player->selectedPower;
+			if (power) {
+				if (power->Is(RE::FormType::Spell)) {
+					auto item = power->As<RE::SpellItem>();
+					powerInfo.isExist = true;
+					powerInfo.name = item->GetName();
+					powerInfo.goldValue = item->GetGoldValue();
+					powerInfo.castingTypeName = GetCastingTypeName(item->GetCastingType());
+					powerInfo.spellTypeName = GetSpellTypeName(item->GetSpellType());
+					powerInfo.cost = item->CalculateMagickaCost(player);
+					powerInfo.time = item->GetChargeTime();
+					auto tmp = std::string(powerInfo.name);
+					tmp.append(" - ");
+					tmp.append(powerInfo.castingTypeName);
+					powerInfo.treeId = tmp;
+
+				} else if (power->Is(RE::FormType::Shout)) {
+					const auto item = power->As<RE::TESShout>();
+					powerInfo.isExist = true;
+					powerInfo.name = item->GetName();
+					powerInfo.formType = item->GetFormType();
+					powerInfo.formTypeName = GetFormTypeName(item->formType.underlying());
+					powerInfo.formID = FormIDToString(item->GetFormID());
+					auto tmp = std::string(powerInfo.name);
+					powerInfo.treeId = tmp;
+
+				} else {
+					powerInfo.isExist = false;
+				}
+
+			} else {
+				powerInfo.isExist = false;
+			}
 		}
 
 		// 金钱
@@ -487,7 +523,6 @@ void refreshPlayerInfo()
 							default:
 								break;
 							}
-
 
 							if (show_player_effects_ignore_spell) {
 								ss << effectSetting->GetFullName() << " ";

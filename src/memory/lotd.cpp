@@ -39,7 +39,7 @@ namespace lotd
 
 	bool isLoad = false;
 	bool isShow = false;
-	bool isShowAttached = false;
+	bool isShowAttached = true;
 	bool isInvIgnore = true;
 	bool isCrimeIgnore = false;
 	bool isArmoryIgnore = true;
@@ -1263,6 +1263,7 @@ namespace lotd
 														itemptr->ptr = nullptr;
 														itemptr->formId = 0x0;
 														//itemptr->name = obj->GetName();
+														itemptr->baseObjPtr = obj;
 														itemptr->baseFormId = obj->GetFormID();
 														itemptr->weight = obj->GetWeight();
 														itemptr->gold = obj->GetGoldValue();
