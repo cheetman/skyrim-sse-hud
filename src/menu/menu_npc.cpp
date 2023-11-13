@@ -374,7 +374,7 @@ namespace menu
 					ImGui::DragInt("##距离", &show_npc_window_dis_meter, 1, 10, 100, "%d米内");
 					ImGui::PopItemWidth();
 				}
-				ImGui::Checkbox("分割显示", &show_npc_window_split);
+				ImGui::Checkbox("拆分显示", &show_npc_window_split);
 				ImGui::Checkbox("显示FORMID", &show_npc_window_formid);
 				ImGui::Checkbox("显示方向和距离", &show_npc_window_direction);
 				ImGui::Checkbox("死亡不显示", &show_npc_window_dead_hidden);

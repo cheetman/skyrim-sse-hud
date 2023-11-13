@@ -17,6 +17,7 @@
 #include <setting/setting.h>
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
+#include <menu/menu_stat.h>
 
 namespace menu
 {
@@ -1621,7 +1622,7 @@ namespace menu
 					ImGui::Text(ICON_MDI_HEART_HALF_FULL " 生命:");
 					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 					char buf[32];
-					snprintf(buf, 32, "%d/%d", (int)playerInfo.kHealth, playerInfo.kHealth > playerInfo.kHealthBase ? (int)playerInfo.kHealth : (int)playerInfo.kHealthBase);
+					snprintf(buf, 32, "%d/%d", (int)playerInfo.kHealth,  (int)playerInfo.kHealthBase);
 					ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colorProgressHp);
 					ImGui::ProgressBar(progress, ImVec2(0.f, 0.f), buf);
 					ImGui::PopStyleColor();
@@ -1629,7 +1630,7 @@ namespace menu
 					ImGui::Text(ICON_MDI_RUN_FAST " 耐力:");
 					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 					char buf2[32];
-					snprintf(buf2, 32, "%d/%d", (int)playerInfo.kStamina, playerInfo.kStamina > playerInfo.kStaminaBase ? (int)playerInfo.kStamina : (int)playerInfo.kStaminaBase);
+					snprintf(buf2, 32, "%d/%d", (int)playerInfo.kStamina, (int)playerInfo.kStaminaBase);
 					ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colorProgressSp);
 					ImGui::ProgressBar(progress2, ImVec2(0.f, 0.f), buf2);
 					ImGui::PopStyleColor();
@@ -1637,7 +1638,7 @@ namespace menu
 					ImGui::Text(ICON_MDI_STAR_FOUR_POINTS_OUTLINE " 魔法:");
 					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 					char buf3[32];
-					snprintf(buf3, 32, "%d/%d", (int)playerInfo.kMagicka, playerInfo.kMagicka > playerInfo.kMagickaBase ? (int)playerInfo.kMagicka : (int)playerInfo.kMagickaBase);
+					snprintf(buf3, 32, "%d/%d", (int)playerInfo.kMagicka, (int)playerInfo.kMagickaBase);
 					ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colorProgressMp);
 					ImGui::ProgressBar(progress3, ImVec2(0.f, 0.f), buf3);
 					ImGui::PopStyleColor();
@@ -1905,10 +1906,9 @@ namespace menu
 			ImGui::Begin("其他信息", nullptr, window_flags);
 			ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " 位置: %s", playerInfo.location.c_str());
 			// z高度
-			ImGui::Text(ICON_MDI_AXIS_ARROW " 坐标: [%.1f,%.1f,%.1f]", playerInfo.Position.x / 100.0f, playerInfo.Position.y / 100.0f, playerInfo.Position.z / 100.0f);
-			//ImGui::SameLine(0, 0);
+			//ImGui::Text(ICON_MDI_AXIS_ARROW " 坐标: [%.1f,%.1f,%.1f]", playerInfo.Position.x / 100.0f, playerInfo.Position.y / 100.0f, playerInfo.Position.z / 100.0f);
 			// z 是0~2Π
-			ImGui::Text(ICON_MDI_ANGLE_ACUTE " 视角: [%.2f,%.2f]", playerInfo.Angle.x, playerInfo.Angle.z);
+			//ImGui::Text(ICON_MDI_ANGLE_ACUTE " 视角: [%.2f,%.2f]", playerInfo.Angle.x, playerInfo.Angle.z);
 			ImGui::End();
 		}
 
@@ -2107,23 +2107,7 @@ namespace menu
 			ImGui::End();
 		}
 
-		if (stats::show_playtime_window) {
-			ImGui::Begin("游玩时间", nullptr, window_flags);
-			ImGui::Text(ICON_MDI_CLOCK_OUTLINE " %02d:%02d:%02d", stats::playtime_hours, stats::playtime_minutes, stats::playtime_seconds);
-			ImGui::End();
-		}
-
-		if (stats::show_gametime_window) {
-			ImGui::Begin("游戏时间", nullptr, window_flags);
-			ImGui::Text(ICON_MDI_CLOCK_OUTLINE " %02d:%02d:%02d", stats::gametime_hours, stats::gametime_minutes, stats::gametime_seconds);
-			ImGui::End();
-		}
-
-		if (stats::show_computertime_window) {
-			ImGui::Begin("计算机时间", nullptr, window_flags);
-			ImGui::Text(ICON_MDI_CLOCK_OUTLINE " %s", stats::computertime);
-			ImGui::End();
-		}
+		renderStat(window_flags);
 
 		if (lotd::showlocationItemCount || stats::showlocationExCount) {
 			ImGui::Begin("附近艺术馆藏品数量", nullptr, window_flags);
@@ -2777,10 +2761,10 @@ namespace menu
 							}
 
 							ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-							ImGui::DragInt("显示范围(本地)", &show_items_window_auto_dis_local, 1, 10, 2000, "%d米");
-							ImGui::DragInt("显示范围(天际)", &show_items_window_auto_dis_skyrim, 1, 20, 10000, "%d米");
-							ImGui::DragInt("表格高度", &show_inv_window_height, 1, 7, 18, "%d行");
-							ImGui::DragInt("追踪标记放大", &show_item_window_track_icon_scale, 1, 0, 10, "+%d");
+							ImGui::SliderInt("显示范围(本地)", &show_items_window_auto_dis_local,  10, 2000, "%d米");
+							ImGui::SliderInt("显示范围(天际)", &show_items_window_auto_dis_skyrim,  20, 10000, "%d米");
+							ImGui::SliderInt("表格高度", &show_inv_window_height,  7, 18, "%d行");
+							ImGui::SliderInt("追踪标记放大", &show_item_window_track_icon_scale, 0, 10, "+%d");
 							ImGui::PopItemWidth();
 
 							ImGui::Checkbox("忽略项目", &show_items_window_ignore);
@@ -2834,9 +2818,9 @@ namespace menu
 							ImGui::Spacing();
 							if (ImGui::TreeNodeEx(ICON_MDI_AUTORENEW " 自动拾取", ImGuiTreeNodeFlags_DefaultOpen)) {
 								ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-								ImGui::DragInt("拾取范围", &show_items_window_auto_dis, 1, 1, 100, "%d米");
-								ImGui::DragInt("拾取频率", &refresh_time_auto, 1, 1, 10, "%d秒");
-								ImGui::DragInt("拾取数量", &show_items_window_auto_every_max, 1, 1, 10, "%d个");
+								ImGui::SliderInt("拾取范围", &show_items_window_auto_dis,  1, 100, "%d米");
+								ImGui::SliderInt("拾取频率", &refresh_time_auto,  1, 10, "%d秒");
+								ImGui::SliderInt("拾取数量", &show_items_window_auto_every_max,  1, 10, "%d个");
 								ImGui::PopItemWidth();
 								ImGui::Checkbox("拾取提示", &show_items_window_auto_notification);
 
@@ -2930,7 +2914,7 @@ namespace menu
 									ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
 									if (show_items_window_auto_weap_price) {
 										ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-										ImGui::DragInt("##设置价格", &show_items_window_auto_weap_price_value, 1, 100, 10000, " >%d");
+										ImGui::SliderInt("##设置价格", &show_items_window_auto_weap_price_value,  100, 10000, " 超过%d");
 									}
 									ImGui::PopItemWidth();
 
@@ -2938,7 +2922,7 @@ namespace menu
 									ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
 									if (show_items_window_auto_weap_priceweight) {
 										ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-										ImGui::DragInt("##设置价重比", &show_items_window_auto_weap_priceweight_value, 1, 2, 500, " >%d");
+										ImGui::SliderInt("##设置价重比", &show_items_window_auto_weap_priceweight_value,  2, 500, " 超过%dd");
 									}
 									ImGui::PopItemWidth();
 
@@ -2952,7 +2936,7 @@ namespace menu
 									ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
 									if (show_items_window_auto_armo_price) {
 										ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-										ImGui::DragInt("##设置价格2", &show_items_window_auto_armo_price_value, 1, 100, 10000, " >%d");
+										ImGui::SliderInt("##设置价格2", &show_items_window_auto_armo_price_value, 100, 10000, " 超过%dd");
 									}
 									ImGui::PopItemWidth();
 
@@ -2960,7 +2944,7 @@ namespace menu
 									ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
 									if (show_items_window_auto_armo_priceweight) {
 										ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-										ImGui::DragInt("##设置价重比2", &show_items_window_auto_armo_priceweight_value, 1, 2, 500, " >%d");
+										ImGui::SliderInt("##设置价重比2", &show_items_window_auto_armo_priceweight_value, 2, 500, " 超过%dd");
 									}
 									ImGui::PopItemWidth();
 
@@ -3097,7 +3081,7 @@ namespace menu
 				ImGui::ShowDemoWindow(&show_demo_window);
 
 			{
-				ImGui::Begin("ItemFinderPlus v0.7.8##0", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+				ImGui::Begin("ItemFinderPlus v0.7.10##0", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
 				static int selected = 0;
 
@@ -3176,7 +3160,11 @@ namespace menu
 						ImGui::Text("缩放:");
 						ImGui::SameLine();
 						ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-						ImGui::DragFloat("##UI缩放", &ImGui::GetIO().FontGlobalScale, 0.005f, 0.5f, 1.8f, "%.2f", 1);
+						ImGui::DragFloat("##UI缩放", &ImGui::GetIO().FontGlobalScale, 0.005f, 0.5f, 1.8f, "%.2f", ImGuiSliderFlags_NoInput);
+						/*auto tmpFontGlobalScale = ImGui::GetIO().FontGlobalScale;
+						if (ImGui::SliderFloat("##UI缩放", &tmpFontGlobalScale, 0.5f, 1.8f, "%.2f")) {
+							ImGui::GetIO().FontGlobalScale = tmpFontGlobalScale;
+						}*/
 						ImGui::PopItemWidth();
 
 						ImGui::SameLine();
@@ -3264,7 +3252,7 @@ namespace menu
 									ImGui::Text("%s", setting::getLotdItemListModName(pair.first).c_str());
 									ImGui::TableNextColumn();
 
-									if (pair.second.size() == 0) {
+									if (pair.second.size() == 0 && lotd::loadCountsM[pair.first] == 0) {
 										myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "未安装");
 									} else {
 										myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%d个", pair.second.size());
@@ -3430,21 +3418,9 @@ namespace menu
 							renderNpcSettings();
 							ImGui::TableNextColumn();
 
-							ImGui::Checkbox("显示其他信息", &show_player_debug_window);
+							ImGui::Checkbox("显示位置信息", &show_player_debug_window);
 							ImGui::TableNextColumn();
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("显示金钱", &show_player_gold_window);
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("显示游玩时间", &stats::show_playtime_window);
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("显示负重", &show_player_carryweight_window);
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("显示游戏时间", &stats::show_gametime_window);
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("显示经验", &show_player_xp_window);
-							ImGui::TableNextColumn();
-							ImGui::Checkbox("显示计算机时间", &stats::show_computertime_window);
-
+							renderStatSettings();
 							/*ImGui::TableNextColumn();
 								ImGui::Checkbox("物品栏信息", &show_inv_window);
 								if (show_inv_window) {

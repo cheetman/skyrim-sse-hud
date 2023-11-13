@@ -15,6 +15,7 @@ namespace lotd
 	std::map<std::string, std::vector<Form>> listsR;
 	std::map<std::string, std::unordered_set<RE::FormID>> formIdsR;
 	std::map<std::string, std::unordered_set<RE::FormID>> formIdsM;
+	std::map<std::string, int> loadCountsM;
 	std::unordered_set<RE::FormID> formIds;
 
 	std::map<std::string, std::string> roomNames;
@@ -167,8 +168,11 @@ namespace lotd
 				std::unordered_set<RE::FormID> formids;
 				formIdsM.insert({ listItem.modName, formids });
 			}
+			if (loadCountsM.find(listItem.modName) == loadCountsM.end()) {
+				loadCountsM[listItem.modName] == 0;
+			}
 
-			// 换成用id获取
+
 			auto fileLotd2 = handler->LookupModByName(listItem.modName);
 			if (fileLotd2 && fileLotd2->compileIndex != 0xFF) {
 				auto lotdCompileIndex2 = fileLotd2->compileIndex;
@@ -181,6 +185,7 @@ namespace lotd
 				//RE::BGSListForm* listform2 = RE::TESForm::LookupByEditorID<RE::BGSListForm>(listItem.listEditorId);
 				
 				if (listform) {
+					loadCountsM[listItem.modName]++;
 					for (auto form : listform->forms) {
 						if (form->Is(RE::FormType::Activator)) {
 							list.sizeACTI++;

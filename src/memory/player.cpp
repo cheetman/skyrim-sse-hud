@@ -115,13 +115,13 @@ void refreshPlayerInfo()
 			playerInfo.kStaminaBase = player->GetPermanentActorValue(RE::ActorValue::kStamina);
 			playerInfo.kMagickaBase = player->GetPermanentActorValue(RE::ActorValue::kMagicka);
 
-			playerInfo.kHealthBase = player->GetBaseActorValue(RE::ActorValue::kHealth);
-			playerInfo.kStaminaBase = player->GetBaseActorValue(RE::ActorValue::kStamina);
-			playerInfo.kMagickaBase = player->GetBaseActorValue(RE::ActorValue::kMagicka);
+			//playerInfo.kHealthBase = player->GetBaseActorValue(RE::ActorValue::kHealth);
+			//playerInfo.kStaminaBase = player->GetBaseActorValue(RE::ActorValue::kStamina);
+			//playerInfo.kMagickaBase = player->GetBaseActorValue(RE::ActorValue::kMagicka);
 
-			playerInfo.kHealthBase = player->GetClampedActorValue(RE::ActorValue::kHealth);
-			playerInfo.kStaminaBase = player->GetClampedActorValue(RE::ActorValue::kStamina);
-			playerInfo.kMagickaBase = player->GetClampedActorValue(RE::ActorValue::kMagicka);
+			//playerInfo.kHealthBase = player->GetClampedActorValue(RE::ActorValue::kHealth);
+			//playerInfo.kStaminaBase = player->GetClampedActorValue(RE::ActorValue::kStamina);
+			//playerInfo.kMagickaBase = player->GetClampedActorValue(RE::ActorValue::kMagicka);
 
 			// 生命恢复速率
 			//auto kHealRate = player->GetActorValue(RE::ActorValue::kHealRate);

@@ -40,6 +40,8 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/menu/shuffle.cpp"
 	"${SOURCE_DIR}/menu/menu_npc.h"
 	"${SOURCE_DIR}/menu/menu_npc.cpp"
+	"${SOURCE_DIR}/menu/menu_stat.h"
+	"${SOURCE_DIR}/menu/menu_stat.cpp"
 	"${SOURCE_DIR}/utils/NameUtil.h"
 	"${SOURCE_DIR}/utils/NameUtil.cpp"
 	"${SOURCE_DIR}/utils/PlayerDataProvider.h"

@@ -98,6 +98,8 @@ namespace lotd
 	extern std::unordered_set<RE::FormID> formIds;
 	// 集合 按照mod区分
 	extern std::map<std::string, std::unordered_set<RE::FormID>> formIdsM;
+	extern std::map<std::string, int> loadCountsM;
+
 	// 多语言
 	extern std::map<std::string, std::string> roomNames;
 
@@ -116,7 +118,7 @@ namespace lotd
 	std::vector<LotdInfo>& getItems(std::string roomName);
 	int getCount(std::string roomName);
 
-		void refreshItemInfoAttached();
+	void refreshItemInfoAttached();
 	std::vector<LotdInfo>& getItemsAttached();
 	int getCountAttached();
 
