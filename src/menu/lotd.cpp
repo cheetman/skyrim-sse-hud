@@ -6,6 +6,7 @@
 #include <memory/memory.h>
 #include <utils/utils.h>
 #include <menu/menu.h>
+#include <menu/menu_track.h>
 
 namespace lotd
 {
@@ -194,13 +195,7 @@ namespace lotd
 						}
 						if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
 							trackPtrs2.insert(std::make_pair(ptr, item.name));
-							if (menu::show_item_window_track_highlight) {
-								auto obj3D = ptr->Get3D();
-								if (obj3D) {
-									RE::NiColorA color{ menu::colorTrack.x, menu::colorTrack.y, menu::colorTrack.z, menu::colorTrack.w };
-									obj3D->TintScenegraph(color);
-								}
-							}
+							menu::tintTrack(ptr);
 						}
 					}
 
@@ -390,13 +385,7 @@ namespace lotd
 						}
 						if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
 							trackPtrs2.insert(std::make_pair(ptr, item.name));
-							if (menu::show_item_window_track_highlight) {
-								auto obj3D = ptr->Get3D();
-								if (obj3D) {
-									RE::NiColorA color{ menu::colorTrack.x, menu::colorTrack.y, menu::colorTrack.z, menu::colorTrack.w };
-									obj3D->TintScenegraph(color);
-								}
-							}
+							menu::tintTrack(ptr);
 						}
 					}
 
@@ -419,13 +408,7 @@ namespace lotd
 			}
 			if (trackPtrs2.find(ptr) == trackPtrs2.end()) {
 				trackPtrs2.insert(std::make_pair(ptr, item.name));
-				if (menu::show_item_window_track_highlight) {
-					auto obj3D = ptr->Get3D();
-					if (obj3D) {
-						RE::NiColorA color{ menu::colorTrack.x, menu::colorTrack.y, menu::colorTrack.z, menu::colorTrack.w };
-						obj3D->TintScenegraph(color);
-					}
-				}
+				menu::tintTrack(ptr);
 			}
 		}
 	}

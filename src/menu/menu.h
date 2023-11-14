@@ -40,7 +40,6 @@ namespace menu
 	extern ImVec4 colorProgressMp;
 	extern ImVec4 colorProgressSp;
 
-	extern ImVec4 colorTrack;
 
 	static const std::unordered_map<int, std::string> hotkey_items = {
 		{ 0, "Insert" },
@@ -62,6 +61,4 @@ namespace menu
 		va_end(args);
 	}
 
-	extern bool show_item_window_track_icon_name;
-	extern bool show_item_window_track_highlight;
 }

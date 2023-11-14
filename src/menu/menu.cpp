@@ -12,34 +12,17 @@
 #include <menu/lotd.h>
 #include <menu/menu.h>
 #include <menu/menu_npc.h>
+#include <menu/menu_stat.h>
+#include <menu/menu_track.h>
 #include <menu/theme.h>
 #include <nlohmann/json.hpp>
 #include <setting/setting.h>
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
-#include <menu/menu_stat.h>
 
 namespace menu
 {
 	std::map<int, std::vector<EquipmentItem>> equipments;
-
-	int trackX1 = 0;
-	int trackY1 = 0;
-	int trackX2 = 0;
-	int trackY2 = 0;
-
-	RE::NiPointer<RE::NiCamera> getCamera()
-	{
-		RE::PlayerCamera* camera = RE::PlayerCamera::GetSingleton();
-		if (camera->cameraRoot->children.size() == 0)
-			return nullptr;
-		for (auto& entry : camera->cameraRoot->children) {
-			auto asCamera = skyrim_cast<RE::NiCamera*>(entry.get());
-			if (asCamera)
-				return RE::NiPointer<RE::NiCamera>(asCamera);
-		}
-		return nullptr;
-	};
 
 	bool auto_remove_ammo = false;
 	bool remember_last_ammo = false;
@@ -69,8 +52,6 @@ namespace menu
 	float frameRounding = 0.0f;
 	float windowRounding = 0.0f;
 
-	bool show_item_window_track_icon_name = false;
-	bool show_item_window_track_highlight = false;
 	//static int refresh_time_show = 1000;
 
 	//static bool show_npc_window_dis = false;
@@ -99,8 +80,6 @@ namespace menu
 	ImVec4 colorProgressHp(1.0f, 0.5f, 0.0f, 1.0f);
 	ImVec4 colorProgressMp(1.0f, 0.5f, 0.0f, 1.0f);
 	ImVec4 colorProgressSp(1.0f, 0.5f, 0.0f, 1.0f);
-
-	ImVec4 colorTrack(0.0f, 1.0f, 0.1f, 0.646f);
 
 	const char* actorValues[] = {
 		"负重 [kCarryWeight]",
@@ -486,13 +465,7 @@ namespace menu
 					}
 					if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
 						trackPtrs2.insert(std::make_pair(item.ptr, item.name));
-						if (show_item_window_track_highlight) {
-							auto obj3D = item.ptr->Get3D();
-							if (obj3D) {
-								RE::NiColorA color{ colorTrack.x, colorTrack.y, colorTrack.z, colorTrack.w };
-								obj3D->TintScenegraph(color);
-							}
-						}
+						tintTrack(item.ptr);
 					}
 				}
 
@@ -689,13 +662,7 @@ namespace menu
 					}
 					if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
 						trackPtrs2.insert(std::make_pair(item.ptr, item.name));
-						if (show_item_window_track_highlight) {
-							auto obj3D = item.ptr->Get3D();
-							if (obj3D) {
-								RE::NiColorA color{ colorTrack.x, colorTrack.y, colorTrack.z, colorTrack.w };
-								obj3D->TintScenegraph(color);
-							}
-						}
+						tintTrack(item.ptr);
 					}
 				}
 
@@ -870,13 +837,7 @@ namespace menu
 						}
 						if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
 							trackPtrs2.insert(std::make_pair(item.ptr, item.name));
-							if (show_item_window_track_highlight) {
-								auto obj3D = item.ptr->Get3D();
-								if (obj3D) {
-									RE::NiColorA color{ colorTrack.x, colorTrack.y, colorTrack.z, colorTrack.w };
-									obj3D->TintScenegraph(color);
-								}
-							}
+							tintTrack(item.ptr);
 						}
 					}
 
@@ -957,7 +918,7 @@ namespace menu
 					} else {
 						if (ImGui::Selectable(item.isEnchanted ? (item.name + ICON_MDI_FLASH).c_str() : item.name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick)) {
 							if (item.ptr) {
-								std::uint32_t formFlags = item.ptr->formFlags;
+								/*std::uint32_t formFlags = item.ptr->formFlags;
 
 								auto acti = item.ptr->GetBaseObject()->As<RE::TESObjectACTI>();
 								if (acti) {
@@ -979,7 +940,7 @@ namespace menu
 										int i = 1;
 									}
 									int i = 1;
-								}
+								}*/
 
 								char buf[120];
 								snprintf(buf, 120, "%X.Activate player", item.formId);
@@ -1059,13 +1020,7 @@ namespace menu
 							}
 							if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
 								trackPtrs2.insert(std::make_pair(item.ptr, item.name));
-								if (show_item_window_track_highlight) {
-									auto obj3D = item.ptr->Get3D();
-									if (obj3D) {
-										RE::NiColorA color{ colorTrack.x, colorTrack.y, colorTrack.z, colorTrack.w };
-										obj3D->TintScenegraph(color);
-									}
-								}
+								tintTrack(item.ptr);
 							}
 						}
 					}
@@ -1351,13 +1306,7 @@ namespace menu
 						}
 						if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
 							trackPtrs2.insert(std::make_pair(item.ptr, item.name));
-							if (show_item_window_track_highlight) {
-								auto obj3D = item.ptr->Get3D();
-								if (obj3D) {
-									RE::NiColorA color{ colorTrack.x, colorTrack.y, colorTrack.z, colorTrack.w };
-									obj3D->TintScenegraph(color);
-								}
-							}
+							tintTrack(item.ptr);
 						}
 					}
 
@@ -1471,107 +1420,9 @@ namespace menu
 		style.WindowBorderSize = window_border ? 1.0f : 0.0f;
 		style.FrameBorderSize = frame_border ? 1.0f : 0.0f;
 
-		{
-			// 追踪
-			std::lock_guard<std::mutex> lock(mtxTrack);
-			if (trackPtrs2.size() > 0 || trackActorPtrs2.size() > 0) {
-				if (!(isOpenCursorMenu || isMainMenu || isLoadWaitSpinner || isFaderMenu)) {
-					RE::NiPointer<RE::NiCamera> camera = getCamera();
-					RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
-					if (camera) {
-						RE::NiCamera* ca = camera.get();
-						if (ca) {
-							for (const auto& item : trackPtrs2) {
-								auto ptr = item.first;
-								float x1;
-								float y1;
-								float z1;
-								if (ptr->IsDeleted() || ptr->IsDestroyed() || ptr->IsIgnored() || !ptr->Is3DLoaded()) {
-									trackPtrs2.erase(ptr);
-									break;
-								}
-								auto p = ptr->GetPosition();
-								bool result = ca->WorldPtToScreenPt3(ca->worldToCam, ca->port, p, x1, y1, z1, 1e-5f);
-								if (!result) {
-									trackPtrs2.erase(ptr);
-									break;
-								}
-								if (x1 > 0 && y1 > 0 && z1 > 0) {
-									trackX1 = x1 * screenWidth;
-									trackY1 = screenHeight - y1 * screenHeight;
-									if (trackX1 > 0 && trackX1 < screenWidth && trackY1 > 0 && trackY1 < screenHeight) {
-										auto distance = ValueUtil::calculateDistance(ptr->GetPosition(), player->GetPosition()) / 100.0f;
-										if (distance > show_items_window_auto_dis_local && distance > show_items_window_auto_dis_skyrim) {
-											trackPtrs2.erase(ptr);
-											break;
-										}
+		// 追踪
+		renderTrack();
 
-										ImGui::SetNextWindowPos(ImVec2(trackX1 - 40, trackY1));
-
-										char buf[32];
-										snprintf(buf, 32, "%p", ptr);
-										ImGui::Begin(buf, nullptr,
-											ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize);
-
-										ImGui::SetWindowFontScale(menu::font_scale + (float)show_item_window_track_icon_scale);
-										if (show_item_window_track_icon_name) {
-											ImGui::Text("%s", item.second.c_str());
-										}
-										ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %0.1fm", distance);
-										ImGui::SetWindowFontScale(menu::font_scale);
-
-										ImGui::End();
-									}
-								}
-							}
-							for (const auto& item : trackActorPtrs2) {
-								auto ptr = item.first;
-								float x1;
-								float y1;
-								float z1;
-								if (ptr->IsDeleted() || ptr->IsIgnored() || !ptr->Is3DLoaded()) {
-									trackActorPtrs2.erase(ptr);
-									break;
-								}
-								auto p = ptr->GetPosition();
-								bool result = ca->WorldPtToScreenPt3(ca->worldToCam, ca->port, p, x1, y1, z1, 1e-5f);
-								if (!result) {
-									trackActorPtrs2.erase(ptr);
-									break;
-								}
-								if (x1 > 0 && y1 > 0 && z1 > 0) {
-									trackX1 = x1 * screenWidth;
-									trackY1 = screenHeight - y1 * screenHeight;
-									if (trackX1 > 0 && trackX1 < screenWidth && trackY1 > 0 && trackY1 < screenHeight) {
-										auto distance = ValueUtil::calculateDistance(ptr->GetPosition(), player->GetPosition()) / 100.0f;
-										if (distance > show_items_window_auto_dis_local && distance > show_items_window_auto_dis_skyrim) {
-											trackActorPtrs2.erase(ptr);
-											break;
-										}
-
-										ImGui::SetNextWindowPos(ImVec2(trackX1 - 40, trackY1));
-
-										char buf[32];
-										snprintf(buf, 32, "%p", ptr);
-										ImGui::Begin(buf, nullptr,
-											ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar);
-
-										ImGui::SetWindowFontScale(menu::font_scale + (float)show_item_window_track_icon_scale);
-										if (show_item_window_track_icon_name) {
-											ImGui::Text("%s", item.second.c_str());
-										}
-										ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %0.1fm", distance);
-										ImGui::SetWindowFontScale(menu::font_scale);
-
-										ImGui::End();
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
 		if (show_player_base_info_window) {
 			if (show_player_base_info_window_sep) {
 				progress = playerInfo.kHealth / (playerInfo.kHealthBase == 0 ? 1 : playerInfo.kHealthBase);
@@ -1622,7 +1473,7 @@ namespace menu
 					ImGui::Text(ICON_MDI_HEART_HALF_FULL " 生命:");
 					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 					char buf[32];
-					snprintf(buf, 32, "%d/%d", (int)playerInfo.kHealth,  (int)playerInfo.kHealthBase);
+					snprintf(buf, 32, "%d/%d", (int)playerInfo.kHealth, (int)playerInfo.kHealthBase);
 					ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colorProgressHp);
 					ImGui::ProgressBar(progress, ImVec2(0.f, 0.f), buf);
 					ImGui::PopStyleColor();
@@ -2234,13 +2085,7 @@ namespace menu
 					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 					if (ImGui::SmallButton("删除标记")) {
 						for (auto& item : trackPtrs2) {
-							if (show_item_window_track_highlight) {
-								auto obj3D = item.first->Get3D();
-								if (obj3D) {
-									RE::NiColorA color{ 0, 0, 0, 0 };
-									obj3D->TintScenegraph(color);
-								}
-							}
+							tintTrackClose(item.first);
 						}
 						trackPtrs2.clear();
 						trackActorPtrs2.clear();
@@ -2754,16 +2599,16 @@ namespace menu
 								ImGui::Checkbox("标记显示名称", &show_item_window_track_icon_name);
 								ImGui::TableNextColumn();
 								ImGui::Checkbox("标记高亮", &show_item_window_track_highlight);
-								if (show_item_window_track_highlight) {
+								/*if (show_item_window_track_highlight) {
 									ImGui::ColorEdit4("颜色", &colorTrack.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
-								}
+								}*/
 								ImGui::EndTable();
 							}
 
 							ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-							ImGui::SliderInt("显示范围(本地)", &show_items_window_auto_dis_local,  10, 2000, "%d米");
-							ImGui::SliderInt("显示范围(天际)", &show_items_window_auto_dis_skyrim,  20, 10000, "%d米");
-							ImGui::SliderInt("表格高度", &show_inv_window_height,  7, 18, "%d行");
+							ImGui::SliderInt("显示范围(本地)", &show_items_window_auto_dis_local, 10, 2000, "%d米");
+							ImGui::SliderInt("显示范围(天际)", &show_items_window_auto_dis_skyrim, 20, 10000, "%d米");
+							ImGui::SliderInt("表格高度", &show_inv_window_height, 7, 18, "%d行");
 							ImGui::SliderInt("追踪标记放大", &show_item_window_track_icon_scale, 0, 10, "+%d");
 							ImGui::PopItemWidth();
 
@@ -2818,9 +2663,9 @@ namespace menu
 							ImGui::Spacing();
 							if (ImGui::TreeNodeEx(ICON_MDI_AUTORENEW " 自动拾取", ImGuiTreeNodeFlags_DefaultOpen)) {
 								ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-								ImGui::SliderInt("拾取范围", &show_items_window_auto_dis,  1, 100, "%d米");
-								ImGui::SliderInt("拾取频率", &refresh_time_auto,  1, 10, "%d秒");
-								ImGui::SliderInt("拾取数量", &show_items_window_auto_every_max,  1, 10, "%d个");
+								ImGui::SliderInt("拾取范围", &show_items_window_auto_dis, 1, 100, "%d米");
+								ImGui::SliderInt("拾取频率", &refresh_time_auto, 1, 10, "%d秒");
+								ImGui::SliderInt("拾取数量", &show_items_window_auto_every_max, 1, 10, "%d个");
 								ImGui::PopItemWidth();
 								ImGui::Checkbox("拾取提示", &show_items_window_auto_notification);
 
@@ -2914,7 +2759,7 @@ namespace menu
 									ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
 									if (show_items_window_auto_weap_price) {
 										ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-										ImGui::SliderInt("##设置价格", &show_items_window_auto_weap_price_value,  100, 10000, " 超过%d");
+										ImGui::SliderInt("##设置价格", &show_items_window_auto_weap_price_value, 100, 10000, " 超过%d");
 									}
 									ImGui::PopItemWidth();
 
@@ -2922,7 +2767,7 @@ namespace menu
 									ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
 									if (show_items_window_auto_weap_priceweight) {
 										ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-										ImGui::SliderInt("##设置价重比", &show_items_window_auto_weap_priceweight_value,  2, 500, " 超过%dd");
+										ImGui::SliderInt("##设置价重比", &show_items_window_auto_weap_priceweight_value, 2, 500, " 超过%dd");
 									}
 									ImGui::PopItemWidth();
 
@@ -3220,7 +3065,6 @@ namespace menu
 								ImGui::OpenPopup("PopupHotkey2");
 							}
 
-							//ImGui::Combo("窗口热键", &hotkey2, "Insert\0F11\0F12\0Shift+Q\0Alt+Q\0", -1);
 							ImGui::TreePop();
 						}
 
@@ -3230,8 +3074,46 @@ namespace menu
 
 #ifndef NDEBUG
 
-						/*	if (ImGui::Button(" 测试", ImVec2(0, 0))) {
-						}*/
+						
+						static char buf1[32] = "0x0092DE7";
+						ImGui::InputText("default", buf1, 32);
+
+						static char buf2[32] = "0xFF000E09";
+						ImGui::InputText("default2", buf2, 32);
+
+						static int iii = 0;
+						ImGui::InputInt("索引测试", &iii, 1);
+
+						static float fff = 0;
+						ImGui::SliderFloat("时间", &fff, 0.0f, 10000.0f, "%.0f");
+
+						
+						static int shadername = 0;
+						ImGui::Text("%08X", shadername);
+
+						if (ImGui::Button(" 测试", ImVec2(0, 0))) {
+							//const auto handler = RE::TESDataHandler::GetSingleton();
+							//auto shaders = handler->GetFormArray<RE::TESEffectShader>();
+							std::string formidstr = buf1;
+							std::string formidstr2 = buf2;
+							//RE::TESEffectShader* shader = shaders[iii];
+
+							//RE::TESEffectShader cloneShader;
+							//cloneShader.Copy(shader);
+
+							//shader->Copy()
+							RE::TESEffectShader* shader = RE::TESForm::LookupByID<RE::TESEffectShader>(std::stoi(formidstr, 0, 16));
+							if (shader) {
+								RE::TESObjectREFR* reff = RE::TESForm::LookupByID<RE::TESObjectREFR>(std::stoul(formidstr2, 0, 16));
+								if (reff) {
+									auto ambientSound = shader->data.ambientSound;
+									shader->data.ambientSound = nullptr;
+									shadername = shader->GetFormID();
+									ScriptUtil::EffectShaderPlay(nullptr, 0, shader, reff, fff);
+									shader->data.ambientSound = ambientSound;
+								}
+							}
+						}
 #endif
 					}
 

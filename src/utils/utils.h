@@ -1,10 +1,10 @@
 #pragma once
 #include <PCH.h>
 #include <iostream>
+#include <memory\memory.h>
 #include <stdlib.h>
 #include <string>
 #include <windows.h>
-#include <memory\memory.h>
 
 namespace StringUtil
 {
@@ -244,6 +244,20 @@ namespace QuestUtil
 
 namespace ScriptUtil
 {
+	inline void EffectShaderPlay(RE::BSScript::IVirtualMachine* vm, RE::VMStackID stackID, RE::TESEffectShader* shader, RE::TESObjectREFR* object, float duration)
+	{
+		using func_t = decltype(EffectShaderPlay);
+		REL::Relocation<func_t> func{ REL::ID(55186) };
+		func(vm, stackID, shader, object, duration);
+	}
+
+	inline void EffectShaderStop(RE::BSScript::IVirtualMachine* vm, RE::VMStackID stackID, RE::TESEffectShader* shader, RE::TESObjectREFR* object)
+	{
+		using func_t = decltype(EffectShaderStop);
+		REL::Relocation<func_t> func{ REL::ID(55187) };
+		func(vm, stackID, shader, object);
+	}
+
 	inline void AddItem(RE::BSScript::IVirtualMachine* vm, RE::VMStackID stackID, RE::TESObjectREFR* object, RE::TESForm* akItemToAdd, int aiCount, bool abSilent)
 	{
 		using func_t = decltype(AddItem);

@@ -11,6 +11,7 @@
 #include <menu/menu_npc.h>
 #include <menu/theme.h>
 #include <nlohmann/json.hpp>
+#include <menu/menu_track.h>
 
 namespace setting
 {
