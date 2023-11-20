@@ -7,6 +7,7 @@ namespace menu
 	extern bool remember_last_ammo;
 	extern int hotkey;
 	extern int hotkey2;
+	extern int hotkey3;
 	extern float font_scale;
 	void __fastcall render();
 

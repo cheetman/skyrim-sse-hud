@@ -9,9 +9,9 @@
 #include <memory/stat.h>
 #include <menu/menu.h>
 #include <menu/menu_npc.h>
+#include <menu/menu_track.h>
 #include <menu/theme.h>
 #include <nlohmann/json.hpp>
-#include <menu/menu_track.h>
 
 namespace setting
 {
@@ -287,6 +287,9 @@ namespace setting
 					if (j2.contains("show_npc_window_process_combat")) {
 						show_npc_window_process_combat = j2["show_npc_window_process_combat"].get<bool>();
 					}
+					if (j2.contains("show_npc_window_dis_meter")) {
+						show_npc_window_dis_meter = j2["show_npc_window_dis_meter"].get<int>();
+					}
 
 					if (j2.contains("colorProgressNpc1X")) {
 						colorProgressNpc1.x = j2["colorProgressNpc1X"].get<float>();
@@ -301,6 +304,9 @@ namespace setting
 						colorProgressNpc3.y = j2["colorProgressNpc3Y"].get<float>();
 						colorProgressNpc3.z = j2["colorProgressNpc3Z"].get<float>();
 						colorProgressNpc3.w = j2["colorProgressNpc3W"].get<float>();
+					}
+					if (j2.contains("show_npc_window_split")) {
+						menu::show_npc_window_split = j2["show_npc_window_split"].get<bool>();
 					}
 				}
 				if (j.contains("ItemMenuInfo")) {
@@ -425,6 +431,10 @@ namespace setting
 
 					if (j2.contains("show_items_window_auto_cont")) {
 						show_items_window_auto_cont = j2["show_items_window_auto_cont"].get<bool>();
+					}
+
+					if (j2.contains("show_items_window_auto_cont_ingr")) {
+						show_items_window_auto_cont_ingr = j2["show_items_window_auto_cont_ingr"].get<bool>();
 					}
 
 					if (j2.contains("show_items_window_auto_cont_food")) {
@@ -570,6 +580,17 @@ namespace setting
 					if (j2.contains("showlocationItemCount")) {
 						lotd::showlocationItemCount = j2["showlocationItemCount"].get<bool>();
 					}
+					if (j2.contains("isAutoTrackLotdItems")) {
+						lotd::isAutoTrackLotdItems = j2["isAutoTrackLotdItems"].get<bool>();
+					}
+					if (j2.contains("isAutoTrackLotdItemsCrimeIgnore")) {
+						lotd::isAutoTrackLotdItemsCrimeIgnore = j2["isAutoTrackLotdItemsCrimeIgnore"].get<bool>();
+					}
+					
+					if (j2.contains("showDisplayItemCount")) {
+						lotd::showDisplayItemCount = j2["showDisplayItemCount"].get<bool>();
+					}
+
 				}
 
 				if (j.contains("StatInfo")) {
@@ -835,6 +856,8 @@ namespace setting
 														{ "colorProgressNpc3Y", colorProgressNpc3.y },
 														{ "colorProgressNpc3Z", colorProgressNpc3.z },
 														{ "colorProgressNpc3W", colorProgressNpc3.w },
+														{ "show_npc_window_split", menu::show_npc_window_split },
+														{ "show_npc_window_dis_meter", show_npc_window_dis_meter },
 
 													} },
 									   { "ItemMenuInfo", {
@@ -928,6 +951,10 @@ namespace setting
 														 { "isCrimeIgnore", lotd::isCrimeIgnore },
 														 { "isInvIgnore", lotd::isInvIgnore },
 														 { "isShowAttached", lotd::isShowAttached },
+														 { "isAutoTrackLotdItems", lotd::isAutoTrackLotdItems },
+														 { "isAutoTrackLotdItemsCrimeIgnore", lotd::isAutoTrackLotdItemsCrimeIgnore },
+														 { "showDisplayItemCount", lotd::showDisplayItemCount },
+
 													 } },
 									   { "StatInfo", {
 														 { "show_gametime_window", stats::show_gametime_window },

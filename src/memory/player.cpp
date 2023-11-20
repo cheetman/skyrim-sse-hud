@@ -111,9 +111,13 @@ void refreshPlayerInfo()
 			playerInfo.kMagicka = player->GetActorValue(RE::ActorValue::kMagicka);
 			playerInfo.kStamina = player->GetActorValue(RE::ActorValue::kStamina);
 
-			playerInfo.kHealthBase = player->GetPermanentActorValue(RE::ActorValue::kHealth);
-			playerInfo.kStaminaBase = player->GetPermanentActorValue(RE::ActorValue::kStamina);
-			playerInfo.kMagickaBase = player->GetPermanentActorValue(RE::ActorValue::kMagicka);
+			playerInfo.kHealthBase = player->GetPermanentActorValue(RE::ActorValue::kHealth) + player->healthModifiers.modifiers[1];
+			playerInfo.kStaminaBase = player->GetPermanentActorValue(RE::ActorValue::kStamina) + player->staminaModifiers.modifiers[1];
+			playerInfo.kMagickaBase = player->GetPermanentActorValue(RE::ActorValue::kMagicka) + player->magickaModifiers.modifiers[1];
+
+			//player->healthModifiers.modifiers;
+			//(*player)->actorValueOwner.GetMaximum(24);
+
 
 			//playerInfo.kHealthBase = player->GetBaseActorValue(RE::ActorValue::kHealth);
 			//playerInfo.kStaminaBase = player->GetBaseActorValue(RE::ActorValue::kStamina);

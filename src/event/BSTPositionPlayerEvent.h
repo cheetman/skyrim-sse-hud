@@ -2,6 +2,7 @@
 #include <memory/memory.h>
 #include <menu/menu.h>
 #include <menu/menu_track.h>
+#include <memory/lotd.h>
 
 
 class BSTPositionPlayerEvent : public RE::BSTEventSink<RE::PositionPlayerEvent>
@@ -19,19 +20,34 @@ public:
 			for (auto& item : trackPtrs2) {
 				menu::tintTrackClose(item.first);
 			}
+
+			if (trackPtrs2.size() > 0) {
+				trackPtrs2.clear();
+			}
+			if (trackActorPtrs2.size() > 0) {
+				trackActorPtrs2.clear();
+			}
 		}
 		else if (a_event->type == RE::PositionPlayerEvent::EVENT_TYPE::kPost) {
 			{
-				std::lock_guard<std::mutex> lock(mtxTrack);
+			/*	std::lock_guard<std::mutex> lock(mtxTrack);
 				if (trackPtrs2.size() > 0) {
 					trackPtrs2.clear();
 				}
 				if (trackActorPtrs2.size() > 0) {
 					trackActorPtrs2.clear();
-				}
+				}*/
 			}
 
 			clearItemInfoCache();
+		} else if (a_event->type == RE::PositionPlayerEvent::EVENT_TYPE::kFinish) {
+			{
+				if (lotd::isAutoTrackLotdItems) {
+					lotd::isAutoTrackLotdItemsFlag = true;
+				}
+			}
+
+
 		}
 		return RE::BSEventNotifyControl::kContinue;
 	}

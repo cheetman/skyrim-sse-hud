@@ -381,7 +381,7 @@ void __cdecl RefreshActorInfo(void*)
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].ptr = actor;
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].level = actor->GetLevel();
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].name = actor->GetDisplayFullName();
-						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth);
+						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth) + actor->healthModifiers.modifiers[1];
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
 						actorInfo[nowIndex].teammateInfo[tmpTeammateCount].isSentient = IsSentient2(actor);
 
@@ -431,7 +431,7 @@ void __cdecl RefreshActorInfo(void*)
 						actorInfo[nowIndex].enemyInfo[tmpEnemyCount].ptr = actor;
 						actorInfo[nowIndex].enemyInfo[tmpEnemyCount].level = actor->GetLevel();
 						actorInfo[nowIndex].enemyInfo[tmpEnemyCount].name = actor->GetDisplayFullName();
-						actorInfo[nowIndex].enemyInfo[tmpEnemyCount].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth);
+						actorInfo[nowIndex].enemyInfo[tmpEnemyCount].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth) + actor->healthModifiers.modifiers[1];
 						actorInfo[nowIndex].enemyInfo[tmpEnemyCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
 						actorInfo[nowIndex].enemyInfo[tmpEnemyCount].isSentient = IsSentient2(actor);
 						actorInfo[nowIndex].enemyInfo[tmpEnemyCount].lifeState = actor->GetLifeState();
@@ -475,7 +475,7 @@ void __cdecl RefreshActorInfo(void*)
 						actorInfo[nowIndex].horseInfo[tmpHorseCount].ptr = actor;
 						actorInfo[nowIndex].horseInfo[tmpHorseCount].level = actor->GetLevel();
 						actorInfo[nowIndex].horseInfo[tmpHorseCount].name = actor->GetDisplayFullName();
-						actorInfo[nowIndex].horseInfo[tmpHorseCount].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth);
+						actorInfo[nowIndex].horseInfo[tmpHorseCount].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth) + actor->healthModifiers.modifiers[1];
 						actorInfo[nowIndex].horseInfo[tmpHorseCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
 						actorInfo[nowIndex].horseInfo[tmpHorseCount].isSentient = IsSentient2(actor);
 						actorInfo[nowIndex].horseInfo[tmpHorseCount].lifeState = actor->GetLifeState();
@@ -519,7 +519,7 @@ void __cdecl RefreshActorInfo(void*)
 						actorInfo[nowIndex].npcInfo[tmpNpcCount].ptr = actor;
 						actorInfo[nowIndex].npcInfo[tmpNpcCount].level = actor->GetLevel();
 						actorInfo[nowIndex].npcInfo[tmpNpcCount].name = actor->GetDisplayFullName();
-						actorInfo[nowIndex].npcInfo[tmpNpcCount].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth);
+						actorInfo[nowIndex].npcInfo[tmpNpcCount].kHealthBase = actor->GetPermanentActorValue(RE::ActorValue::kHealth) + actor->healthModifiers.modifiers[1];
 						actorInfo[nowIndex].npcInfo[tmpNpcCount].kHealth = actor->GetActorValue(RE::ActorValue::kHealth);
 						actorInfo[nowIndex].npcInfo[tmpNpcCount].isSentient = IsSentient2(actor);
 						actorInfo[nowIndex].npcInfo[tmpNpcCount].lifeState = actor->GetLifeState();

@@ -133,6 +133,12 @@ namespace lotd
 	extern bool showlocationItemCount;
 	extern std::unordered_set<RE::FormID> locationItemIds;
 	extern int locationItemCount;
+	extern bool showDisplayItemCount;
+	extern bool isAutoTrackLotdItems;
+	extern bool isAutoTrackLotdItemsFlag;
+	extern bool isAutoTrackLotdItemsCrimeIgnore;
+
+	extern float displayCount;
 
 	/// <summary>
 	/// 统计区域内的数量
@@ -148,9 +154,16 @@ namespace lotd
 	/// </summary>
 	void refreshDisplayItemsCache();
 
+	/// <summary>
+	/// 刷新追踪标记
+	/// </summary>
+	void refreshAutoTrackItem();
+
 	// 身上物品
 	extern std::unordered_set<RE::FormID> playerInvIds;
 
 	void trackAllItem(int count, std::vector<LotdInfo>& items);
+
+	void refreshDisplayCount();
 }
 

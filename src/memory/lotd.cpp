@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <fonts/IconsMaterialDesignIcons.h>
 #include <memory/memory.h>
+#include <menu/menu_track.h>
 #include <setting/setting.h>
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
@@ -53,6 +54,11 @@ namespace lotd
 	int locationItemCount = 0;
 
 	bool showlocationItemCount = false;
+	bool showDisplayItemCount = false;
+	bool isAutoTrackLotdItems = false;
+	bool isAutoTrackLotdItemsFlag = false;
+	bool isAutoTrackLotdItemsCrimeIgnore = true;
+	float displayCount = 0.0f;
 
 	bool compareForLotdItem(const LotdInfo& info1, const LotdInfo& info2)
 	{
@@ -110,7 +116,7 @@ namespace lotd
 		roomNames.insert({ "NaturalScience", "自然科学" });
 		roomNames.insert({ "MuseumStoreroom", "博物馆储藏室" });
 		roomNames.insert({ "Guildhouse", "探险家协会" });
-		roomNames.insert({ "noknown", "未分类" });
+		roomNames.insert({ "noknown", "-" });
 
 		/*displayIdsC["00126087"];
 		displayIdsC["002ACDD9"];
@@ -172,7 +178,6 @@ namespace lotd
 				loadCountsM[listItem.modName] == 0;
 			}
 
-
 			auto fileLotd2 = handler->LookupModByName(listItem.modName);
 			if (fileLotd2 && fileLotd2->compileIndex != 0xFF) {
 				auto lotdCompileIndex2 = fileLotd2->compileIndex;
@@ -183,7 +188,7 @@ namespace lotd
 				auto formid = FormUtil::GetFormId(listItem.listFormId, lotdCompileIndex2, lotdSmallFileCompileIndex2);
 				RE::BGSListForm* listform = RE::TESForm::LookupByID<RE::BGSListForm>(formid);
 				//RE::BGSListForm* listform2 = RE::TESForm::LookupByEditorID<RE::BGSListForm>(listItem.listEditorId);
-				
+
 				if (listform) {
 					loadCountsM[listItem.modName]++;
 					for (auto form : listform->forms) {
@@ -1385,6 +1390,384 @@ namespace lotd
 		std::partial_sort(item.list.begin(), item.list.begin() + tmpCount, item.list.begin() + tmpCount, compareForLotdItemAttached);
 	}
 
+	void refreshAutoTrackItem()
+	{
+		if (isAutoTrackLotdItemsFlag) {
+			RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
+			if (!player) {
+				return;
+			}
+			isAutoTrackLotdItemsFlag = false;
+
+			// 缓存身上物品
+			refreshInvItemsCache();
+
+			// 缓存陈列品
+			refreshDisplayItemsCache();
+
+			nowItemIndex = !nowItemIndex;
+			Sleep(100);
+
+			// 数量统计(int)
+			int tmpCount = 0;
+
+			int currentLocationFormId = 0;
+			auto currentLocation = player->currentLocation;
+			if (currentLocation) {
+				currentLocationFormId = currentLocation->GetFormID();
+			}
+
+			// 艺术馆地点排除
+			if (lotd::locationIds.find(currentLocationFormId) == lotd::locationIds.end()) {
+				const auto& [map, lock] = RE::TESForm::GetAllForms();
+				const RE::BSReadWriteLock locker{ lock };
+				if (!map) {
+					return;
+				}
+				for (auto& [id, form] : *map) {
+					if (form) {
+						if (form->Is(RE::FormType::ActorCharacter)) {
+							continue;
+							auto actor = form->As<RE::Actor>();
+							if (actor && actor->IsDead() && !actor->IsSummoned()) {
+								// 排除自己
+								if (actor->IsPlayerRef()) {
+									continue;
+								}
+								if (actor->GetCurrentLocation() == currentLocation) {
+									if (!actor->Is3DLoaded()) {
+										continue;
+									}
+
+									if (actor->IsMarkedForDeletion() || actor->IsIgnored()) {
+										continue;
+									}
+									float distance = ValueUtil::calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
+
+									if (!currentLocation) {
+										if (distance > show_items_window_auto_dis_skyrim) {
+											continue;
+										}
+									} else {
+										if (distance > show_items_window_auto_dis_local) {
+											continue;
+										}
+									}
+									auto name = actor->GetDisplayFullName();
+									if (strlen(name) == 0) {
+										continue;
+									}
+
+									bool isCrime = actor->IsCrimeToActivate();
+									if (!isCrime) {
+										auto inv = actor->GetInventory(FormUtil::CanDisplay);
+										for (auto& [obj, data] : inv) {
+											auto& [count, entry] = data;
+											if (count > 0 && entry) {
+												// 放到对应的数组里
+												bool success = checkItem(obj->GetFormID());
+
+												/*if (trackPtrs2.find(actor) == trackPtrs2.end()) {
+													menu::tintTrack(actor);
+												}*/
+											}
+										}
+									}
+								}
+							}
+						}
+
+						else if (form->Is(RE::FormType::Reference)) {
+							auto reff = form->AsReference();
+							if (reff) {
+								if (reff->GetCurrentLocation() == currentLocation) {
+									auto baseObj = reff->GetBaseObject();
+									if (baseObj) {
+										switch (baseObj->GetFormType()) {
+										case RE::FormType::Scroll:
+										case RE::FormType::Weapon:
+										case RE::FormType::Armor:
+										case RE::FormType::Ammo:
+										case RE::FormType::Book:
+										case RE::FormType::AlchemyItem:
+										case RE::FormType::Ingredient:
+										case RE::FormType::Misc:
+										case RE::FormType::KeyMaster:
+										case RE::FormType::Note:
+										case RE::FormType::SoulGem:
+											{
+												if (reff->IsMarkedForDeletion() || reff->IsIgnored()) {
+													continue;
+												}
+
+												if (!reff->Is3DLoaded()) {
+													continue;
+												}
+
+												auto name = reff->GetDisplayFullName();
+												if (strlen(name) == 0) {
+													continue;
+												}
+
+												float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+
+												if (!currentLocation) {
+													if (distance > show_items_window_auto_dis_skyrim) {
+														continue;
+													}
+												} else {
+													if (distance > show_items_window_auto_dis_local) {
+														continue;
+													}
+												}
+
+												bool isCrime = reff->IsCrimeToActivate();
+												if (isCrime && isAutoTrackLotdItemsCrimeIgnore) {
+													continue;
+												}
+												bool success = checkItem(baseObj->GetFormID());
+												if (success) {
+													if (trackPtrs2.find(reff) == trackPtrs2.end()) {
+														TrackItem trackItem;
+														switch (baseObj->GetFormType()) {
+														case RE::FormType::Scroll:
+															trackItem.name = ICON_MDI_SWORD " " + std::string(name);
+															break;
+														case RE::FormType::Weapon:
+															trackItem.name = ICON_MDI_SWORD " " + std::string(name);
+															break;
+														case RE::FormType::Armor:
+															trackItem.name = ICON_MDI_SHIELD " " + std::string(name);
+															break;
+														case RE::FormType::Ammo:
+															trackItem.name = ICON_MDI_ARROW_PROJECTILE " " + std::string(name);
+															break;
+														case RE::FormType::Book:
+															trackItem.name = ICON_MDI_BOOK_OPEN_VARIANT " " + std::string(name);
+															break;
+														case RE::FormType::AlchemyItem:
+															{
+																auto alchemyItem = baseObj->As<RE::AlchemyItem>();
+																if (alchemyItem->IsFood()) {
+																	trackItem.name = ICON_MDI_FOOD_DRUMSTICK " " + std::string(name);
+																} else {
+																	trackItem.name = ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE " " + std::string(name);
+																}
+																break;
+															}
+														case RE::FormType::Ingredient:
+															trackItem.name = ICON_MDI_SOURCE_BRANCH " " + std::string(name);
+															break;
+														case RE::FormType::Misc:
+															{
+																auto misc = baseObj->As<RE::TESObjectMISC>();
+																if (misc) {
+																	// 宝石
+																	if (FormUtil::HasKeyword(misc, VendorItemGem)) {
+																		trackItem.name = ICON_MDI_DIAMOND_STONE " " + std::string(name);
+																	} else if (FormUtil::HasKeyword(misc, VendorItemOreIngot)) {
+																		trackItem.name = ICON_MDI_ANVIL " " + std::string(name);
+																	} else if (FormUtil::HasKeyword(misc, VendorItemAnimalHide)) {
+																		trackItem.name = ICON_MDI_BOX_CUTTER " " + std::string(name);
+																	} else if (FormUtil::HasKeyword(misc, VendorItemAnimalPart)) {
+																		trackItem.name = ICON_MDI_RABBIT " " + std::string(name);
+																	} else if (FormUtil::HasKeyword(misc, VendorItemTool)) {
+																		trackItem.name = ICON_MDI_TOOLS " " + std::string(name);
+																	} else {
+																		trackItem.name = ICON_MDI_PACKAGE_VARIANT_CLOSED " " + std::string(name);
+																	}
+																}
+																break;
+															}
+														case RE::FormType::KeyMaster:
+															trackItem.name = ICON_MDI_KEY " " + std::string(name);
+															break;
+														case RE::FormType::Note:
+															trackItem.name = ICON_MDI_BOOK_OPEN_VARIANT " " + std::string(name);
+															break;
+														case RE::FormType::SoulGem:
+															trackItem.name = ICON_MDI_CARDS_DIAMOND " " + std::string(name);
+															break;
+														default:
+															trackItem.name =  std::string(name);
+															break;
+														}
+
+														trackItem.isLotd = true;
+														trackItem.itemBaseFormId = baseObj->GetFormID();
+														trackPtrs2.insert(std::make_pair(reff, trackItem));
+														menu::tintTrack(reff);
+													}
+												}
+
+												break;
+											}
+
+										case RE::FormType::Container:
+											{
+												if (reff->IsMarkedForDeletion() || reff->IsIgnored()) {
+													continue;
+												}
+
+												if (!reff->Is3DLoaded()) {
+													continue;
+												}
+
+												if (merchantContIgnore) {
+													if (merchantContFormIds.find(reff->GetFormID()) != merchantContFormIds.end()) {
+														continue;
+													}
+												}
+
+												float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+
+												if (!currentLocation) {
+													if (distance > show_items_window_auto_dis_skyrim) {
+														continue;
+													}
+												} else {
+													if (distance > show_items_window_auto_dis_local) {
+														continue;
+													}
+												}
+
+												auto name = reff->GetDisplayFullName();
+												if (strlen(name) == 0) {
+													continue;
+												}
+
+												int direction = 0;
+												if (show_items_window_direction) {
+													direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+												}
+
+												bool isCrime = reff->IsCrimeToActivate();
+
+												if (!isCrime || !isAutoTrackLotdItemsCrimeIgnore) {
+													auto inv = reff->GetInventory(FormUtil::CanDisplay);
+													bool stealing = player->WouldBeStealing(reff);
+
+													for (auto& [obj, data] : inv) {
+														auto& [count, entry] = data;
+														if (count > 0 && entry) {
+															// 放到对应的数组里
+
+															bool success = checkItem(obj->GetFormID());
+															if (success) {
+																bool isCrime2 = !entry.get()->IsOwnedBy(player, !stealing);
+																if (isCrimeIgnore) {
+																	if (isCrime2 && isAutoTrackLotdItemsCrimeIgnore) {
+																		continue;
+																	}
+																}
+																if (trackPtrs2.find(reff) == trackPtrs2.end()) {
+																	TrackItem trackItem;
+																	switch (obj->GetFormType()) {
+																	case RE::FormType::Scroll:
+																		trackItem.name = ICON_MDI_SWORD " " + std::string(obj->GetName());
+																		break;
+																	case RE::FormType::Weapon:
+																		trackItem.name = ICON_MDI_SWORD " " + std::string(obj->GetName());
+																		break;
+																	case RE::FormType::Armor:
+																		trackItem.name = ICON_MDI_SHIELD " " + std::string(obj->GetName());
+																		break;
+																	case RE::FormType::Ammo:
+																		trackItem.name = ICON_MDI_ARROW_PROJECTILE " " + std::string(obj->GetName());
+																		break;
+																	case RE::FormType::Book:
+																		trackItem.name = ICON_MDI_BOOK_OPEN_VARIANT " " + std::string(obj->GetName());
+																		break;
+																	case RE::FormType::AlchemyItem:
+																		{
+																			auto alchemyItem = obj->As<RE::AlchemyItem>();
+																			if (alchemyItem->IsFood()) {
+																				trackItem.name = ICON_MDI_FOOD_DRUMSTICK " " + std::string(obj->GetName());
+																			} else {
+																				trackItem.name = ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE " " + std::string(obj->GetName());
+																			}
+																			break;
+																		}
+																	case RE::FormType::Ingredient:
+																		trackItem.name = ICON_MDI_SOURCE_BRANCH " " + std::string(obj->GetName());
+																		break;
+																	case RE::FormType::Misc:
+																		{
+																			auto misc = obj->As<RE::TESObjectMISC>();
+																			if (misc) {
+																				// 宝石
+																				if (FormUtil::HasKeyword(misc, VendorItemGem)) {
+																					trackItem.name = ICON_MDI_DIAMOND_STONE " " + std::string(obj->GetName());
+																				} else if (FormUtil::HasKeyword(misc, VendorItemOreIngot)) {
+																					trackItem.name = ICON_MDI_ANVIL " " + std::string(obj->GetName());
+																				} else if (FormUtil::HasKeyword(misc, VendorItemAnimalHide)) {
+																					trackItem.name = ICON_MDI_BOX_CUTTER " " + std::string(obj->GetName());
+																				} else if (FormUtil::HasKeyword(misc, VendorItemAnimalPart)) {
+																					trackItem.name = ICON_MDI_RABBIT " " + std::string(obj->GetName());
+																				} else if (FormUtil::HasKeyword(misc, VendorItemTool)) {
+																					trackItem.name = ICON_MDI_TOOLS " " + std::string(obj->GetName());
+																				} else {
+																					trackItem.name = ICON_MDI_PACKAGE_VARIANT_CLOSED " " + std::string(obj->GetName());
+																				}
+																			}
+																			break;
+																		}
+																	case RE::FormType::KeyMaster:
+																		trackItem.name = ICON_MDI_KEY " " + std::string(obj->GetName());
+																		break;
+																	case RE::FormType::Note:
+																		trackItem.name = ICON_MDI_BOOK_OPEN_VARIANT " " + std::string(obj->GetName());
+																		break;
+																	case RE::FormType::SoulGem:
+																		trackItem.name = ICON_MDI_CARDS_DIAMOND " " + std::string(obj->GetName());
+																		break;
+																	default:
+																		trackItem.name = std::string(obj->GetName());
+																		break;
+																	}
+																	trackItem.isLotd = true;
+																	trackItem.itemBaseFormId = obj->GetFormID();
+																	trackItem.isLotdCont = true;
+																	trackPtrs2.insert(std::make_pair(reff, trackItem));
+																	menu::tintTrack(reff);
+																}
+															}
+														}
+													}
+												}
+												break;
+											}
+
+										case RE::FormType::Tree:
+										case RE::FormType::Activator:  // 应该不需要
+										case RE::FormType::Flora:      // 应该不需要
+										case RE::FormType::Static:
+										case RE::FormType::Furniture:
+										case RE::FormType::IdleMarker:
+										case RE::FormType::Light:
+										case RE::FormType::MovableStatic:
+										case RE::FormType::Door:
+										case RE::FormType::TextureSet:
+										case RE::FormType::Sound:
+										case RE::FormType::Explosion:
+										case RE::FormType::AcousticSpace:  // 升学空间
+										case RE::FormType::TalkingActivator:
+										case RE::FormType::Apparatus:  // 设备 暂时去掉
+										default:
+											{
+												continue;
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	void refreshCount()
 	{
 		if (showlocationItemCount) {
@@ -1583,6 +1966,16 @@ namespace lotd
 			}
 
 			locationItemCount = locationItemIds.size();
+		}
+	}
+
+	void refreshDisplayCount()
+	{
+		if (showDisplayItemCount) {
+			RE::TESGlobal* DBM_DisplayCount = RE::TESForm::LookupByEditorID<RE::TESGlobal>("DBM_DisplayCount");
+			if (DBM_DisplayCount) {
+				displayCount = DBM_DisplayCount->value;
+			}
 		}
 	}
 }

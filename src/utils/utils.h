@@ -320,6 +320,14 @@ namespace ScriptUtil
 		}
 	}
 
+	
+	inline float GetLibido(RE::Actor* a_actor)
+	{
+		auto callback = RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor>();
+		auto args = RE::MakeFunctionArguments(std::move(a_actor));
+		RE::BSScript::Internal::VirtualMachine::GetSingleton()->DispatchStaticCall("OSLArousedNative", "GetLibido", args, callback);
+	}
+
 }
 
 namespace FormUtil

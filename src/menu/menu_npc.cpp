@@ -3,6 +3,7 @@
 #include <memory/npc.h>
 #include <menu/menu.h>
 #include <menu/menu_npc.h>
+#include <menu/menu_track.h>
 #include <utils/utils.h>
 
 namespace menu
@@ -195,15 +196,15 @@ namespace menu
 
 				if (activeItems) {
 					if (trackActorPtrs2.find(item.ptr) == trackActorPtrs2.end()) {
-						//auto player = RE::PlayerCharacter::GetSingleton();
-						//if (item.ptr->GetCurrentLocation() == player->currentLocation) {
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 						ImGui::PushID(i + 3000);
 						if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
-							trackActorPtrs2.insert(std::make_pair(item.ptr,item.name));
+							TrackItem trackItem;
+							trackItem.name = item.name;
+							trackActorPtrs2.insert(std::make_pair(item.ptr, trackItem));
+							menu::isTrack = true;
 						}
 						ImGui::PopID();
-						//}
 					}
 				}
 			}
@@ -371,7 +372,7 @@ namespace menu
 				if (show_npc_window_dis) {
 					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 					ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-					ImGui::DragInt("##距离", &show_npc_window_dis_meter, 1, 10, 100, "%d米内");
+					ImGui::SliderInt("##距离", &show_npc_window_dis_meter,  10, 100, "%d米内");
 					ImGui::PopItemWidth();
 				}
 				ImGui::Checkbox("拆分显示", &show_npc_window_split);

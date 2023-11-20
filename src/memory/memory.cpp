@@ -61,15 +61,7 @@ std::unordered_set<RE::FormID> oreFormIds;
 std::vector<WeatherForm> weatherForms;
 RE::FormID currentWeather = 0;
 
-//std::vector<ItemInfo> tracks;
-//std::unordered_set<RE::TESObjectREFR*> trackPtrs;
-//std::unordered_set<RE::Actor*> trackActorPtrs;
 
-std::unordered_map<RE::TESObjectREFR*, std::string> trackPtrs2;
-std::unordered_map<RE::Actor*, std::string> trackActorPtrs2;
-
-std::mutex mtxTrack;
-//bool excludeFormsInitFlag = true;
 
 void __cdecl RefreshGameInfo(void*)
 {

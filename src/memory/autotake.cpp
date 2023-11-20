@@ -519,6 +519,10 @@ void __cdecl TimerAutoPick(void*)
 			// 暂时挂在这里
 			if (lotd::isLoad) {
 				lotd::refreshCount();
+				lotd::refreshDisplayCount();
+				if (lotd::isShowAttached) {
+					lotd::refreshAutoTrackItem();
+				}
 			}
 			stats::refreshCount();
 			continue;
@@ -526,7 +530,12 @@ void __cdecl TimerAutoPick(void*)
 			// 暂时挂在这里
 			if (lotd::isLoad) {
 				lotd::refreshCount();
+				lotd::refreshDisplayCount();
+				if (lotd::isShowAttached) {
+					lotd::refreshAutoTrackItem();
+				}
 			}
+			
 			stats::refreshCount();
 		}
 
@@ -1209,8 +1218,11 @@ void __cdecl TimerAutoPick(void*)
 												auto1 = true;
 											}
 
+											
+											RE::LOCK_LEVEL lockLevel = reff->GetLockLevel();
+
 											// 满足自动拾取(加上距离条件和地点条件)
-											if (auto1 && distance < show_items_window_auto_dis && !isCrime) {
+											if (auto1 && distance < show_items_window_auto_dis && !isCrime && lockLevel == RE::LOCK_LEVEL::kUnlocked) {
 												for (auto& [obj, data] : inv) {
 													auto& [count, entry] = data;
 													if (count > 0 && entry) {

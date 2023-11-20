@@ -28,6 +28,7 @@ namespace menu
 	bool remember_last_ammo = false;
 	int hotkey = 0;
 	int hotkey2 = 3;
+	int hotkey3 = 4;
 	float font_scale = 1.0f;
 
 	// 默认配置
@@ -464,8 +465,11 @@ namespace menu
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 					}
 					if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
-						trackPtrs2.insert(std::make_pair(item.ptr, item.name));
+						TrackItem trackItem;
+						trackItem.name = item.name;
+						trackPtrs2.insert(std::make_pair(item.ptr, trackItem));
 						tintTrack(item.ptr);
+						menu::isTrack = true;
 					}
 				}
 
@@ -661,8 +665,11 @@ namespace menu
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 					}
 					if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
-						trackPtrs2.insert(std::make_pair(item.ptr, item.name));
+						TrackItem trackItem;
+						trackItem.name = item.name;
+						trackPtrs2.insert(std::make_pair(item.ptr, trackItem));
 						tintTrack(item.ptr);
+						menu::isTrack = true;
 					}
 				}
 
@@ -678,7 +685,7 @@ namespace menu
 			ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
 
 		const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
-		int columnCount = 4;
+		int columnCount = 3;
 
 		if (show_items_window_refid) {
 			columnCount++;
@@ -701,7 +708,7 @@ namespace menu
 			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_1);
 			ImGui::TableSetupColumn("类型", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_5);
 			ImGui::TableSetupColumn("价值", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 35.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_2);
-			ImGui::TableSetupColumn("重量", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 30.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_3);
+			//ImGui::TableSetupColumn("重量", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 30.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_3);
 
 			if (show_items_window_direction) {
 				ImGui::TableSetupColumn("方位", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_8);
@@ -716,7 +723,7 @@ namespace menu
 			if (show_items_window_file) {
 				ImGui::TableSetupColumn("MOD", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_7);
 			}
-			ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_6);
+			ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_6);
 			ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
 			ImGui::TableHeadersRow();
 
@@ -761,8 +768,8 @@ namespace menu
 					ImGui::TableNextColumn();
 					ImGui::Text("%d", item.gold);
 
-					ImGui::TableNextColumn();
-					ImGui::Text("%.1f", item.weight);
+					/*ImGui::TableNextColumn();
+					ImGui::Text("%.1f", item.weight);*/
 
 					if (show_items_window_direction) {
 						ImGui::TableNextColumn();
@@ -836,8 +843,11 @@ namespace menu
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 						}
 						if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
-							trackPtrs2.insert(std::make_pair(item.ptr, item.name));
+							TrackItem trackItem;
+							trackItem.name = item.name;
+							trackPtrs2.insert(std::make_pair(item.ptr, trackItem));
 							tintTrack(item.ptr);
+							menu::isTrack = true;
 						}
 					}
 
@@ -1019,8 +1029,11 @@ namespace menu
 								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							}
 							if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
-								trackPtrs2.insert(std::make_pair(item.ptr, item.name));
+								TrackItem trackItem;
+								trackItem.name = item.name;
+								trackPtrs2.insert(std::make_pair(item.ptr, trackItem));
 								tintTrack(item.ptr);
+								menu::isTrack = true;
 							}
 						}
 					}
@@ -1305,8 +1318,11 @@ namespace menu
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 						}
 						if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
-							trackPtrs2.insert(std::make_pair(item.ptr, item.name));
+							TrackItem trackItem;
+							trackItem.name = item.name;
+							trackPtrs2.insert(std::make_pair(item.ptr, trackItem));
 							tintTrack(item.ptr);
+							menu::isTrack = true;
 						}
 					}
 
@@ -1982,7 +1998,10 @@ namespace menu
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 						if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS "##ex")) {
 							for (auto item : stats::locationExIds) {
-								trackPtrs2.insert(std::make_pair(item, item->GetDisplayFullName()));
+								TrackItem trackItem;
+								trackItem.name = item->GetDisplayFullName();
+								trackPtrs2.insert(std::make_pair(item, trackItem));
+								menu::isTrack = true;
 							}
 						}
 					}
@@ -1990,6 +2009,16 @@ namespace menu
 					myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "0");
 				}
 			}
+
+			ImGui::End();
+		}
+
+		if (lotd::showDisplayItemCount) {
+			ImGui::Begin("艺术馆藏品数量", nullptr, window_flags);
+
+			ImGui::Text(ICON_MDI_TREASURE_CHEST_OUTLINE " 已收集藏品数：");
+			ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+			myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%0.0f", lotd::displayCount);
 
 			ImGui::End();
 		}
@@ -2027,7 +2056,10 @@ namespace menu
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 						if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS "##ore")) {
 							for (auto item : stats::locationOreIds) {
-								trackPtrs2.insert(std::make_pair(item, ""));
+								TrackItem trackItem;
+								trackItem.name = item->GetDisplayFullName();
+								trackPtrs2.insert(std::make_pair(item, trackItem));
+								menu::isTrack = true;
 							}
 						}
 					}
@@ -2065,7 +2097,7 @@ namespace menu
 				}
 			}
 
-			if (lotd::isLoad) {
+			/*if (lotd::isLoad) {
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x * 3);
 				if (lotd::isShow) {
 					if (ImGui::SmallButton("艺术馆模式")) {
@@ -2077,7 +2109,7 @@ namespace menu
 						lotd::isShow = !lotd::isShow;
 					}
 				}
-			}
+			}*/
 
 			{
 				std::lock_guard<std::mutex> lock(mtxTrack);
@@ -2095,7 +2127,7 @@ namespace menu
 
 			if (ImGui::BeginTable("tableItem", 5)) {
 				if (lotd::isShow) {
-					lotd::render();
+					//lotd::render();
 
 				} else {
 					/*	{
@@ -2879,16 +2911,21 @@ namespace menu
 								if (ImGui::TreeNodeEx(ICON_MDI_HOME_MODERN " 龙裔艺术馆", ImGuiTreeNodeFlags_DefaultOpen)) {
 									ImGui::Checkbox("显示艺术馆板块", &lotd::isShowAttached);
 									ImGui::Checkbox("排除背包物品", &lotd::isInvIgnore);
-									ImGui::Checkbox("排除犯罪物品", &lotd::isCrimeIgnore);
+									ImGui::Checkbox("排除偷窃物品", &lotd::isCrimeIgnore);
 									ImGui::Checkbox("排除军械库物品", &lotd::isArmoryIgnore);
 									ImGui::Checkbox("显示附近藏品数量", &lotd::showlocationItemCount);
 									ImGui::Checkbox("显示附近挖掘点数量", &stats::showlocationExCount);
+									ImGui::Checkbox("显示已收集藏品总数", &lotd::showDisplayItemCount);
+									ImGui::Checkbox("自动标记物品", &lotd::isAutoTrackLotdItems);
+									if (lotd::isAutoTrackLotdItems) {
+										ImGui::Checkbox("忽略偷窃", &lotd::isAutoTrackLotdItemsCrimeIgnore);
+									}
 
 									ImGui::TreePop();
 								}
 							}
 
-							if (ImGui::TreeNodeEx(ICON_MDI_HOME_MODERN " 其他", ImGuiTreeNodeFlags_DefaultOpen)) {
+							if (ImGui::TreeNodeEx(ICON_MDI_MAP_SEARCH_OUTLINE " 其他", ImGuiTreeNodeFlags_DefaultOpen)) {
 								ImGui::Checkbox("显示附近奈恩根数量", &stats::showlocationNirnRootCount);
 								ImGui::Checkbox("显示附近深红奈恩根数量", &stats::showlocationNirnRootRedCount);
 								ImGui::Checkbox("显示附近矿脉数量", &stats::showlocationOreCount);
@@ -2926,14 +2963,13 @@ namespace menu
 				ImGui::ShowDemoWindow(&show_demo_window);
 
 			{
-				ImGui::Begin("ItemFinderPlus v0.7.10##0", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+				ImGui::Begin("ItemFinderPlus v0.7.13##0", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
 				static int selected = 0;
 
 				{
 					ImGui::BeginGroup();
 					ImVec2 size(ImGui::GetFontSize() * 6, 0);
-					//ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
 					if (ImGui::Selectable(ICON_MDI_TOOLS " 通用", selected == 0, 0, size)) {
 						selected = 0;
 					}
@@ -2948,7 +2984,6 @@ namespace menu
 					if (ImGui::Selectable(ICON_MDI_ACCOUNT_EDIT " 其他", selected == 99, 0, size)) {
 						selected = 99;
 					}
-					//ImGui::PopItemWidth();
 					ImGui::EndGroup();
 				}
 
@@ -3068,13 +3103,45 @@ namespace menu
 							ImGui::TreePop();
 						}
 
-#ifndef NDEBUG
-						//ImGui::Checkbox("demo", &show_demo_window);
-#endif
+						if (ImGui::TreeNodeEx(ICON_MDI_TABLE_SEARCH " 物品标记开关", ImGuiTreeNodeFlags_DefaultOpen)) {
+							if (ImGui::BeginPopupContextItem("PopupHotkey3")) {
+								for (auto& item : hotkey_items) {
+									if (ImGui::Selectable(item.second.c_str())) {
+										hotkey3 = item.first;
+									}
+								}
+								ImGui::EndPopup();
+							}
+
+							ImGui::AlignTextToFramePadding();
+							ImGui::Text("热键:");
+							ImGui::SameLine();
+							if (ImGui::Button(hotkey_items.at(hotkey3).c_str(), ImVec2(ImGui::GetFontSize() * 6, 0))) {
+								ImGui::OpenPopup("PopupHotkey3");
+							}
+
+							ImGui::TreePop();
+						}
+
 
 #ifndef NDEBUG
 
-						
+						ImGui::Checkbox("demo", &show_demo_window);
+						static int dddf = 0;
+						if (ImGui::Button(" 测试globe", ImVec2(0, 0))) {
+							//RE::TESGlobal* DBM_Count = RE::TESForm::LookupByEditorID<RE::TESGlobal>("DBM_Count");
+							RE::TESGlobal* DBM_DisplayCount = RE::TESForm::LookupByEditorID<RE::TESGlobal>("DBM_DisplayCount");
+							if (DBM_DisplayCount) {
+								dddf++;
+							}
+
+							RE::TESGlobal* DBM_SortWait = RE::TESForm::LookupByEditorID<RE::TESGlobal>("DBM_SortWait");
+							if (DBM_SortWait) {
+								dddf++;
+							}
+						}
+						ImGui::Text("%d", dddf);
+
 						static char buf1[32] = "0x0092DE7";
 						ImGui::InputText("default", buf1, 32);
 
@@ -3087,7 +3154,6 @@ namespace menu
 						static float fff = 0;
 						ImGui::SliderFloat("时间", &fff, 0.0f, 10000.0f, "%.0f");
 
-						
 						static int shadername = 0;
 						ImGui::Text("%08X", shadername);
 
@@ -3135,7 +3201,8 @@ namespace menu
 									ImGui::TableNextColumn();
 
 									if (pair.second.size() == 0 && lotd::loadCountsM[pair.first] == 0) {
-										myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "未安装");
+										//ImGui::Text("未安装");
+										myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "未安装");
 									} else {
 										myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%d个", pair.second.size());
 									}

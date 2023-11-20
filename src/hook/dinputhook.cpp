@@ -621,6 +621,59 @@ namespace dinputhook
 							break;
 						}
 					}
+
+					
+					switch (menu::hotkey3) {
+					case 0:
+						{
+							if (btnEvent->GetIDCode() == 210) {
+								menu::isTrack = !menu::isTrack;
+								_DispatchInputEvent(a_dispatcher, dummy);
+								return;
+							}
+							break;
+						}
+					case 1:
+						{
+							if (btnEvent->GetIDCode() == 87) {
+								menu::isTrack = !menu::isTrack;
+								_DispatchInputEvent(a_dispatcher, dummy);
+								return;
+							}
+							break;
+						}
+					case 2:
+						{
+							if (btnEvent->GetIDCode() == 88) {
+								menu::isTrack = !menu::isTrack;
+								_DispatchInputEvent(a_dispatcher, dummy);
+								return;
+							}
+							break;
+						}
+					case 3:
+						{
+							if (btnEvent->GetIDCode() == 16 && GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+								menu::isTrack = !menu::isTrack;
+								_DispatchInputEvent(a_dispatcher, dummy);
+								return;
+							}
+							break;
+						}
+					case 4:
+						{
+							if (btnEvent->GetIDCode() == 16 && GetAsyncKeyState(VK_MENU) & 0x8000) {
+								menu::isTrack = !menu::isTrack;
+								_DispatchInputEvent(a_dispatcher, dummy);
+								return;
+							}
+							break;
+						}
+					default:
+						{
+							break;
+						}
+					}
 				
 				
 				}
