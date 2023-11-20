@@ -19,6 +19,7 @@
 #include <setting/setting.h>
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
+#include <memory/sexlab.h>
 
 namespace menu
 {
@@ -1779,6 +1780,35 @@ namespace menu
 			ImGui::End();
 		}
 
+		if (sexlab::isShowPlayOSLArousal && sexlab::isLoadOSLAroused) {
+			ImGui::Begin("欲望信息", nullptr, window_flags);
+
+			ImGui::Text(ICON_MDI_HEART " 性欲:");
+			ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+
+			auto progress = sexlab::OSLArousal / 100.0f;
+			char buf[32];
+			snprintf(buf, 32, "%0.1f/%d", sexlab::OSLArousal, 100);
+
+			ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
+			float rate = sexlab::OSLArousal / (sexlab::OSLArousalBaseline == 0.0f ? 1.0f : sexlab::OSLArousalBaseline);
+			if (rate > 0.80f) {
+				ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colorProgressNpc3);
+			} else if (rate < 0.45f) {
+				ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colorProgressNpc1);
+			} else {
+				ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colorProgressNpc2);
+			}
+
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+			ImGui::ProgressBar(progress, ImVec2(0.f, 0.f), buf);
+			ImGui::PopStyleVar();
+			ImGui::PopStyleColor();
+			ImGui::PopItemWidth();
+
+			ImGui::End();
+		}
+
 		// 弃用
 		if (show_enemy_window && false) {
 			time_t now1 = time(NULL);
@@ -2910,15 +2940,15 @@ namespace menu
 								ImGui::Spacing();
 								if (ImGui::TreeNodeEx(ICON_MDI_HOME_MODERN " 龙裔艺术馆", ImGuiTreeNodeFlags_DefaultOpen)) {
 									ImGui::Checkbox("显示艺术馆板块", &lotd::isShowAttached);
-									ImGui::Checkbox("排除背包物品", &lotd::isInvIgnore);
-									ImGui::Checkbox("排除偷窃物品", &lotd::isCrimeIgnore);
-									ImGui::Checkbox("排除军械库物品", &lotd::isArmoryIgnore);
+									ImGui::Checkbox("排除背包藏品", &lotd::isInvIgnore);
+									ImGui::Checkbox("排除偷窃藏品", &lotd::isCrimeIgnore);
+									ImGui::Checkbox("排除军械库藏品", &lotd::isArmoryIgnore);
 									ImGui::Checkbox("显示附近藏品数量", &lotd::showlocationItemCount);
 									ImGui::Checkbox("显示附近挖掘点数量", &stats::showlocationExCount);
 									ImGui::Checkbox("显示已收集藏品总数", &lotd::showDisplayItemCount);
-									ImGui::Checkbox("自动标记物品", &lotd::isAutoTrackLotdItems);
+									ImGui::Checkbox("自动标记藏品", &lotd::isAutoTrackLotdItems);
 									if (lotd::isAutoTrackLotdItems) {
-										ImGui::Checkbox("忽略偷窃", &lotd::isAutoTrackLotdItemsCrimeIgnore);
+										ImGui::Checkbox("自动标记忽略偷窃", &lotd::isAutoTrackLotdItemsCrimeIgnore);
 									}
 
 									ImGui::TreePop();
@@ -3124,13 +3154,15 @@ namespace menu
 						}
 
 
+						
 #ifndef NDEBUG
-
-						ImGui::Checkbox("demo", &show_demo_window);
-						static int dddf = 0;
+						static float dddf = 0;
+						static bool result = 0;
 						if (ImGui::Button(" 测试globe", ImVec2(0, 0))) {
+
+
 							//RE::TESGlobal* DBM_Count = RE::TESForm::LookupByEditorID<RE::TESGlobal>("DBM_Count");
-							RE::TESGlobal* DBM_DisplayCount = RE::TESForm::LookupByEditorID<RE::TESGlobal>("DBM_DisplayCount");
+							/*RE::TESGlobal* DBM_DisplayCount = RE::TESForm::LookupByEditorID<RE::TESGlobal>("DBM_DisplayCount");
 							if (DBM_DisplayCount) {
 								dddf++;
 							}
@@ -3138,10 +3170,13 @@ namespace menu
 							RE::TESGlobal* DBM_SortWait = RE::TESForm::LookupByEditorID<RE::TESGlobal>("DBM_SortWait");
 							if (DBM_SortWait) {
 								dddf++;
-							}
+							}*/
 						}
-						ImGui::Text("%d", dddf);
+						ImGui::Text("%0.1f", dddf);
 
+						ImGui::Text("%d", result);
+
+						ImGui::Checkbox("demo", &show_demo_window);
 						static char buf1[32] = "0x0092DE7";
 						ImGui::InputText("default", buf1, 32);
 
@@ -3384,6 +3419,10 @@ namespace menu
 
 							ImGui::EndTable();
 						}
+
+						ImGui::Separator();
+
+						ImGui::Checkbox("显示欲望值", &sexlab::isShowPlayOSLArousal);
 
 						ImGui::Separator();
 						if (ImGui::BeginTable("split3", 3)) {

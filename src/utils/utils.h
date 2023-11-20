@@ -320,13 +320,41 @@ namespace ScriptUtil
 		}
 	}
 
-	
-	inline float GetLibido(RE::Actor* a_actor)
+	//inline float GetLibido(RE::Actor* a_actor)
+	//{
+	//	RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor> callback(new VMStackCallbackFunctor(
+	//		[](float ff) {
+
+	//		}
+	//	));
+
+	//	auto args = RE::MakeFunctionArguments(std::move(a_actor));
+	//	RE::BSScript::Internal::VirtualMachine::GetSingleton()->DispatchStaticCall("OSLArousedNative", "GetLibido", args, callback);
+	//}
+
+	class VMStackCallbackFunctor : public RE::BSScript::IStackCallbackFunctor
 	{
-		auto callback = RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor>();
-		auto args = RE::MakeFunctionArguments(std::move(a_actor));
-		RE::BSScript::Internal::VirtualMachine::GetSingleton()->DispatchStaticCall("OSLArousedNative", "GetLibido", args, callback);
-	}
+	public:
+		VMStackCallbackFunctor(std::function<void(float)> callback) : callback_(callback) {}
+
+		virtual inline void
+			operator()(RE::BSScript::Variable a_result) override
+		{
+			if (a_result.IsNoneObject()) {
+				//logger::info("result is none");
+			} else if (a_result.IsFloat()) {
+				//setRmHeight(a_result.GetFloat());
+				callback_(a_result.GetFloat());
+			} else {
+				logger::info("result is not a float");
+			}
+		}
+
+		virtual inline void SetObject(const RE::BSTSmartPointer<RE::BSScript::Object>& a_object){};
+
+	private:
+		std::function<void(float)> callback_;
+	};
 
 }
 

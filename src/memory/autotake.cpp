@@ -6,6 +6,7 @@
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
 #include <utils/PlayerDataProvider.h>
+#include <memory/sexlab.h>
 
 bool show_items_window_auto_ignore = true;
 bool show_items_window_auto_notification = true;
@@ -524,6 +525,7 @@ void __cdecl TimerAutoPick(void*)
 					lotd::refreshAutoTrackItem();
 				}
 			}
+			sexlab::refreshInfo();
 			stats::refreshCount();
 			continue;
 		} else {
@@ -535,6 +537,8 @@ void __cdecl TimerAutoPick(void*)
 					lotd::refreshAutoTrackItem();
 				}
 			}
+
+			sexlab::refreshInfo();
 			
 			stats::refreshCount();
 		}

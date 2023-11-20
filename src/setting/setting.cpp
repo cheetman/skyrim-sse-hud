@@ -12,6 +12,7 @@
 #include <menu/menu_track.h>
 #include <menu/theme.h>
 #include <nlohmann/json.hpp>
+#include <memory/sexlab.h>
 
 namespace setting
 {
@@ -160,6 +161,9 @@ namespace setting
 				if (j.contains("hotkey2")) {
 					menu::hotkey2 = j["hotkey2"].get<int>();
 				}
+				if (j.contains("hotkey3")) {
+					menu::hotkey3 = j["hotkey3"].get<int>();
+				}
 				if (j.contains("font_scale")) {
 					menu::font_scale = j["font_scale"].get<float>();
 				}
@@ -240,6 +244,9 @@ namespace setting
 					}
 					if (j2.contains("show_player_effects_process")) {
 						show_player_effects_process = j2["show_player_effects_process"].get<bool>();
+					}
+					if (j2.contains("isShowPlayOSLArousal")) {
+						sexlab::isShowPlayOSLArousal = j2["isShowPlayOSLArousal"].get<bool>();
 					}
 				}
 				if (j.contains("DebugInfo")) {
@@ -760,6 +767,7 @@ namespace setting
 									  { "bullet_text", menu::bullet_text },
 									  { "hotkey", menu::hotkey },
 									  { "hotkey2", menu::hotkey2 },
+									  { "hotkey3", menu::hotkey3 },
 									  { "font_scale", ImGui::GetIO().FontGlobalScale },
 									  { "no_background_items", menu::no_background_items },
 									  { "imgui_font_index", menu::imgui_font_index },
@@ -816,6 +824,7 @@ namespace setting
 														   { "colorProgressEffect3W", colorProgressEffect3.w },
 														   { "show_player_effects_ignore_spell", show_player_effects_ignore_spell },
 														   { "show_player_effects_process", show_player_effects_process },
+														   { "isShowPlayOSLArousal", sexlab::isShowPlayOSLArousal },
 
 													   } },
 

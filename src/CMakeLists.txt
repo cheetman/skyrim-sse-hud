@@ -109,6 +109,8 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/memory/player.cpp"
 	"${SOURCE_DIR}/memory/data.h"
 	"${SOURCE_DIR}/memory/data.cpp"
+	"${SOURCE_DIR}/memory/sexlab.h"
+	"${SOURCE_DIR}/memory/sexlab.cpp"
 )
 
 source_group(TREE "${ROOT_DIR}" FILES ${SOURCE_FILES})

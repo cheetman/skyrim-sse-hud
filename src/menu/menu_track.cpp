@@ -32,7 +32,7 @@ namespace menu
 	bool show_item_window_track_icon_name = false;
 	bool show_item_window_track_highlight = false;
 	ImVec4 colorTrack(0.0f, 1.0f, 0.1f, 0.646f);
-	bool isTrack = false;
+	bool isTrack = true;
 
 	RE::NiPointer<RE::NiCamera> getCamera()
 	{
@@ -138,7 +138,7 @@ namespace menu
 										char buf[32];
 										snprintf(buf, 32, "%p", ptr);
 										ImGui::Begin(buf, nullptr,
-											ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar);
+											ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize);
 
 										ImGui::SetWindowFontScale(menu::font_scale + (float)show_item_window_track_icon_scale);
 

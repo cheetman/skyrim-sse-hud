@@ -23,6 +23,7 @@
 #include <event/BSTContainerChangedEvent.h>
 #include <event/BSTPositionPlayerEvent.h>
 #include <memory/data.h>
+#include <memory/sexlab.h>
 
 
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
@@ -122,12 +123,6 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 			logger::info("kPostLoadGame"sv);
 			isGameLoading = false;
 			startflag = true;
-			/*if (trackPtrs.size() > 0) {
-				trackPtrs.clear();
-			}
-			if (trackActorPtrs.size() > 0) {
-				trackActorPtrs.clear();
-			}*/
 			if (trackPtrs2.size() > 0) {
 				trackPtrs2.clear();
 			}
@@ -147,12 +142,6 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 			logger::info("kNewGame"sv);
 			isGameLoading = false;
 			startflag = true;
-			/*if (trackPtrs.size() > 0) {
-				trackPtrs.clear();
-			}
-			if (trackActorPtrs.size() > 0) {
-				trackActorPtrs.clear();
-			}*/
 			if (trackPtrs2.size() > 0) {
 				trackPtrs2.clear();
 			}
@@ -184,6 +173,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 			logger::info("kDataLoaded"sv);
 			data::init();
 			lotd::init();
+			sexlab::init();
 			BSTPositionPlayerEvent::Register();
 
 			// input event
