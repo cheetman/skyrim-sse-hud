@@ -44,6 +44,8 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/menu/menu_stat.cpp"
 	"${SOURCE_DIR}/menu/menu_track.h"
 	"${SOURCE_DIR}/menu/menu_track.cpp"
+	"${SOURCE_DIR}/menu/menu_items.h"
+	"${SOURCE_DIR}/menu/menu_items.cpp"
 	"${SOURCE_DIR}/utils/NameUtil.h"
 	"${SOURCE_DIR}/utils/NameUtil.cpp"
 	"${SOURCE_DIR}/utils/PlayerDataProvider.h"
@@ -111,6 +113,8 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/memory/data.cpp"
 	"${SOURCE_DIR}/memory/sexlab.h"
 	"${SOURCE_DIR}/memory/sexlab.cpp"
+	"${SOURCE_DIR}/setting/i18n.h"
+	"${SOURCE_DIR}/setting/i18n.cpp"
 )
 
 source_group(TREE "${ROOT_DIR}" FILES ${SOURCE_FILES})

@@ -1,6 +1,3 @@
-
-
-
 namespace sexlab
 {
 	extern bool isLoadOSLAroused;

@@ -62,4 +62,24 @@ namespace menu
 		va_end(args);
 	}
 
+	enum PlayerInfoColumnID
+	{
+		PlayerInfoColumnID_ID,
+		PlayerInfoColumnID_1,
+		PlayerInfoColumnID_2,
+		PlayerInfoColumnID_3,
+		PlayerInfoColumnID_4,
+		PlayerInfoColumnID_5,
+		PlayerInfoColumnID_6,
+		PlayerInfoColumnID_7,
+		PlayerInfoColumnID_8,
+		PlayerInfoColumnID_9
+	};
+
+	enum TableColumn
+	{
+		TableColumn_1,
+		TableColumn_2,
+		TableColumn_3,
+	};
 }

@@ -367,75 +367,74 @@ namespace menu
 	{
 		ImGui::Checkbox("显示NPC信息", &show_npc_window);
 		if (show_npc_window) {
-			if (ImGui::TreeNodeEx("设置##1", ImGuiTreeNodeFlags_DefaultOpen)) {
-				ImGui::Checkbox("只显示距离内NPC", &show_npc_window_dis);
-				if (show_npc_window_dis) {
-					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-					ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-					ImGui::SliderInt("##距离", &show_npc_window_dis_meter,  10, 100, "%d米内");
-					ImGui::PopItemWidth();
-				}
-				ImGui::Checkbox("拆分显示", &show_npc_window_split);
-				ImGui::Checkbox("显示FORMID", &show_npc_window_formid);
-				ImGui::Checkbox("显示方向和距离", &show_npc_window_direction);
-				ImGui::Checkbox("死亡不显示", &show_npc_window_dead_hidden);
-				ImGui::Checkbox("显示血条", &show_npc_window_process);
-				if (show_npc_window_process) {
-					ImGui::Checkbox("战斗显示", &show_npc_window_process_combat);
-					ImGui::ColorEdit4("颜色1", &colorProgressNpc1.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
-					ImGui::ColorEdit4("颜色2", &colorProgressNpc2.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
-					ImGui::ColorEdit4("颜色3", &colorProgressNpc3.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
-				}
+			ImGui::Indent();
+			ImGui::Checkbox("只显示距离内NPC", &show_npc_window_dis);
+			if (show_npc_window_dis) {
+				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
+				ImGui::SliderInt("##距离", &show_npc_window_dis_meter, 10, 100, "%d米内");
+				ImGui::PopItemWidth();
+			}
+			ImGui::Checkbox("拆分显示", &show_npc_window_split);
+			ImGui::Checkbox("显示FORMID", &show_npc_window_formid);
+			ImGui::Checkbox("显示方向和距离", &show_npc_window_direction);
+			ImGui::Checkbox("死亡不显示", &show_npc_window_dead_hidden);
+			ImGui::Checkbox("显示血条", &show_npc_window_process);
+			if (show_npc_window_process) {
+				ImGui::Checkbox("战斗显示", &show_npc_window_process_combat);
+				ImGui::ColorEdit4("颜色1", &colorProgressNpc1.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+				ImGui::ColorEdit4("颜色2", &colorProgressNpc2.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+				ImGui::ColorEdit4("颜色3", &colorProgressNpc3.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+			}
 
-				ImGui::Checkbox("忽略NPC", &show_npc_window_ignore);
-				if (show_npc_window_ignore) {
-					static ImGuiTableFlags flagsItem =
-						ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
+			ImGui::Checkbox("忽略NPC", &show_npc_window_ignore);
+			if (show_npc_window_ignore) {
+				static ImGuiTableFlags flagsItem =
+					ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
 
-					const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
-					if (ImGui::BeginTable("tableItemNpcIngore", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
-						ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, 1);
-						ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60.0f * ImGui::GetIO().FontGlobalScale, 2);
-						ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 40.0f * ImGui::GetIO().FontGlobalScale, 3);
+				const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+				if (ImGui::BeginTable("tableItemNpcIngore", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
+					ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, 1);
+					ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 60.0f * ImGui::GetIO().FontGlobalScale, 2);
+					ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 40.0f * ImGui::GetIO().FontGlobalScale, 3);
 
-						ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
-						ImGui::TableHeadersRow();
+					ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
+					ImGui::TableHeadersRow();
 
-						int deleteFormId = 0;
+					int deleteFormId = 0;
 
-						ImGuiListClipper clipper;
-						clipper.Begin(excludeNpcForms.size());
-						while (clipper.Step())
-							for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
-								ExcludeForm& item = excludeNpcForms[row_n];
-								ImGui::PushID(item.formId + 0x2000000);
-								ImGui::TableNextRow();
-								ImGui::TableNextColumn();
-								ImGui::Text("%08X", item.formId);
-								ImGui::TableNextColumn();
-								ImGui::Text("%s", item.name.c_str());
-								ImGui::TableNextColumn();
+					ImGuiListClipper clipper;
+					clipper.Begin(excludeNpcForms.size());
+					while (clipper.Step())
+						for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
+							ExcludeForm& item = excludeNpcForms[row_n];
+							ImGui::PushID(item.formId + 0x2000000);
+							ImGui::TableNextRow();
+							ImGui::TableNextColumn();
+							ImGui::Text("%08X", item.formId);
+							ImGui::TableNextColumn();
+							ImGui::Text("%s", item.name.c_str());
+							ImGui::TableNextColumn();
 
-								if (ImGui::SmallButton(ICON_MDI_CLOSE)) {
-									deleteFormId = item.formId;
-								}
-
-								ImGui::PopID();
+							if (ImGui::SmallButton(ICON_MDI_CLOSE)) {
+								deleteFormId = item.formId;
 							}
-						ImGui::EndTable();
-						if (deleteFormId) {
-							excludeNpcFormIds.erase(deleteFormId);
-							excludeNpcForms.erase(std::remove_if(excludeNpcForms.begin(), excludeNpcForms.end(),
-													  [&deleteFormId](const ExcludeForm& x) {
-														  return x.formId == deleteFormId;
-													  }),
-								excludeNpcForms.end());
+
+							ImGui::PopID();
 						}
+					ImGui::EndTable();
+					if (deleteFormId) {
+						excludeNpcFormIds.erase(deleteFormId);
+						excludeNpcForms.erase(std::remove_if(excludeNpcForms.begin(), excludeNpcForms.end(),
+												  [&deleteFormId](const ExcludeForm& x) {
+													  return x.formId == deleteFormId;
+												  }),
+							excludeNpcForms.end());
 					}
 				}
-
-				ImGui::TreePop();
 			}
+
+			ImGui::Unindent();
 		}
 	}
 

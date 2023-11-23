@@ -24,6 +24,7 @@
 #include <event/BSTPositionPlayerEvent.h>
 #include <memory/data.h>
 #include <memory/sexlab.h>
+#include <setting/i18n.h>
 
 
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
@@ -222,6 +223,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 
 	// 读取配置
 	setting::load_settings();
+	i18n::load();
 
 
 	_beginthread(RefreshGameInfo, 0, NULL);

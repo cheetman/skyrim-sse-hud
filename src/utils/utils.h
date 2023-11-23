@@ -320,17 +320,6 @@ namespace ScriptUtil
 		}
 	}
 
-	//inline float GetLibido(RE::Actor* a_actor)
-	//{
-	//	RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor> callback(new VMStackCallbackFunctor(
-	//		[](float ff) {
-
-	//		}
-	//	));
-
-	//	auto args = RE::MakeFunctionArguments(std::move(a_actor));
-	//	RE::BSScript::Internal::VirtualMachine::GetSingleton()->DispatchStaticCall("OSLArousedNative", "GetLibido", args, callback);
-	//}
 
 	class VMStackCallbackFunctor : public RE::BSScript::IStackCallbackFunctor
 	{

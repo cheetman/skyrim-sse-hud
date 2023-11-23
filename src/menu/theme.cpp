@@ -5,12 +5,10 @@
 
 namespace menu
 {
-	std::string fontFilePath = "data\\skse\\plugins\\xyght3.0-62354202.ttf";
+	std::string fontFilePath = "data\\skse\\plugins\\ItemFinderPlus\\fonts\\";
 	int imgui_style_index = 6;
 	int imgui_font_index = 3;
 	std::vector<ImFont*> fonts;
-
-	
 
 	void initFonts()
 	{
@@ -24,13 +22,13 @@ namespace menu
 
 			float baseFontSize = 18.0f;
 			float iconFontSize = baseFontSize * 2.0f / 3.0f;
-			ImFont* font = io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\xyght3.0-62354202.ttf", baseFontSize, 0, io.Fonts->GetGlyphRangesChineseFull());
+			ImFont* font = io.Fonts->AddFontFromFileTTF((fontFilePath + "xyght3.0-62354202.ttf").c_str(), baseFontSize, 0, io.Fonts->GetGlyphRangesChineseFull());
 
 			ImFontConfig config;
 			config.MergeMode = true;
 			config.GlyphMinAdvanceX = iconFontSize;
 			static const ImWchar icon_ranges[] = { 0xf000, 0xf3ff, 0 };
-			io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\fontawesome-webfont.ttf", iconFontSize, &config, icon_ranges);
+			io.Fonts->AddFontFromFileTTF((fontFilePath + "fontawesome-webfont.ttf").c_str(), iconFontSize, &config, icon_ranges);
 			SKSE::log::info("AddFontFromFileTTF");
 
 			ImFontConfig config2;
@@ -38,23 +36,23 @@ namespace menu
 			config2.PixelSnapH = true;
 			config2.GlyphMinAdvanceX = iconFontSize;
 			static const ImWchar icon_ranges2[] = { static_cast<ImWchar>(ICON_MIN_MDI), static_cast<ImWchar>(ICON_MAX_MDI), static_cast<ImWchar>(0) };
-			io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\materialdesignicons-webfont.ttf", iconFontSize, &config2, icon_ranges2);
+			io.Fonts->AddFontFromFileTTF((fontFilePath + "materialdesignicons-webfont.ttf").c_str(), iconFontSize, &config2, icon_ranges2);
 
 			menu::fonts.push_back(font);
 
-			font = io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\bt-zh-cn.ttf", baseFontSize, 0, io.Fonts->GetGlyphRangesChineseFull());
-			io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\fontawesome-webfont.ttf", iconFontSize, &config, icon_ranges);
-			io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\materialdesignicons-webfont.ttf", iconFontSize, &config2, icon_ranges2);
+			font = io.Fonts->AddFontFromFileTTF((fontFilePath + "bt-zh-cn.ttf").c_str(), baseFontSize, 0, io.Fonts->GetGlyphRangesChineseFull());
+			io.Fonts->AddFontFromFileTTF((fontFilePath + "fontawesome-webfont.ttf").c_str(), iconFontSize, &config, icon_ranges);
+			io.Fonts->AddFontFromFileTTF((fontFilePath + "materialdesignicons-webfont.ttf").c_str(), iconFontSize, &config2, icon_ranges2);
 			menu::fonts.push_back(font);
 
-			font = io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\ys-zh-cn.ttf", baseFontSize, 0, io.Fonts->GetGlyphRangesChineseFull());
-			io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\fontawesome-webfont.ttf", iconFontSize, &config, icon_ranges);
-			io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\materialdesignicons-webfont.ttf", iconFontSize, &config2, icon_ranges2);
+			font = io.Fonts->AddFontFromFileTTF((fontFilePath + "ys-zh-cn.ttf").c_str(), baseFontSize, 0, io.Fonts->GetGlyphRangesChineseFull());
+			io.Fonts->AddFontFromFileTTF((fontFilePath + "fontawesome-webfont.ttf").c_str(), iconFontSize, &config, icon_ranges);
+			io.Fonts->AddFontFromFileTTF((fontFilePath + "materialdesignicons-webfont.ttf").c_str(), iconFontSize, &config2, icon_ranges2);
 			menu::fonts.push_back(font);
 
-			font = io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\b3-zh-cn.ttf", baseFontSize, 0, io.Fonts->GetGlyphRangesChineseFull());
-			io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\fontawesome-webfont.ttf", iconFontSize, &config, icon_ranges);
-			io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\materialdesignicons-webfont.ttf", iconFontSize, &config2, icon_ranges2);
+			font = io.Fonts->AddFontFromFileTTF((fontFilePath + "b3-zh-cn.ttf").c_str(), baseFontSize, 0, io.Fonts->GetGlyphRangesChineseFull());
+			io.Fonts->AddFontFromFileTTF((fontFilePath + "fontawesome-webfont.ttf").c_str(), iconFontSize, &config, icon_ranges);
+			io.Fonts->AddFontFromFileTTF((fontFilePath + "materialdesignicons-webfont.ttf").c_str(), iconFontSize, &config2, icon_ranges2);
 			menu::fonts.push_back(font);
 
 			/*font = io.Fonts->AddFontFromFileTTF("data\\skse\\plugins\\SourceHanSansSC-Medium.ttf", baseFontSize, 0, io.Fonts->GetGlyphRangesChineseFull());
