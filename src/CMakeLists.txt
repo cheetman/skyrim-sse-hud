@@ -17,6 +17,8 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/event/BSTPositionPlayerEvent.cpp"
 	"${SOURCE_DIR}/event/BSTBGSActorCellEvent.h"
 	"${SOURCE_DIR}/event/BSTBGSActorCellEvent.cpp"
+	"${SOURCE_DIR}/event/BSTDeathEvent.h"
+	"${SOURCE_DIR}/event/BSTDeathEvent.cpp"
 	"${SOURCE_DIR}/hook/d3d11hook.h"
 	"${SOURCE_DIR}/hook/d3d11hook.cpp"
 	"${SOURCE_DIR}/hook/hudhook.h"

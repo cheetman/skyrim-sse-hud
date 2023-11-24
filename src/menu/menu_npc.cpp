@@ -5,6 +5,7 @@
 #include <menu/menu_npc.h>
 #include <menu/menu_track.h>
 #include <utils/utils.h>
+#include <setting/i18n.h>
 
 namespace menu
 {
@@ -217,10 +218,10 @@ namespace menu
 			ImGui::Begin("npc-1", nullptr, flags);
 			if (getNpcCount() > 0) {
 				if (active) {
-					ImGui::Checkbox(ICON_MDI_ACCOUNT " npc", &show_npc);
+					ImGui::Checkbox(I18Ni(ICON_MDI_ACCOUNT, "hud.npc.hud-npc"), &show_npc);
 				} else {
 					if (show_npc) {
-						ImGui::Text(ICON_MDI_ACCOUNT " npc");
+						ImGui::Text(I18Ni(ICON_MDI_ACCOUNT, "hud.npc.hud-npc"));
 					}
 				}
 				if (show_npc) {
@@ -233,10 +234,10 @@ namespace menu
 			ImGui::Begin("npc-2", nullptr, flags);
 			if (getHorseCount() > 0) {
 				if (active) {
-					ImGui::Checkbox(ICON_MDI_HORSE_VARIANT " horse", &show_horse);
+					ImGui::Checkbox(I18Ni(ICON_MDI_HORSE_VARIANT, "hud.npc.hud-horse"), &show_horse);
 				} else {
 					if (show_horse) {
-						ImGui::Text(ICON_MDI_HORSE_VARIANT " horse");
+						ImGui::Text(I18Ni(ICON_MDI_HORSE_VARIANT, "hud.npc.hud-horse"));
 					}
 				}
 				if (show_horse) {
@@ -249,10 +250,10 @@ namespace menu
 			ImGui::Begin("npc-3", nullptr, flags);
 			if (getEnemyCount() > 0) {
 				if (active) {
-					ImGui::Checkbox(ICON_MDI_SWORD_CROSS " enemy", &show_enemy);
+					ImGui::Checkbox(I18Ni(ICON_MDI_SWORD_CROSS, "hud.npc.hud-enemy"), &show_enemy);
 				} else {
 					if (show_enemy) {
-						ImGui::Text(ICON_MDI_SWORD_CROSS " enemy");
+						ImGui::Text(I18Ni(ICON_MDI_SWORD_CROSS, "hud.npc.hud-enemy"));
 					}
 				}
 				if (show_enemy) {
@@ -265,10 +266,10 @@ namespace menu
 			ImGui::Begin("npc-4", nullptr, flags);
 			if (getTeammateCount() > 0) {
 				if (active) {
-					ImGui::Checkbox(ICON_MDI_SHIELD_ACCOUNT " team", &show_teammate);
+					ImGui::Checkbox(I18Ni(ICON_MDI_SHIELD_ACCOUNT, "hud.npc.hud-team"), &show_teammate);
 				} else {
 					if (show_teammate) {
-						ImGui::Text(ICON_MDI_SHIELD_ACCOUNT " team");
+						ImGui::Text(I18Ni(ICON_MDI_SHIELD_ACCOUNT, "hud.npc.hud-team"));
 					}
 				}
 				if (show_teammate) {
@@ -283,10 +284,10 @@ namespace menu
 			ImGui::Begin("npc信息", nullptr, flags);
 			if (getNpcCount() > 0) {
 				if (active) {
-					ImGui::Checkbox(ICON_MDI_ACCOUNT " npc", &show_npc);
+					ImGui::Checkbox(I18Ni(ICON_MDI_ACCOUNT, "hud.npc.hud-npc"), &show_npc);
 				} else {
 					if (show_npc) {
-						ImGui::Text(ICON_MDI_ACCOUNT " npc");
+						ImGui::Text(I18Ni(ICON_MDI_ACCOUNT, "hud.npc.hud-npc"));
 					}
 				}
 				if (show_npc) {
@@ -304,10 +305,10 @@ namespace menu
 					}
 				}
 				if (active) {
-					ImGui::Checkbox(ICON_MDI_HORSE_VARIANT " horse", &show_horse);
+					ImGui::Checkbox(I18Ni(ICON_MDI_HORSE_VARIANT, "hud.npc.hud-horse"), &show_horse);
 				} else {
 					if (show_horse) {
-						ImGui::Text(ICON_MDI_HORSE_VARIANT " horse");
+						ImGui::Text(I18Ni(ICON_MDI_HORSE_VARIANT, "hud.npc.hud-horse"));
 					}
 				}
 				if (show_horse) {
@@ -325,10 +326,10 @@ namespace menu
 					}
 				}
 				if (active) {
-					ImGui::Checkbox(ICON_MDI_SWORD_CROSS " enemy", &show_enemy);
+					ImGui::Checkbox(I18Ni(ICON_MDI_SWORD_CROSS, "hud.npc.hud-enemy"), &show_enemy);
 				} else {
 					if (show_enemy) {
-						ImGui::Text(ICON_MDI_SWORD_CROSS " enemy");
+						ImGui::Text(I18Ni(ICON_MDI_SWORD_CROSS, "hud.npc.hud-enemy"));
 					}
 				}
 				if (show_enemy) {
@@ -347,10 +348,10 @@ namespace menu
 				}
 
 				if (active) {
-					ImGui::Checkbox(ICON_MDI_SHIELD_ACCOUNT " team", &show_teammate);
+					ImGui::Checkbox(I18Ni(ICON_MDI_SHIELD_ACCOUNT, "hud.npc.hud-team"), &show_teammate);
 				} else {
 					if (show_teammate) {
-						ImGui::Text(ICON_MDI_SHIELD_ACCOUNT " team");
+						ImGui::Text(I18Ni(ICON_MDI_SHIELD_ACCOUNT  ,"hud.npc.hud-team"));
 					}
 				}
 				if (show_teammate) {
@@ -365,32 +366,38 @@ namespace menu
 
 	void renderNpcSettings()
 	{
-		ImGui::Checkbox("显示NPC信息", &show_npc_window);
+		ImGui::Checkbox(I18Nc("hud.setting.checkbox-displayNPC"), &show_npc_window);
 		if (show_npc_window) {
 			ImGui::Indent();
-			ImGui::Checkbox("只显示距离内NPC", &show_npc_window_dis);
+			ImGui::Checkbox(I18Nc("hud.setting.checkbox-npcDistanceLimit"), &show_npc_window_dis);
 			if (show_npc_window_dis) {
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 				ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-				ImGui::SliderInt("##距离", &show_npc_window_dis_meter, 10, 100, "%d米内");
+				ImGui::SliderInt("##距离", &show_npc_window_dis_meter, 10, 100, I18Nc("hud.setting.slider-npcDistanceLimit"));
 				ImGui::PopItemWidth();
 			}
-			ImGui::Checkbox("拆分显示", &show_npc_window_split);
+			ImGui::Checkbox(I18Nc("hud.setting.checkbox-npcSplitDisplay"), &show_npc_window_split);
 			ImGui::Checkbox("显示FORMID", &show_npc_window_formid);
-			ImGui::Checkbox("显示方向和距离", &show_npc_window_direction);
-			ImGui::Checkbox("死亡不显示", &show_npc_window_dead_hidden);
-			ImGui::Checkbox("显示血条", &show_npc_window_process);
+			ImGui::Checkbox(I18Nc("hud.setting.checkbox-npcPositionDisplay"), &show_npc_window_direction);
+			ImGui::Checkbox(I18Nc("hud.setting.checkbox-npcDeadHidden"), &show_npc_window_dead_hidden);
+			ImGui::Checkbox(I18Nc("hud.setting.checkbox-npcDisplayProgressBar"), &show_npc_window_process);
 			if (show_npc_window_process) {
-				ImGui::Checkbox("战斗显示", &show_npc_window_process_combat);
-				ImGui::ColorEdit4("颜色1", &colorProgressNpc1.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
-				ImGui::ColorEdit4("颜色2", &colorProgressNpc2.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
-				ImGui::ColorEdit4("颜色3", &colorProgressNpc3.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+				ImGui::Indent();
+				ImGui::Checkbox(I18Nc("hud.setting.checkbox-npcProgressBarOnlyInCombat"), &show_npc_window_process_combat);
+				ImGui::ColorEdit4(I18Nc("hud.setting.checkbox-npcProgressBarColor1"), &colorProgressNpc1.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+				ImGui::ColorEdit4(I18Nc("hud.setting.checkbox-npcProgressBarColor2"), &colorProgressNpc2.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+				ImGui::ColorEdit4(I18Nc("hud.setting.checkbox-npcProgressBarColor3"), &colorProgressNpc3.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+				ImGui::Unindent();
 			}
 
-			ImGui::Checkbox("忽略NPC", &show_npc_window_ignore);
+			ImGui::Checkbox(I18Nc("hud.setting.checkbox-npcIgnoreSetting"), &show_npc_window_ignore);
 			if (show_npc_window_ignore) {
 				static ImGuiTableFlags flagsItem =
-					ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
+					ImGuiTableFlags_Resizable 
+					| ImGuiTableFlags_Borders 
+					| ImGuiTableFlags_ScrollY 
+					| ImGuiTableFlags_ScrollX 
+					| ImGuiTableFlags_NoBordersInBody;
 
 				const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
 				if (ImGui::BeginTable("tableItemNpcIngore", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {

@@ -1219,7 +1219,7 @@ namespace menu
 				std::lock_guard<std::mutex> lock(mtxTrack);
 				if (trackPtrs2.size() > 0 || trackActorPtrs2.size() > 0) {
 					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-					if (ImGui::SmallButton("删除标记")) {
+					if (ImGui::SmallButton(I18Nc("finder.ui.btn-deleteMarker"))) {
 						for (auto& item : trackPtrs2) {
 							tintTrackClose(item.first);
 						}
@@ -1230,10 +1230,10 @@ namespace menu
 			}
 
 			if (ImGui::BeginTable("tableItem", 5)) {
-				if (lotd::isShow) {
+				//if (lotd::isShow) {
 					//lotd::render();
 
-				} else {
+				//} else {
 					/*	{
 						ImGui::TableNextColumn();
 
@@ -1315,7 +1315,10 @@ namespace menu
 						if (lotd::getCountAttached()) {
 							ImGui::TableNextColumn();
 							ImGui::AlignTextToFramePadding();
-							ImGui::Text(ICON_MDI_GREENHOUSE " 艺术馆藏品(%d)", lotd::getCountAttached());
+
+							
+
+							ImGui::Text(I18Ni(ICON_MDI_GREENHOUSE, "finder.ui.label-lotdCollection"), lotd::getCountAttached());
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS "##99")) {
 								trackAllItem(lotd::getCountAttached(), lotd::getItemsAttached());
@@ -1328,7 +1331,7 @@ namespace menu
 					if (getItemCountWEAP() > 0) {
 						ImGui::TableNextColumn();
 						ImGui::AlignTextToFramePadding();
-						ImGui::Text(ICON_MDI_SWORD " 武器(%d)", getItemCountWEAP());
+						ImGui::Text(I18Ni(ICON_MDI_SWORD, "finder.ui.label-weap"), getItemCountWEAP());
 
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1349,7 +1352,7 @@ namespace menu
 					if (getItemCountARMO() > 0) {
 						ImGui::TableNextColumn();
 						ImGui::AlignTextToFramePadding();
-						ImGui::Text(ICON_MDI_SHIELD " 装备(%d)", getItemCountARMO());
+						ImGui::Text(I18Ni(ICON_MDI_SHIELD, "finder.ui.label-armo"), getItemCountARMO());
 
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1370,7 +1373,7 @@ namespace menu
 					if (getItemCountAMMO() > 0) {
 						ImGui::TableNextColumn();
 						ImGui::AlignTextToFramePadding();
-						ImGui::Text(ICON_MDI_ARROW_PROJECTILE " 弹药(%d)", getItemCountAMMO());
+						ImGui::Text(I18Ni(ICON_MDI_ARROW_PROJECTILE, "finder.ui.label-ammo"), getItemCountAMMO());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##42")) {
@@ -1390,7 +1393,7 @@ namespace menu
 					if (getItemCountBOOK() > 0) {
 						ImGui::TableNextColumn();
 						ImGui::AlignTextToFramePadding();
-						ImGui::Text(ICON_MDI_BOOK_OPEN_VARIANT " 书信(%d)", getItemCountBOOK());
+						ImGui::Text(I18Ni(ICON_MDI_BOOK_OPEN_VARIANT, "finder.ui.label-book"), getItemCountBOOK());
 
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1403,7 +1406,7 @@ namespace menu
 					if (getItemCountALCH() > 0) {
 						ImGui::TableNextColumn();
 						ImGui::AlignTextToFramePadding();
-						ImGui::Text(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE " 药水(%d)", getItemCountALCH());
+						ImGui::Text(I18Ni(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE, "finder.ui.label-alch"), getItemCountALCH());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##44")) {
@@ -1423,7 +1426,7 @@ namespace menu
 					if (getItemCountFOOD() > 0) {
 						ImGui::TableNextColumn();
 						ImGui::AlignTextToFramePadding();
-						ImGui::Text(ICON_MDI_FOOD_DRUMSTICK " 食物(%d)", getItemCountFOOD());
+						ImGui::Text(I18Ni(ICON_MDI_FOOD_DRUMSTICK, "finder.ui.label-food"), getItemCountFOOD());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##45")) {
@@ -1443,7 +1446,7 @@ namespace menu
 					if (getItemCountINGR() > 0) {
 						ImGui::TableNextColumn();
 						ImGui::AlignTextToFramePadding();
-						ImGui::Text(ICON_MDI_SOURCE_BRANCH " 材料(%d)", getItemCountINGR());
+						ImGui::Text(I18Ni(ICON_MDI_SOURCE_BRANCH, "finder.ui.label-ingr"), getItemCountINGR());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##48")) {
@@ -1463,7 +1466,7 @@ namespace menu
 					if (getItemCountSGEM() > 0) {
 						ImGui::TableNextColumn();
 						ImGui::AlignTextToFramePadding();
-						ImGui::Text(ICON_MDI_CARDS_DIAMOND " 灵魂石(%d)", getItemCountSGEM());
+						ImGui::Text(I18Ni(ICON_MDI_CARDS_DIAMOND, "finder.ui.label-sgen"), getItemCountSGEM());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##53")) {
@@ -1482,7 +1485,7 @@ namespace menu
 					if (getItemCountKEYM() > 0) {
 						ImGui::TableNextColumn();
 						ImGui::AlignTextToFramePadding();
-						ImGui::Text(ICON_MDI_KEY " 钥匙(%d)", getItemCountKEYM());
+						ImGui::Text(I18Ni(ICON_MDI_KEY, "finder.ui.label-keym"), getItemCountKEYM());
 
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1496,7 +1499,7 @@ namespace menu
 					if (getItemCountSTON() > 0) {
 						ImGui::TableNextColumn();
 						ImGui::AlignTextToFramePadding();
-						ImGui::Text(ICON_MDI_DIAMOND_STONE " 宝石(%d)", getItemCountSTON());
+						ImGui::Text(I18Ni(ICON_MDI_DIAMOND_STONE, "finder.ui.label-ston"), getItemCountSTON());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-1")) {
@@ -1516,7 +1519,7 @@ namespace menu
 					if (getItemCountANVI() > 0) {
 						ImGui::TableNextColumn();
 						ImGui::AlignTextToFramePadding();
-						ImGui::Text(ICON_MDI_ANVIL " 矿锭(%d)", getItemCountANVI());
+						ImGui::Text(I18Ni(ICON_MDI_ANVIL, "finder.ui.label-anvi"), getItemCountANVI());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-2")) {
@@ -1536,7 +1539,7 @@ namespace menu
 					if (getItemCountANHD() > 0) {
 						ImGui::TableNextColumn();
 						ImGui::AlignTextToFramePadding();
-						ImGui::Text(ICON_MDI_BOX_CUTTER " 兽皮(%d)", getItemCountANHD());
+						ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-anhd"), getItemCountANHD());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-3")) {
@@ -1556,7 +1559,7 @@ namespace menu
 					if (getItemCountANPA() > 0) {
 						ImGui::TableNextColumn();
 						ImGui::AlignTextToFramePadding();
-						ImGui::Text(ICON_MDI_RABBIT " 战利品(%d)", getItemCountANPA());
+						ImGui::Text(I18Ni(ICON_MDI_RABBIT, "finder.ui.label-anpa"), getItemCountANPA());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-4")) {
@@ -1576,7 +1579,7 @@ namespace menu
 					if (getItemCountTOOL() > 0) {
 						ImGui::TableNextColumn();
 						ImGui::AlignTextToFramePadding();
-						ImGui::Text(ICON_MDI_TOOLS " 工具(%d)", getItemCountTOOL());
+						ImGui::Text(I18Ni(ICON_MDI_TOOLS, "finder.ui.label-tool"), getItemCountTOOL());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-5")) {
@@ -1596,7 +1599,7 @@ namespace menu
 					if (getItemCountMISC() > 0) {
 						ImGui::TableNextColumn();
 						ImGui::AlignTextToFramePadding();
-						ImGui::Text(ICON_MDI_PACKAGE_VARIANT_CLOSED " 杂项(%d)", getItemCountMISC());
+						ImGui::Text(I18Ni(ICON_MDI_PACKAGE_VARIANT_CLOSED, "finder.ui.label-misc"), getItemCountMISC());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##49")) {
@@ -1616,7 +1619,7 @@ namespace menu
 					if (getItemCountFLOR() > 0) {
 						ImGui::TableNextColumn();
 						ImGui::AlignTextToFramePadding();
-						ImGui::Text(ICON_MDI_BASKET_OUTLINE " 可收获(%d)", getItemCountFLOR());
+						ImGui::Text(I18Ni(ICON_MDI_BASKET_OUTLINE, "finder.ui.label-flor"), getItemCountFLOR());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##50")) {
@@ -1636,7 +1639,7 @@ namespace menu
 					if (getItemCountTREE() > 0) {
 						ImGui::TableNextColumn();
 						ImGui::AlignTextToFramePadding();
-						ImGui::Text(ICON_MDI_FLOWER_TULIP_OUTLINE " 植物(%d)", getItemCountTREE());
+						ImGui::Text(I18Ni(ICON_MDI_FLOWER_TULIP_OUTLINE, "finder.ui.label-tree"), getItemCountTREE());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##53")) {
@@ -1656,7 +1659,7 @@ namespace menu
 					if (getItemCountACHR() > 0) {
 						ImGui::TableNextColumn();
 						ImGui::AlignTextToFramePadding();
-						ImGui::Text(ICON_MDI_HUMAN_MALE " 尸体(%d)", getItemCountACHR());
+						ImGui::Text(I18Ni(ICON_MDI_HUMAN_MALE, "finder.ui.label-achr"), getItemCountACHR());
 
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1673,7 +1676,7 @@ namespace menu
 					if (getItemCountCONT() > 0) {
 						ImGui::TableNextColumn();
 						ImGui::AlignTextToFramePadding();
-						ImGui::Text(ICON_MDI_ARCHIVE_OUTLINE " 容器(%d)", getItemCountCONT());
+						ImGui::Text(I18Ni(ICON_MDI_ARCHIVE_OUTLINE, "finder.ui.label-cont"), getItemCountCONT());
 						if (show_items_window_settings) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							ImGui::Checkbox("自动拾取##28", &show_items_window_auto_cont);
@@ -1688,7 +1691,7 @@ namespace menu
 					}
 					if (getItemCountACTI() > 0) {
 						ImGui::TableNextColumn();
-						ImGui::Text(ICON_MDI_COGS " 可互动(%d)", getItemCountACTI());
+						ImGui::Text(I18Ni(ICON_MDI_COGS, "finder.ui.label-acti"), getItemCountACTI());
 
 						buildItemInfoACTI(getItemCountACTI(), getItemsACTI(), RE::FormType::Activator);
 						ImGui::Spacing();
@@ -1716,42 +1719,38 @@ namespace menu
 
 							if (ImGui::BeginTable("tableItemsSetting", 2)) {
 								ImGui::TableNextColumn();
-								ImGui::Checkbox("背景透明", &no_background_items);
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-transparentBackground"), &no_background_items);
 								ImGui::TableNextColumn();
-								ImGui::Checkbox("显示FORMID", &show_items_window_formid);
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayFormid"), &show_items_window_formid);
 								ImGui::TableNextColumn();
-								ImGui::Checkbox("显示REFID", &show_items_window_refid);
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayRefid"), &show_items_window_refid);
 								ImGui::TableNextColumn();
-								ImGui::Checkbox("显示方位", &show_items_window_direction);
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayRefid"), &show_items_window_direction);
 								ImGui::TableNextColumn();
-								ImGui::Checkbox("显示来自MOD", &show_items_window_file);
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayModname"), &show_items_window_file);
 								ImGui::TableNextColumn();
-								ImGui::Checkbox("显示无模型物品", &show_items_window_3D);
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNo3D"), &show_items_window_3D);
 								ImGui::TableNextColumn();
-								ImGui::Checkbox("忽略偷窃物品", &isCrimeIgnore);
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-privateItemHidden"), &isCrimeIgnore);
 								ImGui::TableNextColumn();
-								ImGui::Checkbox("忽略商贩箱子", &merchantContIgnore);
-								ImGui::TableNextColumn();
-								ImGui::Checkbox("标记显示名称", &show_item_window_track_icon_name);
-								ImGui::TableNextColumn();
-								ImGui::Checkbox("标记高亮", &show_item_window_track_highlight);
-								/*if (show_item_window_track_highlight) {
-									ImGui::ColorEdit4("颜色", &colorTrack.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
-								}*/
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-merchantContIgnore"), &merchantContIgnore);
 								ImGui::EndTable();
 							}
 
 							ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-							ImGui::SliderInt("显示范围(本地)", &show_items_window_auto_dis_local, 10, 2000, "%d米");
-							ImGui::SliderInt("显示范围(天际)", &show_items_window_auto_dis_skyrim, 20, 10000, "%d米");
-							ImGui::SliderInt("表格高度", &show_inv_window_height, 7, 18, "%d行");
-							ImGui::SliderInt("追踪标记放大", &show_item_window_track_icon_scale, 0, 10, "+%d");
+							ImGui::SliderInt(I18Nc("finder.setting.slider-rangelocal"), &show_items_window_auto_dis_local, 10, 2000, "%d米");
+							ImGui::SliderInt(I18Nc("finder.setting.slider-rangeskyrim"), &show_items_window_auto_dis_skyrim, 20, 10000, "%d米");
+							ImGui::SliderInt(I18Nc("finder.setting.slider-tableHeight"), &show_inv_window_height, 7, 18, "%d行");
 							ImGui::PopItemWidth();
 
-							ImGui::Checkbox("忽略项目", &show_items_window_ignore);
+							ImGui::Checkbox(I18Nc("finder.setting.checkbox-ignoreItem"), &show_items_window_ignore);
 							if (show_items_window_ignore) {
 								static ImGuiTableFlags flagsItem =
-									ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
+									ImGuiTableFlags_Resizable 
+									| ImGuiTableFlags_Borders 
+									| ImGuiTableFlags_ScrollY 
+									| ImGuiTableFlags_ScrollX 
+									| ImGuiTableFlags_NoBordersInBody;
 
 								const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
 								if (ImGui::BeginTable("tableItemIngore", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
@@ -1797,92 +1796,92 @@ namespace menu
 							}
 
 							ImGui::Spacing();
-							if (ImGui::TreeNodeEx(ICON_MDI_AUTORENEW " 自动拾取", ImGuiTreeNodeFlags_DefaultOpen)) {
+							if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_AUTORENEW, "finder.setting.label-autoPickup"), ImGuiTreeNodeFlags_DefaultOpen)) {
 								ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-								ImGui::SliderInt("拾取范围", &show_items_window_auto_dis, 1, 100, "%d米");
-								ImGui::SliderInt("拾取频率", &refresh_time_auto, 1, 10, "%d秒");
-								ImGui::SliderInt("拾取数量", &show_items_window_auto_every_max, 1, 10, "%d个");
+								ImGui::SliderInt(I18Nc("finder.setting.slider-pickupRange"), &show_items_window_auto_dis, 1, 100, "%d米");
+								ImGui::SliderInt(I18Nc("finder.setting.slider-pickupFrequency"), &refresh_time_auto, 1, 10, "%d秒");
+								ImGui::SliderInt(I18Nc("finder.setting.slider-pickupQuantity"), &show_items_window_auto_every_max, 1, 10, "%d个");
 								ImGui::PopItemWidth();
-								ImGui::Checkbox("拾取提示", &show_items_window_auto_notification);
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupPrompt"), &show_items_window_auto_notification);
 
-								if (ImGui::TreeNodeEx(ICON_MDI_HUMAN_MALE " 尸体物品拾取类型", ImGuiTreeNodeFlags_DefaultOpen)) {
+								if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_HUMAN_MALE, "finder.setting.label-achrItemPickupType"), ImGuiTreeNodeFlags_DefaultOpen)) {
 									if (ImGui::BeginTable("tableItemsSettingACHR", 3)) {
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_SWORD "武器", &show_items_window_auto_achr_weap);
+										ImGui::Checkbox(I18Ni(ICON_MDI_SWORD ,"finder.setting.checkbox-weap"), &show_items_window_auto_achr_weap);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_SHIELD_HALF_FULL "装备", &show_items_window_auto_achr_armo);
+										ImGui::Checkbox(I18Ni(ICON_MDI_SHIELD_HALF_FULL, "finder.setting.checkbox-armo"), &show_items_window_auto_achr_armo);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_ARROW_PROJECTILE "弹药", &show_items_window_auto_achr_ammo);
+										ImGui::Checkbox(I18Ni(ICON_MDI_ARROW_PROJECTILE, "finder.setting.checkbox-ammo"), &show_items_window_auto_achr_ammo);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE "药水", &show_items_window_auto_achr_alch);
+										ImGui::Checkbox(I18Ni(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE, "finder.setting.checkbox-alch"), &show_items_window_auto_achr_alch);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_FOOD_DRUMSTICK "食物", &show_items_window_auto_achr_food);
+										ImGui::Checkbox(I18Ni(ICON_MDI_FOOD_DRUMSTICK, "finder.setting.checkbox-food"), &show_items_window_auto_achr_food);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_SOURCE_BRANCH "材料", &show_items_window_auto_achr_ingr);
+										ImGui::Checkbox(I18Ni(ICON_MDI_SOURCE_BRANCH, "finder.setting.checkbox-ingr"), &show_items_window_auto_achr_ingr);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_CARDS_DIAMOND "灵魂石", &show_items_window_auto_achr_sgem);
+										ImGui::Checkbox(I18Ni(ICON_MDI_CARDS_DIAMOND, "finder.setting.checkbox-sgen"), &show_items_window_auto_achr_sgem);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_CASH "金钱", &show_items_window_auto_achr_gold);
+										ImGui::Checkbox(I18Ni(ICON_MDI_CASH, "finder.setting.checkbox-gold"), &show_items_window_auto_achr_gold);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_SCRIPT_TEXT "卷轴", &show_items_window_auto_achr_scrl);
+										ImGui::Checkbox(I18Ni(ICON_MDI_SCRIPT_TEXT, "finder.setting.checkbox-scrl"), &show_items_window_auto_achr_scrl);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_KEY "钥匙", &show_items_window_auto_achr_keym);
+										ImGui::Checkbox(I18Ni(ICON_MDI_KEY, "finder.setting.checkbox-keym"), &show_items_window_auto_achr_keym);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_DIAMOND_STONE "宝石", &show_items_window_auto_achr_ston);
+										ImGui::Checkbox(I18Ni(ICON_MDI_DIAMOND_STONE, "finder.setting.checkbox-ston"), &show_items_window_auto_achr_ston);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_ANVIL "矿锭", &show_items_window_auto_achr_anvi);
+										ImGui::Checkbox(I18Ni(ICON_MDI_ANVIL, "finder.setting.checkbox-anvi"), &show_items_window_auto_achr_anvi);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_LOCK_OPEN "开锁器", &show_items_window_auto_achr_lock);
+										ImGui::Checkbox(I18Ni(ICON_MDI_LOCK_OPEN, "finder.setting.checkbox-lock"), &show_items_window_auto_achr_lock);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_BOX_CUTTER "兽皮", &show_items_window_auto_achr_anhd);
+										ImGui::Checkbox(I18Ni(ICON_MDI_BOX_CUTTER, "finder.setting.checkbox-anhd"), &show_items_window_auto_achr_anhd);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_RABBIT "战利品", &show_items_window_auto_achr_anpa);
+										ImGui::Checkbox(I18Ni(ICON_MDI_RABBIT, "finder.setting.checkbox-anpa"), &show_items_window_auto_achr_anpa);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_TOOLS "工具", &show_items_window_auto_achr_tool);
+										ImGui::Checkbox(I18Ni(ICON_MDI_TOOLS, "finder.setting.checkbox-tool"), &show_items_window_auto_achr_tool);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_PACKAGE_VARIANT_CLOSED "杂项", &show_items_window_auto_achr_misc);
+										ImGui::Checkbox(I18Ni(ICON_MDI_PACKAGE_VARIANT_CLOSED, "finder.setting.checkbox-misc"), &show_items_window_auto_achr_misc);
 										ImGui::EndTable();
 									}
 
 									ImGui::TreePop();
 								}
 
-								if (ImGui::TreeNodeEx(ICON_MDI_ARCHIVE_OUTLINE " 容器物品拾取类型", ImGuiTreeNodeFlags_DefaultOpen)) {
+								if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_ARCHIVE_OUTLINE, "finder.setting.label-contItemPickupType"), ImGuiTreeNodeFlags_DefaultOpen)) {
 									if (ImGui::BeginTable("tableItemsSettingCONT", 3)) {
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_SWORD "武器", &show_items_window_auto_cont_weap);
+										ImGui::Checkbox(I18Ni(ICON_MDI_SWORD, "finder.setting.checkbox-weap"), &show_items_window_auto_cont_weap);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_SHIELD_HALF_FULL "装备", &show_items_window_auto_cont_armo);
+										ImGui::Checkbox(I18Ni(ICON_MDI_SHIELD_HALF_FULL, "finder.setting.checkbox-armo"), &show_items_window_auto_cont_armo);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_ARROW_PROJECTILE "弹药", &show_items_window_auto_cont_ammo);
+										ImGui::Checkbox(I18Ni(ICON_MDI_ARROW_PROJECTILE, "finder.setting.checkbox-ammo"), &show_items_window_auto_cont_ammo);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE "药水", &show_items_window_auto_cont_alch);
+										ImGui::Checkbox(I18Ni(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE, "finder.setting.checkbox-alch"), &show_items_window_auto_cont_alch);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_FOOD_DRUMSTICK "食物", &show_items_window_auto_cont_food);
+										ImGui::Checkbox(I18Ni(ICON_MDI_FOOD_DRUMSTICK, "finder.setting.checkbox-food"), &show_items_window_auto_cont_food);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_SOURCE_BRANCH "材料", &show_items_window_auto_cont_ingr);
+										ImGui::Checkbox(I18Ni(ICON_MDI_SOURCE_BRANCH, "finder.setting.checkbox-ingr"), &show_items_window_auto_cont_ingr);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_CARDS_DIAMOND "灵魂石", &show_items_window_auto_cont_sgem);
+										ImGui::Checkbox(I18Ni(ICON_MDI_CARDS_DIAMOND, "finder.setting.checkbox-sgen"), &show_items_window_auto_cont_sgem);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_CASH "金钱", &show_items_window_auto_cont_gold);
+										ImGui::Checkbox(I18Ni(ICON_MDI_CASH, "finder.setting.checkbox-gold"), &show_items_window_auto_cont_gold);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_SCRIPT_TEXT "卷轴", &show_items_window_auto_cont_scrl);
+										ImGui::Checkbox(I18Ni(ICON_MDI_SCRIPT_TEXT, "finder.setting.checkbox-scrl"), &show_items_window_auto_cont_scrl);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_KEY "钥匙", &show_items_window_auto_cont_keym);
+										ImGui::Checkbox(I18Ni(ICON_MDI_KEY, "finder.setting.checkbox-keym"), &show_items_window_auto_cont_keym);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_DIAMOND_STONE "宝石", &show_items_window_auto_cont_ston);
+										ImGui::Checkbox(I18Ni(ICON_MDI_DIAMOND_STONE, "finder.setting.checkbox-ston"), &show_items_window_auto_cont_ston);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_ANVIL "矿锭", &show_items_window_auto_cont_anvi);
+										ImGui::Checkbox(I18Ni(ICON_MDI_ANVIL, "finder.setting.checkbox-anvi"), &show_items_window_auto_cont_anvi);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_LOCK_OPEN "开锁器", &show_items_window_auto_cont_lock);
+										ImGui::Checkbox(I18Ni(ICON_MDI_LOCK_OPEN, "finder.setting.checkbox-lock"), &show_items_window_auto_cont_lock);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_BOX_CUTTER "兽皮", &show_items_window_auto_cont_anhd);
+										ImGui::Checkbox(I18Ni(ICON_MDI_BOX_CUTTER, "finder.setting.checkbox-anhd"), &show_items_window_auto_cont_anhd);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_RABBIT "战利品", &show_items_window_auto_cont_anpa);
+										ImGui::Checkbox(I18Ni(ICON_MDI_RABBIT, "finder.setting.checkbox-anpa"), &show_items_window_auto_cont_anpa);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_TOOLS "工具", &show_items_window_auto_cont_tool);
+										ImGui::Checkbox(I18Ni(ICON_MDI_TOOLS, "finder.setting.checkbox-tool"), &show_items_window_auto_cont_tool);
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(ICON_MDI_PACKAGE_VARIANT_CLOSED "杂项", &show_items_window_auto_cont_misc);
+										ImGui::Checkbox(I18Ni(ICON_MDI_PACKAGE_VARIANT_CLOSED, "finder.setting.checkbox-misc"), &show_items_window_auto_cont_misc);
 										ImGui::EndTable();
 									}
 
@@ -2013,33 +2012,44 @@ namespace menu
 							if (lotd::isLoad) {
 								ImGui::Spacing();
 								if (ImGui::TreeNodeEx(ICON_MDI_HOME_MODERN " 龙裔艺术馆", ImGuiTreeNodeFlags_DefaultOpen)) {
-									ImGui::Checkbox("显示艺术馆板块", &lotd::isShowAttached);
-									ImGui::Checkbox("排除背包藏品", &lotd::isInvIgnore);
-									ImGui::Checkbox("排除偷窃藏品", &lotd::isCrimeIgnore);
-									ImGui::Checkbox("排除军械库藏品", &lotd::isArmoryIgnore);
-									ImGui::Checkbox("显示附近藏品数量", &lotd::showlocationItemCount);
-									ImGui::Checkbox("显示附近挖掘点数量", &stats::showlocationExCount);
-									ImGui::Checkbox("显示已收集藏品总数", &lotd::showDisplayItemCount);
-									ImGui::Checkbox("自动标记藏品", &lotd::isAutoTrackLotdItems);
+									ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayLotdSection"), &lotd::isShowAttached);
+									ImGui::Checkbox(I18Nc("finder.setting.checkbox-excludePlayerItems"), &lotd::isInvIgnore);
+									ImGui::Checkbox(I18Nc("finder.setting.checkbox-privateItemHidden"), &lotd::isCrimeIgnore);
+									ImGui::Checkbox(I18Nc("finder.setting.checkbox-excludeArmoryItems"), &lotd::isArmoryIgnore);
+									ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyLotdItemsQuantity"), &lotd::showlocationItemCount);
+									ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyLotdExcavationQuantity"), &stats::showlocationExCount);
+									ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayLotdItemsQuantity"), &lotd::showDisplayItemCount);
+									ImGui::Checkbox(I18Nc("finder.setting.checkbox-autoMarkLotdItems"), &lotd::isAutoTrackLotdItems);
 									if (lotd::isAutoTrackLotdItems) {
-										ImGui::Checkbox("自动标记忽略偷窃", &lotd::isAutoTrackLotdItemsCrimeIgnore);
+										ImGui::Indent();
+										ImGui::Checkbox(I18Nc("finder.setting.checkbox-privateItemHidden"), &lotd::isAutoTrackLotdItemsCrimeIgnore);
+										ImGui::Unindent();
 									}
 
 									ImGui::TreePop();
 								}
 							}
 
-							if (ImGui::TreeNodeEx(ICON_MDI_MAP_SEARCH_OUTLINE " 其他", ImGuiTreeNodeFlags_DefaultOpen)) {
-								ImGui::Checkbox("显示附近奈恩根数量", &stats::showlocationNirnRootCount);
-								ImGui::Checkbox("显示附近深红奈恩根数量", &stats::showlocationNirnRootRedCount);
-								ImGui::Checkbox("显示附近矿脉数量", &stats::showlocationOreCount);
+							if (ImGui::TreeNodeEx(ICON_MDI_MAP_SEARCH_OUTLINE " HUD", ImGuiTreeNodeFlags_DefaultOpen)) {
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyNirnRootQuantity"), &stats::showlocationNirnRootCount);
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyNirnRootRedQuantity"), &stats::showlocationNirnRootRedCount);
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyVeinQuantity"), &stats::showlocationOreCount);
+
+								ImGui::TreePop();
+							}
+
+							
+							if (ImGui::TreeNodeEx(ICON_MDI_MAP_SEARCH_OUTLINE " 标记设置", ImGuiTreeNodeFlags_DefaultOpen)) {
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerNameTag"), &show_item_window_track_icon_name);
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerHighLight"), &show_item_window_track_highlight);
+								ImGui::SliderInt(I18Nc("finder.setting.slider-markerZoom"), &show_item_window_track_icon_scale, 0, 10, "+%d");
 
 								ImGui::TreePop();
 							}
 							ImGui::EndChild();
 						}
 					}
-				}
+				//}
 
 				ImGui::EndTable();
 			}

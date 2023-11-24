@@ -364,33 +364,54 @@ namespace menu
 		if (show_player_info_window) {
 			ImGui::Begin("人物属性", nullptr, window_flags);
 
-			ImGui::Text(ICON_MDI_SWORD " 伤害: %s", playerInfo.DamageStr.c_str());
-			ImGui::Text(ICON_MDI_SHIELD_HALF_FULL " 防御: %.2f", playerInfo.kDamageResist);
-			ImGui::Text(ICON_MDI_WATER " 毒抗: %.1f%%", playerInfo.kPoisonResist);
-			ImGui::Text(ICON_MDI_FIRE " 火抗: %.1f%%", playerInfo.kResistFire);
-			ImGui::Text(ICON_MDI_LIGHTNING_BOLT_OUTLINE " 雷抗: %.1f%%", playerInfo.kResistShock);
-			ImGui::Text(ICON_MDI_SNOWFLAKE " 冰抗: %.1f%%", playerInfo.kResistFrost);
-			ImGui::Text(ICON_MDI_MAGIC_STAFF " 法抗: %.1f%%", playerInfo.kResistMagic);
-			ImGui::Text(ICON_MDI_PILL " 抵抗力: %.1f%%", playerInfo.kResistDisease);
-			//ImGui::Text("criticalChance:%d", (int)kCriticalChance);
+			ImGui::Text(I18Ni(ICON_MDI_SWORD, "hud.player.hud-damage"), playerInfo.DamageStr.c_str());
+			ImGui::Text(I18Ni(ICON_MDI_SHIELD_HALF_FULL, "hud.player.hud-damageResist"), playerInfo.kDamageResist);
+			ImGui::Text(I18Ni(ICON_MDI_WATER, "hud.player.hud-poisonResist"), playerInfo.kPoisonResist);
+			ImGui::Text(I18Ni(ICON_MDI_FIRE, "hud.player.hud-resistFire"), playerInfo.kResistFire);
+			ImGui::Text(I18Ni(ICON_MDI_LIGHTNING_BOLT_OUTLINE, "hud.player.hud-resistShock"), playerInfo.kResistShock);
+			ImGui::Text(I18Ni(ICON_MDI_SNOWFLAKE, "hud.player.hud-resistFrost"), playerInfo.kResistFrost);
+			ImGui::Text(I18Ni(ICON_MDI_MAGIC_STAFF, "hud.player.hud-resistMagic"), playerInfo.kResistMagic);
+			ImGui::Text(I18Ni(ICON_MDI_PILL, "hud.player.hud-resistDisease"), playerInfo.kResistDisease);
 			ImGui::End();
 		}
 
 		if (show_player_mod_window) {
 			ImGui::Begin("属性加成", nullptr, window_flags);
 
-			ImGui::Text(ICON_MDI_AXE " 单手: %.1f%%", playerInfo.kOneHandedModifier);
-			ImGui::Text(ICON_MDI_AXE_BATTLE " 双手: %.1f%%", playerInfo.kTwoHandedModifier);
-			ImGui::Text(ICON_MDI_BOW_ARROW " 弓箭: %.1f%%", playerInfo.kMarksmanModifier);
-			ImGui::Text(ICON_MDI_ANVIL " 锻造: %.1f%%", playerInfo.kSmithingModifier);
-			ImGui::Text(ICON_MDI_ANVIL " 锻造(power): %.1f%%", playerInfo.kSmithingPowerModifier);
-			ImGui::Text(ICON_MDI_ANVIL " 锻造(skill): %.1f%%", playerInfo.kSmithingSkillAdvance);
-			ImGui::Text(ICON_MDI_BOWL_MIX " 炼金: %.1f%%", playerInfo.kAlchemyModifier);
-			ImGui::Text(ICON_MDI_BOWL_MIX " 炼金(power): %.1f%%", playerInfo.kAlchemyPowerModifier);
-			ImGui::Text(ICON_MDI_BOWL_MIX " 炼金(skill): %.1f%%", playerInfo.kAlchemySkillAdvance);
-			ImGui::Text(ICON_MDI_FLASH " 附魔: %.1f%%", playerInfo.kEnchantingModifier);
-			ImGui::Text(ICON_MDI_FLASH " 附魔(power): %.1f%%", playerInfo.kEnchantingPowerModifier);
-			ImGui::Text(ICON_MDI_FLASH " 附魔(skill): %.1f%%", playerInfo.kEnchantingSkillAdvance);
+			ImGui::Text(I18Ni(ICON_MDI_AXE, "hud.player.hud-oneHandedModifier"), playerInfo.kOneHandedModifier);
+			ImGui::Text(I18Ni(ICON_MDI_AXE_BATTLE, "hud.player.hud-twoHandedModifier"), playerInfo.kTwoHandedModifier);
+			ImGui::Text(I18Ni(ICON_MDI_BOW_ARROW, "hud.player.hud-marksmanModifier"), playerInfo.kMarksmanModifier);
+			ImGui::Text(I18Ni(ICON_MDI_ANVIL, "hud.player.hud-smithingModifier"), playerInfo.kSmithingModifier);
+			if (playerInfo.kSmithingPowerModifier > 0.0f) {
+				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				myTextColored(ImVec4(0.0f, 0.8f, 0.0f, 1.0f), "+ %.0f%% " ICON_MDI_TRANSFER_UP, playerInfo.kSmithingPowerModifier);
+			} else if (playerInfo.kSmithingPowerModifier < 0.0f) {
+				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				myTextColored(ImVec4(0.8f, 0.0f, 0.0f, 1.0f), "- %.0f%% " ICON_MDI_TRANSFER_DOWN, playerInfo.kSmithingPowerModifier);
+			}
+			ImGui::Text(I18Ni(ICON_MDI_ANVIL, "hud.player.hud-smithingSkillAdvance"), playerInfo.kSmithingSkillAdvance);
+			ImGui::Text(I18Ni(ICON_MDI_BOWL_MIX, "hud.player.hud-alchemyModifier"), playerInfo.kAlchemyModifier);
+
+			if (playerInfo.kAlchemyPowerModifier > 0.0f) {
+				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				myTextColored(ImVec4(0.0f, 0.8f, 0.0f, 1.0f), "+ %.0f%% " ICON_MDI_TRANSFER_UP, playerInfo.kAlchemyPowerModifier);
+			} else if (playerInfo.kAlchemyPowerModifier < 0.0f) {
+				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				myTextColored(ImVec4(0.8f, 0.0f, 0.0f, 1.0f), "- %.0f%% " ICON_MDI_TRANSFER_DOWN, playerInfo.kAlchemyPowerModifier);
+			}
+
+			ImGui::Text(I18Ni(ICON_MDI_BOWL_MIX, "hud.player.hud-alchemySkillAdvance"), playerInfo.kAlchemySkillAdvance);
+			ImGui::Text(I18Ni(ICON_MDI_FLASH, "hud.player.hud-enchantingPowerModifier"), playerInfo.kEnchantingModifier);
+
+			if (playerInfo.kEnchantingPowerModifier > 0.0f) {
+				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				myTextColored(ImVec4(0.0f, 0.8f, 0.0f, 1.0f), "+ %.0f%% " ICON_MDI_TRANSFER_UP, playerInfo.kEnchantingPowerModifier);
+			} else if (playerInfo.kEnchantingPowerModifier < 0.0f) {
+				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				myTextColored(ImVec4(0.8f, 0.0f, 0.0f, 1.0f), "- %.0f%% " ICON_MDI_TRANSFER_DOWN, playerInfo.kEnchantingPowerModifier);
+			}
+
+			ImGui::Text(I18Ni(ICON_MDI_FLASH, "hud.player.hud-enchantingSkillAdvance"), playerInfo.kEnchantingSkillAdvance);
 			ImGui::End();
 		}
 
@@ -1024,6 +1045,7 @@ namespace menu
 						}
 						ImGui::Spacing();
 						ImGui::Separator();
+						ImGui::Spacing();
 
 						ImGui::Text(I18Ni(ICON_MDI_TABLE_COG, "common.setting.label-uiStyle"));
 
@@ -1085,6 +1107,7 @@ namespace menu
 
 						ImGui::Spacing();
 						ImGui::Separator();
+						ImGui::Spacing();
 
 						ImGui::Text(I18Ni(ICON_MDI_KEYBOARD_VARIANT, "common.setting.label-hotkey"));
 
@@ -1295,9 +1318,11 @@ namespace menu
 								if (!show_player_base_info_window_sep) {
 									ImGui::Checkbox(I18Nc("hud.setting.checkbox-playerBaseDisplayProgressBar"), &flag_process);
 									if (flag_process) {
+										ImGui::Indent();
 										ImGui::ColorEdit4(I18Nc("hud.setting.checkbox-playerBaseColorHP"), &colorProgressHp.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
 										ImGui::ColorEdit4(I18Nc("hud.setting.checkbox-playerBaseColorSP"), &colorProgressSp.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
 										ImGui::ColorEdit4(I18Nc("hud.setting.checkbox-playerBaseColorMP"), &colorProgressMp.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+										ImGui::Unindent();
 									}
 								}
 								ImGui::Unindent();
@@ -1339,8 +1364,10 @@ namespace menu
 
 								ImGui::Checkbox(I18Nc("hud.setting.checkbox-buffDisplayProgressBar"), &show_player_effects_process);
 								if (show_player_effects_process) {
-									ImGui::ColorEdit4("颜色1", &colorProgressEffect1.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
-									ImGui::ColorEdit4("颜色2", &colorProgressEffect3.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+									ImGui::Indent();
+									ImGui::ColorEdit4(I18Nc("hud.setting.checkbox-buffColor1"), &colorProgressEffect1.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+									ImGui::ColorEdit4(I18Nc("hud.setting.checkbox-buffColor2"), &colorProgressEffect3.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+									ImGui::Unindent();
 								}
 								ImGui::Checkbox(I18Nc("hud.setting.checkbox-buffIgnoreSetting"), &show_player_effects_listignore);
 
@@ -1403,16 +1430,18 @@ namespace menu
 
 						ImGui::Spacing();
 						ImGui::Separator();
+						ImGui::Spacing();
 
 						ImGui::Text(I18Ni(ICON_MDI_HEART, "common.setting.label-sexlab"));
 
 						{
 							ImGui::Indent();
-							ImGui::Checkbox("[OSLAroused]显示欲望值", &sexlab::isShowPlayOSLArousal);
+							ImGui::Checkbox(I18Nc("hud.setting.checkbox-displayOSLArousal"), &sexlab::isShowPlayOSLArousal);
 							ImGui::Unindent();
 						}
 						ImGui::Spacing();
 						ImGui::Separator();
+						ImGui::Spacing();
 
 						ImGui::Text(I18Ni(ICON_MDI_TABLE_COG, "common.setting.label-uiStyle"));
 
@@ -1696,16 +1725,17 @@ namespace menu
 				}
 
 				ImGui::Separator();
+				ImGui::Spacing();
 
 				if (ImGui::BeginPopupModal("信息", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-					ImGui::Text("配置已保存");
-					if (ImGui::Button("确定", ImVec2(120, 0))) {
+					ImGui::Text(I18Nc("common.setting.label-configSaved"));
+					if (ImGui::Button(I18Nc("common.setting.btn-ok"), ImVec2(120, 0))) {
 						ImGui::CloseCurrentPopup();
 					}
 					ImGui::EndPopup();
 				}
 
-				if (ImGui::Button(ICON_MDI_CONTENT_SAVE " 保存配置##2")) {
+				if (ImGui::Button(I18Ni(ICON_MDI_CONTENT_SAVE, "common.setting.btn-saveConfig"))) {
 					setting::save_settings();
 					ImGui::OpenPopup("信息");
 				}

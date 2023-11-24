@@ -25,6 +25,7 @@
 #include <memory/data.h>
 #include <memory/sexlab.h>
 #include <setting/i18n.h>
+#include <event/BSTDeathEvent.h>
 
 
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
@@ -116,7 +117,16 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 		{
 			logger::info("kPreLoadGame"sv);
 			isGameLoading = true;
-			//startflag = true;
+
+			{
+				std::lock_guard<std::mutex> lock(mtxTrack);
+				if (trackPtrs2.size() > 0) {
+					trackPtrs2.clear();
+				}
+				if (trackActorPtrs2.size() > 0) {
+					trackActorPtrs2.clear();
+				}
+			}
 			break;
 		}
 	case SKSE::MessagingInterface::kPostLoadGame:
@@ -124,16 +134,11 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 			logger::info("kPostLoadGame"sv);
 			isGameLoading = false;
 			startflag = true;
-			if (trackPtrs2.size() > 0) {
-				trackPtrs2.clear();
-			}
-			if (trackActorPtrs2.size() > 0) {
-				trackActorPtrs2.clear();
-			}			
-
 			isPlayerInvChanged = true;
 			islotdContChanged = true;
-
+			if (lotd::isAutoTrackLotdItems) {
+				lotd::isAutoTrackLotdItemsFlag = true;
+			}
 			
 
 			break;
@@ -197,6 +202,7 @@ void __cdecl installimgui(void*)
 	MenuOpenCloseEvent::Register();
 	EquipEvent::Register();
 	BSTContainerChangedEvent::Register();
+	BSTDeathEvent::Register();
 	//BSTCrosshairRefEvent::Register();  
 }
 

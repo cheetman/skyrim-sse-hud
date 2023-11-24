@@ -165,5 +165,8 @@ namespace lotd
 	void trackAllItem(int count, std::vector<LotdInfo>& items);
 
 	void refreshDisplayCount();
+
+	bool checkItem(RE::FormID baseFormId);
+	std::string getTrackerName(RE::TESBoundObject* obj, std::string name);
 }
 

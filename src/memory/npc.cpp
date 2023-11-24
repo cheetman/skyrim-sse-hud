@@ -244,6 +244,19 @@ void RefreshInventory(RE::Actor* actor, ActorInfo* actorInfo, int tmpIndex)
 	actorInfo[tmpIndex].inventoryCount = i;
 }
 
+
+RE::TESBoundObject* GetRootTemplate(RE::TESForm* baseForm)
+{
+	RE::TESNPC* npc = static_cast<RE::TESNPC*>(baseForm);
+	auto npcRoot = npc;
+	while (npcRoot->faceNPC && npcRoot->formID >= 0xFF000000) {
+		npcRoot = npcRoot->faceNPC;
+	}
+
+	return npcRoot;
+}
+
+
 void __cdecl RefreshActorInfo(void*)
 {
 	while (true) {
@@ -365,7 +378,7 @@ void __cdecl RefreshActorInfo(void*)
 							continue;
 						}
 
-						auto baseObj = actor->GetActorBase();
+						auto baseObj = GetRootTemplate(actor->GetBaseObject());
 						if (baseObj) {
 							if (show_npc_window_ignore) {
 								if (excludeNpcFormIds.find(baseObj->GetFormID()) != excludeNpcFormIds.end()) {
@@ -412,7 +425,7 @@ void __cdecl RefreshActorInfo(void*)
 							}
 						}
 
-						auto baseObj = actor->GetActorBase();
+						auto baseObj = GetRootTemplate(actor->GetBaseObject());
 						if (baseObj) {
 							if (show_npc_window_ignore) {
 								if (excludeNpcFormIds.find(baseObj->GetFormID()) != excludeNpcFormIds.end()) {
@@ -456,7 +469,7 @@ void __cdecl RefreshActorInfo(void*)
 							}
 						}
 
-						auto baseObj = actor->GetActorBase();
+						auto baseObj = GetRootTemplate(actor->GetBaseObject());
 						if (baseObj) {
 							if (show_npc_window_ignore) {
 								if (excludeNpcFormIds.find(baseObj->GetFormID()) != excludeNpcFormIds.end()) {
@@ -500,7 +513,7 @@ void __cdecl RefreshActorInfo(void*)
 							}
 						}
 
-						auto baseObj = actor->GetActorBase();
+						auto baseObj = GetRootTemplate(actor->GetBaseObject());
 						if (baseObj) {
 							if (show_npc_window_ignore) {
 								if (excludeNpcFormIds.find(baseObj->GetFormID()) != excludeNpcFormIds.end()) {
@@ -543,14 +556,3 @@ void __cdecl RefreshActorInfo(void*)
 	}
 }
 
-
-RE::TESBoundObject* GetRootTemplate(RE::TESForm* baseForm)
-{
-	RE::TESNPC* npc = static_cast<RE::TESNPC*>(baseForm);
-	auto npcRoot = npc;
-	while (npcRoot->faceNPC && npcRoot->formID >= 0xFF000000) {
-		npcRoot = npcRoot->faceNPC;
-	}
-
-	return npcRoot;
-}

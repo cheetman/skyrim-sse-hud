@@ -398,6 +398,7 @@ namespace lotd
 		}
 	}
 
+	// 废弃
 	void refreshItemInfo()
 	{
 		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
@@ -912,7 +913,6 @@ namespace lotd
 		// 缓存陈列品
 		refreshDisplayItemsCache();
 
-		nowItemIndex = !nowItemIndex;
 		Sleep(100);
 
 		// 数量统计(int)
@@ -1388,6 +1388,77 @@ namespace lotd
 		item.count = tmpCount;
 
 		std::partial_sort(item.list.begin(), item.list.begin() + tmpCount, item.list.begin() + tmpCount, compareForLotdItemAttached);
+
+		nowItemIndex = !nowItemIndex;
+	}
+
+	std::string getTrackerName(RE::TESBoundObject* obj,std::string name)
+	{
+		switch (obj->GetFormType()) {
+		case RE::FormType::Scroll:
+			return ICON_MDI_SWORD " " + name;
+			break;
+		case RE::FormType::Weapon:
+			return ICON_MDI_SWORD " " + name;
+			break;
+		case RE::FormType::Armor:
+			return ICON_MDI_SHIELD " " + name;
+			break;
+		case RE::FormType::Ammo:
+			return ICON_MDI_ARROW_PROJECTILE " " + name;
+			break;
+		case RE::FormType::Book:
+			return ICON_MDI_BOOK_OPEN_VARIANT " " + name;
+			break;
+		case RE::FormType::AlchemyItem:
+			{
+				auto alchemyItem = obj->As<RE::AlchemyItem>();
+				if (alchemyItem->IsFood()) {
+					return ICON_MDI_FOOD_DRUMSTICK " " + name;
+				} else {
+					return ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE " " + name;
+				}
+				break;
+			}
+		case RE::FormType::Ingredient:
+			return ICON_MDI_SOURCE_BRANCH " " + name;
+			break;
+		case RE::FormType::Misc:
+			{
+				auto misc = obj->As<RE::TESObjectMISC>();
+				if (misc) {
+					// 宝石
+					if (FormUtil::HasKeyword(misc, VendorItemGem)) {
+						return ICON_MDI_DIAMOND_STONE " " + name;
+					} else if (FormUtil::HasKeyword(misc, VendorItemOreIngot)) {
+						return ICON_MDI_ANVIL " " + name;
+					} else if (FormUtil::HasKeyword(misc, VendorItemAnimalHide)) {
+						return ICON_MDI_BOX_CUTTER " " + name;
+					} else if (FormUtil::HasKeyword(misc, VendorItemAnimalPart)) {
+						return ICON_MDI_RABBIT " " + name;
+					} else if (FormUtil::HasKeyword(misc, VendorItemTool)) {
+						return ICON_MDI_TOOLS " " + name;
+					} else {
+						return ICON_MDI_PACKAGE_VARIANT_CLOSED " " + name;
+					}
+				}
+				break;
+			}
+		case RE::FormType::KeyMaster:
+			return ICON_MDI_KEY " " + name;
+			break;
+		case RE::FormType::Note:
+			return ICON_MDI_BOOK_OPEN_VARIANT " " + name;
+			break;
+		case RE::FormType::SoulGem:
+			return ICON_MDI_CARDS_DIAMOND " " + name;
+			break;
+		default:
+			return name;
+			break;
+		}
+
+		return name;
 	}
 
 	void refreshAutoTrackItem()
@@ -1427,7 +1498,7 @@ namespace lotd
 				for (auto& [id, form] : *map) {
 					if (form) {
 						if (form->Is(RE::FormType::ActorCharacter)) {
-							continue;
+							//continue;
 							auto actor = form->As<RE::Actor>();
 							if (actor && actor->IsDead() && !actor->IsSummoned()) {
 								// 排除自己
@@ -1466,10 +1537,18 @@ namespace lotd
 											if (count > 0 && entry) {
 												// 放到对应的数组里
 												bool success = checkItem(obj->GetFormID());
-
-												/*if (trackPtrs2.find(actor) == trackPtrs2.end()) {
-													menu::tintTrack(actor);
-												}*/
+												if (success) {
+													if (trackPtrs2.find(actor) == trackPtrs2.end()) {
+														TrackItem trackItem;
+														trackItem.name = getTrackerName(obj,obj->GetName());
+														trackItem.isLotd = true;
+														trackItem.itemBaseFormId = obj->GetFormID();
+														trackItem.isLotdCont = true;
+														trackPtrs2.insert(std::make_pair(actor, trackItem));
+														//menu::tintTrack(actor);
+														break; // 后面修改支持多个
+													}
+												}
 											}
 										}
 									}
@@ -1529,70 +1608,7 @@ namespace lotd
 												if (success) {
 													if (trackPtrs2.find(reff) == trackPtrs2.end()) {
 														TrackItem trackItem;
-														switch (baseObj->GetFormType()) {
-														case RE::FormType::Scroll:
-															trackItem.name = ICON_MDI_SWORD " " + std::string(name);
-															break;
-														case RE::FormType::Weapon:
-															trackItem.name = ICON_MDI_SWORD " " + std::string(name);
-															break;
-														case RE::FormType::Armor:
-															trackItem.name = ICON_MDI_SHIELD " " + std::string(name);
-															break;
-														case RE::FormType::Ammo:
-															trackItem.name = ICON_MDI_ARROW_PROJECTILE " " + std::string(name);
-															break;
-														case RE::FormType::Book:
-															trackItem.name = ICON_MDI_BOOK_OPEN_VARIANT " " + std::string(name);
-															break;
-														case RE::FormType::AlchemyItem:
-															{
-																auto alchemyItem = baseObj->As<RE::AlchemyItem>();
-																if (alchemyItem->IsFood()) {
-																	trackItem.name = ICON_MDI_FOOD_DRUMSTICK " " + std::string(name);
-																} else {
-																	trackItem.name = ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE " " + std::string(name);
-																}
-																break;
-															}
-														case RE::FormType::Ingredient:
-															trackItem.name = ICON_MDI_SOURCE_BRANCH " " + std::string(name);
-															break;
-														case RE::FormType::Misc:
-															{
-																auto misc = baseObj->As<RE::TESObjectMISC>();
-																if (misc) {
-																	// 宝石
-																	if (FormUtil::HasKeyword(misc, VendorItemGem)) {
-																		trackItem.name = ICON_MDI_DIAMOND_STONE " " + std::string(name);
-																	} else if (FormUtil::HasKeyword(misc, VendorItemOreIngot)) {
-																		trackItem.name = ICON_MDI_ANVIL " " + std::string(name);
-																	} else if (FormUtil::HasKeyword(misc, VendorItemAnimalHide)) {
-																		trackItem.name = ICON_MDI_BOX_CUTTER " " + std::string(name);
-																	} else if (FormUtil::HasKeyword(misc, VendorItemAnimalPart)) {
-																		trackItem.name = ICON_MDI_RABBIT " " + std::string(name);
-																	} else if (FormUtil::HasKeyword(misc, VendorItemTool)) {
-																		trackItem.name = ICON_MDI_TOOLS " " + std::string(name);
-																	} else {
-																		trackItem.name = ICON_MDI_PACKAGE_VARIANT_CLOSED " " + std::string(name);
-																	}
-																}
-																break;
-															}
-														case RE::FormType::KeyMaster:
-															trackItem.name = ICON_MDI_KEY " " + std::string(name);
-															break;
-														case RE::FormType::Note:
-															trackItem.name = ICON_MDI_BOOK_OPEN_VARIANT " " + std::string(name);
-															break;
-														case RE::FormType::SoulGem:
-															trackItem.name = ICON_MDI_CARDS_DIAMOND " " + std::string(name);
-															break;
-														default:
-															trackItem.name =  std::string(name);
-															break;
-														}
-
+														trackItem.name = getTrackerName(baseObj, name);
 														trackItem.isLotd = true;
 														trackItem.itemBaseFormId = baseObj->GetFormID();
 														trackPtrs2.insert(std::make_pair(reff, trackItem));
@@ -1662,74 +1678,13 @@ namespace lotd
 																}
 																if (trackPtrs2.find(reff) == trackPtrs2.end()) {
 																	TrackItem trackItem;
-																	switch (obj->GetFormType()) {
-																	case RE::FormType::Scroll:
-																		trackItem.name = ICON_MDI_SWORD " " + std::string(obj->GetName());
-																		break;
-																	case RE::FormType::Weapon:
-																		trackItem.name = ICON_MDI_SWORD " " + std::string(obj->GetName());
-																		break;
-																	case RE::FormType::Armor:
-																		trackItem.name = ICON_MDI_SHIELD " " + std::string(obj->GetName());
-																		break;
-																	case RE::FormType::Ammo:
-																		trackItem.name = ICON_MDI_ARROW_PROJECTILE " " + std::string(obj->GetName());
-																		break;
-																	case RE::FormType::Book:
-																		trackItem.name = ICON_MDI_BOOK_OPEN_VARIANT " " + std::string(obj->GetName());
-																		break;
-																	case RE::FormType::AlchemyItem:
-																		{
-																			auto alchemyItem = obj->As<RE::AlchemyItem>();
-																			if (alchemyItem->IsFood()) {
-																				trackItem.name = ICON_MDI_FOOD_DRUMSTICK " " + std::string(obj->GetName());
-																			} else {
-																				trackItem.name = ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE " " + std::string(obj->GetName());
-																			}
-																			break;
-																		}
-																	case RE::FormType::Ingredient:
-																		trackItem.name = ICON_MDI_SOURCE_BRANCH " " + std::string(obj->GetName());
-																		break;
-																	case RE::FormType::Misc:
-																		{
-																			auto misc = obj->As<RE::TESObjectMISC>();
-																			if (misc) {
-																				// 宝石
-																				if (FormUtil::HasKeyword(misc, VendorItemGem)) {
-																					trackItem.name = ICON_MDI_DIAMOND_STONE " " + std::string(obj->GetName());
-																				} else if (FormUtil::HasKeyword(misc, VendorItemOreIngot)) {
-																					trackItem.name = ICON_MDI_ANVIL " " + std::string(obj->GetName());
-																				} else if (FormUtil::HasKeyword(misc, VendorItemAnimalHide)) {
-																					trackItem.name = ICON_MDI_BOX_CUTTER " " + std::string(obj->GetName());
-																				} else if (FormUtil::HasKeyword(misc, VendorItemAnimalPart)) {
-																					trackItem.name = ICON_MDI_RABBIT " " + std::string(obj->GetName());
-																				} else if (FormUtil::HasKeyword(misc, VendorItemTool)) {
-																					trackItem.name = ICON_MDI_TOOLS " " + std::string(obj->GetName());
-																				} else {
-																					trackItem.name = ICON_MDI_PACKAGE_VARIANT_CLOSED " " + std::string(obj->GetName());
-																				}
-																			}
-																			break;
-																		}
-																	case RE::FormType::KeyMaster:
-																		trackItem.name = ICON_MDI_KEY " " + std::string(obj->GetName());
-																		break;
-																	case RE::FormType::Note:
-																		trackItem.name = ICON_MDI_BOOK_OPEN_VARIANT " " + std::string(obj->GetName());
-																		break;
-																	case RE::FormType::SoulGem:
-																		trackItem.name = ICON_MDI_CARDS_DIAMOND " " + std::string(obj->GetName());
-																		break;
-																	default:
-																		trackItem.name = std::string(obj->GetName());
-																		break;
-																	}
+																	trackItem.name = getTrackerName(obj, obj->GetName());
 																	trackItem.isLotd = true;
 																	trackItem.itemBaseFormId = obj->GetFormID();
 																	trackItem.isLotdCont = true;
 																	trackPtrs2.insert(std::make_pair(reff, trackItem));
 																	menu::tintTrack(reff);
+																	break;  // 后面修改支持多个
 																}
 															}
 														}
