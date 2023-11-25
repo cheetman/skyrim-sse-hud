@@ -31,7 +31,7 @@ public:
 								trackItem.itemBaseFormId = obj->GetFormID();
 								trackItem.isLotdCont = true;
 								trackPtrs2.insert(std::make_pair(actor, trackItem));
-								menu::tintTrack(actor);
+								//menu::tintTrack(actor);
 								break;
 							}
 						}

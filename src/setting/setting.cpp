@@ -18,9 +18,9 @@ namespace setting
 {
 	std::filesystem::path settings_path = "data\\skse\\plugins\\sse-hud.json";
 	std::filesystem::path settings_path_gallery = "";
-	std::filesystem::path settings_path_lotd_item_list = "data\\skse\\plugins\\ItemFinderPlus-LotdItemList.json";
-	std::filesystem::path settings_path_lotd_item_display_list = "data\\skse\\plugins\\ItemFinderPlus-LotdItemDisplayList.json";
-	std::filesystem::path settings_path_lotd_item_display_list_modnames = "data\\skse\\plugins\\ItemFinderPlus-LotdItemList-ModNames.json";
+	std::filesystem::path settings_path_lotd_item_list = "data\\skse\\plugins\\ItemFinderPlus\\lotd\\ItemFinderPlus-LotdItemList.json";
+	std::filesystem::path settings_path_lotd_item_display_list = "data\\skse\\plugins\\ItemFinderPlus\\lotd\\ItemFinderPlus-LotdItemDisplayList.json";
+	std::filesystem::path settings_path_lotd_item_display_list_modnames = "data\\skse\\plugins\\ItemFinderPlus\\lotd\\ItemFinderPlus-LotdItemList-ModNames.json";
 	//std::vector<GalleryData> galleryList;
 	std::vector<LotdItemList> lotdItemLists;
 	std::vector<LotdItemDisplayCont> lotdItemDisplayLists;

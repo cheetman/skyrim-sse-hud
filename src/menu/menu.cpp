@@ -1432,8 +1432,35 @@ namespace menu
 						ImGui::Separator();
 						ImGui::Spacing();
 
-						ImGui::Text(I18Ni(ICON_MDI_HEART, "common.setting.label-sexlab"));
+						
+						
+						ImGui::Text(I18Ni(ICON_MDI_MAP_SEARCH_OUTLINE, "common.setting.label-itemStatistics"));
+						{
+							ImGui::Indent();
+							ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyNirnRootQuantity"), &stats::showlocationNirnRootCount);
+							ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyNirnRootRedQuantity"), &stats::showlocationNirnRootRedCount);
+							ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyVeinQuantity"), &stats::showlocationOreCount);
+							ImGui::Unindent();
+						}
+						ImGui::Spacing();
+						ImGui::Separator();
+						ImGui::Spacing();
 
+						if (lotd::isLoad) {
+							ImGui::Text(I18Ni(ICON_MDI_HOME_MODERN, "finder.setting.label-lotd"));
+							{
+								ImGui::Indent();
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyLotdItemsQuantity"), &lotd::showlocationItemCount);
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyLotdExcavationQuantity"), &stats::showlocationExCount);
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayLotdItemsQuantity"), &lotd::showDisplayItemCount);
+								ImGui::Unindent();
+							}
+							ImGui::Spacing();
+							ImGui::Separator();
+							ImGui::Spacing();
+						}
+
+						ImGui::Text(I18Ni(ICON_MDI_HEART, "common.setting.label-sexlab"));
 						{
 							ImGui::Indent();
 							ImGui::Checkbox(I18Nc("hud.setting.checkbox-displayOSLArousal"), &sexlab::isShowPlayOSLArousal);

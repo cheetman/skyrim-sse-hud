@@ -1476,7 +1476,7 @@ namespace lotd
 			// 缓存陈列品
 			refreshDisplayItemsCache();
 
-			nowItemIndex = !nowItemIndex;
+			//nowItemIndex = !nowItemIndex;
 			Sleep(100);
 
 			// 数量统计(int)

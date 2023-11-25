@@ -94,7 +94,11 @@ namespace menu
 										ImGui::SetWindowFontScale(menu::font_scale + (float)show_item_window_track_icon_scale);
 
 										if (item.second.isLotd) {
-											myTextColored(ImVec4(1.0f, 0.843f, 0.0f, 0.95f), "%s %0.1fm", item.second.name.c_str(), distance);
+											if (show_item_window_track_icon_name) {
+												myTextColored(ImVec4(1.0f, 0.843f, 0.0f, 0.95f), "%s %0.1fm", item.second.name.c_str(), distance);
+											} else {
+												myTextColored(ImVec4(1.0f, 0.843f, 0.0f, 0.95f), ICON_MDI_MAP_MARKER_RADIUS " %0.1fm", distance);
+											}
 										} else {
 											if (show_item_window_track_icon_name) {
 												ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %s %0.1fm", item.second.name.c_str(), distance);
