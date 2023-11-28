@@ -30,7 +30,7 @@ namespace menu
 	int trackX2 = 0;
 	int trackY2 = 0;
 	bool show_item_window_track_icon_name = false;
-	bool show_item_window_track_highlight = false;
+	bool show_item_window_track_highlight = true;
 	ImVec4 colorTrack(0.0f, 1.0f, 0.1f, 0.646f);
 	bool isTrack = true;
 

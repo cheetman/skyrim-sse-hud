@@ -1,15 +1,16 @@
 #pragma once
 #include <PCH.h>
-#include <memory/memory.h>
-#include <menu/menu_track.h>
-#include <event/BSTContainerChangedEvent.h>
-#include <memory/data.h>
-#include <memory/sexlab.h>
-#include <event/BSTPositionPlayerEvent.h>
-#include <event/BSTMenuEvent.h>
-#include <hook/d3d11hook.h>
 #include <code_lotd/code_lotd.h>
-
+#include <event/BSTContainerChangedEvent.h>
+#include <event/BSTDeathEvent.h>
+#include <event/BSTMenuEvent.h>
+#include <event/BSTPositionPlayerEvent.h>
+#include <hook/d3d11hook.h>
+#include <hook/dinputhook.h>
+#include <memory/data.h>
+#include <memory/memory.h>
+#include <memory/sexlab.h>
+#include <menu/menu_track.h>
 
 namespace lotdcode
 {
@@ -109,8 +110,13 @@ namespace lotdcode
 			{
 				logger::info("kDataLoaded"sv);
 				data::init();
+				setting::settings_path_lotd_item_list = "data\\skse\\plugins\\LotdFinder\\lotd\\ItemFinderPlus-LotdItemList.json";
+				setting::settings_path_lotd_item_display_list = "data\\skse\\plugins\\LotdFinder\\lotd\\ItemFinderPlus-LotdItemDisplayList.json";
+				setting::settings_path_lotd_item_display_list_modnames = "data\\skse\\plugins\\LotdFinder\\lotd\\ItemFinderPlus-LotdItemList-ModNames.json";
 				lotd::init();
 				BSTPositionPlayerEvent::Register();
+				// 修补
+				lotd::isCrimeIgnore = lotd::isAutoTrackLotdItemsCrimeIgnore;
 
 				break;
 			}

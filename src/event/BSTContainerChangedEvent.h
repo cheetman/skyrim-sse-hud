@@ -25,23 +25,23 @@ public:
 					islotdContChanged = true;
 				}
 			}
-		}
 
-		// 判断如果获取到物品则删除其他标记
-		if (a_event->newContainer == 0x00000014) {
-			if (a_event->baseObj) {
-				std::lock_guard<std::mutex> lock(mtxTrack);
-				std::vector<RE::TESObjectREFR*> deleteReffs;
-				for (const auto& item : trackPtrs2) {
-					if (item.second.isLotd) {
-						if (item.second.itemBaseFormId == a_event->baseObj) {
-							deleteReffs.push_back(item.first);
+			// 判断如果获取到物品则删除其他标记
+			if (a_event->newContainer == 0x00000014) {
+				if (a_event->baseObj) {
+					std::lock_guard<std::mutex> lock(mtxTrack);
+					std::vector<RE::TESObjectREFR*> deleteReffs;
+					for (const auto& item : trackPtrs2) {
+						if (item.second.isLotd) {
+							if (item.second.itemBaseFormId == a_event->baseObj) {
+								deleteReffs.push_back(item.first);
+							}
 						}
 					}
-				}
-				for (const auto reff : deleteReffs) {
-					trackPtrs2.erase(reff);
-					menu::tintTrackClose(reff);
+					for (const auto reff : deleteReffs) {
+						trackPtrs2.erase(reff);
+						menu::tintTrackClose(reff);
+					}
 				}
 			}
 		}

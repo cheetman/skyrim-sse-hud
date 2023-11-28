@@ -28,6 +28,7 @@
 #include <event/BSTDeathEvent.h>
 #include <event/MessageHandler.h>
 #include <code_lotd/MessageHandler.h>
+#include <menu/theme.h>
 
 
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
@@ -118,10 +119,12 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 		logger::info("registered listener"sv);
 
 		// 读取配置
-		setting::settings_path = "data\\skse\\plugins\\lotdFinder.json";
+		lotd::isAutoTrackLotdItems = true;
+		setting::settings_path = "data\\skse\\plugins\\LotdFinder.json";
 		setting::load_settings();
+		i18n::i18nPath = "data\\skse\\plugins\\LotdFinder\\i18n";
 		i18n::load();
-
+		menu::fontFilePath = "data\\skse\\plugins\\LotdFinder\\fonts\\";
 		lotdcode::start();
 
 	#else

@@ -8,6 +8,7 @@ namespace menu
 	extern int imgui_style_index;
 	extern int imgui_font_index;
 	extern std::vector<ImFont*> fonts;
+	extern std::string fontFilePath;
 
 	static const std::unordered_map<int, std::string> theme_items = {
 		{ 0, "Style Dark" },

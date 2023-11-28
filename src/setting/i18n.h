@@ -10,6 +10,7 @@ namespace i18n
 	extern std::unordered_map<std::string, std::unordered_map<std::string, std::string>> maps;
 	bool load();
 	extern std::string languageName;
+	extern std::filesystem::path i18nPath;
 	std::string Translate(const std::string& msg);
 	std::string Translate(const char* icon, const std::string& msg);
 }
