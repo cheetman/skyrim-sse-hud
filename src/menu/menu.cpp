@@ -22,9 +22,18 @@
 #include <setting/setting.h>
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
+//#include <wincodec.h>
+#include <utils/WICTextureLoader/WICTextureLoader11.h>
+#include <hook/BSRenderManager.h>
+//#include <utils/WICTextureLoader/WICTextureLoader11.cpp>
 
 namespace menu
 {
+	// 创建纹理和纹理视图
+	ID3D11ShaderResourceView* textureView;
+	ID3D11Resource* texture;
+	bool istestload = false;
+
 	std::map<int, std::vector<EquipmentItem>> equipments;
 
 	bool auto_remove_ammo = false;
@@ -1748,6 +1757,27 @@ namespace menu
 							ImGui::TreePop();
 						}
 						//ImGui::EndTabItem();
+
+						//LoadFromWICFile
+						//ImGui::Image();
+						//HRESULT hr = DirectX::LoadFromWICFile(L"your_image.png", DirectX::WIC_FLAGS_NONE, &metadata, scratchImage);
+						//WCHAR strFile[40];
+						//wsprintfW(strFile, L"E:\\test.png");
+						
+
+						
+						
+						/*if (ImGui::SmallButton("dsfdfdf")) {
+							auto manager = RE::BSRenderManager::GetSingleton();
+							auto device = reinterpret_cast<ID3D11Device*>(manager->forwarder);
+							HRESULT hr = DirectX::CreateWICTextureFromFile(device, L"E:\\test.png", &texture, &textureView);
+							if (SUCCEEDED(hr)) {
+								istestload = true;
+							}
+						}
+						if (istestload) {
+							ImGui::Image(textureView, ImVec2(400, 400));
+						}*/
 					}
 				}
 

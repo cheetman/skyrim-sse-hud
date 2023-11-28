@@ -26,6 +26,8 @@
 #include <memory/sexlab.h>
 #include <setting/i18n.h>
 #include <event/BSTDeathEvent.h>
+#include <event/MessageHandler.h>
+#include <code_lotd/MessageHandler.h>
 
 
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
@@ -61,7 +63,12 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a
 		logger::info(FMT_STRING("{} v{}"), "sse-hud", "sse-hud");
 
 		a_info->infoVersion = SKSE::PluginInfo::kVersion;
+
+#if LOTD_SPECIFIC_CODE 
+		a_info->name = "lotd-finder";
+#else
 		a_info->name = "sse-hud";
+#endif
 		a_info->version = 1;
 
 		if (a_skse->IsEditor()) {
@@ -82,129 +89,8 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a
 	return true;
 }
 
-int SehFilter(DWORD dwExceptionCode)
-{
-	switch (dwExceptionCode) {
-	case EXCEPTION_ACCESS_VIOLATION:
-		return EXCEPTION_EXECUTE_HANDLER;
-	}
-	return EXCEPTION_CONTINUE_SEARCH;
-}
 
 
-void __cdecl installimgui(void*);
-
-
-void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
-{
-	switch (a_msg->type) {
-	case SKSE::MessagingInterface::kPostLoad:
-		{
-			logger::info("PostLoad"sv);
-
-
-			auto messaging = SKSE::GetMessagingInterface();
-	
-			
-			break;
-		}
-	case SKSE::MessagingInterface::kPostPostLoad:
-		{
-			logger::info("PostPostLoad"sv);
-			break;
-		}
-	case SKSE::MessagingInterface::kPreLoadGame:
-		{
-			logger::info("kPreLoadGame"sv);
-			isGameLoading = true;
-
-			{
-				std::lock_guard<std::mutex> lock(mtxTrack);
-				if (trackPtrs2.size() > 0) {
-					trackPtrs2.clear();
-				}
-				if (trackActorPtrs2.size() > 0) {
-					trackActorPtrs2.clear();
-				}
-			}
-			break;
-		}
-	case SKSE::MessagingInterface::kPostLoadGame:
-		{
-			logger::info("kPostLoadGame"sv);
-			isGameLoading = false;
-			startflag = true;
-			isPlayerInvChanged = true;
-			islotdContChanged = true;
-			if (lotd::isAutoTrackLotdItems) {
-				lotd::isAutoTrackLotdItemsFlag = true;
-			}
-			
-
-			break;
-		}
-	case SKSE::MessagingInterface::kNewGame:
-		{
-			logger::info("kNewGame"sv);
-			isGameLoading = false;
-			startflag = true;
-			if (trackPtrs2.size() > 0) {
-				trackPtrs2.clear();
-			}
-			if (trackActorPtrs2.size() > 0) {
-				trackActorPtrs2.clear();
-			}		
-
-			isPlayerInvChanged = true;
-			islotdContChanged = true;
-			break;
-		}
-	case SKSE::MessagingInterface::kSaveGame:
-		{
-			logger::info("kSaveGame"sv);
-			break;
-		}
-	case SKSE::MessagingInterface::kDeleteGame:
-		{
-			logger::info("kDeleteGame"sv);
-			break;
-		}
-	case SKSE::MessagingInterface::kInputLoaded:
-		{
-			logger::info("kInputLoaded"sv);
-			break;
-		}
-	case SKSE::MessagingInterface::kDataLoaded:
-		{
-			logger::info("kDataLoaded"sv);
-			data::init();
-			lotd::init();
-			sexlab::init();
-			BSTPositionPlayerEvent::Register();
-
-			// input event
-			//auto inputDeviceManager = RE::BSInputDeviceManager::GetSingleton();
-			//inputDeviceManager->AddEventSink();
-			break;
-		}
-	default:
-		logger::info("??"sv);
-		break;
-
-	}
-}
-
-void __cdecl installimgui(void*)
-{
-	d3d11hook::Install(1);
-	dinputhook ::Install();
-	
-	MenuOpenCloseEvent::Register();
-	EquipEvent::Register();
-	BSTContainerChangedEvent::Register();
-	BSTDeathEvent::Register();
-	//BSTCrosshairRefEvent::Register();  
-}
 
 
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_skse)
@@ -215,29 +101,52 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	Sleep(1000);
 #endif
 
-	logger::info("{} v{}"sv, Plugin::NAME, Plugin::VERSION.string());
+	
 	SKSE::Init(a_skse);
 
-	auto messaging = SKSE::GetMessagingInterface();
-	if (!messaging->RegisterListener("SKSE", MessageHandler)) {
-		logger::critical("Could not register MessageHandler"sv);
-		return false;
-	}
+	#if LOTD_SPECIFIC_CODE
 
-	SKSE::AllocTrampoline(1 << 6);
-	logger::info("registered listener"sv);
+		logger::info("{} v{}"sv, Plugin::NAME, Plugin::VERSION.string());
 
-	// 读取配置
-	setting::load_settings();
-	i18n::load();
+		auto messaging = SKSE::GetMessagingInterface();
+		if (!messaging->RegisterListener("SKSE", lotdcode::MessageHandler)) {
+			logger::critical("Could not register MessageHandler"sv);
+			return false;
+		}
 
+		SKSE::AllocTrampoline(1 << 6);
+		logger::info("registered listener"sv);
 
-	_beginthread(RefreshGameInfo, 0, NULL);
-	_beginthread(RefreshActorInfo, 0, NULL);
-	_beginthread(RefreshItemInfo, 0, NULL);
-	_beginthread(TimerAutoPick, 0, NULL);
-	_beginthread(installimgui, 0, NULL);
+		// 读取配置
+		setting::settings_path = "data\\skse\\plugins\\lotdFinder.json";
+		setting::load_settings();
+		i18n::load();
 
+		lotdcode::start();
+
+	#else
+
+		logger::info("{} v{}"sv, Plugin::NAME, Plugin::VERSION.string());
+
+		auto messaging = SKSE::GetMessagingInterface();
+		if (!messaging->RegisterListener("SKSE", MessageHandler)) {
+			logger::critical("Could not register MessageHandler"sv);
+			return false;
+		}
+
+		SKSE::AllocTrampoline(1 << 6);
+		logger::info("registered listener"sv);
+
+		// 读取配置
+		setting::load_settings();
+		i18n::load();
+
+		_beginthread(RefreshGameInfo, 0, NULL);
+		_beginthread(RefreshActorInfo, 0, NULL);
+		_beginthread(RefreshItemInfo, 0, NULL);
+		_beginthread(TimerAutoPick, 0, NULL);
+		_beginthread(installimgui, 0, NULL);
+	#endif
 	return true;
 }
 

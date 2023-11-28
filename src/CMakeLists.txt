@@ -19,6 +19,7 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/event/BSTBGSActorCellEvent.cpp"
 	"${SOURCE_DIR}/event/BSTDeathEvent.h"
 	"${SOURCE_DIR}/event/BSTDeathEvent.cpp"
+	"${SOURCE_DIR}/event/MessageHandler.h"
 	"${SOURCE_DIR}/hook/d3d11hook.h"
 	"${SOURCE_DIR}/hook/d3d11hook.cpp"
 	"${SOURCE_DIR}/hook/hudhook.h"
@@ -117,6 +118,13 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/memory/sexlab.cpp"
 	"${SOURCE_DIR}/setting/i18n.h"
 	"${SOURCE_DIR}/setting/i18n.cpp"
+	"${SOURCE_DIR}/utils/WICTextureLoader/WICTextureLoader11.h"
+	"${SOURCE_DIR}/utils/WICTextureLoader/WICTextureLoader11.cpp"
+	"${SOURCE_DIR}/code_lotd/MessageHandler.h"
+	"${SOURCE_DIR}/code_lotd/code_lotd.h"
+	"${SOURCE_DIR}/code_lotd/code_lotd.cpp"
+	
+
 )
 
 source_group(TREE "${ROOT_DIR}" FILES ${SOURCE_FILES})

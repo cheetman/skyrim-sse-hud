@@ -15,13 +15,15 @@ public:
 			return RE::BSEventNotifyControl::kContinue;
 		}
 
-		if (a_event->newContainer == 0x00000014 || a_event->oldContainer == 0x00000014) {
-			isPlayerInvChanged = true;
-		}
+		if (lotd::isLoad) {
+			if (a_event->newContainer == 0x00000014 || a_event->oldContainer == 0x00000014) {
+				isPlayerInvChanged = true;
+			}
 
-		for (auto& pair : lotd::displayIdsC) {
-			if (pair.first == a_event->newContainer || a_event->oldContainer == pair.first) {
-				islotdContChanged = true;
+			for (auto& pair : lotd::displayIdsC) {
+				if (pair.first == a_event->newContainer || a_event->oldContainer == pair.first) {
+					islotdContChanged = true;
+				}
 			}
 		}
 

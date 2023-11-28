@@ -24,3 +24,5 @@ namespace util
 #define DLLEXPORT __declspec(dllexport)
 
 #include "Plugin.h"
+
+#define LOTD_SPECIFIC_CODE 1

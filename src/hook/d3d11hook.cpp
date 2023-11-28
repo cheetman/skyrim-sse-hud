@@ -9,8 +9,9 @@
 #include <imgui/imgui_impl_win32.h>
 #include <memory/memory.h>
 #include <menu/menu.h>
-#include <utils/utils.h>
 #include <menu/theme.h>
+#include <utils/utils.h>
+#include <code_lotd/code_lotd.h>
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -49,13 +50,12 @@ namespace d3d11hook
 				screenWidth = rect.right - rect.left;
 				screenHeight = rect.bottom - rect.top;
 
-
 				//OldWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(window, GWLP_WNDPROC, (LONG_PTR)WndProc));
 
 				ImGui::CreateContext();
 				ImGuiIO& io = ImGui::GetIO();
 				io.ConfigFlags = ImGuiConfigFlags_NoMouseCursorChange;
-			
+
 				menu::initFonts();
 				// 初始化缩放
 				io.FontGlobalScale = menu::font_scale;
@@ -82,7 +82,12 @@ namespace d3d11hook
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
+#if LOTD_SPECIFIC_CODE
+		lotdcode::render();
+#else
+
 		menu::render();
+#endif
 
 		ImGui::EndFrame();
 		ImGui::Render();
