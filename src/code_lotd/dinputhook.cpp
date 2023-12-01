@@ -2,96 +2,14 @@
 #include <Windows.h>
 #include <dinput.h>
 #include <event/BSTMenuEvent.h>
+#include <hook/dinputhook.h>
 #include <imgui/imgui.h>
 #include <memory/lotd.h>
 #include <memory/memory.h>
 #include <menu/menu.h>
 
-namespace dinputhook
+namespace lotdcodedinputhook
 {
-	std::unordered_map<uint32_t, std::string> keyNameMap{
-		{ 2, "1" },
-		{ 3, "2" },
-		{ 4, "3" },
-		{ 5, "4" },
-		{ 6, "5" },
-		{ 7, "6" },
-		{ 8, "7" },
-		{ 9, "8" },
-		{ 10, "9" },
-		{ 11, "0" },
-		{ 12, "Minus" },
-		{ 13, "Equal" },
-		{ 16, "Q" },
-		{ 17, "W" },
-		{ 18, "E" },
-		{ 19, "R" },
-		{ 20, "T" },
-		{ 21, "Y" },
-		{ 22, "U" },
-		{ 23, "I" },
-		{ 24, "O" },
-		{ 25, "P" },
-		{ 30, "A" },
-		{ 31, "S" },
-		{ 32, "D" },
-		{ 33, "F" },
-		{ 34, "G" },
-		{ 35, "H" },
-		{ 36, "J" },
-		{ 37, "K" },
-		{ 38, "L" },
-		{ 44, "Z" },
-		{ 45, "X" },
-		{ 46, "C" },
-		{ 47, "V" },
-		{ 48, "B" },
-		{ 49, "N" },
-		{ 50, "M" },
-		{ 59, "F1" },
-		{ 60, "F2" },
-		{ 61, "F3" },
-		{ 62, "F4" },
-		{ 63, "F5" },
-		{ 64, "F6" },
-		{ 65, "F7" },
-		{ 66, "F8" },
-		{ 67, "F9" },
-		{ 68, "F10" },
-		{ 71, "Keypad7" },
-		{ 72, "Keypad8" },
-		{ 73, "Keypad9" },
-		{ 74, "KeypadSubtract" },
-		{ 75, "Keypad4" },
-		{ 76, "Keypad5" },
-		{ 77, "Keypad6" },
-		{ 78, "KeypadAdd" },
-		{ 79, "Keypad1" },
-		{ 80, "Keypad2" },
-		{ 81, "Keypad3" },
-		{ 82, "Keypad0" },
-		{ 83, "KeypadDecimal" },
-		{ 87, "F11" },
-		{ 88, "F12" },
-		{ 156, "KeypadEnter" },
-		{ 181, "KeypadDivide" },
-		{ 197, "Pause" },
-		{ 199, "Home" },
-		{ 200, "UpArrow" },
-		{ 201, "PageUp" },
-		{ 203, "LeftArrow" },
-		{ 205, "RightArrow" },
-		{ 207, "End" },
-		{ 208, "DownArrow" },
-		{ 209, "PageDown" },
-		{ 210, "Insert" },
-		{ 211, "Delete" }
-	};
-
-	//keyNameMap[1] = ImGuiKey_Escape;
-	//keyNameMap[14] = ImGuiKey_Backspace;
-	//keyNameMap[15] = ImGuiKey_Tab;
-
 #define IM_VK_KEYPAD_ENTER (VK_RETURN + 256)
 	static ImGuiKey ImGui_ImplWin32_VirtualKeyToImGuiKey(WPARAM wParam)
 	{
@@ -529,75 +447,6 @@ namespace dinputhook
 		return;
 	}
 
-	bool __fastcall checkModifier(int keyModifier)
-	{
-		if (keyModifier & 0x1) {
-			if (!(GetAsyncKeyState(VK_CONTROL) & 0x8000)) {
-				return false;
-			}
-		}
-
-		if (keyModifier & 0x2) {
-			if (!(GetAsyncKeyState(VK_SHIFT) & 0x8000)) {
-				return false;
-			}
-		}
-
-		if (keyModifier & 0x4) {
-			if (!(GetAsyncKeyState(VK_MENU) & 0x8000)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	bool setKeyAndModifier(int& hotkey, int& keyModifier, int scancode)
-	{
-		if (scancode == 1) {
-			return true;
-		}
-
-		int tmpkeyModifier = 0;
-		if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-			tmpkeyModifier |= 0x1;
-		}
-		if (GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-			tmpkeyModifier |= 0x2;
-		}
-		if (GetAsyncKeyState(VK_MENU) & 0x8000) {
-			tmpkeyModifier |= 0x4;
-		}
-
-		if (keyNameMap.find(scancode) != keyNameMap.end()) {
-			hotkey = scancode;
-			keyModifier = tmpkeyModifier;
-			return true;
-		}
-
-		return false;
-	}
-
-	std::string __fastcall getKeyName(int scancode, int keyModifier, bool isWait)
-	{
-		if (isWait) {
-			return "请输入...";
-		}
-		if (keyNameMap.find(scancode) == keyNameMap.end()) {
-			return "未设置";
-		}
-		std::string name = keyNameMap[scancode];
-		if (keyModifier & 0x2) {
-			name = "Shift + " + name;
-		}
-		if (keyModifier & 0x4) {
-			name = "Alt + " + name;
-		}
-		if (keyModifier & 0x1) {
-			name = "Ctrl + " + name;
-		}
-		return name;
-	}
-
 	void DispatchInputEvent(RE::BSTEventSource<RE::InputEvent*>* a_dispatcher, RE::InputEvent** a_evns)
 	{
 		static RE::InputEvent* dummy[] = { nullptr };
@@ -609,6 +458,7 @@ namespace dinputhook
 		for (auto inputEvent = *a_evns; inputEvent; inputEvent = inputEvent->next) {
 			if (inputEvent->eventType == RE::INPUT_EVENT_TYPE::kButton) {
 				auto btnEvent = inputEvent->AsButtonEvent();
+
 				if (btnEvent->device == RE::INPUT_DEVICE::kKeyboard) {
 					if (btnEvent) {
 						if (btnEvent->IsDown()) {
@@ -617,21 +467,15 @@ namespace dinputhook
 							// 设置按键
 							if (active) {
 								if (menu::isWaitHotkeySetting) {
-									if (setKeyAndModifier(menu::hotkeySetting, menu::hotkeySettingModifier, scan_code)) {
+									if (dinputhook::setKeyAndModifier(menu::hotkeySetting, menu::hotkeySettingModifier, scan_code)) {
 										menu::isWaitHotkeySetting = false;
 									}
 									_DispatchInputEvent(a_dispatcher, dummy);
 									return;
 								}
-								if (menu::isWaitItemFinder) {
-									if (setKeyAndModifier(menu::hotkeyItemFinder, menu::hotkeyItemFinderModifier, scan_code)) {
-										menu::isWaitItemFinder = false;
-									}
-									_DispatchInputEvent(a_dispatcher, dummy);
-									return;
-								}
+
 								if (menu::isWaitTrack) {
-									if (setKeyAndModifier(menu::hotkeyTrack, menu::hotkeyTrackModifier, scan_code)) {
+									if (dinputhook::setKeyAndModifier(menu::hotkeyTrack, menu::hotkeyTrackModifier, scan_code)) {
 										menu::isWaitTrack = false;
 									}
 									_DispatchInputEvent(a_dispatcher, dummy);
@@ -648,23 +492,15 @@ namespace dinputhook
 							}
 
 							if (scan_code == menu::hotkeySetting) {
-								if (checkModifier(menu::hotkeySettingModifier)) {
+								if (dinputhook::checkModifier(menu::hotkeySettingModifier)) {
 									active = !active;
 									_DispatchInputEvent(a_dispatcher, dummy);
 									return;
 								}
 							}
 
-							if (scan_code == menu::hotkeyItemFinder) {
-								if (checkModifier(menu::hotkeyItemFinderModifier)) {
-									activeItems = !activeItems;
-									_DispatchInputEvent(a_dispatcher, dummy);
-									return;
-								}
-							}
-
 							if (scan_code == menu::hotkeyTrack) {
-								if (checkModifier(menu::hotkeyTrackModifier)) {
+								if (dinputhook::checkModifier(menu::hotkeyTrackModifier)) {
 									if (menu::show_item_window_track_displayType == 1) {
 										menu::isTrack = !menu::isTrack;
 									} else if (menu::show_item_window_track_displayType == 2) {
@@ -674,7 +510,6 @@ namespace dinputhook
 									return;
 								}
 							}
-
 						} else if (btnEvent->IsUp()) {
 							auto scan_code = btnEvent->GetIDCode();
 							if (scan_code == menu::hotkeyTrack) {

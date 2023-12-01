@@ -11,7 +11,6 @@ namespace i18n
 	std::string languageName;
 	int i18nIndex = 0;
 
-
 	// 递归函数，将 JSON 对象中的多级键插入到 map 中
 	void InsertJsonIntoMap(const nlohmann::json& j, std::unordered_map<std::string, std::string>& languageMap, const std::string& parentKey = "")
 	{
@@ -52,15 +51,39 @@ namespace i18n
 				}
 			}
 		}
-		if (!maps.empty()) {
-			for (auto& item : maps) {
-				languageName = item.first;
-				break;
+
+		// 默认策略
+		if (languageName.empty()) {
+			if (!maps.empty()) {
+				if (maps.find("Chinese") != maps.end()) {
+					languageName = "Chinese";
+				} else {
+					for (auto& item : maps) {
+						languageName = item.first;
+						break;
+					}
+				}
+			} else {
+				languageName = "无";
 			}
 		} else {
-			languageName = "无";
+			if (!maps.empty()) {
+				if (maps.find(languageName) == maps.end()) {
+					if (maps.find("Chinese") != maps.end()) {
+						languageName = "Chinese";
+					} else {
+						for (auto& item : maps) {
+							languageName = item.first;
+							break;
+						}
+					}
+				}
+			} else {
+				languageName = "无";
+			}
 		}
 
+		return true;
 	}
 
 	std::string Translate(const std::string& msg)
@@ -79,5 +102,14 @@ namespace i18n
 		}
 
 		return (icon + maps[languageName][msg]);
+	}
+
+	std::string Translate2(const std::string& msg, const char* msg2)
+	{
+		if (maps[languageName][msg].length() == 0) {
+			return (msg + msg2);
+		}
+
+		return (maps[languageName][msg] + msg2);
 	}
 }

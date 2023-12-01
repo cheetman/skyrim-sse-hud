@@ -1,6 +1,6 @@
+#include "event\BSTCrosshairRefEvent.h"
 #include "event\BSTMenuEvent.h"
 #include "event\BSTScriptEvent.h"
-#include "event\BSTCrosshairRefEvent.h"
 
 #include "utils\GeneralUtil.h"
 #include "utils\NameUtil.h"
@@ -10,26 +10,25 @@
 #include <tchar.h>
 #include <windows.h>
 
+#include <code_lotd/MessageHandler.h>
+#include <event/BSTContainerChangedEvent.h>
+#include <event/BSTDeathEvent.h>
+#include <event/BSTEquipEvent.h>
+#include <event/BSTPositionPlayerEvent.h>
+#include <event/MessageHandler.h>
 #include <hook/d3d11hook.h>
 #include <hook/dinputhook.h>
 #include <hook/hudhook.h>
+#include <memory/autotake.h>
+#include <memory/data.h>
+#include <memory/lotd.h>
 #include <memory/memory.h>
 #include <memory/npc.h>
-#include <memory/autotake.h>
-#include <menu/menu.h>
-#include <event/BSTEquipEvent.h>
-#include <setting/setting.h>
-#include <memory/lotd.h>
-#include <event/BSTContainerChangedEvent.h>
-#include <event/BSTPositionPlayerEvent.h>
-#include <memory/data.h>
 #include <memory/sexlab.h>
-#include <setting/i18n.h>
-#include <event/BSTDeathEvent.h>
-#include <event/MessageHandler.h>
-#include <code_lotd/MessageHandler.h>
+#include <menu/menu.h>
 #include <menu/theme.h>
-
+#include <setting/i18n.h>
+#include <setting/setting.h>
 
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
 {
@@ -61,14 +60,15 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a
 		spdlog::set_default_logger(move(log));
 		spdlog::set_pattern("[%H:%M:%S.%f] %s(%#) [%^%l%$] %v"s);
 
-		logger::info(FMT_STRING("{} v{}"), "sse-hud", "sse-hud");
 
 		a_info->infoVersion = SKSE::PluginInfo::kVersion;
 
-#if LOTD_SPECIFIC_CODE 
+#if LOTD_SPECIFIC_CODE
 		a_info->name = "lotd-finder";
+		logger::info(FMT_STRING("{} v{}"), "lotd-finder", "lotd-finder");
 #else
 		a_info->name = "sse-hud";
+		logger::info(FMT_STRING("{} v{}"), "sse-hud", "sse-hud");
 #endif
 		a_info->version = 1;
 
@@ -90,10 +90,6 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a
 	return true;
 }
 
-
-
-
-
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_skse)
 {
 	logger::info("SKSEPlugin_Load"sv);
@@ -102,54 +98,45 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	Sleep(1000);
 #endif
 
-	
+#if LOTD_SPECIFIC_CODE
+
+
+
 	SKSE::Init(a_skse);
+	logger::info("{} v{}"sv, "LotdFinder", "0.1.0");
 
-	#if LOTD_SPECIFIC_CODE
+	auto messaging = SKSE::GetMessagingInterface();
+	if (!messaging->RegisterListener("SKSE", lotdcode::MessageHandler)) {
+		logger::critical("Could not register MessageHandler"sv);
+		return false;
+	}
 
-		logger::info("{} v{}"sv, Plugin::NAME, Plugin::VERSION.string());
+	SKSE::AllocTrampoline(1 << 6);
+	logger::info("registered listener"sv);
 
-		auto messaging = SKSE::GetMessagingInterface();
-		if (!messaging->RegisterListener("SKSE", lotdcode::MessageHandler)) {
-			logger::critical("Could not register MessageHandler"sv);
-			return false;
-		}
+#else
 
-		SKSE::AllocTrampoline(1 << 6);
-		logger::info("registered listener"sv);
+	SKSE::Init(a_skse);
+	logger::info("{} v{}"sv, Plugin::NAME, Plugin::VERSION.string());
 
-		// 读取配置
-		lotd::isAutoTrackLotdItems = true;
-		setting::settings_path = "data\\skse\\plugins\\LotdFinder.json";
-		setting::load_settings();
-		i18n::i18nPath = "data\\skse\\plugins\\LotdFinder\\i18n";
-		i18n::load();
-		menu::fontFilePath = "data\\skse\\plugins\\LotdFinder\\fonts\\";
-		lotdcode::start();
+	auto messaging = SKSE::GetMessagingInterface();
+	if (!messaging->RegisterListener("SKSE", MessageHandler)) {
+		logger::critical("Could not register MessageHandler"sv);
+		return false;
+	}
 
-	#else
+	SKSE::AllocTrampoline(1 << 6);
+	logger::info("registered listener"sv);
 
-		logger::info("{} v{}"sv, Plugin::NAME, Plugin::VERSION.string());
+	// 读取配置
+	setting::load_settings();
+	i18n::load();
 
-		auto messaging = SKSE::GetMessagingInterface();
-		if (!messaging->RegisterListener("SKSE", MessageHandler)) {
-			logger::critical("Could not register MessageHandler"sv);
-			return false;
-		}
-
-		SKSE::AllocTrampoline(1 << 6);
-		logger::info("registered listener"sv);
-
-		// 读取配置
-		setting::load_settings();
-		i18n::load();
-
-		_beginthread(RefreshGameInfo, 0, NULL);
-		_beginthread(RefreshActorInfo, 0, NULL);
-		_beginthread(RefreshItemInfo, 0, NULL);
-		_beginthread(TimerAutoPick, 0, NULL);
-		_beginthread(installimgui, 0, NULL);
-	#endif
+	_beginthread(RefreshGameInfo, 0, NULL);
+	_beginthread(RefreshActorInfo, 0, NULL);
+	_beginthread(RefreshItemInfo, 0, NULL);
+	_beginthread(TimerAutoPick, 0, NULL);
+	_beginthread(installimgui, 0, NULL);
+#endif
 	return true;
 }
-

@@ -25,14 +25,15 @@
 //#include <wincodec.h>
 #include <utils/WICTextureLoader/WICTextureLoader11.h>
 #include <hook/BSRenderManager.h>
+#include <hook/dinputhook.h>
 //#include <utils/WICTextureLoader/WICTextureLoader11.cpp>
 
 namespace menu
 {
 	// 创建纹理和纹理视图
-	ID3D11ShaderResourceView* textureView;
+	/*ID3D11ShaderResourceView* textureView;
 	ID3D11Resource* texture;
-	bool istestload = false;
+	bool istestload = false;*/
 
 	std::map<int, std::vector<EquipmentItem>> equipments;
 
@@ -41,6 +42,19 @@ namespace menu
 	int hotkey = 0;
 	int hotkey2 = 3;
 	int hotkey3 = 4;
+
+	int hotkeySetting = 210;
+	int hotkeySettingModifier = 0;
+	int hotkeyItemFinder = 16;
+	int hotkeyItemFinderModifier = 0x2;
+	int hotkeyTrack = 59;
+	int hotkeyTrackModifier = 0x2;
+
+	bool isWaitHotkeySetting = false;
+	bool isWaitItemFinder = false;
+	bool isWaitTrack = false;
+
+
 	float font_scale = 1.0f;
 
 	// 默认配置
@@ -976,7 +990,7 @@ namespace menu
 				ImGui::ShowDemoWindow(&show_demo_window);
 
 			{
-				ImGui::Begin("ItemFinderPlus v0.7.14   By _Cheatman[B站] ##0", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+				ImGui::Begin("ItemFinderPlus v0.7.15   By _Cheatman ##0", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
 				static int selected = 0;
 
@@ -1123,22 +1137,24 @@ namespace menu
 						{
 							ImGui::Indent();
 
-							ImGui::AlignTextToFramePadding();
-							if (ImGui::BeginPopupContextItem("PopupHotkey")) {
+							/*if (ImGui::BeginPopupContextItem("PopupHotkey")) {
 								for (auto& item : hotkey_items) {
 									if (ImGui::Selectable(item.second.c_str())) {
 										hotkey = item.first;
 									}
 								}
 								ImGui::EndPopup();
-							}
-							ImGui::Text(I18Nc("common.setting.label-hotkeySetting"));
-							ImGui::SameLine();
-							if (ImGui::Button(hotkey_items.at(hotkey).c_str(), ImVec2(ImGui::GetFontSize() * 6, 0))) {
-								ImGui::OpenPopup("PopupHotkey");
-							}
+							}*/
 
 							ImGui::AlignTextToFramePadding();
+							ImGui::Text(I18Nc("common.setting.label-hotkeySetting"));
+							ImGui::SameLine();
+							if (ImGui::Button(dinputhook::getKeyName(hotkeySetting, hotkeySettingModifier, isWaitHotkeySetting).c_str(), ImVec2(ImGui::GetFontSize() * 7, 0))) {
+								//ImGui::OpenPopup("PopupHotkey");
+								isWaitHotkeySetting = true;
+							}
+
+							/*ImGui::AlignTextToFramePadding();
 							if (ImGui::BeginPopupContextItem("PopupHotkey2")) {
 								for (auto& item : hotkey_items) {
 									if (ImGui::Selectable(item.second.c_str())) {
@@ -1146,27 +1162,30 @@ namespace menu
 									}
 								}
 								ImGui::EndPopup();
-							}
+							}*/
+							ImGui::AlignTextToFramePadding();
 							ImGui::Text(I18Nc("common.setting.label-hotkeyFinder"));
 							ImGui::SameLine();
-							if (ImGui::Button(hotkey_items.at(hotkey2).c_str(), ImVec2(ImGui::GetFontSize() * 6, 0))) {
-								ImGui::OpenPopup("PopupHotkey2");
+							if (ImGui::Button(dinputhook::getKeyName(hotkeyItemFinder, hotkeyItemFinderModifier, isWaitItemFinder).c_str(), ImVec2(ImGui::GetFontSize() * 7, 0))) {
+								//ImGui::OpenPopup("PopupHotkey2");
+								isWaitItemFinder = true;
 							}
 
-							ImGui::AlignTextToFramePadding();
 
-							if (ImGui::BeginPopupContextItem("PopupHotkey3")) {
+							/*if (ImGui::BeginPopupContextItem("PopupHotkey3")) {
 								for (auto& item : hotkey_items) {
 									if (ImGui::Selectable(item.second.c_str())) {
 										hotkey3 = item.first;
 									}
 								}
 								ImGui::EndPopup();
-							}
+							}*/
+							ImGui::AlignTextToFramePadding();
 							ImGui::Text(I18Nc("common.setting.label-hotkeyFinderTrack"));
 							ImGui::SameLine();
-							if (ImGui::Button(hotkey_items.at(hotkey3).c_str(), ImVec2(ImGui::GetFontSize() * 6, 0))) {
-								ImGui::OpenPopup("PopupHotkey3");
+							if (ImGui::Button(dinputhook::getKeyName(hotkeyTrack, hotkeyTrackModifier, isWaitTrack).c_str(), ImVec2(ImGui::GetFontSize() * 7, 0))) {
+								//ImGui::OpenPopup("PopupHotkey3");
+								isWaitTrack = true;
 							}
 
 							ImGui::Unindent();
@@ -1784,7 +1803,7 @@ namespace menu
 				ImGui::Separator();
 				ImGui::Spacing();
 
-				if (ImGui::BeginPopupModal("信息", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+				if (ImGui::BeginPopupModal(I18Nc("common.setting.popup-info"), NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
 					ImGui::Text(I18Nc("common.setting.label-configSaved"));
 					if (ImGui::Button(I18Nc("common.setting.btn-ok"), ImVec2(120, 0))) {
 						ImGui::CloseCurrentPopup();
@@ -1794,7 +1813,7 @@ namespace menu
 
 				if (ImGui::Button(I18Ni(ICON_MDI_CONTENT_SAVE, "common.setting.btn-saveConfig"))) {
 					setting::save_settings();
-					ImGui::OpenPopup("信息");
+					ImGui::OpenPopup(I18Nc("common.setting.popup-info"));
 				}
 
 				ImGui::EndGroup();

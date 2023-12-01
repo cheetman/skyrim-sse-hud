@@ -123,6 +123,8 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/code_lotd/MessageHandler.h"
 	"${SOURCE_DIR}/code_lotd/code_lotd.h"
 	"${SOURCE_DIR}/code_lotd/code_lotd.cpp"
+	"${SOURCE_DIR}/code_lotd/dinputhook.h"
+	"${SOURCE_DIR}/code_lotd/dinputhook.cpp"
 	
 
 )

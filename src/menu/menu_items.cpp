@@ -1337,7 +1337,7 @@ namespace menu
 							takeAllItem(getItemCountWEAP(), getItemsWEAP(), RE::FormType::Weapon);
 						}
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##41", &show_items_window_auto_weap);
+						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##41"), &show_items_window_auto_weap);
 					} else {
 						if (show_items_window_auto_weap) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1358,7 +1358,7 @@ namespace menu
 							takeAllItem(getItemCountARMO(), getItemsARMO(), RE::FormType::Armor);
 						}
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##26", &show_items_window_auto_armo);
+						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##26"), &show_items_window_auto_armo);
 					} else {
 						if (show_items_window_auto_armo) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1378,7 +1378,7 @@ namespace menu
 							takeAllItem(getItemCountAMMO(), getItemsAMMO(), RE::FormType::Ammo);
 						}
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##47", &show_items_window_auto_ammo);
+						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##47"), &show_items_window_auto_ammo);
 					} else {
 						if (show_items_window_auto_ammo) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1411,7 +1411,7 @@ namespace menu
 							takeAllItem(getItemCountALCH(), getItemsALCH(), RE::FormType::AlchemyItem);
 						}
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##44", &show_items_window_auto_alch);
+						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##44"), &show_items_window_auto_alch);
 					} else {
 						if (show_items_window_auto_alch) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1431,7 +1431,7 @@ namespace menu
 							takeAllItem(getItemCountFOOD(), getItemsFOOD(), RE::FormType::PluginInfo);
 						}
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##45", &show_items_window_auto_food);
+						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##45"), &show_items_window_auto_food);
 					} else {
 						if (show_items_window_auto_food) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1451,7 +1451,7 @@ namespace menu
 							takeAllItem(getItemCountINGR(), getItemsINGR(), RE::FormType::Ingredient);
 						}
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##48", &show_items_window_auto_ingr);
+						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##48"), &show_items_window_auto_ingr);
 					} else {
 						if (show_items_window_auto_ingr) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1471,7 +1471,7 @@ namespace menu
 							takeAllItem(getItemCountSGEM(), getItemsSGEM(), RE::FormType::SoulGem);
 						}
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##53", &show_items_window_auto_sgem);
+						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##532"), &show_items_window_auto_sgem);
 					} else {
 						if (show_items_window_auto_sgem) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1504,7 +1504,7 @@ namespace menu
 							takeAllItem(getItemCountSTON(), getItemsSTON(), RE::FormType::Misc);
 						}
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##32-1", &show_items_window_auto_ston);
+						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##32-1"), &show_items_window_auto_ston);
 					} else {
 						if (show_items_window_auto_ston) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1524,7 +1524,7 @@ namespace menu
 							takeAllItem(getItemCountANVI(), getItemsANVI(), RE::FormType::Misc);
 						}
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##32-2", &show_items_window_auto_anvi);
+						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##32-2"), &show_items_window_auto_anvi);
 					} else {
 						if (show_items_window_auto_anvi) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1544,7 +1544,7 @@ namespace menu
 							takeAllItem(getItemCountANHD(), getItemsANHD(), RE::FormType::Misc);
 						}
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##32-3", &show_items_window_auto_anhd);
+						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##32-3"), &show_items_window_auto_anhd);
 					} else {
 						if (show_items_window_auto_anhd) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1564,7 +1564,7 @@ namespace menu
 							takeAllItem(getItemCountANPA(), getItemsANPA(), RE::FormType::Misc);
 						}
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##32-4", &show_items_window_auto_anpa);
+						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##32-4"), &show_items_window_auto_anpa);
 					} else {
 						if (show_items_window_auto_anpa) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1584,7 +1584,7 @@ namespace menu
 							takeAllItem(getItemCountTOOL(), getItemsTOOL(), RE::FormType::Misc);
 						}
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##32-5", &show_items_window_auto_tool);
+						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##32-5"), &show_items_window_auto_tool);
 					} else {
 						if (show_items_window_auto_tool) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1604,7 +1604,7 @@ namespace menu
 							takeAllItem(getItemCountMISC(), getItemsMISC(), RE::FormType::Misc);
 						}
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##49", &show_items_window_auto_misc);
+						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##49"), &show_items_window_auto_misc);
 					} else {
 						if (show_items_window_auto_misc) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1624,7 +1624,7 @@ namespace menu
 							takeAllItem(getItemCountFLOR(), getItemsFLOR(), RE::FormType::Flora);
 						}
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动收获##50", &show_items_window_auto_flor);
+						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##50"), &show_items_window_auto_flor);
 					} else {
 						if (show_items_window_auto_flor) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1644,7 +1644,7 @@ namespace menu
 							takeAllItem(getItemCountTREE(), getItemsTREE(), RE::FormType::Tree);
 						}
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动收获##53", &show_items_window_auto_tree);
+						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##53"), &show_items_window_auto_tree);
 					} else {
 						if (show_items_window_auto_tree) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1661,7 +1661,7 @@ namespace menu
 
 					if (show_items_window_settings) {
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##62", &show_items_window_auto_achr);
+						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##62"), &show_items_window_auto_achr);
 					} else {
 						if (show_items_window_auto_achr) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1677,7 +1677,7 @@ namespace menu
 					ImGui::Text(I18Ni(ICON_MDI_ARCHIVE_OUTLINE, "finder.ui.label-cont"), getItemCountCONT());
 					if (show_items_window_settings) {
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox("自动拾取##28", &show_items_window_auto_cont);
+						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##28"), &show_items_window_auto_cont);
 					} else {
 						if (show_items_window_auto_cont) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1696,17 +1696,17 @@ namespace menu
 				}
 				if (getItemCount() > 0) {
 					ImGui::TableNextColumn();
-					ImGui::Text("其他：");
+					ImGui::Text(I18Nc("finder.ui.label-othe"));
 					buildItemInfo(getItemCount(), getItems(), RE::FormType::None);
 					ImGui::Spacing();
 				}
 
 				ImGui::TableNextColumn();
-				ImGui::Checkbox("更多", &show_items_window_settings);
+				ImGui::Checkbox(I18Ni(ICON_MDI_MORE, "finder.setting.checkbox-more"), &show_items_window_settings);
 				if (show_items_window_settings) {
 					ImGui::SameLine(0.0f, 8.0f * ImGui::GetTextLineHeightWithSpacing());
 
-					if (ImGui::Button(ICON_MDI_CONTENT_SAVE " 保存设置##2")) {
+					if (ImGui::Button(I18Ni(ICON_MDI_CONTENT_SAVE, "common.setting.btn-saveConfig"))) {
 						setting::save_settings();
 					}
 
@@ -1900,13 +1900,13 @@ namespace menu
 								ImGui::TreePop();
 							}
 
-							if (ImGui::TreeNodeEx(ICON_MDI_SWORD " 武器过滤", ImGuiTreeNodeFlags_DefaultOpen)) {
+							if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_SWORD, "finder.setting.label-weaponFiltering"), ImGuiTreeNodeFlags_DefaultOpen)) {
 								ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupOnlyEnchanting"), &show_items_window_auto_weap_enchant);
 								ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupValueSetting"), &show_items_window_auto_weap_price);
 								ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
 								if (show_items_window_auto_weap_price) {
 									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									ImGui::SliderInt("##设置价格", &show_items_window_auto_weap_price_value, 100, 10000, " 超过%d");
+									ImGui::SliderInt("##设置价格", &show_items_window_auto_weap_price_value, 100, 10000, I18Nc("finder.setting.slider-exceed"));
 								}
 								ImGui::PopItemWidth();
 
@@ -1914,21 +1914,21 @@ namespace menu
 								ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
 								if (show_items_window_auto_weap_priceweight) {
 									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									ImGui::SliderInt("##设置价重比", &show_items_window_auto_weap_priceweight_value, 2, 500, " 超过%d");
+									ImGui::SliderInt("##设置价重比", &show_items_window_auto_weap_priceweight_value, 2, 500, I18Nc("finder.setting.slider-exceed"));
 								}
 								ImGui::PopItemWidth();
 
 								ImGui::TreePop();
 							}
 
-							if (ImGui::TreeNodeEx(ICON_MDI_SHIELD_HALF_FULL " 装备过滤", ImGuiTreeNodeFlags_DefaultOpen)) {
+							if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_SHIELD_HALF_FULL ,"finder.setting.label-armorFiltering"), ImGuiTreeNodeFlags_DefaultOpen)) {
 								ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupOnlyEnchanting"), &show_items_window_auto_armo_enchant);
 
 								ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupValueSetting"), &show_items_window_auto_armo_price);
 								ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
 								if (show_items_window_auto_armo_price) {
 									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									ImGui::SliderInt("##设置价格2", &show_items_window_auto_armo_price_value, 100, 10000, " 超过%d");
+									ImGui::SliderInt("##设置价格2", &show_items_window_auto_armo_price_value, 100, 10000, I18Nc("finder.setting.slider-exceed"));
 								}
 								ImGui::PopItemWidth();
 
@@ -1936,17 +1936,17 @@ namespace menu
 								ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
 								if (show_items_window_auto_armo_priceweight) {
 									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									ImGui::SliderInt("##设置价重比2", &show_items_window_auto_armo_priceweight_value, 2, 500, " 超过%d");
+									ImGui::SliderInt("##设置价重比2", &show_items_window_auto_armo_priceweight_value, 2, 500, I18Nc("finder.setting.slider-exceed"));
 								}
 								ImGui::PopItemWidth();
 
 								ImGui::TreePop();
 							}
 
-							ImGui::Checkbox("地点过滤", &show_items_window_auto_ignore);
+							ImGui::Checkbox(I18Nc("finder.setting.checkbox-locationFiltering"), &show_items_window_auto_ignore);
 							if (show_items_window_auto_ignore) {
 								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-								if (ImGui::SmallButton("排除当前位置")) {
+								if (ImGui::SmallButton(I18Nc("finder.setting.btn-excludeCurrentLocation"))) {
 									auto player = RE::PlayerCharacter::GetSingleton();
 									auto currentLocation = player->currentLocation;
 									RE::FormID formid = 0;

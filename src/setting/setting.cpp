@@ -13,6 +13,7 @@
 #include <menu/theme.h>
 #include <nlohmann/json.hpp>
 #include <memory/sexlab.h>
+#include <setting/i18n.h>
 
 namespace setting
 {
@@ -164,6 +165,30 @@ namespace setting
 				if (j.contains("hotkey3")) {
 					menu::hotkey3 = j["hotkey3"].get<int>();
 				}
+				if (j.contains("hotkeySetting")) {
+					menu::hotkeySetting = j["hotkeySetting"].get<int>();
+				}
+				if (j.contains("hotkeyTrack")) {
+					menu::hotkeyTrack = j["hotkeyTrack"].get<int>();
+				}
+				if (j.contains("hotkeyItemFinder")) {
+					menu::hotkeyItemFinder = j["hotkeyItemFinder"].get<int>();
+				}
+				if (j.contains("hotkeySettingModifier")) {
+					menu::hotkeySettingModifier = j["hotkeySettingModifier"].get<int>();
+				}
+				if (j.contains("hotkeyItemFinderModifier")) {
+					menu::hotkeyItemFinderModifier = j["hotkeyItemFinderModifier"].get<int>();
+				}
+				if (j.contains("hotkeyTrackModifier")) {
+					menu::hotkeyTrackModifier = j["hotkeyTrackModifier"].get<int>();
+				}
+
+				if (j.contains("languageName")) {
+					std::string languageName = j["languageName"];
+					i18n::languageName = languageName;
+				}
+				
 				if (j.contains("font_scale")) {
 					menu::font_scale = j["font_scale"].get<float>();
 				}
@@ -561,11 +586,20 @@ namespace setting
 					if (j2.contains("show_item_window_track_highlight")) {
 						menu::show_item_window_track_highlight = j2["show_item_window_track_highlight"].get<bool>();
 					}
+					if (j2.contains("show_item_window_track_displayType")) {
+						menu::show_item_window_track_displayType = j2["show_item_window_track_displayType"].get<bool>();
+					}
 					if (j2.contains("colorTrackX")) {
 						menu::colorTrack.x = j2["colorTrackX"].get<float>();
 						menu::colorTrack.y = j2["colorTrackY"].get<float>();
 						menu::colorTrack.z = j2["colorTrackZ"].get<float>();
 						menu::colorTrack.w = j2["colorTrackW"].get<float>();
+					}
+					if (j2.contains("ColorTrackLotdX")) {
+						menu::ColorTrackLotd.x = j2["ColorTrackLotdX"].get<float>();
+						menu::ColorTrackLotd.y = j2["ColorTrackLotdY"].get<float>();
+						menu::ColorTrackLotd.z = j2["ColorTrackLotdZ"].get<float>();
+						menu::ColorTrackLotd.w = j2["ColorTrackLotdW"].get<float>();
 					}
 				}
 
@@ -768,12 +802,19 @@ namespace setting
 									  { "hotkey", menu::hotkey },
 									  { "hotkey2", menu::hotkey2 },
 									  { "hotkey3", menu::hotkey3 },
+									  { "hotkeySetting", menu::hotkeySetting },
+									  { "hotkeySettingModifier", menu::hotkeySettingModifier },
+									  { "hotkeyItemFinder", menu::hotkeyItemFinder },
+									  { "hotkeyItemFinderModifier", menu::hotkeyItemFinderModifier },
+									  { "hotkeyTrack", menu::hotkeyTrack },
+									  { "hotkeyTrackModifier", menu::hotkeyTrackModifier },
 									  { "font_scale", ImGui::GetIO().FontGlobalScale },
 									  { "no_background_items", menu::no_background_items },
 									  { "imgui_font_index", menu::imgui_font_index },
 									  { "grabRounding", ImGui::GetStyle().GrabRounding },
 									  { "frameRounding", ImGui::GetStyle().FrameRounding },
 									  { "windowRounding", ImGui::GetStyle().WindowRounding },
+									  { "languageName", i18n::languageName },
 
 								  } },
 
@@ -948,10 +989,15 @@ namespace setting
 															 { "merchantContIgnore", merchantContIgnore },
 															 { "show_item_window_track_icon_name", menu::show_item_window_track_icon_name },
 															 { "show_item_window_track_highlight", menu::show_item_window_track_highlight },
+															 { "show_item_window_track_displayType", menu::show_item_window_track_displayType },
 															 { "colorTrackX", menu::colorTrack.x },
 															 { "colorTrackY", menu::colorTrack.y },
 															 { "colorTrackZ", menu::colorTrack.z },
 															 { "colorTrackW", menu::colorTrack.w },
+															 { "ColorTrackLotdX", menu::ColorTrackLotd.x },
+															 { "ColorTrackLotdY", menu::ColorTrackLotd.y },
+															 { "ColorTrackLotdZ", menu::ColorTrackLotd.z },
+															 { "ColorTrackLotdW", menu::ColorTrackLotd.w },
 
 														 } },
 									   { "LotdInfo", {

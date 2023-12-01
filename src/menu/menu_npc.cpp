@@ -152,7 +152,7 @@ namespace menu
 					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 
 					if (item.lifeState == RE::ACTOR_LIFE_STATE::kDead) {
-						myTextColored(ImVec4(1, 0, 0.0f, 1.0f), "已死亡");
+						myTextColored(ImVec4(1, 0, 0.0f, 1.0f), I18Nc("hud.npc.hud-dead"));
 					} else {
 						float enemyHealthRate = item.kHealth / (item.kHealthBase == 0 ? 1 : item.kHealthBase);
 						if (enemyHealthRate > 0.85f) {

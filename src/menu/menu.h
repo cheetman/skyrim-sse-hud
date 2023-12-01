@@ -8,6 +8,18 @@ namespace menu
 	extern int hotkey;
 	extern int hotkey2;
 	extern int hotkey3;
+
+	extern int hotkeySetting;
+	extern int hotkeySettingModifier;
+	extern int hotkeyItemFinder;
+	extern int hotkeyItemFinderModifier;
+	extern int hotkeyTrack;
+	extern int hotkeyTrackModifier;
+
+	extern bool isWaitHotkeySetting;
+	extern bool isWaitItemFinder;
+	extern bool isWaitTrack;
+	
 	extern float font_scale;
 	void __fastcall render();
 
