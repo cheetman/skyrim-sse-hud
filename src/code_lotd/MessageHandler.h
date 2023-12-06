@@ -51,7 +51,7 @@ namespace lotdcode
 
 				if (!isLoadItemfinderplus) {
 					// 读取配置
-					menu::isTrack = false;
+					//menu::isTrack = false;
 					menu::hotkeySetting = 88;
 					menu::hotkeySettingModifier = 0x1;
 					menu::hotkeyTrack = 59;

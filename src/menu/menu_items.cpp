@@ -12,6 +12,7 @@
 #include <setting/i18n.h>
 #include <setting/setting.h>
 #include <utils/utils.h>
+#include <hook/dinputhook.h>
 
 namespace menu
 {
@@ -1662,6 +1663,56 @@ namespace menu
 					if (show_items_window_settings) {
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##62"), &show_items_window_auto_achr);
+						if (show_items_window_auto_achr) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							if (ImGui::BeginPopupContextItem("PopupFilterAchr")) {
+								ImGui::Text(I18Ni(ICON_MDI_HUMAN_MALE, "finder.setting.label-achrItemPickupType"));
+								ImGui::Separator();
+								if (ImGui::BeginTable("tableFilterAchr", 3)) {
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_SWORD, "finder.setting.checkbox-weap"), &show_items_window_auto_achr_weap);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_SHIELD_HALF_FULL, "finder.setting.checkbox-armo"), &show_items_window_auto_achr_armo);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_ARROW_PROJECTILE, "finder.setting.checkbox-ammo"), &show_items_window_auto_achr_ammo);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE, "finder.setting.checkbox-alch"), &show_items_window_auto_achr_alch);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_FOOD_DRUMSTICK, "finder.setting.checkbox-food"), &show_items_window_auto_achr_food);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_SOURCE_BRANCH, "finder.setting.checkbox-ingr"), &show_items_window_auto_achr_ingr);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_CARDS_DIAMOND, "finder.setting.checkbox-sgen"), &show_items_window_auto_achr_sgem);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_CASH, "finder.setting.checkbox-gold"), &show_items_window_auto_achr_gold);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_SCRIPT_TEXT, "finder.setting.checkbox-scrl"), &show_items_window_auto_achr_scrl);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_KEY, "finder.setting.checkbox-keym"), &show_items_window_auto_achr_keym);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_DIAMOND_STONE, "finder.setting.checkbox-ston"), &show_items_window_auto_achr_ston);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_ANVIL, "finder.setting.checkbox-anvi"), &show_items_window_auto_achr_anvi);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_LOCK_OPEN, "finder.setting.checkbox-lock"), &show_items_window_auto_achr_lock);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_BOX_CUTTER, "finder.setting.checkbox-anhd"), &show_items_window_auto_achr_anhd);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_RABBIT, "finder.setting.checkbox-anpa"), &show_items_window_auto_achr_anpa);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_TOOLS, "finder.setting.checkbox-tool"), &show_items_window_auto_achr_tool);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_PACKAGE_VARIANT_CLOSED, "finder.setting.checkbox-misc"), &show_items_window_auto_achr_misc);
+									ImGui::EndTable();
+								}
+
+								ImGui::EndPopup();
+							}
+
+							if (ImGui::Button(ICON_MDI_FILTER_CHECK "##achr")) {
+								ImGui::OpenPopup("PopupFilterAchr");
+							}
+						}
 					} else {
 						if (show_items_window_auto_achr) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1678,6 +1729,56 @@ namespace menu
 					if (show_items_window_settings) {
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##28"), &show_items_window_auto_cont);
+						if (show_items_window_auto_cont) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							if (ImGui::BeginPopupContextItem("PopupFilterCont")) {
+								ImGui::Text(I18Ni(ICON_MDI_ARCHIVE_OUTLINE, "finder.setting.label-contItemPickupType"));
+								ImGui::Separator();
+								if (ImGui::BeginTable("tableFilterCont", 3)) {
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_SWORD, "finder.setting.checkbox-weap"), &show_items_window_auto_cont_weap);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_SHIELD_HALF_FULL, "finder.setting.checkbox-armo"), &show_items_window_auto_cont_armo);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_ARROW_PROJECTILE, "finder.setting.checkbox-ammo"), &show_items_window_auto_cont_ammo);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE, "finder.setting.checkbox-alch"), &show_items_window_auto_cont_alch);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_FOOD_DRUMSTICK, "finder.setting.checkbox-food"), &show_items_window_auto_cont_food);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_SOURCE_BRANCH, "finder.setting.checkbox-ingr"), &show_items_window_auto_cont_ingr);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_CARDS_DIAMOND, "finder.setting.checkbox-sgen"), &show_items_window_auto_cont_sgem);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_CASH, "finder.setting.checkbox-gold"), &show_items_window_auto_cont_gold);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_SCRIPT_TEXT, "finder.setting.checkbox-scrl"), &show_items_window_auto_cont_scrl);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_KEY, "finder.setting.checkbox-keym"), &show_items_window_auto_cont_keym);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_DIAMOND_STONE, "finder.setting.checkbox-ston"), &show_items_window_auto_cont_ston);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_ANVIL, "finder.setting.checkbox-anvi"), &show_items_window_auto_cont_anvi);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_LOCK_OPEN, "finder.setting.checkbox-lock"), &show_items_window_auto_cont_lock);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_BOX_CUTTER, "finder.setting.checkbox-anhd"), &show_items_window_auto_cont_anhd);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_RABBIT, "finder.setting.checkbox-anpa"), &show_items_window_auto_cont_anpa);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_TOOLS, "finder.setting.checkbox-tool"), &show_items_window_auto_cont_tool);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_PACKAGE_VARIANT_CLOSED, "finder.setting.checkbox-misc"), &show_items_window_auto_cont_misc);
+									ImGui::EndTable();
+								}
+
+								ImGui::EndPopup();
+							}
+
+							if (ImGui::Button(ICON_MDI_FILTER_CHECK "##cont")) {
+								ImGui::OpenPopup("PopupFilterCont");
+							}
+						}
 					} else {
 						if (show_items_window_auto_cont) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -1706,8 +1807,18 @@ namespace menu
 				if (show_items_window_settings) {
 					ImGui::SameLine(0.0f, 8.0f * ImGui::GetTextLineHeightWithSpacing());
 
+
+					if (ImGui::BeginPopupModal(I18Nc("common.setting.popup-info"), NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+						ImGui::Text(I18Nc("common.setting.label-configSaved"));
+						if (ImGui::Button(I18Nc("common.setting.btn-ok"), ImVec2(120, 0))) {
+							ImGui::CloseCurrentPopup();
+						}
+						ImGui::EndPopup();
+					}
+
 					if (ImGui::Button(I18Ni(ICON_MDI_CONTENT_SAVE, "common.setting.btn-saveConfig"))) {
 						setting::save_settings();
+						ImGui::OpenPopup(I18Nc("common.setting.popup-info"));
 					}
 
 					{
@@ -1815,7 +1926,7 @@ namespace menu
 							ImGui::PopItemWidth();
 							ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupPrompt"), &show_items_window_auto_notification);
 
-							if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_HUMAN_MALE, "finder.setting.label-achrItemPickupType"), ImGuiTreeNodeFlags_DefaultOpen)) {
+							/*if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_HUMAN_MALE, "finder.setting.label-achrItemPickupType"), ImGuiTreeNodeFlags_DefaultOpen)) {
 								if (ImGui::BeginTable("tableItemsSettingACHR", 3)) {
 									ImGui::TableNextColumn();
 									ImGui::Checkbox(I18Ni(ICON_MDI_SWORD, "finder.setting.checkbox-weap"), &show_items_window_auto_achr_weap);
@@ -1855,9 +1966,9 @@ namespace menu
 								}
 
 								ImGui::TreePop();
-							}
+							}*/
 
-							if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_ARCHIVE_OUTLINE, "finder.setting.label-contItemPickupType"), ImGuiTreeNodeFlags_DefaultOpen)) {
+							/*if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_ARCHIVE_OUTLINE, "finder.setting.label-contItemPickupType"), ImGuiTreeNodeFlags_DefaultOpen)) {
 								if (ImGui::BeginTable("tableItemsSettingCONT", 3)) {
 									ImGui::TableNextColumn();
 									ImGui::Checkbox(I18Ni(ICON_MDI_SWORD, "finder.setting.checkbox-weap"), &show_items_window_auto_cont_weap);
@@ -1898,7 +2009,7 @@ namespace menu
 								}
 
 								ImGui::TreePop();
-							}
+							}*/
 
 							if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_SWORD, "finder.setting.label-weaponFiltering"), ImGuiTreeNodeFlags_DefaultOpen)) {
 								ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupOnlyEnchanting"), &show_items_window_auto_weap_enchant);
@@ -2026,10 +2137,11 @@ namespace menu
 							ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyNirnRootRedQuantity"), &stats::showlocationNirnRootRedCount);
 							ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyVeinQuantity"), &stats::showlocationOreCount);
 
-							ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyLotdItemsQuantity"), &lotd::showlocationItemCount);
-							ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyLotdExcavationQuantity"), &stats::showlocationExCount);
-							ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayLotdItemsQuantity"), &lotd::showDisplayItemCount);
-
+							if (lotd::isLoad) {
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyLotdItemsQuantity"), &lotd::showlocationItemCount);
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyLotdExcavationQuantity"), &stats::showlocationExCount);
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayLotdItemsQuantity"), &lotd::showDisplayItemCount);
+							}
 							ImGui::TreePop();
 						}
 
@@ -2051,7 +2163,7 @@ namespace menu
 								ImGui::Text(I18Nc("finder.setting.slider-markerZoomMin"));
 								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 								ImGui::PushItemWidth(ImGui::GetFontSize() * 5);
-								ImGui::SliderFloat("##markerZoomMin", &show_item_window_track_icon_scale_min, 0.0f, 1.0f, "+%0.1f");
+								ImGui::SliderFloat("##markerZoomMin", &show_item_window_track_icon_scale_min, 0.1f, 1.0f, "+%0.1f");
 								ImGui::PopItemWidth();
 								ImGui::Unindent();
 							} else {
@@ -2082,12 +2194,19 @@ namespace menu
 							if (ImGui::Button(menu::displayType.at(menu::show_item_window_track_displayType).c_str(), ImVec2(ImGui::GetFontSize() * 5, 0))) {
 								ImGui::OpenPopup("PopupDisplayType");
 							}
+							if (menu::show_item_window_track_displayType != 0) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Text("当前绑定:");
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Text(dinputhook::getKeyName(hotkeyTrack, hotkeyTrackModifier, isWaitTrack).c_str());
+							}
 
 							if (lotd::isLoad) {
 								ImGui::Checkbox(I18Nc("finder.setting.checkbox-autoMarkLotdItems"), &lotd::isAutoTrackLotdItems);
 								if (lotd::isAutoTrackLotdItems) {
 									ImGui::Indent();
 									ImGui::Checkbox(I18Nc("finder.setting.checkbox-privateItemHidden"), &lotd::isAutoTrackLotdItemsCrimeIgnore);
+									ImGui::Checkbox(I18Nc("finder.setting.checkbox-excludeArmoryItems"), &lotd::isArmoryIgnore);
 									ImGui::ColorEdit4(I18Nc("finder.setting.color-markerTagColorLotd"), &menu::ColorTrackLotd.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
 
 									ImGui::Unindent();

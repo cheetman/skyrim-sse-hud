@@ -558,10 +558,13 @@ namespace setting
 					}
 
 					if (j2.contains("show_item_window_track_icon_scale")) {
-						show_item_window_track_icon_scale = j2["show_item_window_track_icon_scale"].get<float>();
+						menu::show_item_window_track_icon_scale = j2["show_item_window_track_icon_scale"].get<float>();
 					}
 					if (j2.contains("show_item_window_track_icon_scale_max")) {
-						show_item_window_track_icon_scale_max = j2["show_item_window_track_icon_scale_max"].get<float>();
+						menu::show_item_window_track_icon_scale_max = j2["show_item_window_track_icon_scale_max"].get<float>();
+					}
+					if (j2.contains("show_item_window_track_icon_scale_min")) {
+						menu::show_item_window_track_icon_scale_min = j2["show_item_window_track_icon_scale_min"].get<float>();
 					}
 					if (j2.contains("show_item_window_track_auto_tag")) {
 						menu::show_item_window_track_auto_tag = j2["show_item_window_track_auto_tag"].get<bool>();
@@ -678,6 +681,11 @@ namespace setting
 					if (j2.contains("show_player_base_info_window_sep")) {
 						menu::show_player_base_info_window_sep = j2["show_player_base_info_window_sep"].get<bool>();
 					}
+
+					if (j2.contains("show_player_base_info_window_max_fix")) {
+						show_player_base_info_window_max_fix = j2["show_player_base_info_window_max_fix"].get<bool>();
+					}
+					
 				}
 			}
 
@@ -845,8 +853,10 @@ namespace setting
 															   { "colorProgressSpX", menu::colorProgressSp.x },
 															   { "colorProgressSpY", menu::colorProgressSp.y },
 															   { "colorProgressSpZ", menu::colorProgressSp.z },
-															   { "colorProgressSpW", menu::colorProgressSp.w },
-
+															   { "colorProgressSpW", menu::colorProgressSp.w }, 
+															   { "show_player_base_info_window_max_fix", show_player_base_info_window_max_fix }
+															   
+															   
 														   } },
 									   { "playerModInfo", {
 															  { "isShow", show_player_mod_window },
@@ -990,8 +1000,9 @@ namespace setting
 															 { "showlocationNirnRootRedCount", stats::showlocationNirnRootRedCount },
 															 { "showlocationNirnRootCount", stats::showlocationNirnRootCount },
 															 { "showlocationExCount", stats::showlocationExCount },
-															 { "show_item_window_track_icon_scale", show_item_window_track_icon_scale },
-															 { "show_item_window_track_icon_scale_max", show_item_window_track_icon_scale_max },
+															 { "show_item_window_track_icon_scale", menu::show_item_window_track_icon_scale },
+															 { "show_item_window_track_icon_scale_max", menu::show_item_window_track_icon_scale_max },
+															 { "show_item_window_track_icon_scale_min", menu::show_item_window_track_icon_scale_min },
 															 { "isCrimeIgnore", isCrimeIgnore },
 															 { "merchantContIgnore", merchantContIgnore },
 															 { "show_item_window_track_icon_name", menu::show_item_window_track_icon_name },

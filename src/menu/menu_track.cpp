@@ -29,9 +29,12 @@ namespace menu
 	int trackY1 = 0;
 	int trackX2 = 0;
 	int trackY2 = 0;
-	bool show_item_window_track_icon_name = false;
+	bool show_item_window_track_icon_name = true;
 	bool show_item_window_track_highlight = true;
 	bool show_item_window_track_auto_tag = false;
+	float show_item_window_track_icon_scale = 0;
+	float show_item_window_track_icon_scale_max = 1.5f;
+	float show_item_window_track_icon_scale_min = 0.5f;
 	ImVec4 colorTrack(0.0f, 1.0f, 0.1f, 0.646f);
 	bool isTrack = false;
 

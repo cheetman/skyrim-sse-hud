@@ -37,9 +37,6 @@ int show_items_window_array_max_length = 2998;
 
 int show_items_window_auto_dis_skyrim = 100;
 int show_items_window_auto_dis_local = 200;
-float show_item_window_track_icon_scale = 0;
-float show_item_window_track_icon_scale_max = 1.5f;
-float show_item_window_track_icon_scale_min = 0.5f;
 
 
 Item2Info* items = new Item2Info[2];

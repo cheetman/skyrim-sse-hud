@@ -18,6 +18,9 @@ namespace menu
 	extern bool show_item_window_track_icon_name;
 	extern bool show_item_window_track_highlight;
 	extern bool show_item_window_track_auto_tag;
+	extern float show_item_window_track_icon_scale;
+	extern float show_item_window_track_icon_scale_max;
+	extern float show_item_window_track_icon_scale_min;
 	extern ImVec4 colorTrack;
 	extern ImVec4 ColorTrackLotd;
 	extern bool isTrack;

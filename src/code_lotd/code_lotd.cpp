@@ -66,7 +66,7 @@ namespace lotdcode
 			ImGui::Begin("附近艺术馆藏品数量", nullptr, window_flags);
 
 			if (lotd::showlocationItemCount) {
-				ImGui::Text(ICON_MDI_TREASURE_CHEST_OUTLINE " 藏品数：");
+				ImGui::Text(I18Ni(ICON_MDI_TREASURE_CHEST_OUTLINE, "hud.stat.hud-nearbyLotdItemsQuantity"));
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 				if (lotd::locationItemCount > 0) {
 					menu::myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%d", lotd::locationItemCount);
@@ -76,7 +76,7 @@ namespace lotdcode
 			}
 
 			if (stats::showlocationExCount) {
-				ImGui::Text(ICON_MDI_SPADE " 考古点：");
+				ImGui::Text(I18Ni(ICON_MDI_SPADE, "hud.stat.hud-nearbyLotdExcavationQuantity"));
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 				if (stats::locationExCount > 0) {
 					menu::myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%d", stats::locationExCount);
@@ -102,7 +102,7 @@ namespace lotdcode
 		if (lotd::showDisplayItemCount) {
 			ImGui::Begin("艺术馆藏品数量", nullptr, window_flags);
 
-			ImGui::Text(ICON_MDI_TREASURE_CHEST_OUTLINE " 已收集藏品数：");
+			ImGui::Text(I18Ni(ICON_MDI_TREASURE_CHEST_OUTLINE, "hud.stat.hud-lotdItemsQuantity"));
 			ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 			menu::myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%0.0f", lotd::displayCount);
 
@@ -125,8 +125,8 @@ namespace lotdcode
 					selected = 1;
 				}
 
-				if (ImGui::BeginPopupModal("关于", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-					ImGui::Text("版本：v1.0.0");
+				if (ImGui::BeginPopupModal(I18Nc("common.setting.tab-about"), NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+					ImGui::Text("版本：v1.1.0");
 					ImGui::Text("作者：Cheatman、火锅");
 
 					if (ImGui::Button(I18Nc("common.setting.btn-ok"), ImVec2(120, 0))) {
@@ -135,7 +135,7 @@ namespace lotdcode
 					ImGui::EndPopup();
 				}
 				if (ImGui::Selectable(I18Ni(ICON_MDI_INFORMATION_OUTLINE, "common.setting.tab-about"), false, 0, size)) {
-					ImGui::OpenPopup("关于");
+					ImGui::OpenPopup(I18Nc("common.setting.tab-about"));
 				}
 
 				ImGui::EndGroup();
@@ -208,12 +208,41 @@ namespace lotdcode
 								ImGui::EndGroup();
 							}
 
-							ImGui::AlignTextToFramePadding();
+						/*	ImGui::AlignTextToFramePadding();
 							ImGui::Text(I18Nc("finder.setting.slider-markerZoom"));
 							ImGui::SameLine();
 							ImGui::PushItemWidth(ImGui::GetFontSize() * 5);
 							ImGui::SliderFloat("##markerZoom", &show_item_window_track_icon_scale, 0, 10, "+%d");
-							ImGui::PopItemWidth();
+							ImGui::PopItemWidth();*/
+
+							ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerAutoZoom"), &menu::show_item_window_track_auto_tag);
+							if (menu::show_item_window_track_auto_tag) {
+								ImGui::Indent();
+								ImGui::AlignTextToFramePadding();
+								ImGui::Text(I18Nc("finder.setting.slider-markerZoomMax"));
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::PushItemWidth(ImGui::GetFontSize() * 5);
+								ImGui::SliderFloat("##markerZoomMax", &menu::show_item_window_track_icon_scale_max, 1.0f, 10.0f, "+%0.1f");
+								ImGui::PopItemWidth();
+
+								ImGui::AlignTextToFramePadding();
+								ImGui::Text(I18Nc("finder.setting.slider-markerZoomMin"));
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::PushItemWidth(ImGui::GetFontSize() * 5);
+								ImGui::SliderFloat("##markerZoomMin", &menu::show_item_window_track_icon_scale_min, 0.1f, 1.0f, "+%0.1f");
+								ImGui::PopItemWidth();
+								ImGui::Unindent();
+							} else {
+								ImGui::Indent();
+								ImGui::AlignTextToFramePadding();
+								ImGui::Text(I18Nc("finder.setting.slider-markerZoom"));
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::PushItemWidth(ImGui::GetFontSize() * 5);
+								ImGui::SliderFloat("##markerZoom", &menu::show_item_window_track_icon_scale, 0.0f, 10.0f, "+%0.1f");
+								ImGui::PopItemWidth();
+								ImGui::Unindent();
+							}
+
 
 							ImGui::AlignTextToFramePadding();
 							if (ImGui::BeginPopupContextItem("PopupDisplayType")) {
