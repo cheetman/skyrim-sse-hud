@@ -25,4 +25,4 @@ namespace util
 
 #include "Plugin.h"
 
-#define LOTD_SPECIFIC_CODE 1
+#define LOTD_SPECIFIC_CODE 0

@@ -1921,7 +1921,7 @@ namespace menu
 								ImGui::TreePop();
 							}
 
-							if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_SHIELD_HALF_FULL ,"finder.setting.label-armorFiltering"), ImGuiTreeNodeFlags_DefaultOpen)) {
+							if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_SHIELD_HALF_FULL, "finder.setting.label-armorFiltering"), ImGuiTreeNodeFlags_DefaultOpen)) {
 								ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupOnlyEnchanting"), &show_items_window_auto_armo_enchant);
 
 								ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupValueSetting"), &show_items_window_auto_armo_price);
@@ -2036,17 +2036,63 @@ namespace menu
 						if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_MAP_SEARCH_OUTLINE, "finder.setting.label-marker"), ImGuiTreeNodeFlags_DefaultOpen)) {
 							ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerNameTag"), &show_item_window_track_icon_name);
 							ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerHighLight"), &show_item_window_track_highlight);
+
+							ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerAutoZoom"), &show_item_window_track_auto_tag);
+							if (show_item_window_track_auto_tag) {
+								ImGui::Indent();
+								ImGui::AlignTextToFramePadding();
+								ImGui::Text(I18Nc("finder.setting.slider-markerZoomMax"));
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::PushItemWidth(ImGui::GetFontSize() * 5);
+								ImGui::SliderFloat("##markerZoomMax", &show_item_window_track_icon_scale_max, 1.0f, 10.0f, "+%0.1f");
+								ImGui::PopItemWidth();
+
+								ImGui::AlignTextToFramePadding();
+								ImGui::Text(I18Nc("finder.setting.slider-markerZoomMin"));
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::PushItemWidth(ImGui::GetFontSize() * 5);
+								ImGui::SliderFloat("##markerZoomMin", &show_item_window_track_icon_scale_min, 0.0f, 1.0f, "+%0.1f");
+								ImGui::PopItemWidth();
+								ImGui::Unindent();
+							} else {
+								ImGui::Indent();
+								ImGui::AlignTextToFramePadding();
+								ImGui::Text(I18Nc("finder.setting.slider-markerZoom"));
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::PushItemWidth(ImGui::GetFontSize() * 5);
+								ImGui::SliderFloat("##markerZoom", &show_item_window_track_icon_scale, 0.0f, 10.0f, "+%0.1f");
+								ImGui::PopItemWidth();
+								ImGui::Unindent();
+							}
+
+							ImGui::AlignTextToFramePadding();
+							if (ImGui::BeginPopupContextItem("PopupDisplayType")) {
+								for (auto& item : menu::displayType) {
+									if (ImGui::Selectable(item.second.c_str())) {
+										menu::show_item_window_track_displayType = item.first;
+										if (item.first == 2) {
+											menu::isTrack = false;
+										}
+									}
+								}
+								ImGui::EndPopup();
+							}
+							ImGui::Text(I18Nc("finder.setting.btn-markerDisplayType"));
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							if (ImGui::Button(menu::displayType.at(menu::show_item_window_track_displayType).c_str(), ImVec2(ImGui::GetFontSize() * 5, 0))) {
+								ImGui::OpenPopup("PopupDisplayType");
+							}
+
 							if (lotd::isLoad) {
 								ImGui::Checkbox(I18Nc("finder.setting.checkbox-autoMarkLotdItems"), &lotd::isAutoTrackLotdItems);
 								if (lotd::isAutoTrackLotdItems) {
 									ImGui::Indent();
 									ImGui::Checkbox(I18Nc("finder.setting.checkbox-privateItemHidden"), &lotd::isAutoTrackLotdItemsCrimeIgnore);
+									ImGui::ColorEdit4(I18Nc("finder.setting.color-markerTagColorLotd"), &menu::ColorTrackLotd.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+
 									ImGui::Unindent();
 								}
 							}
-							ImGui::PushItemWidth(ImGui::GetFontSize() * 4);
-							ImGui::SliderInt(I18Nc("finder.setting.slider-markerZoom"), &show_item_window_track_icon_scale, 0, 10, "+%d");
-							ImGui::PopItemWidth();
 
 							ImGui::TreePop();
 						}

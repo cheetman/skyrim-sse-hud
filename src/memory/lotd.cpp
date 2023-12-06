@@ -41,9 +41,9 @@ namespace lotd
 
 	bool isLoad = false;
 	bool isShow = false;
-	bool isShowAttached = true;
+	bool isShowAttached = false;
 	bool isInvIgnore = true;
-	bool isCrimeIgnore = false;
+	bool isCrimeIgnore = true;
 	bool isArmoryIgnore = true;
 
 	std::uint8_t lotdCompileIndex;

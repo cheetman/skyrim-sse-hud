@@ -23,9 +23,9 @@
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
 //#include <wincodec.h>
-#include <utils/WICTextureLoader/WICTextureLoader11.h>
 #include <hook/BSRenderManager.h>
 #include <hook/dinputhook.h>
+#include <utils/WICTextureLoader/WICTextureLoader11.h>
 //#include <utils/WICTextureLoader/WICTextureLoader11.cpp>
 
 namespace menu
@@ -53,7 +53,6 @@ namespace menu
 	bool isWaitHotkeySetting = false;
 	bool isWaitItemFinder = false;
 	bool isWaitTrack = false;
-
 
 	float font_scale = 1.0f;
 
@@ -877,7 +876,7 @@ namespace menu
 			ImGui::Begin("附近艺术馆藏品数量", nullptr, window_flags);
 
 			if (lotd::showlocationItemCount) {
-				ImGui::Text(ICON_MDI_TREASURE_CHEST_OUTLINE " 藏品数：");
+				ImGui::Text(I18Ni(ICON_MDI_TREASURE_CHEST_OUTLINE, "hud.stat.hud-nearbyLotdItemsQuantity"));
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 				if (lotd::locationItemCount > 0) {
 					myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%d", lotd::locationItemCount);
@@ -887,7 +886,7 @@ namespace menu
 			}
 
 			if (stats::showlocationExCount) {
-				ImGui::Text(ICON_MDI_SPADE " 考古点：");
+				ImGui::Text(I18Ni(ICON_MDI_SPADE, "hud.stat.hud-nearbyLotdExcavationQuantity"));
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 				if (stats::locationExCount > 0) {
 					myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%d", stats::locationExCount);
@@ -913,7 +912,7 @@ namespace menu
 		if (lotd::showDisplayItemCount) {
 			ImGui::Begin("艺术馆藏品数量", nullptr, window_flags);
 
-			ImGui::Text(ICON_MDI_TREASURE_CHEST_OUTLINE " 已收集藏品数：");
+			ImGui::Text(I18Ni(ICON_MDI_TREASURE_CHEST_OUTLINE, "hud.stat.hud-lotdItemsQuantity"));
 			ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 			myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%0.0f", lotd::displayCount);
 
@@ -924,7 +923,7 @@ namespace menu
 			ImGui::Begin("附近物品数量", nullptr, window_flags);
 
 			if (stats::showlocationNirnRootCount) {
-				ImGui::Text(ICON_MDI_SPA_OUTLINE " 奈恩根：");
+				ImGui::Text(I18Ni(ICON_MDI_SPA_OUTLINE, "hud.stat.hud-nirnRootQuantity"));
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 				if (stats::locationNirnRootCount > 0) {
 					myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%d", stats::locationNirnRootCount);
@@ -934,7 +933,7 @@ namespace menu
 			}
 
 			if (stats::showlocationNirnRootRedCount) {
-				ImGui::Text(ICON_MDI_SPA " 深红奈恩根：");
+				ImGui::Text(I18Ni(ICON_MDI_SPA, "hud.stat.hud-nirnRootRedQuantity"));
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 				if (stats::locationNirnRootRedCount > 0) {
 					myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%d", stats::locationNirnRootRedCount);
@@ -945,7 +944,7 @@ namespace menu
 
 			if (stats::showlocationOreCount) {
 				//ImGui::Text(ICON_MDI_GOLD " 矿脉数量：");
-				ImGui::Text(ICON_MDI_TERRAIN " 矿脉：");
+				ImGui::Text(I18Ni(ICON_MDI_TERRAIN, "hud.stat.hud-veinQuantity"));
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 				if (stats::locationOreCount > 0) {
 					myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), "%d", stats::locationOreCount);
@@ -986,31 +985,148 @@ namespace menu
 			static bool show_demo_window = false;
 			static bool show_another_window = false;
 
+#ifndef NDEBUG
+
+			{
+				ImGui::Begin("测试", nullptr, ImGuiWindowFlags_NoCollapse);
+
+				static int selected2 = 0;
+				{
+					ImGui::BeginGroup();
+					ImVec2 size(ImGui::GetFontSize() * 6, 0);
+					if (ImGui::Selectable("测试", selected2 == 0, 0, size)) {
+						selected2 = 0;
+					}
+					ImGui::EndGroup();
+
+					ImGui::SameLine();
+
+					ImGui::BeginGroup();
+
+					ImGui::Spacing();
+					ImGui::Text("快速攻略");
+					ImGui::Separator();
+					ImGui::TextWrapped("1.听听黎明守卫吸血鬼猎人的故事。");
+					ImGui::TextWrapped("2.找到黎明守卫堡。 ");
+					ImGui::TextWrapped("3.与伊斯兰和警惕的托兰交谈。");
+
+					ImGui::Spacing();
+					ImGui::Text("详细攻略");
+					ImGui::Separator();
+					ImGui::TextWrapped("听说吸血鬼猎人");
+					ImGui::TextWrapped("安装黎明守卫附加组件后，你可能会听到城市守卫关于黎明守卫的新谣言：“听说他们正在改革黎明守卫。吸血鬼猎人什么的，在裂谷附近的旧堡垒里。我可能会考虑加入。” 如果这是您第一次听说黎明守卫，您的地图将更新为黎明守卫堡的位置，并且任务将正式出现在您的日记中。");
+					ImGui::TextWrapped("如果你的等级是 10 级或以上，无论你是否听说过这个谣言，一个名叫杜拉克的兽人都会找到你，并提议加入黎明守卫：“你在那里。黎明守卫正在寻找任何愿意对抗黎明守卫的人。”吸血鬼的威胁越来越大。你说呢？” 杂项日记目标“找出黎明守卫”将会出现，如果你让他解释，他会告诉你他们是一群吸血鬼猎人。他会提到警戒者大厅被吸血鬼摧毁是因为警戒者没有认真对待吸血鬼的威胁。如果你问他在说什么，他会告诉你他们在对抗吸血鬼时被撕成碎片，这就是为什么他的领袖伊斯兰正在重建黎明守卫。当你询问如何报名时，杜拉克会告诉你去裂谷东南的黎明守卫堡与伊斯兰交谈。如果您还没有听到守卫的谣言，您的地图现在将被更新，并且任务将正式出现在您的日记中。");
+					ImGui::TextWrapped("如果你碰巧告诉杜拉克你对被招募不感兴趣，他会说“每个人都这么说，直到他们发现自己的喉咙被一群饥饿的吸血鬼撕开。” 对话就会结束。如果你第二次接近他，他会回答“是的，你改变主意了？黎明守卫可以使用像你这样的人。” 其他对话选项与第一次相同。如果你告诉他你这次不感兴趣，他会让你和伊斯兰谈谈，并告诉你黎明守卫堡的位置，以防你改变主意。");
+					ImGui::TextWrapped("或者，您可以以另一种方式开始此任务，详情如下。");
+
+					ImGui::TextWrapped("找到黎明守卫堡");
+					ImGui::TextWrapped("走从裂谷向东的路。道路转向东南并穿过一座小桥后，开始观察左侧的悬崖。你会在悬崖边发现一条小裂缝——黎明峡谷的入口。它位于一根中空的绿色原木和一棵折断的桦树之间。一条狭窄蜿蜒的小路将带您前往黎明守卫堡。在您发现地图标记之前，这是到达堡垒的唯一途径。");
+					ImGui::TextWrapped("一路上，你可能会遇到黎明守卫的另一位新兵阿格玛尔。如果你还没有听说过黎明守卫，他的问候将触发出现在你的日记中的任务：“哦，嘿！你也是来加入黎明守卫的吗？” 他表达了他对独自进入堡垒的焦虑，并陪伴你走完了剩下的路。他要求你不要向伊斯兰提及他的紧张情绪，但在你散步时他会发表一些评论，表达他的不自信。尽管他表示害怕自己进去，但如果你在到达入口前的台阶后不立即进入，他就会跑进堡垒而不等你。");
+					ImGui::TextWrapped("你可能会在堡垒外面经过杜拉克，练习他的十字弓技能。如果你问他在用什么，他会回答“以前从未见过十字弓？并不惊讶。有点像黎明守卫的专长。没有什么比这更适合镇压吸血鬼了。” 然后他会给你一把自己的十字弓，以及 45 个钢螺栓（有关如何获得第二个螺栓的信息，请参阅下面的注释）。");
+					ImGui::TextWrapped("当你到达堡垒的台阶时，你会发现塞兰守卫着入口。如果你选择与他交谈，他会说他对伊斯兰的来信感到惊讶，并评论说伊斯兰向他寻求帮助的情况一定很糟糕。如果你问塞兰过去与伊斯兰的合作，他会告诉你，他们都是斯坦达尔警戒者的成员，他们的“心是在正确的地方”，但让他们都不满意。两人一起离开，但塞兰不同意伊斯兰的“方法”，因此这种伙伴关系并没有持续多久。在那张纸条上，他会告诉你“进去吧，伊斯兰会想和你说话。");
+
+					ImGui::TextWrapped("加入黎明守卫");
+					ImGui::TextWrapped("进去后，你会发现黎明守卫领袖伊斯兰正在与警惕者的牧师托兰交谈。");
+					ImGui::TextWrapped("伊斯兰：“托兰，你为什么在这里？我和警戒者早就结束了。” ");
+					ImGui::TextWrapped("托兰：“你知道我为什么在这里，警戒者到处都受到攻击。吸血鬼比我们想象的要危险得多。” ");
+					ImGui::TextWrapped("伊斯兰：“现在你想和黎明守卫一起逃到安全的地方，是这样吗？我记得守护者卡塞特反复告诉我，黎明守卫是一个摇摇欲坠的废墟，不值得花费金钱和人力来修复。现在你已经搅拌了吸血鬼来攻击你，你来乞求我的保护吗？” ");
+					ImGui::TextWrapped("托兰：“伊斯兰，卡塞特死了。警戒厅……每个人……他们都死了。你是对的，我们错了。这对你来说还不够吗？” ");
+					ImGui::TextWrapped("Isran：“是的，嗯……我从来不想发生这样的事情。我试图警告你们所有人……我很抱歉，你知道。”");
+					ImGui::TextWrapped("此时，伊斯兰会转向你，问“那么你是谁，你想要什么？” 你可以告诉他你只是环顾四周并询问有关堡垒的情况，他会回答说：“为什么我要派警卫？这是黎明守卫的总部。嗯，很久以前它曾经是”。如果你告诉他你是来加入黎明守卫的，或者只是你听说过吸血鬼猎人，他会很高兴你感兴趣，但评论说他们目前的大部分工作都是为了恢复吸血鬼猎人的身份。堡。");
+					ImGui::TextWrapped("如果你在第一次与伊斯兰对话时已经完全变成了吸血鬼，并且你回答说：“我听说你在寻找吸血鬼猎人”，伊斯兰会回答“你没听错，我很高兴这个词是终于开始四处走动了。但这意味着用不了多久吸血鬼也会开始注意到这一点。” 如果你回答：“你究竟打算对这些吸血鬼做什么？” 然后伊斯兰回答道：“首先要做的就是让这座堡垒恢复原状。现在吸血鬼几乎可以直接走进前门。但既然你问了，我有件事要你做”，然后他继续谈论暗空地穴。");
+					ImGui::TextWrapped("当你问你如何提供帮助时，他会回答“我需要有人在战场上，与该死的吸血鬼战斗，同时我们正在让堡垒恢复原状。托兰告诉我一些洞穴的事警戒者正在四处探查。似乎认为这是……”并请托兰告诉你关于暗空地穴的事情。托兰会告诉你“阿达尔瓦尔德兄弟确信它藏有某种失落已久的吸血鬼神器。我们不再听他的话，就像我们听伊斯兰一样。当大厅遭到袭击时，他正在大厅里……”");
+					ImGui::TextWrapped("然后伊斯兰会给你分配第一个任务：“去看看吸血鬼在这个昏暗地穴里寻找什么。如果运气好的话，他们仍然在那里。” 然后邀请您去探索并从黎明守卫堡获取您需要的任何东西。在你离开之前，托兰会主动提出在暗空地穴与你会面，并说道：“这是我能为死去的战友报仇的最低限度。” 伊斯兰和托兰会争论一下，因为伊斯兰不相信警戒者接受过执行此类任务的训练，而托兰对伊斯兰认为警戒者软弱、懦弱和软弱的暗示感到生气。不过，他会坚持自己的决定，告诉你“我要去暗空地穴。也许我可以为你提供一些小帮助。”");
+					ImGui::TextWrapped("然后，伊斯兰会给你一把十字弓和一些钢螺栓（如果你还没有从杜拉克那里收到它们），并说：“在这里，你应该拿一把十字弓。在那些恶魔靠得太近之前，可以把它们猎杀掉。” 并送你去执行你的任务。任务觉醒立即开始。");
+
+					ImGui::Spacing();
+					ImGui::Text("注释");
+					ImGui::Separator();
+					ImGui::TextWrapped("开始此任务后，无论你的等级如何，警惕大厅都将被摧毁");
+					ImGui::TextWrapped("打开控制台输入密码即可将大厅恢复原状 xx003531.enable");
+					ImGui::TextWrapped("你可以完全绕过这个任务并开始觉醒，而这个任务不会出现在你的任务日志中。为了做到这一点，你必须在进入黎明峡谷时没有从守卫或杜拉克那里收到有关黎明守卫的信息。然后，在进入黎明峡谷和接近黎明守卫堡之间，一定不要进入阿格玛尔的近距离范围。当你进入要塞时，即使没有开始任务，与任务相关的事件仍然会以相同的方式发生。");
+					ImGui::TextWrapped("如果你已经从杜拉克那里收到了十字弓，你可以在与伊斯兰交谈之前将其交给追随者。然后他会给你第二把十字弓和 45 个钢螺栓。");
+
+					ImGui::Spacing();
+					ImGui::Text("BUG");
+					ImGui::Separator();
+
+					ImGui::TextWrapped("在某些情况下，地图和指南针上的任务标记不会指向正确的方向。这是因为该标记与黎明峡谷的错误门相关联。");
+					ImGui::TextWrapped("该错误已由非官方黎明守卫补丁1.2.2 版修复。");
+					ImGui::TextWrapped("如果你有狼人，黎明守卫的成员可能会攻击你。");
+					ImGui::TextWrapped("重新加载之前的保存，使用野兽形态，然后等待它过期。然后前往黎明守卫堡。");
+					ImGui::TextWrapped("如果您在进入黎明峡谷之前攻击和/或可能杀死了任何 Stendarr 的警戒者，则所有黎明守卫成员都可能会怀有敌意，从而阻止您加入，因为黎明守卫和 Stendarr 的守夜者是结盟派系。 ");
+					ImGui::TextWrapped("通过避免与斯坦达尔警戒者的任何敌对互动，也许可以绕过这个问题。");
+					ImGui::TextWrapped("完成此任务后，可能不会触发下一个任务“觉醒”");
+					ImGui::TextWrapped("实时等待 15 分钟可能会解决此问题。");
+					ImGui::TextWrapped("一个常见的解决方法是完全跳过该任务。然而，这会导致稍后的任务中断。");
+					ImGui::TextWrapped("该任务可能无法正常工作（例如阿格玛尔没有向你打招呼，伊斯兰和托兰在进入黎明守卫堡时没有进行对话，或者没有启动觉醒）。后续所有新游戏也可能会出现这种情况");
+					ImGui::TextWrapped("完全重新安装《天际》可能会修复它");
+					ImGui::TextWrapped("杜拉克可能会靠近并绕圈行走，从而阻止对话。他可能会无限期地停留在原地");
+					ImGui::TextWrapped("使用控制台命令setstage DLC1VQ01MiscObjective 10。之后就可以正常对话了。然而，此选项有时会将日志中的任务条目留空。另一种选择是使用以下命令将 Durak 移至您身边：prid xx015c16then moveto player。然后他似乎正常开始任务");
+					ImGui::TextWrapped("如果你在裂谷有赏金，黎明守卫的成员在见面时可能会怀有敌意，阻止加入。为了避免这种情况，请在进入黎明峡谷之前处理好赏金");
+
+					ImGui::Spacing();
+					ImGui::Text("任务阶段");
+					ImGui::Separator();
+
+					ImGui::EndGroup();
+				}
+
+				ImGui::End();
+			}
+#endif
+
 			if (show_demo_window)
 				ImGui::ShowDemoWindow(&show_demo_window);
 
 			{
-				ImGui::Begin("ItemFinderPlus v0.7.15   By _Cheatman ##0", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+				ImGui::SetNextWindowPos(ImVec2(110, 35), ImGuiCond_FirstUseEver);
+
+				ImGui::Begin("上古卷轴物品定位小助手", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+
+				static bool showOther = false;
+				static int clickCount = 0;
 
 				static int selected = 0;
-
 				{
 					ImGui::BeginGroup();
 					ImVec2 size(ImGui::GetFontSize() * 6, 0);
 					if (ImGui::Selectable(I18Ni(ICON_MDI_TOOLS, "common.setting.tab-common"), selected == 0, 0, size)) {
+						clickCount = 0;
 						selected = 0;
 					}
 					if (lotd::isLoad) {
 						if (ImGui::Selectable(I18Ni(ICON_MDI_GREENHOUSE, "common.setting.tab-lotd"), selected == 1, 0, size)) {
+							clickCount = 0;
 							selected = 1;
 						}
 					}
 					if (ImGui::Selectable(I18Ni(ICON_MDI_TABLE_OF_CONTENTS, "common.setting.tab-hud"), selected == 2, 0, size)) {
 						selected = 2;
+						clickCount++;
+						if (clickCount > 3) {
+							showOther = true;
+						}
 					}
-					if (ImGui::Selectable(I18Ni(ICON_MDI_ACCOUNT_EDIT, "common.setting.tab-other"), selected == 99, 0, size)) {
-						selected = 99;
+					if (showOther) {
+						if (ImGui::Selectable(I18Ni(ICON_MDI_ACCOUNT_EDIT, "common.setting.tab-other"), selected == 99, 0, size)) {
+							selected = 99;
+						}
 					}
+
+					if (ImGui::BeginPopupModal(I18Nc("common.setting.tab-about"), NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+						ImGui::Text("版本：v1.0.0");
+
+						if (ImGui::Button(I18Nc("common.setting.btn-ok"), ImVec2(120, 0))) {
+							ImGui::CloseCurrentPopup();
+						}
+						ImGui::EndPopup();
+					}
+					if (ImGui::Selectable(I18Ni(ICON_MDI_INFORMATION_OUTLINE, "common.setting.tab-about"), false, 0, size)) {
+						clickCount = 0;
+						ImGui::OpenPopup(I18Nc("common.setting.tab-about"));
+					}
+
 					ImGui::EndGroup();
 				}
 
@@ -1094,8 +1210,16 @@ namespace menu
 							}
 
 							ImGui::BeginGroup();
-							ImGui::Checkbox(I18Nc("common.setting.checkbox-frameBorder"), &frame_border);
-							ImGui::Checkbox(I18Nc("common.setting.checkbox-windowBorder"), &window_border);
+
+							ImGui::AlignTextToFramePadding();
+							ImGui::Text(I18Nc("common.setting.checkbox-frameBorder"));
+							ImGui::SameLine();
+							ImGui::Checkbox("##checkbox-frameBorder", &frame_border);
+
+							ImGui::AlignTextToFramePadding();
+							ImGui::Text(I18Nc("common.setting.checkbox-windowBorder"));
+							ImGui::SameLine();
+							ImGui::Checkbox("##checkbox-windowBorder", &window_border);
 
 							ImGui::EndGroup();
 
@@ -1154,15 +1278,6 @@ namespace menu
 								isWaitHotkeySetting = true;
 							}
 
-							/*ImGui::AlignTextToFramePadding();
-							if (ImGui::BeginPopupContextItem("PopupHotkey2")) {
-								for (auto& item : hotkey_items) {
-									if (ImGui::Selectable(item.second.c_str())) {
-										hotkey2 = item.first;
-									}
-								}
-								ImGui::EndPopup();
-							}*/
 							ImGui::AlignTextToFramePadding();
 							ImGui::Text(I18Nc("common.setting.label-hotkeyFinder"));
 							ImGui::SameLine();
@@ -1171,15 +1286,6 @@ namespace menu
 								isWaitItemFinder = true;
 							}
 
-
-							/*if (ImGui::BeginPopupContextItem("PopupHotkey3")) {
-								for (auto& item : hotkey_items) {
-									if (ImGui::Selectable(item.second.c_str())) {
-										hotkey3 = item.first;
-									}
-								}
-								ImGui::EndPopup();
-							}*/
 							ImGui::AlignTextToFramePadding();
 							ImGui::Text(I18Nc("common.setting.label-hotkeyFinderTrack"));
 							ImGui::SameLine();
@@ -1260,17 +1366,28 @@ namespace menu
 							ImGui::Separator();
 							ImGui::Spacing();
 
+							static bool showAll = false;
+
+							ImGui::AlignTextToFramePadding();
 							ImGui::Text(I18Nc("lotd.setting.label-ModStatistics"));
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							/*ImGui::Text("显示所有");
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);*/
+							ImGui::Checkbox("##显示所有", &showAll);
+
 							if (ImGui::BeginTable("splitLotdMod", 8)) {
 								for (const auto& pair : lotd::formIdsM) {
-									ImGui::TableNextColumn();
-									ImGui::Text("%s", setting::getLotdItemListModName(pair.first).c_str());
-									ImGui::TableNextColumn();
-
 									if (pair.second.size() == 0 && lotd::loadCountsM[pair.first] == 0) {
-										//ImGui::Text("未安装");
-										myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), I18Nc("lotd.setting.label-notInstalled"));
+										if (showAll) {
+											ImGui::TableNextColumn();
+											ImGui::Text("%s", setting::getLotdItemListModName(pair.first).c_str());
+											ImGui::TableNextColumn();
+											myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), I18Nc("lotd.setting.label-notInstalled"));
+										}
 									} else {
+										ImGui::TableNextColumn();
+										ImGui::Text("%s", setting::getLotdItemListModName(pair.first).c_str());
+										ImGui::TableNextColumn();
 										myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), I18Nc("lotd.setting.label-installed"), pair.second.size());
 									}
 								}
@@ -1343,6 +1460,8 @@ namespace menu
 							if (show_player_base_info_window) {
 								ImGui::Indent();
 								ImGui::Checkbox(I18Nc("hud.setting.checkbox-playerBaseSplitDisplay"), &show_player_base_info_window_sep);
+								static bool dd;
+								ImGui::Checkbox("最大值修正", &show_player_base_info_window_max_fix);
 								if (!show_player_base_info_window_sep) {
 									ImGui::Checkbox(I18Nc("hud.setting.checkbox-playerBaseDisplayProgressBar"), &flag_process);
 									if (flag_process) {
@@ -1460,8 +1579,6 @@ namespace menu
 						ImGui::Separator();
 						ImGui::Spacing();
 
-						
-						
 						ImGui::Text(I18Ni(ICON_MDI_MAP_SEARCH_OUTLINE, "common.setting.label-itemStatistics"));
 						{
 							ImGui::Indent();
@@ -1782,10 +1899,7 @@ namespace menu
 						//HRESULT hr = DirectX::LoadFromWICFile(L"your_image.png", DirectX::WIC_FLAGS_NONE, &metadata, scratchImage);
 						//WCHAR strFile[40];
 						//wsprintfW(strFile, L"E:\\test.png");
-						
 
-						
-						
 						/*if (ImGui::SmallButton("dsfdfdf")) {
 							auto manager = RE::BSRenderManager::GetSingleton();
 							auto device = reinterpret_cast<ID3D11Device*>(manager->forwarder);

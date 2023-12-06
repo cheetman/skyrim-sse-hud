@@ -31,10 +31,11 @@ namespace menu
 	int trackY2 = 0;
 	bool show_item_window_track_icon_name = false;
 	bool show_item_window_track_highlight = true;
+	bool show_item_window_track_auto_tag = false;
 	ImVec4 colorTrack(0.0f, 1.0f, 0.1f, 0.646f);
-	bool isTrack = true;
+	bool isTrack = false;
 
-	int show_item_window_track_displayType = 1;
+	int show_item_window_track_displayType = 0;
 	ImVec4 ColorTrackLotd(1.0f, 0.843f, 0.0f, 0.95f);
 
 	RE::NiPointer<RE::NiCamera> getCamera()
@@ -49,6 +50,16 @@ namespace menu
 		}
 		return nullptr;
 	};
+
+	float calculateScale(float distance)
+	{
+		if (distance >= 20) {
+			return show_item_window_track_icon_scale_min;
+		}
+		//float minValue = 0.1;
+		float result = show_item_window_track_icon_scale_max - (distance / 20) * (show_item_window_track_icon_scale_max - show_item_window_track_icon_scale_min);
+		return result;
+	}
 
 	void renderTrack()
 	{
@@ -97,7 +108,13 @@ namespace menu
 									ImGui::Begin(buf, nullptr,
 										ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize);
 
-									ImGui::SetWindowFontScale(menu::font_scale + (float)show_item_window_track_icon_scale);
+									
+									if (show_item_window_track_auto_tag) {
+										ImGui::SetWindowFontScale(calculateScale(distance));
+
+									} else {
+										ImGui::SetWindowFontScale(menu::font_scale + show_item_window_track_icon_scale);
+									}
 
 									if (item.second.isLotd) {
 										if (show_item_window_track_icon_name) {
@@ -150,7 +167,12 @@ namespace menu
 									ImGui::Begin(buf, nullptr,
 										ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize);
 
-									ImGui::SetWindowFontScale(menu::font_scale + (float)show_item_window_track_icon_scale);
+									if (show_item_window_track_auto_tag) {
+										ImGui::SetWindowFontScale(calculateScale(distance));
+
+									} else {
+										ImGui::SetWindowFontScale(menu::font_scale + show_item_window_track_icon_scale);
+									}
 
 									if (show_item_window_track_icon_name) {
 										ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %s %0.1fm", item.second.name.c_str(), distance);

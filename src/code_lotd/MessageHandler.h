@@ -63,6 +63,9 @@ namespace lotdcode
 					i18n::load();
 					menu::fontFilePath = "data\\skse\\plugins\\LotdFinder\\fonts\\";
 					lotdcode::start();
+
+					show_items_window_auto_dis_local = 400;
+					show_items_window_auto_dis_skyrim = 400;
 				}
 				//auto messaging = SKSE::GetMessagingInterface();
 				break;

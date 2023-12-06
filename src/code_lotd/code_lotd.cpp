@@ -111,7 +111,9 @@ namespace lotdcode
 
 		if (active) {
 			static int selected = 0;
-			ImGui::Begin("艺术馆物品标记", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+			ImGui::SetNextWindowPos(ImVec2(110, 35), ImGuiCond_FirstUseEver);
+
+			ImGui::Begin("艺术馆藏品追踪", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
 			{
 				ImGui::BeginGroup();
@@ -132,7 +134,7 @@ namespace lotdcode
 					}
 					ImGui::EndPopup();
 				}
-				if (ImGui::Selectable(I18Ni(ICON_MDI_INFORMATION_SLAB_SYMBOL, "common.setting.tab-about"), false, 0, size)) {
+				if (ImGui::Selectable(I18Ni(ICON_MDI_INFORMATION_OUTLINE, "common.setting.tab-about"), false, 0, size)) {
 					ImGui::OpenPopup("关于");
 				}
 
@@ -145,7 +147,7 @@ namespace lotdcode
 			{
 				if (selected == 0) {
 					{
-						ImGui::Text(I18Ni(ICON_MDI_TABLE_OF_CONTENTS, "common.setting.label-autoMarker"));
+						ImGui::Text(I18Ni(ICON_MDI_COG, "common.setting.label-normal"));
 						ImGui::Indent();
 
 						ImGui::AlignTextToFramePadding();
@@ -171,24 +173,46 @@ namespace lotdcode
 						ImGui::PushItemWidth(ImGui::GetFontSize() * 4);
 						ImGui::DragFloat("##UI缩放", &ImGui::GetIO().FontGlobalScale, 0.005f, 0.5f, 1.8f, "%.2f", ImGuiSliderFlags_NoInput);
 						ImGui::PopItemWidth();
+						ImGui::Unindent();
+					}
+
+					ImGui::Spacing();
+					{
+						ImGui::Text(I18Ni(ICON_MDI_TABLE_OF_CONTENTS, "common.setting.label-autoMarker"));
+						ImGui::Indent();
 
 						ImGui::Checkbox(I18Nc("finder.setting.checkbox-autoMarkLotdItems"), &lotd::isAutoTrackLotdItems);
 						if (lotd::isAutoTrackLotdItems) {
 							ImGui::Indent();
-							if (ImGui::Checkbox(I18Nc("finder.setting.checkbox-privateItemHidden"), &lotd::isAutoTrackLotdItemsCrimeIgnore)) {
-								lotd::isCrimeIgnore = lotd::isAutoTrackLotdItemsCrimeIgnore;
-							}
-							ImGui::Checkbox(I18Nc("finder.setting.checkbox-excludeArmoryItems"), &lotd::isArmoryIgnore);
-							ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerNameTag"), &menu::show_item_window_track_icon_name);
-							ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerHighLight"), &menu::show_item_window_track_highlight);
 
-							ImGui::ColorEdit4(I18Nc("finder.setting.color-markerTagColorLotd"), &menu::ColorTrackLotd.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+							{
+								ImGui::BeginGroup();
+
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerNameTag"), &menu::show_item_window_track_icon_name);
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerHighLight"), &menu::show_item_window_track_highlight);
+
+								ImGui::ColorEdit4(I18Nc("finder.setting.color-markerTagColorLotd"), &menu::ColorTrackLotd.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+
+								ImGui::EndGroup();
+							}
+
+							ImGui::SameLine();
+							{
+								ImGui::BeginGroup();
+
+								if (ImGui::Checkbox(I18Nc("finder.setting.checkbox-privateItemHidden"), &lotd::isAutoTrackLotdItemsCrimeIgnore)) {
+									lotd::isCrimeIgnore = lotd::isAutoTrackLotdItemsCrimeIgnore;
+								}
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-excludeArmoryItems"), &lotd::isArmoryIgnore);
+
+								ImGui::EndGroup();
+							}
 
 							ImGui::AlignTextToFramePadding();
 							ImGui::Text(I18Nc("finder.setting.slider-markerZoom"));
 							ImGui::SameLine();
 							ImGui::PushItemWidth(ImGui::GetFontSize() * 5);
-							ImGui::SliderInt("##markerZoom", &show_item_window_track_icon_scale, 0, 10, "+%d");
+							ImGui::SliderFloat("##markerZoom", &show_item_window_track_icon_scale, 0, 10, "+%d");
 							ImGui::PopItemWidth();
 
 							ImGui::AlignTextToFramePadding();

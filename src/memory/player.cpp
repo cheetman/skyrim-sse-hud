@@ -7,6 +7,7 @@
 #include <utils/utils.h>
 
 bool show_player_base_info_window = false;
+bool show_player_base_info_window_max_fix = true;
 bool show_player_mod_window = false;
 bool show_player_info_window = false;
 bool show_player_armor_window = false;
@@ -111,13 +112,18 @@ void refreshPlayerInfo()
 			playerInfo.kMagicka = player->GetActorValue(RE::ActorValue::kMagicka);
 			playerInfo.kStamina = player->GetActorValue(RE::ActorValue::kStamina);
 
-			playerInfo.kHealthBase = player->GetPermanentActorValue(RE::ActorValue::kHealth) + player->healthModifiers.modifiers[1];
-			playerInfo.kStaminaBase = player->GetPermanentActorValue(RE::ActorValue::kStamina) + player->staminaModifiers.modifiers[1];
-			playerInfo.kMagickaBase = player->GetPermanentActorValue(RE::ActorValue::kMagicka) + player->magickaModifiers.modifiers[1];
+			if (show_player_base_info_window_max_fix) {
+				playerInfo.kHealthBase = player->GetPermanentActorValue(RE::ActorValue::kHealth) + player->healthModifiers.modifiers[1];
+				playerInfo.kStaminaBase = player->GetPermanentActorValue(RE::ActorValue::kStamina) + player->staminaModifiers.modifiers[1];
+				playerInfo.kMagickaBase = player->GetPermanentActorValue(RE::ActorValue::kMagicka) + player->magickaModifiers.modifiers[1];
+			} else {
+				playerInfo.kHealthBase = player->GetPermanentActorValue(RE::ActorValue::kHealth);
+				playerInfo.kStaminaBase = player->GetPermanentActorValue(RE::ActorValue::kStamina);
+				playerInfo.kMagickaBase = player->GetPermanentActorValue(RE::ActorValue::kMagicka);
+			}
 
 			//player->healthModifiers.modifiers;
 			//(*player)->actorValueOwner.GetMaximum(24);
-
 
 			//playerInfo.kHealthBase = player->GetBaseActorValue(RE::ActorValue::kHealth);
 			//playerInfo.kStaminaBase = player->GetBaseActorValue(RE::ActorValue::kStamina);

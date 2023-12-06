@@ -130,6 +130,7 @@ extern ArmorInfo wornArmos[32];
 extern PlayerInfo playerInfo;
 
 extern bool show_player_base_info_window;
+extern bool show_player_base_info_window_max_fix;
 extern bool show_player_armor_window;
 extern bool show_player_weapon_window;
 extern bool show_player_mod_window;

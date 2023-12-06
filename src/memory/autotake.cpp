@@ -2,11 +2,11 @@
 #include "lotd.h"
 #include "memory.h"
 #include <event/BSTMenuEvent.h>
+#include <memory/sexlab.h>
 #include <memory/stat.h>
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
 #include <utils/PlayerDataProvider.h>
-#include <memory/sexlab.h>
 
 bool show_items_window_auto_ignore = true;
 bool show_items_window_auto_notification = true;
@@ -521,9 +521,7 @@ void __cdecl TimerAutoPick(void*)
 			if (lotd::isLoad) {
 				lotd::refreshCount();
 				lotd::refreshDisplayCount();
-				if (lotd::isShowAttached) {
-					lotd::refreshAutoTrackItem();
-				}
+				lotd::refreshAutoTrackItem();
 			}
 			sexlab::refreshInfo();
 			stats::refreshCount();
@@ -533,13 +531,10 @@ void __cdecl TimerAutoPick(void*)
 			if (lotd::isLoad) {
 				lotd::refreshCount();
 				lotd::refreshDisplayCount();
-				if (lotd::isShowAttached) {
-					lotd::refreshAutoTrackItem();
-				}
+				lotd::refreshAutoTrackItem();
 			}
 
 			sexlab::refreshInfo();
-			
 			stats::refreshCount();
 		}
 
@@ -1157,7 +1152,6 @@ void __cdecl TimerAutoPick(void*)
 													}
 												} else {
 													if (show_items_window_auto_misc) {
-
 														if (clawFormIds.find(baseObj->GetFormID()) != clawFormIds.end()) {
 															continue;
 														}
@@ -1222,7 +1216,6 @@ void __cdecl TimerAutoPick(void*)
 												auto1 = true;
 											}
 
-											
 											RE::LOCK_LEVEL lockLevel = reff->GetLockLevel();
 
 											// 满足自动拾取(加上距离条件和地点条件)

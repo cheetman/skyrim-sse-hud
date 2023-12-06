@@ -558,7 +558,13 @@ namespace setting
 					}
 
 					if (j2.contains("show_item_window_track_icon_scale")) {
-						show_item_window_track_icon_scale = j2["show_item_window_track_icon_scale"].get<int>();
+						show_item_window_track_icon_scale = j2["show_item_window_track_icon_scale"].get<float>();
+					}
+					if (j2.contains("show_item_window_track_icon_scale_max")) {
+						show_item_window_track_icon_scale_max = j2["show_item_window_track_icon_scale_max"].get<float>();
+					}
+					if (j2.contains("show_item_window_track_auto_tag")) {
+						menu::show_item_window_track_auto_tag = j2["show_item_window_track_auto_tag"].get<bool>();
 					}
 
 					if (j2.contains("showlocationExCount")) {
@@ -587,7 +593,7 @@ namespace setting
 						menu::show_item_window_track_highlight = j2["show_item_window_track_highlight"].get<bool>();
 					}
 					if (j2.contains("show_item_window_track_displayType")) {
-						menu::show_item_window_track_displayType = j2["show_item_window_track_displayType"].get<bool>();
+						menu::show_item_window_track_displayType = j2["show_item_window_track_displayType"].get<int>();
 					}
 					if (j2.contains("colorTrackX")) {
 						menu::colorTrack.x = j2["colorTrackX"].get<float>();
@@ -985,11 +991,14 @@ namespace setting
 															 { "showlocationNirnRootCount", stats::showlocationNirnRootCount },
 															 { "showlocationExCount", stats::showlocationExCount },
 															 { "show_item_window_track_icon_scale", show_item_window_track_icon_scale },
+															 { "show_item_window_track_icon_scale_max", show_item_window_track_icon_scale_max },
 															 { "isCrimeIgnore", isCrimeIgnore },
 															 { "merchantContIgnore", merchantContIgnore },
 															 { "show_item_window_track_icon_name", menu::show_item_window_track_icon_name },
 															 { "show_item_window_track_highlight", menu::show_item_window_track_highlight },
 															 { "show_item_window_track_displayType", menu::show_item_window_track_displayType },
+															 { "show_item_window_track_auto_tag", menu::show_item_window_track_auto_tag },
+
 															 { "colorTrackX", menu::colorTrack.x },
 															 { "colorTrackY", menu::colorTrack.y },
 															 { "colorTrackZ", menu::colorTrack.z },

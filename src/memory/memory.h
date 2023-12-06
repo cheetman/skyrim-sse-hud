@@ -270,8 +270,10 @@ static const RE::FormID VendorItemTool = 0x000914EE;
 
 extern int show_items_window_auto_dis_skyrim;
 extern int show_items_window_auto_dis_local;
-extern int show_item_window_track_icon_scale;
-extern int show_inv_window_height;
+extern float show_item_window_track_icon_scale;
+extern float show_item_window_track_icon_scale_max;
+extern float show_item_window_track_icon_scale_min;
+ extern int show_inv_window_height;
 
 
 void clearItemInfoCache();
