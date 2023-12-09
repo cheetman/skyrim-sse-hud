@@ -6,6 +6,7 @@
 #include <memory/data.h>
 #include <memory/sexlab.h>
 #include <event/BSTPositionPlayerEvent.h>
+#include <event/BSTBGSActorCellEvent.h>
 
 
 
@@ -104,6 +105,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 			lotd::init();
 			sexlab::init();
 			BSTPositionPlayerEvent::Register();
+			BSTBGSActorCellEvent::Register();
 
 			// input event
 			//auto inputDeviceManager = RE::BSInputDeviceManager::GetSingleton();

@@ -32,6 +32,7 @@ namespace menu
 	bool show_item_window_track_icon_name = true;
 	bool show_item_window_track_highlight = true;
 	bool show_item_window_track_auto_tag = false;
+	bool show_item_window_track_auto_tag_OutOfRangeIcon = false;
 	float show_item_window_track_icon_scale = 0;
 	float show_item_window_track_icon_scale_max = 1.5f;
 	float show_item_window_track_icon_scale_min = 0.5f;
@@ -111,7 +112,6 @@ namespace menu
 									ImGui::Begin(buf, nullptr,
 										ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize);
 
-									
 									if (show_item_window_track_auto_tag) {
 										ImGui::SetWindowFontScale(calculateScale(distance));
 
@@ -121,7 +121,11 @@ namespace menu
 
 									if (item.second.isLotd) {
 										if (show_item_window_track_icon_name) {
-											myTextColored(ColorTrackLotd, "%s %0.1fm", item.second.name.c_str(), distance);
+											if (show_item_window_track_auto_tag_OutOfRangeIcon && distance > 30.0f) {
+												myTextColored(ColorTrackLotd, ICON_MDI_MAP_MARKER_RADIUS " %0.0fm", distance);
+											} else {
+												myTextColored(ColorTrackLotd, "%s %0.1fm", item.second.name.c_str(), distance);
+											}
 										} else {
 											myTextColored(ColorTrackLotd, ICON_MDI_MAP_MARKER_RADIUS " %0.1fm", distance);
 										}

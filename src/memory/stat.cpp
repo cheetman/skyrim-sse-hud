@@ -137,7 +137,7 @@ namespace stats
 												continue;
 											}
 
-											// 挖掘点
+											// 挖掘点 自动标记
 											if (lotd::excavationIds.find(baseObj->GetFormID()) != lotd::excavationIds.end()) {
 												locationExIds.insert(reff);
 												continue;

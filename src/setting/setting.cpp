@@ -274,6 +274,7 @@ namespace setting
 						sexlab::isShowPlayOSLArousal = j2["isShowPlayOSLArousal"].get<bool>();
 					}
 				}
+
 				if (j.contains("DebugInfo")) {
 					auto const& j2 = j["DebugInfo"];
 					menu::show_player_debug_window = j2["isShow"].get<bool>();
@@ -341,6 +342,7 @@ namespace setting
 						menu::show_npc_window_split = j2["show_npc_window_split"].get<bool>();
 					}
 				}
+
 				if (j.contains("ItemMenuInfo")) {
 					auto const& j2 = j["ItemMenuInfo"];
 
@@ -610,6 +612,12 @@ namespace setting
 						menu::ColorTrackLotd.z = j2["ColorTrackLotdZ"].get<float>();
 						menu::ColorTrackLotd.w = j2["ColorTrackLotdW"].get<float>();
 					}
+
+					
+					if (j2.contains("show_item_window_track_auto_tag_OutOfRangeIcon")) {
+						menu::show_item_window_track_auto_tag_OutOfRangeIcon = j2["show_item_window_track_auto_tag_OutOfRangeIcon"].get<bool>();
+					}
+					
 				}
 
 				if (j.contains("LotdInfo")) {
@@ -1009,6 +1017,7 @@ namespace setting
 															 { "show_item_window_track_highlight", menu::show_item_window_track_highlight },
 															 { "show_item_window_track_displayType", menu::show_item_window_track_displayType },
 															 { "show_item_window_track_auto_tag", menu::show_item_window_track_auto_tag },
+															 { "show_item_window_track_auto_tag_OutOfRangeIcon", menu::show_item_window_track_auto_tag_OutOfRangeIcon },
 
 															 { "colorTrackX", menu::colorTrack.x },
 															 { "colorTrackY", menu::colorTrack.y },

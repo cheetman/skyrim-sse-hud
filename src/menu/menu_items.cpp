@@ -2147,6 +2147,11 @@ namespace menu
 
 						if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_MAP_SEARCH_OUTLINE, "finder.setting.label-marker"), ImGuiTreeNodeFlags_DefaultOpen)) {
 							ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerNameTag"), &show_item_window_track_icon_name);
+							if (menu::show_item_window_track_icon_name) {
+								ImGui::Indent();
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerOutOfRangeIcon"), &menu::show_item_window_track_auto_tag_OutOfRangeIcon);
+								ImGui::Unindent();
+							}
 							ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerHighLight"), &show_item_window_track_highlight);
 
 							ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerAutoZoom"), &show_item_window_track_auto_tag);
@@ -2202,6 +2207,7 @@ namespace menu
 							}
 
 							if (lotd::isLoad) {
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-autoMarkLotdExcavation"), &lotd::isAutoTrackLotdExcavation);
 								ImGui::Checkbox(I18Nc("finder.setting.checkbox-autoMarkLotdItems"), &lotd::isAutoTrackLotdItems);
 								if (lotd::isAutoTrackLotdItems) {
 									ImGui::Indent();

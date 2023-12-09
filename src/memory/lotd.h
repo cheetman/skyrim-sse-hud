@@ -135,7 +135,10 @@ namespace lotd
 	extern int locationItemCount;
 	extern bool showDisplayItemCount;
 	extern bool isAutoTrackLotdItems;
+	extern bool isAutoTrackLotdExcavation;
 	extern bool isAutoTrackLotdItemsFlag;
+	extern bool isAutoTrackLotdExcavationFlag;
+	
 	extern bool isAutoTrackLotdItemsCrimeIgnore;
 
 	extern float displayCount;
@@ -158,6 +161,7 @@ namespace lotd
 	/// 刷新追踪标记
 	/// </summary>
 	void refreshAutoTrackItem();
+	void refreshAutoTrackExcavation();
 
 	// 身上物品
 	extern std::unordered_set<RE::FormID> playerInvIds;

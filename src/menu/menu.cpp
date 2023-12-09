@@ -1080,7 +1080,7 @@ namespace menu
 				ImGui::ShowDemoWindow(&show_demo_window);
 
 			{
-				ImGui::SetNextWindowPos(ImVec2(110, 35), ImGuiCond_FirstUseEver);
+				ImGui::SetNextWindowPos(ImVec2(70, 35), ImGuiCond_FirstUseEver);
 
 				ImGui::Begin("上古卷轴物品定位小助手", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
@@ -1115,7 +1115,7 @@ namespace menu
 					}
 
 					if (ImGui::BeginPopupModal(I18Nc("common.setting.tab-about"), NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-						ImGui::Text("版本：v1.0.0");
+						ImGui::Text("版本：v1.0.1");
 
 						if (ImGui::Button(I18Nc("common.setting.btn-ok"), ImVec2(120, 0))) {
 							ImGui::CloseCurrentPopup();

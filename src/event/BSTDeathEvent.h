@@ -13,10 +13,20 @@ public:
 			return RE::BSEventNotifyControl::kContinue;
 		}
 
-		if (lotd::isLoad) {
-			if (a_event->dead && !a_event->actorDying->IsPlayerRef()) {
-				auto actor = a_event->actorDying->As<RE::Actor>();
-				if (actor && !actor->IsSummoned() && actor->Is3DLoaded()) {
+		if (a_event->dead && !a_event->actorDying->IsPlayerRef()) {
+			auto actor = a_event->actorDying->As<RE::Actor>();
+			if (actor && !actor->IsSummoned() && actor->Is3DLoaded()) {
+				// 删除标记
+				{
+					std::lock_guard<std::mutex> lock(mtxTrack);
+					if (trackActorPtrs2.find(actor) != trackActorPtrs2.end()) {
+						if (trackActorPtrs2.at(actor).isEnemy) {
+							trackActorPtrs2.erase(actor);
+						}
+					}
+				}
+
+				if (lotd::isLoad) {
 					auto inv = actor->GetInventory(FormUtil::CanDisplay);
 					for (auto& [obj, data] : inv) {
 						auto& [count, entry] = data;

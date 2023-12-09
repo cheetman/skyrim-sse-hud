@@ -3,6 +3,7 @@
 #include <hook/dinputhook.h>
 #include <memory/lotd.h>
 #include <memory/memory.h>
+#include <memory/player.h>
 #include <memory/stat.h>
 #include <menu/menu.h>
 #include <menu/menu_track.h>
@@ -36,6 +37,26 @@ namespace lotdcode
 				lotd::refreshCount();
 				lotd::refreshDisplayCount();
 				lotd::refreshAutoTrackItem();
+			}
+
+			if (menu::show_player_debug_window) {
+				auto player = RE::PlayerCharacter::GetSingleton();
+				if (player) {
+					auto currentLocation = player->currentLocation;
+					if (currentLocation) {
+						playerInfo.location = currentLocation->GetFullName();
+						playerInfo.locationId = currentLocation->GetFormID();
+						if (currentLocation->parentLoc) {
+							playerInfo.parentLocation = currentLocation->parentLoc->GetFullName();
+							playerInfo.parentLocationId = currentLocation->parentLoc->GetFormID();
+						} else {
+							playerInfo.parentLocationId = -1;
+						}
+					} else {
+						playerInfo.location = "天际";
+						playerInfo.parentLocationId = -1;
+					}
+				}
 			}
 		}
 	}
@@ -109,6 +130,12 @@ namespace lotdcode
 			ImGui::End();
 		}
 
+		if (menu::show_player_debug_window) {
+			ImGui::Begin("其他信息", nullptr, window_flags);
+			ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " 位置: %s", playerInfo.location.c_str());
+			ImGui::End();
+		}
+
 		if (active) {
 			static int selected = 0;
 			ImGui::SetNextWindowPos(ImVec2(110, 35), ImGuiCond_FirstUseEver);
@@ -126,7 +153,7 @@ namespace lotdcode
 				}
 
 				if (ImGui::BeginPopupModal(I18Nc("common.setting.tab-about"), NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-					ImGui::Text("版本：v1.1.0");
+					ImGui::Text("版本：v1.2.1");
 					ImGui::Text("作者：Cheatman、火锅");
 
 					if (ImGui::Button(I18Nc("common.setting.btn-ok"), ImVec2(120, 0))) {
@@ -189,6 +216,11 @@ namespace lotdcode
 								ImGui::BeginGroup();
 
 								ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerNameTag"), &menu::show_item_window_track_icon_name);
+								if (menu::show_item_window_track_icon_name) {
+									ImGui::Indent();
+									ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerOutOfRangeIcon"), &menu::show_item_window_track_auto_tag_OutOfRangeIcon);
+									ImGui::Unindent();
+								}
 								ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerHighLight"), &menu::show_item_window_track_highlight);
 
 								ImGui::ColorEdit4(I18Nc("finder.setting.color-markerTagColorLotd"), &menu::ColorTrackLotd.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
@@ -208,13 +240,6 @@ namespace lotdcode
 								ImGui::EndGroup();
 							}
 
-						/*	ImGui::AlignTextToFramePadding();
-							ImGui::Text(I18Nc("finder.setting.slider-markerZoom"));
-							ImGui::SameLine();
-							ImGui::PushItemWidth(ImGui::GetFontSize() * 5);
-							ImGui::SliderFloat("##markerZoom", &show_item_window_track_icon_scale, 0, 10, "+%d");
-							ImGui::PopItemWidth();*/
-
 							ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerAutoZoom"), &menu::show_item_window_track_auto_tag);
 							if (menu::show_item_window_track_auto_tag) {
 								ImGui::Indent();
@@ -231,6 +256,7 @@ namespace lotdcode
 								ImGui::PushItemWidth(ImGui::GetFontSize() * 5);
 								ImGui::SliderFloat("##markerZoomMin", &menu::show_item_window_track_icon_scale_min, 0.1f, 1.0f, "+%0.1f");
 								ImGui::PopItemWidth();
+
 								ImGui::Unindent();
 							} else {
 								ImGui::Indent();
@@ -242,7 +268,6 @@ namespace lotdcode
 								ImGui::PopItemWidth();
 								ImGui::Unindent();
 							}
-
 
 							ImGui::AlignTextToFramePadding();
 							if (ImGui::BeginPopupContextItem("PopupDisplayType")) {
@@ -272,6 +297,7 @@ namespace lotdcode
 						ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyLotdItemsQuantity"), &lotd::showlocationItemCount);
 						ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyLotdExcavationQuantity"), &stats::showlocationExCount);
 						ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayLotdItemsQuantity"), &lotd::showDisplayItemCount);
+						ImGui::Checkbox(I18Nc("hud.setting.checkbox-displayPositionInfo"), &menu::show_player_debug_window);
 						ImGui::Unindent();
 					}
 

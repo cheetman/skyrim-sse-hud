@@ -56,7 +56,9 @@ namespace lotd
 	bool showlocationItemCount = false;
 	bool showDisplayItemCount = false;
 	bool isAutoTrackLotdItems = false;
+	bool isAutoTrackLotdExcavation = false;
 	bool isAutoTrackLotdItemsFlag = false;
+	bool isAutoTrackLotdExcavationFlag = false;
 	bool isAutoTrackLotdItemsCrimeIgnore = true;
 	float displayCount = 0.0f;
 
@@ -1460,6 +1462,96 @@ namespace lotd
 
 		return name;
 	}
+
+
+
+	
+	
+	void refreshAutoTrackExcavation()
+	{
+		if (lotd::isAutoTrackLotdExcavationFlag) {
+			RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
+			if (!player) {
+				return;
+			}
+
+			int currentLocationFormId = 0;
+			auto currentLocation = player->currentLocation;
+			if (currentLocation) {
+				currentLocationFormId = currentLocation->GetFormID();
+			}
+
+			const auto& [map, lock] = RE::TESForm::GetAllForms();
+			const RE::BSReadWriteLock locker{ lock };
+			if (!map) {
+				return;
+			}
+			for (auto& [id, form] : *map) {
+				if (form) {
+					if (form->Is(RE::FormType::Reference)) {
+						auto reff = form->AsReference();
+						if (reff) {
+							if (reff->GetCurrentLocation() == currentLocation) {
+								auto baseObj = reff->GetBaseObject();
+								if (baseObj) {
+									switch (baseObj->GetFormType()) {
+									case RE::FormType::Activator:
+										{
+											if (reff->IsMarkedForDeletion() || reff->IsIgnored()) {
+												continue;
+											}
+
+											if (!reff->Is3DLoaded()) {
+												continue;
+											}
+
+											auto name = reff->GetDisplayFullName();
+											if (strlen(name) == 0) {
+												continue;
+											}
+
+											float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+
+											if (!currentLocation) {
+												if (distance > show_items_window_auto_dis_skyrim) {
+													continue;
+												}
+											} else {
+												if (distance > show_items_window_auto_dis_local) {
+													continue;
+												}
+											}
+
+
+											// 挖掘点 自动标记
+											if (lotd::excavationIds.find(baseObj->GetFormID()) != lotd::excavationIds.end()) {
+												TrackItem trackItem;
+												trackItem.name = reff->GetDisplayFullName();
+												trackItem.isLotd = true;
+												trackItem.itemBaseFormId = baseObj->GetFormID();
+												trackPtrs2.insert(std::make_pair(reff, trackItem));
+												continue;
+											}
+
+											break;
+										}
+									default:
+										{
+											continue;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+
+		}
+	}
+
+
 
 	void refreshAutoTrackItem()
 	{

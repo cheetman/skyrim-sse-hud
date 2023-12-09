@@ -5,6 +5,7 @@
 #include <event/BSTDeathEvent.h>
 #include <event/BSTMenuEvent.h>
 #include <event/BSTPositionPlayerEvent.h>
+#include <event/BSTBGSActorCellEvent.h>
 #include <hook/d3d11hook.h>
 #include <hook/dinputhook.h>
 #include <memory/data.h>
@@ -16,7 +17,7 @@
 #include <menu/theme.h>
 #include <code_lotd/dinputhook.h>
 
-namespace lotdcode
+ namespace lotdcode
 {
 	bool isLoadItemfinderplus = false;
 	void __cdecl install(void*)
@@ -153,6 +154,7 @@ namespace lotdcode
 					setting::settings_path_lotd_item_display_list_modnames = "data\\skse\\plugins\\LotdFinder\\lotd\\ItemFinderPlus-LotdItemList-ModNames.json";
 					lotd::init();
 					BSTPositionPlayerEvent::Register();
+					BSTBGSActorCellEvent::Register();
 					// 修补
 					lotd::isCrimeIgnore = lotd::isAutoTrackLotdItemsCrimeIgnore;
 				}

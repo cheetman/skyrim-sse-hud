@@ -7,6 +7,7 @@ struct TrackItem
 	RE::FormID itemBaseFormId = 0;
 	bool isLotd = false;
 	bool isLotdCont = false;
+	bool isEnemy = false;
 };
 
 extern std::unordered_map<RE::TESObjectREFR*, TrackItem> trackPtrs2;
@@ -21,6 +22,9 @@ namespace menu
 	extern float show_item_window_track_icon_scale;
 	extern float show_item_window_track_icon_scale_max;
 	extern float show_item_window_track_icon_scale_min;
+	extern bool show_item_window_track_auto_tag_OutOfRangeIcon;
+
+	
 	extern ImVec4 colorTrack;
 	extern ImVec4 ColorTrackLotd;
 	extern bool isTrack;

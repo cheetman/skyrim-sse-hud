@@ -4,8 +4,8 @@
 #include <menu/menu.h>
 #include <menu/menu_npc.h>
 #include <menu/menu_track.h>
-#include <utils/utils.h>
 #include <setting/i18n.h>
+#include <utils/utils.h>
 
 namespace menu
 {
@@ -16,7 +16,7 @@ namespace menu
 	bool show_teammate = true;
 	bool show_horse = true;
 
-	void __fastcall buildNpcInfo(int active2, ActorInfo* actor2Info, int actorCount)
+	void __fastcall buildNpcInfo(int active2, ActorInfo* actor2Info, int actorCount, bool isEnemy = false)
 	{
 		if (active2) {
 			for (int i = 0; i < actorCount; i++) {
@@ -202,6 +202,7 @@ namespace menu
 						if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
 							TrackItem trackItem;
 							trackItem.name = item.name;
+							trackItem.isEnemy = isEnemy;
 							trackActorPtrs2.insert(std::make_pair(item.ptr, trackItem));
 							menu::isTrack = true;
 						}
@@ -254,11 +255,28 @@ namespace menu
 				} else {
 					if (show_enemy) {
 						ImGui::Text(I18Ni(ICON_MDI_SWORD_CROSS, "hud.npc.hud-enemy"));
+						if (activeItems) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS "##enemy")) {
+								auto actorInfo = getEnemy2Data();
+								for (int i = 0; i < getEnemyCount(); i++) {
+									auto& item = actorInfo[i];
+									if (trackActorPtrs2.find(item.ptr) == trackActorPtrs2.end()) {
+										TrackItem trackItem;
+										trackItem.name = item.name;
+										trackItem.isEnemy = true;
+										trackActorPtrs2.insert(std::make_pair(item.ptr, trackItem));
+										menu::isTrack = true;
+									}
+								}
+							}
+						}
 					}
 				}
+
 				if (show_enemy) {
 					auto actorInfo = getEnemy2Data();
-					buildNpcInfo(active, actorInfo, getEnemyCount());
+					buildNpcInfo(active, actorInfo, getEnemyCount(), true);
 				}
 			}
 			ImGui::End();
@@ -279,7 +297,6 @@ namespace menu
 			}
 
 			ImGui::End();
-
 		} else {
 			ImGui::Begin("npc信息", nullptr, flags);
 			if (getNpcCount() > 0) {
@@ -330,11 +347,27 @@ namespace menu
 				} else {
 					if (show_enemy) {
 						ImGui::Text(I18Ni(ICON_MDI_SWORD_CROSS, "hud.npc.hud-enemy"));
+						if (activeItems) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS "##enemy")) {
+								auto actorInfo = getEnemy2Data();
+								for (int i = 0; i < getEnemyCount(); i++) {
+									auto& item = actorInfo[i];
+									if (trackActorPtrs2.find(item.ptr) == trackActorPtrs2.end()) {
+										TrackItem trackItem;
+										trackItem.name = item.name;
+										trackItem.isEnemy = true;
+										trackActorPtrs2.insert(std::make_pair(item.ptr, trackItem));
+										menu::isTrack = true;
+									}
+								}
+							}
+						}
 					}
 				}
 				if (show_enemy) {
 					auto actorInfo = getEnemy2Data();
-					buildNpcInfo(active, actorInfo, getEnemyCount());
+					buildNpcInfo(active, actorInfo, getEnemyCount(),true);
 				}
 			}
 
@@ -351,7 +384,7 @@ namespace menu
 					ImGui::Checkbox(I18Ni(ICON_MDI_SHIELD_ACCOUNT, "hud.npc.hud-team"), &show_teammate);
 				} else {
 					if (show_teammate) {
-						ImGui::Text(I18Ni(ICON_MDI_SHIELD_ACCOUNT  ,"hud.npc.hud-team"));
+						ImGui::Text(I18Ni(ICON_MDI_SHIELD_ACCOUNT, "hud.npc.hud-team"));
 					}
 				}
 				if (show_teammate) {
@@ -376,7 +409,7 @@ namespace menu
 				ImGui::SliderInt("##距离", &show_npc_window_dis_meter, 10, 100, I18Nc("hud.setting.slider-npcDistanceLimit"));
 				ImGui::PopItemWidth();
 			}
-			ImGui::Checkbox(I18Nc("hud.setting.checkbox-npcSplitDisplay"), &show_npc_window_split);
+			ImGui::Checkbox(I18Nc2("hud.setting.checkbox-npcSplitDisplay", "##22"), &show_npc_window_split);
 			ImGui::Checkbox("显示FORMID", &show_npc_window_formid);
 			ImGui::Checkbox(I18Nc("hud.setting.checkbox-npcPositionDisplay"), &show_npc_window_direction);
 			ImGui::Checkbox(I18Nc("hud.setting.checkbox-npcDeadHidden"), &show_npc_window_dead_hidden);
@@ -393,11 +426,7 @@ namespace menu
 			ImGui::Checkbox(I18Nc("hud.setting.checkbox-npcIgnoreSetting"), &show_npc_window_ignore);
 			if (show_npc_window_ignore) {
 				static ImGuiTableFlags flagsItem =
-					ImGuiTableFlags_Resizable 
-					| ImGuiTableFlags_Borders 
-					| ImGuiTableFlags_ScrollY 
-					| ImGuiTableFlags_ScrollX 
-					| ImGuiTableFlags_NoBordersInBody;
+					ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
 
 				const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
 				if (ImGui::BeginTable("tableItemNpcIngore", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
@@ -444,5 +473,4 @@ namespace menu
 			ImGui::Unindent();
 		}
 	}
-
 }

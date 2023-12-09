@@ -5,6 +5,7 @@
 #include <memory/lotd.h>
 
 
+
 class BSTPositionPlayerEvent : public RE::BSTEventSink<RE::PositionPlayerEvent>
 {
 public:
@@ -44,6 +45,10 @@ public:
 			{
 				if (lotd::isAutoTrackLotdItems) {
 					lotd::isAutoTrackLotdItemsFlag = true;
+				}
+
+				if (lotd::isAutoTrackLotdExcavation) {
+					lotd::isAutoTrackLotdExcavationFlag = true;
 				}
 			}
 
