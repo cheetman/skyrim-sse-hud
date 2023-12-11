@@ -478,10 +478,13 @@
   {"listFormId":"0x0000085E","roomName":"noknown","name":"龙石祭坛","modName": "DBM_Wyrmstooth - Craftable Sets Patch.esp","listEditorId": "DBM_SectionArmoryEastWingBrimstoneWyrmstoneItemsAlt"},
   {"listFormId":"0x000008C4","roomName":"noknown","name":"龙石军械库","modName": "DBM_Wyrmstooth_Patch.esp","listEditorId": "DBM_SectionHOOWyrmstoothItemsALT"},
   {"listFormId":"0x00000802","roomName":"noknown","name":"黑暗兄弟会扩展","modName": "DBM_YCMDarkBrotherhood_Patch.esp","listEditorId": "DBM_SectionHOS_YCMDBItemsAlt"},
-  {"listFormId":"0x00000816","roomName":"noknown","name":"Zim的人工制品","modName": "DBM_ZimsThaneWeapons_Patch.esp","listEditorId": "DBM_TWZItemsALT"}
-
-
-  
+  {"listFormId":"0x00000816","roomName":"noknown","name":"Zim的人工制品","modName": "DBM_ZimsThaneWeapons_Patch.esp","listEditorId": "DBM_TWZItemsALT"},
+  {"listFormId":"0x0000087D","roomName":"noknown","name":"君王十字军esl版","modName": "DBM_HUB_DCR_KingCrusader_4ESL_Patch.esp","listEditorId": "DBM_HUB_SectionHoFDCRKSItems"},
+  {"listFormId":"0x0000087E","roomName":"noknown","name":"君王十字军esl版","modName": "DBM_HUB_DCR_KingCrusader_4ESL_Patch.esp","listEditorId": "DBM_HUB_SectionHoFDCRKSItemsAlt"},
+  {"listFormId":"0x00000819","roomName":"noknown","name":"马格努斯手套esl版","modName": "DBM_HUB_MagnusG_ESL_Patch.esp","listEditorId": "DBM_HUB_SectionHoFMagnusgItemsAlt"},
+  {"listFormId":"0x0000081A","roomName":"noknown","name":"马格努斯手套esl版","modName": "DBM_HUB_MagnusG_ESL_Patch.esp","listEditorId": "DBM_HUB_SectionHoFMagnusgItems"},
+  {"listFormId":"0x00000803","roomName":"noknown","name":"科扎科维的法尔卡盔甲UNP版","modName":"DBM_HUB_Kozakowy_UNP_Patch.esp","listEditorId": "DBM_HUB_SectionHoFKozakowyItems"},
+  {"listFormId":"0x00000802","roomName":"noknown","name":"科扎科维的法尔卡盔甲UNP版","modName":"DBM_HUB_Kozakowy_UNP_Patch.esp","listEditorId": "DBM_HUB_SectionHoFKozakowyItemsAlt"}
   
   
   

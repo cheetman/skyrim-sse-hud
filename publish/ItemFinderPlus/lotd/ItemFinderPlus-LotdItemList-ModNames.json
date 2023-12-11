@@ -167,5 +167,8 @@
 {"modName":"DBM_Wyrmstooth_Patch.esp","name":"龙石军械库"},
 {"modName":"DBM_YCMDarkBrotherhood_Patch.esp","name":"黑暗兄弟会扩展"},
 {"modName":"DBM_ZimsThaneWeapons_Patch.esp","name":"Zim的人工制品"},
+{"modName":"DBM_HUB_DCR_KingCrusader_4ESL_Patch.esp","name":"君王十字军esl版"},
+{"modName":"DBM_HUB_MagnusG_ESL_Patch.esp","name":"马格努斯手套esl版"},
+{"modName":"DBM_HUB_Kozakowy_UNP_Patch.esp","name":"科扎科维的法尔卡盔甲UNP版"},
 {"modName":"LOTD_HUB.esp","name":"被遗忘的大厅"}
 ]
