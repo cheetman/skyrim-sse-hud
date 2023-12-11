@@ -649,6 +649,10 @@ namespace setting
 						lotd::showDisplayItemCount = j2["showDisplayItemCount"].get<bool>();
 					}
 
+					if (j2.contains("scanType")) {
+						lotd::scanType = j2["scanType"].get<bool>();
+					}
+
 				}
 
 				if (j.contains("StatInfo")) {
@@ -1038,7 +1042,7 @@ namespace setting
 														 { "isAutoTrackLotdItems", lotd::isAutoTrackLotdItems },
 														 { "isAutoTrackLotdItemsCrimeIgnore", lotd::isAutoTrackLotdItemsCrimeIgnore },
 														 { "showDisplayItemCount", lotd::showDisplayItemCount },
-
+														 { "scanType", lotd::scanType }
 													 } },
 									   { "StatInfo", {
 														 { "show_gametime_window", stats::show_gametime_window },

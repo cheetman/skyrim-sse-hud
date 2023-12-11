@@ -33,8 +33,6 @@ namespace lotd
 		}
 	};
 
-
-	
 	struct LotdInfo
 	{
 		RE::FormID formId;
@@ -85,7 +83,7 @@ namespace lotd
 	extern bool isInvIgnore;
 	extern bool isCrimeIgnore;
 	extern bool isArmoryIgnore;
-	
+
 	extern std::uint8_t lotdCompileIndex;
 	extern std::uint8_t lotdSmallFileCompileIndex;
 	extern int nowItemIndex;
@@ -111,9 +109,8 @@ namespace lotd
 	// 身上物品
 	extern std::unordered_set<RE::FormID> playerInvIds;
 
-
-
 	void init();
+	void scanAll();
 	void refreshItemInfo();
 	std::vector<LotdInfo>& getItems(std::string roomName);
 	int getCount(std::string roomName);
@@ -121,7 +118,6 @@ namespace lotd
 	void refreshItemInfoAttached();
 	std::vector<LotdInfo>& getItemsAttached();
 	int getCountAttached();
-
 
 	// 艺术馆地点
 	extern std::unordered_set<RE::FormID> locationIds;
@@ -138,7 +134,7 @@ namespace lotd
 	extern bool isAutoTrackLotdExcavation;
 	extern bool isAutoTrackLotdItemsFlag;
 	extern bool isAutoTrackLotdExcavationFlag;
-	
+
 	extern bool isAutoTrackLotdItemsCrimeIgnore;
 
 	extern float displayCount;
@@ -172,5 +168,12 @@ namespace lotd
 
 	bool checkItem(RE::FormID baseFormId);
 	std::string getTrackerName(RE::TESBoundObject* obj, std::string name);
-}
 
+	extern int scanType;
+	static const std::unordered_map<int, std::string> scanType_items = {
+		{ 1, "FormId识别" },
+		{ 2, "EditorId识别" }
+	};
+
+	extern bool isLoad_po3_Tweaks;
+}

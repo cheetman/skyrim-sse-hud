@@ -1375,6 +1375,42 @@ namespace menu
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);*/
 							ImGui::Checkbox("##显示所有", &showAll);
 
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::Text(" | ");
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+
+							ImGui::Text("识别方式:");
+							ImGui::SameLine();
+
+							static bool displayWarning_po3_Tweaks = false;
+
+							if (ImGui::BeginPopupContextItem("识别方式")) {
+								for (auto& item : lotd::scanType_items) {
+									if (ImGui::Selectable(item.second.c_str())) {
+										if (item.first == 2) {
+											if (!lotd::isLoad_po3_Tweaks) {
+												displayWarning_po3_Tweaks = true;
+												break;
+											}
+										}
+
+										displayWarning_po3_Tweaks = false;
+										if (item.first != lotd::scanType) {
+											lotd::scanType = item.first;
+											lotd::scanAll();
+										}
+									}
+								}
+								ImGui::EndPopup();
+							}
+							if (ImGui::Button(lotd::scanType_items.at(lotd::scanType).c_str(), ImVec2(ImGui::GetFontSize() * 6, 0))) {
+								ImGui::OpenPopup("识别方式");
+							}
+							if (!lotd::isLoad_po3_Tweaks && displayWarning_po3_Tweaks) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								myTextColored(ImVec4(1.0f, 0, 0, 1.0f), " 前置依赖：powerofthree's Tweaks 引擎修复模组 [po3_Tweaks.dll]");
+							}
+
 							if (ImGui::BeginTable("splitLotdMod", 8)) {
 								for (const auto& pair : lotd::formIdsM) {
 									if (pair.second.size() == 0 && lotd::loadCountsM[pair.first] == 0) {

@@ -45,6 +45,10 @@ namespace lotd
 	bool isInvIgnore = true;
 	bool isCrimeIgnore = true;
 	bool isArmoryIgnore = true;
+	int scanType = 1;
+
+	bool isLoad_po3_Tweaks = false;
+
 
 	std::uint8_t lotdCompileIndex;
 	std::uint8_t lotdSmallFileCompileIndex;
@@ -160,6 +164,26 @@ namespace lotd
 			displayIdsC[FormUtil::GetFormId(contId, lotdCompileIndex, lotdSmallFileCompileIndex)];
 		}
 
+		// 检查mod
+		static auto dll = GetModuleHandle("po3_Tweaks");
+		if (dll) {
+			isLoad_po3_Tweaks = true;
+		}
+
+		scanAll();
+	}
+
+	void scanAll()
+	{
+		loadCountsM.clear();
+		formIdsM.clear();
+		listsR.clear();
+		formIdsR.clear();
+		formIds.clear();
+		lists.clear();
+
+		const auto handler = RE::TESDataHandler::GetSingleton();
+
 		// 获取物品列表
 		for (auto& listItem : setting::lotdItemLists) {
 			List list(listItem.listEditorId, listItem.roomName);
@@ -188,8 +212,19 @@ namespace lotd
 				//auto listtest = handler->LookupForm(listItem.listFormId, listItem.modName);
 
 				auto formid = FormUtil::GetFormId(listItem.listFormId, lotdCompileIndex2, lotdSmallFileCompileIndex2);
-				RE::BGSListForm* listform = RE::TESForm::LookupByID<RE::BGSListForm>(formid);
-				//RE::BGSListForm* listform2 = RE::TESForm::LookupByEditorID<RE::BGSListForm>(listItem.listEditorId);
+
+				RE::BGSListForm* listform = nullptr;
+				if (scanType == 1) {
+					listform = RE::TESForm::LookupByID<RE::BGSListForm>(formid);
+				} else if (scanType == 2) {
+					listform = RE::TESForm::LookupByEditorID<RE::BGSListForm>(listItem.listEditorId);
+				}
+
+				//auto& facts = handler->GetFormArray<RE::BGSListForm>();
+				//for (RE::BGSListForm*& item : facts) {
+				//	//logger::debug("BGSListForm:{}"sv, item->GetFormEditorID());
+				//	logger::debug("BGSListForm:{}"sv, FormUtil::GetEditorID(item));
+				//}
 
 				if (listform) {
 					loadCountsM[listItem.modName]++;
@@ -1394,7 +1429,7 @@ namespace lotd
 		nowItemIndex = !nowItemIndex;
 	}
 
-	std::string getTrackerName(RE::TESBoundObject* obj,std::string name)
+	std::string getTrackerName(RE::TESBoundObject* obj, std::string name)
 	{
 		switch (obj->GetFormType()) {
 		case RE::FormType::Scroll:
@@ -1463,10 +1498,6 @@ namespace lotd
 		return name;
 	}
 
-
-
-	
-	
 	void refreshAutoTrackExcavation()
 	{
 		if (lotd::isAutoTrackLotdExcavationFlag) {
@@ -1522,7 +1553,6 @@ namespace lotd
 												}
 											}
 
-
 											// 挖掘点 自动标记
 											if (lotd::excavationIds.find(baseObj->GetFormID()) != lotd::excavationIds.end()) {
 												TrackItem trackItem;
@@ -1546,12 +1576,8 @@ namespace lotd
 					}
 				}
 			}
-
-
 		}
 	}
-
-
 
 	void refreshAutoTrackItem()
 	{
@@ -1632,13 +1658,13 @@ namespace lotd
 												if (success) {
 													if (trackPtrs2.find(actor) == trackPtrs2.end()) {
 														TrackItem trackItem;
-														trackItem.name = getTrackerName(obj,obj->GetName());
+														trackItem.name = getTrackerName(obj, obj->GetName());
 														trackItem.isLotd = true;
 														trackItem.itemBaseFormId = obj->GetFormID();
 														trackItem.isLotdCont = true;
 														trackPtrs2.insert(std::make_pair(actor, trackItem));
 														//menu::tintTrack(actor);
-														break; // 后面修改支持多个
+														break;  // 后面修改支持多个
 													}
 												}
 											}
