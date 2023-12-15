@@ -49,6 +49,8 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/menu/menu_track.cpp"
 	"${SOURCE_DIR}/menu/menu_items.h"
 	"${SOURCE_DIR}/menu/menu_items.cpp"
+	"${SOURCE_DIR}/menu/menu_quest.h"
+	"${SOURCE_DIR}/menu/menu_quest.cpp"
 	"${SOURCE_DIR}/utils/NameUtil.h"
 	"${SOURCE_DIR}/utils/NameUtil.cpp"
 	"${SOURCE_DIR}/utils/PlayerDataProvider.h"

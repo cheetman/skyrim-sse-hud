@@ -13,6 +13,7 @@
 #include <setting/setting.h>
 #include <utils/utils.h>
 #include <hook/dinputhook.h>
+#include <menu/menu_quest.h>
 
 namespace menu
 {
@@ -1202,20 +1203,6 @@ namespace menu
 				}
 			}
 
-			/*if (lotd::isLoad) {
-				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x * 3);
-				if (lotd::isShow) {
-					if (ImGui::SmallButton("艺术馆模式")) {
-						lotd::isShow = !lotd::isShow;
-					}
-
-				} else {
-					if (ImGui::SmallButton("普通模式")) {
-						lotd::isShow = !lotd::isShow;
-					}
-				}
-			}*/
-
 			{
 				std::lock_guard<std::mutex> lock(mtxTrack);
 				if (trackPtrs2.size() > 0 || trackActorPtrs2.size() > 0) {
@@ -1324,6 +1311,19 @@ namespace menu
 						}
 						lotd::buildItemInfoAttached(lotd::getCountAttached(), lotd::getItemsAttached());
 						ImGui::Spacing();
+					}
+				}
+
+				
+				if (isShowQuest) {
+					if (getQuestCount() > 0) {
+						ImGui::TableNextColumn();
+						ImGui::AlignTextToFramePadding();
+						ImGui::Text(I18Ni(ICON_MDI_CALENDAR_CHECK_OUTLINE, "finder.ui.label-quest"), getQuestCount());
+
+						buildQuestItem(getQuestCount(), getQuests());
+						ImGui::Spacing();
+
 					}
 				}
 
@@ -1860,6 +1860,11 @@ namespace menu
 								}
 							}
 
+							ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayQuest"), &isShowQuest);
+							if (isShowQuest) {
+
+							}
+
 							ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
 							ImGui::SliderInt(I18Nc("finder.setting.slider-rangelocal"), &show_items_window_auto_dis_local, 10, 2000, "%d米");
 							ImGui::SliderInt(I18Nc("finder.setting.slider-rangeskyrim"), &show_items_window_auto_dis_skyrim, 20, 10000, "%d米");
@@ -2208,10 +2213,11 @@ namespace menu
 
 							if (lotd::isLoad) {
 								ImGui::Checkbox(I18Nc("finder.setting.checkbox-autoMarkLotdExcavation"), &lotd::isAutoTrackLotdExcavation);
+								ImGui::Checkbox(I18Nc("finder.setting.checkbox-autoMarkLotdCards"), &lotd::isAutoTrackLotdCards);
 								ImGui::Checkbox(I18Nc("finder.setting.checkbox-autoMarkLotdItems"), &lotd::isAutoTrackLotdItems);
 								if (lotd::isAutoTrackLotdItems) {
 									ImGui::Indent();
-									ImGui::Checkbox(I18Nc("finder.setting.checkbox-privateItemHidden"), &lotd::isAutoTrackLotdItemsCrimeIgnore);
+									ImGui::Checkbox(I18Nc("finder.setting.checkbox-excludePrivateItems"), &lotd::isAutoTrackLotdItemsCrimeIgnore);
 									ImGui::Checkbox(I18Nc("finder.setting.checkbox-excludeArmoryItems"), &lotd::isArmoryIgnore);
 									ImGui::ColorEdit4(I18Nc("finder.setting.color-markerTagColorLotd"), &menu::ColorTrackLotd.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
 

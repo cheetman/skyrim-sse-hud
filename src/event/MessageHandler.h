@@ -64,6 +64,12 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 			if (lotd::isAutoTrackLotdItems) {
 				lotd::isAutoTrackLotdItemsFlag = true;
 			}
+			if (lotd::isAutoTrackLotdExcavation) {
+				lotd::isAutoTrackLotdExcavationFlag = true;
+			}
+			if (lotd::isAutoTrackLotdCards) {
+				lotd::isAutoTrackLotdCardsFlag = true;
+			}
 
 			break;
 		}

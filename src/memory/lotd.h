@@ -125,6 +125,9 @@ namespace lotd
 	// 挖掘点
 	extern std::unordered_set<RE::FormID> excavationIds;
 
+	// 卡片
+	extern std::unordered_set<RE::FormID> cardIds;
+
 	// 附近藏品数量
 	extern bool showlocationItemCount;
 	extern std::unordered_set<RE::FormID> locationItemIds;
@@ -132,9 +135,12 @@ namespace lotd
 	extern bool showDisplayItemCount;
 	extern bool isAutoTrackLotdItems;
 	extern bool isAutoTrackLotdExcavation;
+	extern bool isAutoTrackLotdCards;
+	
 	extern bool isAutoTrackLotdItemsFlag;
 	extern bool isAutoTrackLotdExcavationFlag;
-
+	extern bool isAutoTrackLotdCardsFlag;
+	
 	extern bool isAutoTrackLotdItemsCrimeIgnore;
 
 	extern float displayCount;
@@ -157,7 +163,7 @@ namespace lotd
 	/// 刷新追踪标记
 	/// </summary>
 	void refreshAutoTrackItem();
-	void refreshAutoTrackExcavation();
+	//void refreshAutoTrackExcavation();
 
 	// 身上物品
 	extern std::unordered_set<RE::FormID> playerInvIds;
@@ -176,4 +182,6 @@ namespace lotd
 	};
 
 	extern bool isLoad_po3_Tweaks;
+
+	static const RE::FormID VendorItemFateCards = 0x00166446;
 }

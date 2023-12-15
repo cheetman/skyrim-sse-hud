@@ -20,6 +20,12 @@ public:
 				if (lotd::isAutoTrackLotdItems) {
 					lotd::isAutoTrackLotdItemsFlag = true;
 				}
+				if (lotd::isAutoTrackLotdExcavation) {
+					lotd::isAutoTrackLotdExcavationFlag = true;
+				}
+				if (lotd::isAutoTrackLotdCards) {
+					lotd::isAutoTrackLotdCardsFlag = true;
+				}
 			}
 		}
 		return RE::BSEventNotifyControl::kContinue;

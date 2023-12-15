@@ -146,6 +146,35 @@ struct GalleryModForm
 	}
 };
 
+
+struct QuestInfo
+{
+	int gold = 0;
+	float weight = 0;
+	RE::FormID formId = 0;
+	std::uint16_t currentStage = 0;
+	std::uint32_t currentInstanceID = 0;
+	std::string formIdStr = "";
+	RE::FormID baseFormId = 0;
+	std::string editorId = "";
+	std::string formTypeStr = "";
+	std::string filename = "";
+
+	std::string name = "";
+	bool isActive = false;
+	RE::TESObjectREFR* ptr = nullptr;
+	RE::LOCK_LEVEL lockLevel;
+	bool isDeleted = false;
+	bool isHarvested = false;
+	bool isEnchanted = false;
+
+	int completedStage = 0;
+	int allStage = 0;
+	float progressStage = 0;
+	float distance = 0.0f;
+	bool isAuto = false;
+};
+
 struct Item2Info
 {
 	int itemCount = 0;
@@ -190,8 +219,12 @@ struct Item2Info
 	ItemInfo itemInfoANHD[3000];  // 皮毛
 	ItemInfo itemInfoANPA[3000];  // 组织
 	ItemInfo itemInfoTOOL[3000];  // 工具
-
 	ItemInfoCONT itemInfoACHR[3000];
+
+
+	
+	int questCount = 0;
+	std::vector<QuestInfo> quests;
 };
 
 int getItemCount();
@@ -215,6 +248,7 @@ int getItemCountANVI();
 int getItemCountANHD();
 int getItemCountANPA();
 int getItemCountTOOL();
+int getQuestCount();
 
 ItemInfo* getItems();
 ItemInfo* getItemsWEAP();
@@ -237,6 +271,7 @@ ItemInfoCONT* getItemsACHR();
 ItemInfo* getItemsANHD();
 ItemInfo* getItemsANPA();
 ItemInfo* getItemsTOOL();
+std::vector<QuestInfo>& getQuests();
 
 /// <summary>
 /// 排除物品
@@ -277,3 +312,4 @@ void clearItemInfoCache();
 
 extern bool isCrimeIgnore;
 
+extern bool isShowQuest;

@@ -522,7 +522,7 @@ void __cdecl TimerAutoPick(void*)
 				lotd::refreshCount();
 				lotd::refreshDisplayCount();
 				lotd::refreshAutoTrackItem();
-				lotd::refreshAutoTrackExcavation();
+				//lotd::refreshAutoTrackExcavation();
 			}
 			sexlab::refreshInfo();
 			stats::refreshCount();
@@ -533,7 +533,7 @@ void __cdecl TimerAutoPick(void*)
 				lotd::refreshCount();
 				lotd::refreshDisplayCount();
 				lotd::refreshAutoTrackItem();
-				lotd::refreshAutoTrackExcavation();
+				//lotd::refreshAutoTrackExcavation();
 			}
 
 			sexlab::refreshInfo();

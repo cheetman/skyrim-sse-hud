@@ -36,6 +36,9 @@ namespace lotd
 	// 挖掘点
 	std::unordered_set<RE::FormID> excavationIds;
 
+	// 卡片
+	std::unordered_set<RE::FormID> cardIds;
+
 	Lotd2Info* lotdItems = new Lotd2Info[2];
 	Lotd2InfoAttached* lotdItemsAttached = new Lotd2InfoAttached[2];
 
@@ -49,7 +52,6 @@ namespace lotd
 
 	bool isLoad_po3_Tweaks = false;
 
-
 	std::uint8_t lotdCompileIndex;
 	std::uint8_t lotdSmallFileCompileIndex;
 	int nowItemIndex = 0;
@@ -61,8 +63,10 @@ namespace lotd
 	bool showDisplayItemCount = false;
 	bool isAutoTrackLotdItems = false;
 	bool isAutoTrackLotdExcavation = false;
+	bool isAutoTrackLotdCards = false;
 	bool isAutoTrackLotdItemsFlag = false;
 	bool isAutoTrackLotdExcavationFlag = false;
+	bool isAutoTrackLotdCardsFlag = false;
 	bool isAutoTrackLotdItemsCrimeIgnore = true;
 	float displayCount = 0.0f;
 
@@ -169,6 +173,17 @@ namespace lotd
 		if (dll) {
 			isLoad_po3_Tweaks = true;
 		}
+
+		// 卡片
+		auto VendorItemFateCardsId = FormUtil::GetFormId(VendorItemFateCards, lotdCompileIndex, lotdSmallFileCompileIndex);
+		for (auto misc : handler->GetFormArray<RE::TESObjectMISC>()) {
+			if (misc) {
+				if (FormUtil::HasKeyword(misc, VendorItemFateCardsId)) {
+					cardIds.insert(misc->GetFormID());
+				}
+			}
+		}
+
 
 		scanAll();
 	}
@@ -1498,103 +1513,103 @@ namespace lotd
 		return name;
 	}
 
-	void refreshAutoTrackExcavation()
-	{
-		if (lotd::isAutoTrackLotdExcavationFlag) {
-			RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
-			if (!player) {
-				return;
-			}
+	//void refreshAutoTrackExcavation()
+	//{
+	//	if (lotd::isAutoTrackLotdExcavationFlag) {
+	//		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
+	//		if (!player) {
+	//			return;
+	//		}
 
-			int currentLocationFormId = 0;
-			auto currentLocation = player->currentLocation;
-			if (currentLocation) {
-				currentLocationFormId = currentLocation->GetFormID();
-			}
+	//		int currentLocationFormId = 0;
+	//		auto currentLocation = player->currentLocation;
+	//		if (currentLocation) {
+	//			currentLocationFormId = currentLocation->GetFormID();
+	//		}
 
-			const auto& [map, lock] = RE::TESForm::GetAllForms();
-			const RE::BSReadWriteLock locker{ lock };
-			if (!map) {
-				return;
-			}
-			for (auto& [id, form] : *map) {
-				if (form) {
-					if (form->Is(RE::FormType::Reference)) {
-						auto reff = form->AsReference();
-						if (reff) {
-							if (reff->GetCurrentLocation() == currentLocation) {
-								auto baseObj = reff->GetBaseObject();
-								if (baseObj) {
-									switch (baseObj->GetFormType()) {
-									case RE::FormType::Activator:
-										{
-											if (reff->IsMarkedForDeletion() || reff->IsIgnored()) {
-												continue;
-											}
+	//		const auto& [map, lock] = RE::TESForm::GetAllForms();
+	//		const RE::BSReadWriteLock locker{ lock };
+	//		if (!map) {
+	//			return;
+	//		}
+	//		for (auto& [id, form] : *map) {
+	//			if (form) {
+	//				if (form->Is(RE::FormType::Reference)) {
+	//					auto reff = form->AsReference();
+	//					if (reff) {
+	//						if (reff->GetCurrentLocation() == currentLocation) {
+	//							auto baseObj = reff->GetBaseObject();
+	//							if (baseObj) {
+	//								switch (baseObj->GetFormType()) {
+	//								case RE::FormType::Activator:
+	//									{
+	//										if (reff->IsMarkedForDeletion() || reff->IsIgnored()) {
+	//											continue;
+	//										}
 
-											if (!reff->Is3DLoaded()) {
-												continue;
-											}
+	//										if (!reff->Is3DLoaded()) {
+	//											continue;
+	//										}
 
-											auto name = reff->GetDisplayFullName();
-											if (strlen(name) == 0) {
-												continue;
-											}
+	//										auto name = reff->GetDisplayFullName();
+	//										if (strlen(name) == 0) {
+	//											continue;
+	//										}
 
-											float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+	//										float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
 
-											if (!currentLocation) {
-												if (distance > show_items_window_auto_dis_skyrim) {
-													continue;
-												}
-											} else {
-												if (distance > show_items_window_auto_dis_local) {
-													continue;
-												}
-											}
+	//										if (!currentLocation) {
+	//											if (distance > show_items_window_auto_dis_skyrim) {
+	//												continue;
+	//											}
+	//										} else {
+	//											if (distance > show_items_window_auto_dis_local) {
+	//												continue;
+	//											}
+	//										}
 
-											// 挖掘点 自动标记
-											if (lotd::excavationIds.find(baseObj->GetFormID()) != lotd::excavationIds.end()) {
-												TrackItem trackItem;
-												trackItem.name = reff->GetDisplayFullName();
-												trackItem.isLotd = true;
-												trackItem.itemBaseFormId = baseObj->GetFormID();
-												trackPtrs2.insert(std::make_pair(reff, trackItem));
-												continue;
-											}
+	//										// 挖掘点 自动标记
+	//										if (lotd::excavationIds.find(baseObj->GetFormID()) != lotd::excavationIds.end()) {
+	//											TrackItem trackItem;
+	//											trackItem.name = reff->GetDisplayFullName();
+	//											trackItem.isLotd = true;
+	//											trackItem.itemBaseFormId = baseObj->GetFormID();
+	//											trackPtrs2.insert(std::make_pair(reff, trackItem));
+	//											continue;
+	//										}
 
-											break;
-										}
-									default:
-										{
-											continue;
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+	//										break;
+	//									}
+	//								default:
+	//									{
+	//										continue;
+	//									}
+	//								}
+	//							}
+	//						}
+	//					}
+	//				}
+	//			}
+	//		}
+	//	}
+	//}
 
 	void refreshAutoTrackItem()
 	{
-		if (isAutoTrackLotdItemsFlag) {
+		if (isAutoTrackLotdItemsFlag || isAutoTrackLotdExcavationFlag || isAutoTrackLotdCardsFlag) {
 			RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 			if (!player) {
 				return;
 			}
-			isAutoTrackLotdItemsFlag = false;
 
-			// 缓存身上物品
-			refreshInvItemsCache();
+			if (isAutoTrackLotdItems) {
+				// 缓存身上物品
+				refreshInvItemsCache();
 
-			// 缓存陈列品
-			refreshDisplayItemsCache();
+				// 缓存陈列品
+				refreshDisplayItemsCache();
+			}
 
-			//nowItemIndex = !nowItemIndex;
 			Sleep(100);
 
 			// 数量统计(int)
@@ -1616,55 +1631,56 @@ namespace lotd
 				for (auto& [id, form] : *map) {
 					if (form) {
 						if (form->Is(RE::FormType::ActorCharacter)) {
-							//continue;
-							auto actor = form->As<RE::Actor>();
-							if (actor && actor->IsDead() && !actor->IsSummoned()) {
-								// 排除自己
-								if (actor->IsPlayerRef()) {
-									continue;
-								}
-								if (actor->GetCurrentLocation() == currentLocation) {
-									if (!actor->Is3DLoaded()) {
+							if (isAutoTrackLotdItemsFlag) {
+								auto actor = form->As<RE::Actor>();
+								if (actor && actor->IsDead() && !actor->IsSummoned()) {
+									// 排除自己
+									if (actor->IsPlayerRef()) {
 										continue;
 									}
-
-									if (actor->IsMarkedForDeletion() || actor->IsIgnored()) {
-										continue;
-									}
-									float distance = ValueUtil::calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
-
-									if (!currentLocation) {
-										if (distance > show_items_window_auto_dis_skyrim) {
+									if (actor->GetCurrentLocation() == currentLocation) {
+										if (!actor->Is3DLoaded()) {
 											continue;
 										}
-									} else {
-										if (distance > show_items_window_auto_dis_local) {
+
+										if (actor->IsMarkedForDeletion() || actor->IsIgnored()) {
 											continue;
 										}
-									}
-									auto name = actor->GetDisplayFullName();
-									if (strlen(name) == 0) {
-										continue;
-									}
+										float distance = ValueUtil::calculateDistance(actor->GetPosition(), player->GetPosition()) / 100.0f;
 
-									bool isCrime = actor->IsCrimeToActivate();
-									if (!isCrime) {
-										auto inv = actor->GetInventory(FormUtil::CanDisplay);
-										for (auto& [obj, data] : inv) {
-											auto& [count, entry] = data;
-											if (count > 0 && entry) {
-												// 放到对应的数组里
-												bool success = checkItem(obj->GetFormID());
-												if (success) {
-													if (trackPtrs2.find(actor) == trackPtrs2.end()) {
-														TrackItem trackItem;
-														trackItem.name = getTrackerName(obj, obj->GetName());
-														trackItem.isLotd = true;
-														trackItem.itemBaseFormId = obj->GetFormID();
-														trackItem.isLotdCont = true;
-														trackPtrs2.insert(std::make_pair(actor, trackItem));
-														//menu::tintTrack(actor);
-														break;  // 后面修改支持多个
+										if (!currentLocation) {
+											if (distance > show_items_window_auto_dis_skyrim) {
+												continue;
+											}
+										} else {
+											if (distance > show_items_window_auto_dis_local) {
+												continue;
+											}
+										}
+										auto name = actor->GetDisplayFullName();
+										if (strlen(name) == 0) {
+											continue;
+										}
+
+										bool isCrime = actor->IsCrimeToActivate();
+										if (!isCrime) {
+											auto inv = actor->GetInventory(FormUtil::CanDisplay);
+											for (auto& [obj, data] : inv) {
+												auto& [count, entry] = data;
+												if (count > 0 && entry) {
+													// 放到对应的数组里
+													bool success = checkItem(obj->GetFormID());
+													if (success) {
+														if (trackPtrs2.find(actor) == trackPtrs2.end()) {
+															TrackItem trackItem;
+															trackItem.name = getTrackerName(obj, obj->GetName());
+															trackItem.isLotd = true;
+															trackItem.itemBaseFormId = obj->GetFormID();
+															trackItem.isLotdCont = true;
+															trackPtrs2.insert(std::make_pair(actor, trackItem));
+															//menu::tintTrack(actor);
+															break;  // 后面修改支持多个
+														}
 													}
 												}
 											}
@@ -1693,44 +1709,60 @@ namespace lotd
 										case RE::FormType::Note:
 										case RE::FormType::SoulGem:
 											{
-												if (reff->IsMarkedForDeletion() || reff->IsIgnored()) {
-													continue;
-												}
-
-												if (!reff->Is3DLoaded()) {
-													continue;
-												}
-
-												auto name = reff->GetDisplayFullName();
-												if (strlen(name) == 0) {
-													continue;
-												}
-
-												float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
-
-												if (!currentLocation) {
-													if (distance > show_items_window_auto_dis_skyrim) {
+												if (isAutoTrackLotdItemsFlag || isAutoTrackLotdCardsFlag) {
+													if (reff->IsMarkedForDeletion() || reff->IsIgnored()) {
 														continue;
 													}
-												} else {
-													if (distance > show_items_window_auto_dis_local) {
+
+													if (!reff->Is3DLoaded()) {
 														continue;
 													}
-												}
 
-												bool isCrime = reff->IsCrimeToActivate();
-												if (isCrime && isAutoTrackLotdItemsCrimeIgnore) {
-													continue;
-												}
-												bool success = checkItem(baseObj->GetFormID());
-												if (success) {
-													if (trackPtrs2.find(reff) == trackPtrs2.end()) {
-														TrackItem trackItem;
-														trackItem.name = getTrackerName(baseObj, name);
-														trackItem.isLotd = true;
-														trackItem.itemBaseFormId = baseObj->GetFormID();
-														trackPtrs2.insert(std::make_pair(reff, trackItem));
-														menu::tintTrack(reff);
+													auto name = reff->GetDisplayFullName();
+													if (strlen(name) == 0) {
+														continue;
+													}
+
+													float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+
+													if (!currentLocation) {
+														if (distance > show_items_window_auto_dis_skyrim) {
+															continue;
+														}
+													} else {
+														if (distance > show_items_window_auto_dis_local) {
+															continue;
+														}
+													}
+
+													bool isCrime = reff->IsCrimeToActivate();
+													if (isCrime && isAutoTrackLotdItemsCrimeIgnore) {
+														continue;
+													}
+
+													if (isAutoTrackLotdItemsFlag) {
+														bool success = checkItem(baseObj->GetFormID());
+														if (success) {
+															if (trackPtrs2.find(reff) == trackPtrs2.end()) {
+																TrackItem trackItem;
+																trackItem.name = getTrackerName(baseObj, name);
+																trackItem.isLotd = true;
+																trackItem.itemBaseFormId = baseObj->GetFormID();
+																trackPtrs2.insert(std::make_pair(reff, trackItem));
+																menu::tintTrack(reff);
+															}
+														}
+													}
+													if (isAutoTrackLotdCardsFlag) {
+														if (cardIds.find(baseObj->GetFormID()) != cardIds.end()) {
+															TrackItem trackItem;
+															std::string name = reff->GetDisplayFullName();
+															trackItem.name = ICON_MDI_CARDS_PLAYING_CLUB_OUTLINE " " + name;
+															trackItem.isLotd = true;
+															trackItem.itemBaseFormId = baseObj->GetFormID();
+															trackPtrs2.insert(std::make_pair(reff, trackItem));
+															menu::tintTrack(reff);
+														}
 													}
 												}
 
@@ -1739,71 +1771,91 @@ namespace lotd
 
 										case RE::FormType::Container:
 											{
-												if (reff->IsMarkedForDeletion() || reff->IsIgnored()) {
-													continue;
-												}
-
-												if (!reff->Is3DLoaded()) {
-													continue;
-												}
-
-												if (merchantContIgnore) {
-													if (merchantContFormIds.find(reff->GetFormID()) != merchantContFormIds.end()) {
+												if (isAutoTrackLotdItemsFlag || isAutoTrackLotdCardsFlag) {
+													if (reff->IsMarkedForDeletion() || reff->IsIgnored()) {
 														continue;
 													}
-												}
 
-												float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
-
-												if (!currentLocation) {
-													if (distance > show_items_window_auto_dis_skyrim) {
+													if (!reff->Is3DLoaded()) {
 														continue;
 													}
-												} else {
-													if (distance > show_items_window_auto_dis_local) {
+
+													if (merchantContIgnore) {
+														if (merchantContFormIds.find(reff->GetFormID()) != merchantContFormIds.end()) {
+															continue;
+														}
+													}
+
+													float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+
+													if (!currentLocation) {
+														if (distance > show_items_window_auto_dis_skyrim) {
+															continue;
+														}
+													} else {
+														if (distance > show_items_window_auto_dis_local) {
+															continue;
+														}
+													}
+
+													auto name = reff->GetDisplayFullName();
+													if (strlen(name) == 0) {
 														continue;
 													}
-												}
 
-												auto name = reff->GetDisplayFullName();
-												if (strlen(name) == 0) {
-													continue;
-												}
+													int direction = 0;
+													if (show_items_window_direction) {
+														direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
+													}
 
-												int direction = 0;
-												if (show_items_window_direction) {
-													direction = ValueUtil::calculateDirection(reff->GetPosition(), player->GetPosition(), player->GetAngle());
-												}
+													bool isCrime = reff->IsCrimeToActivate();
 
-												bool isCrime = reff->IsCrimeToActivate();
+													if (!isCrime || !isAutoTrackLotdItemsCrimeIgnore) {
+														auto inv = reff->GetInventory(FormUtil::CanDisplay);
+														bool stealing = player->WouldBeStealing(reff);
 
-												if (!isCrime || !isAutoTrackLotdItemsCrimeIgnore) {
-													auto inv = reff->GetInventory(FormUtil::CanDisplay);
-													bool stealing = player->WouldBeStealing(reff);
+														for (auto& [obj, data] : inv) {
+															auto& [count, entry] = data;
+															if (count > 0 && entry) {
+																// 放到对应的数组里
 
-													for (auto& [obj, data] : inv) {
-														auto& [count, entry] = data;
-														if (count > 0 && entry) {
-															// 放到对应的数组里
-
-															bool success = checkItem(obj->GetFormID());
-															if (success) {
-																bool isCrime2 = !entry.get()->IsOwnedBy(player, !stealing);
-																if (isCrimeIgnore) {
-																	if (isCrime2 && isAutoTrackLotdItemsCrimeIgnore) {
-																		continue;
+																if (isAutoTrackLotdItemsFlag) {
+																	bool success = checkItem(obj->GetFormID());
+																	if (success) {
+																		bool isCrime2 = !entry.get()->IsOwnedBy(player, !stealing);
+																		if (isCrimeIgnore) {
+																			if (isCrime2 && isAutoTrackLotdItemsCrimeIgnore) {
+																				continue;
+																			}
+																		}
+																		if (trackPtrs2.find(reff) == trackPtrs2.end()) {
+																			TrackItem trackItem;
+																			trackItem.name = getTrackerName(obj, obj->GetName());
+																			trackItem.isLotd = true;
+																			trackItem.itemBaseFormId = obj->GetFormID();
+																			trackItem.isLotdCont = true;
+																			trackPtrs2.insert(std::make_pair(reff, trackItem));
+																			menu::tintTrack(reff);
+																			break;  // 后面修改支持多个
+																		}
 																	}
 																}
-																if (trackPtrs2.find(reff) == trackPtrs2.end()) {
-																	TrackItem trackItem;
-																	trackItem.name = getTrackerName(obj, obj->GetName());
-																	trackItem.isLotd = true;
-																	trackItem.itemBaseFormId = obj->GetFormID();
-																	trackItem.isLotdCont = true;
-																	trackPtrs2.insert(std::make_pair(reff, trackItem));
-																	menu::tintTrack(reff);
-																	break;  // 后面修改支持多个
+
+																if (isAutoTrackLotdCardsFlag) {
+																	if (cardIds.find(obj->GetFormID()) != cardIds.end()) {
+																		TrackItem trackItem;
+																		std::string name = reff->GetName();
+																		trackItem.name = ICON_MDI_CARDS_PLAYING_CLUB_OUTLINE " " + name;
+
+																		trackItem.isLotd = true;
+																		trackItem.itemBaseFormId = obj->GetFormID();
+																		trackItem.isLotdCont = true;
+																		trackPtrs2.insert(std::make_pair(reff, trackItem));
+																		menu::tintTrack(reff);
+																		break;  // 后面修改支持多个
+																	}
 																}
+
 															}
 														}
 													}
@@ -1812,8 +1864,49 @@ namespace lotd
 											}
 
 										case RE::FormType::Tree:
-										case RE::FormType::Activator:  // 应该不需要
-										case RE::FormType::Flora:      // 应该不需要
+										case RE::FormType::Activator:
+											{
+												if (isAutoTrackLotdExcavationFlag) {
+													if (reff->IsMarkedForDeletion() || reff->IsIgnored()) {
+														continue;
+													}
+
+													if (!reff->Is3DLoaded()) {
+														continue;
+													}
+
+													auto name = reff->GetDisplayFullName();
+													if (strlen(name) == 0) {
+														continue;
+													}
+
+													float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+
+													if (!currentLocation) {
+														if (distance > show_items_window_auto_dis_skyrim) {
+															continue;
+														}
+													} else {
+														if (distance > show_items_window_auto_dis_local) {
+															continue;
+														}
+													}
+
+													// 挖掘点 自动标记
+													if (lotd::excavationIds.find(baseObj->GetFormID()) != lotd::excavationIds.end()) {
+														TrackItem trackItem;
+														std::string name = reff->GetDisplayFullName();
+														trackItem.name = ICON_MDI_SPADE " " + name;
+														trackItem.isLotd = true;
+														trackItem.itemBaseFormId = baseObj->GetFormID();
+														trackPtrs2.insert(std::make_pair(reff, trackItem));
+														menu::tintTrack(reff);
+														continue;
+													}
+												}
+												break;
+											}
+										case RE::FormType::Flora:  // 应该不需要
 										case RE::FormType::Static:
 										case RE::FormType::Furniture:
 										case RE::FormType::IdleMarker:
@@ -1838,6 +1931,10 @@ namespace lotd
 					}
 				}
 			}
+
+			isAutoTrackLotdItemsFlag = false;
+			isAutoTrackLotdExcavationFlag = false;
+			isAutoTrackLotdCardsFlag = false;
 		}
 	}
 

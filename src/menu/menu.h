@@ -93,5 +93,11 @@ namespace menu
 		TableColumn_1,
 		TableColumn_2,
 		TableColumn_3,
+		TableColumn_4,
+		TableColumn_5,
+		TableColumn_6,
+		TableColumn_7,
+		TableColumn_8,
+		TableColumn_9
 	};
 }

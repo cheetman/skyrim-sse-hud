@@ -641,6 +641,12 @@ namespace setting
 					if (j2.contains("isAutoTrackLotdItems")) {
 						lotd::isAutoTrackLotdItems = j2["isAutoTrackLotdItems"].get<bool>();
 					}
+					if (j2.contains("isAutoTrackLotdExcavation")) {
+						lotd::isAutoTrackLotdExcavation = j2["isAutoTrackLotdExcavation"].get<bool>();
+					}
+					if (j2.contains("isAutoTrackLotdCards")) {
+						lotd::isAutoTrackLotdCards = j2["isAutoTrackLotdCards"].get<bool>();
+					}
 					if (j2.contains("isAutoTrackLotdItemsCrimeIgnore")) {
 						lotd::isAutoTrackLotdItemsCrimeIgnore = j2["isAutoTrackLotdItemsCrimeIgnore"].get<bool>();
 					}
@@ -1040,6 +1046,8 @@ namespace setting
 														 { "isInvIgnore", lotd::isInvIgnore },
 														 { "isShowAttached", lotd::isShowAttached },
 														 { "isAutoTrackLotdItems", lotd::isAutoTrackLotdItems },
+														 { "isAutoTrackLotdExcavation", lotd::isAutoTrackLotdExcavation },
+														 { "isAutoTrackLotdCards", lotd::isAutoTrackLotdCards },
 														 { "isAutoTrackLotdItemsCrimeIgnore", lotd::isAutoTrackLotdItemsCrimeIgnore },
 														 { "showDisplayItemCount", lotd::showDisplayItemCount },
 														 { "scanType", lotd::scanType }

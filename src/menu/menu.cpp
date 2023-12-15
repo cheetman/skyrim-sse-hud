@@ -1115,7 +1115,7 @@ namespace menu
 					}
 
 					if (ImGui::BeginPopupModal(I18Nc("common.setting.tab-about"), NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-						ImGui::Text("版本：v1.0.1");
+						ImGui::Text("版本：v1.0.3");
 
 						if (ImGui::Button(I18Nc("common.setting.btn-ok"), ImVec2(120, 0))) {
 							ImGui::CloseCurrentPopup();
