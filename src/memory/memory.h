@@ -149,8 +149,7 @@ struct GalleryModForm
 
 struct QuestInfo
 {
-	int gold = 0;
-	float weight = 0;
+	RE::TESQuest* ptr = nullptr;
 	RE::FormID formId = 0;
 	std::uint16_t currentStage = 0;
 	std::uint32_t currentInstanceID = 0;
@@ -162,7 +161,6 @@ struct QuestInfo
 
 	std::string name = "";
 	bool isActive = false;
-	RE::TESObjectREFR* ptr = nullptr;
 	RE::LOCK_LEVEL lockLevel;
 	bool isDeleted = false;
 	bool isHarvested = false;

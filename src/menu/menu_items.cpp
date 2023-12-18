@@ -1299,6 +1299,18 @@ namespace menu
 						}
 					}*/
 
+				
+				if (isShowQuest) {
+					if (getQuestCount() > 0) {
+						ImGui::TableNextColumn();
+						ImGui::AlignTextToFramePadding();
+						ImGui::Text(I18Ni(ICON_MDI_CALENDAR_CHECK_OUTLINE, "finder.ui.label-quest"), getQuestCount());
+
+						buildQuestItem(getQuestCount(), getQuests());
+						ImGui::Spacing();
+					}
+				}
+
 				if (lotd::isLoad && lotd::isShowAttached) {
 					if (lotd::getCountAttached()) {
 						ImGui::TableNextColumn();
@@ -1315,17 +1327,6 @@ namespace menu
 				}
 
 				
-				if (isShowQuest) {
-					if (getQuestCount() > 0) {
-						ImGui::TableNextColumn();
-						ImGui::AlignTextToFramePadding();
-						ImGui::Text(I18Ni(ICON_MDI_CALENDAR_CHECK_OUTLINE, "finder.ui.label-quest"), getQuestCount());
-
-						buildQuestItem(getQuestCount(), getQuests());
-						ImGui::Spacing();
-
-					}
-				}
 
 				if (getItemCountWEAP() > 0) {
 					ImGui::TableNextColumn();
@@ -1856,13 +1857,18 @@ namespace menu
 									//ImGui::Checkbox(I18Nc("finder.setting.checkbox-excludePlayerItems"), &lotd::isInvIgnore);
 									ImGui::Checkbox(I18Nc("finder.setting.checkbox-lotdPrivateItemHidden"), &lotd::isCrimeIgnore);
 									ImGui::Checkbox(I18Nc("finder.setting.checkbox-excludeArmoryItems"), &lotd::isArmoryIgnore);
+									ImGui::ColorEdit4(I18Nc("finder.setting.color-lotdTableBorderStrong"), &lotd::colorTableBorderStrong.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+									ImGui::ColorEdit4(I18Nc("finder.setting.color-lotdTableHeaderBg"), &lotd::colorTableHeaderBg.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
 									ImGui::Unindent();
 								}
 							}
 
 							ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayQuest"), &isShowQuest);
 							if (isShowQuest) {
-
+								ImGui::Indent();
+								ImGui::ColorEdit4(I18Nc("finder.setting.color-questTableBorderStrong"), &colorQuestTableBorderStrong.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+								ImGui::ColorEdit4(I18Nc("finder.setting.color-questTableHeaderBg"), &colorQuestTableHeaderBg.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+								ImGui::Unindent();
 							}
 
 							ImGui::PushItemWidth(ImGui::GetFontSize() * 6);

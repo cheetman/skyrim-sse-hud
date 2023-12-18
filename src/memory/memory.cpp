@@ -452,6 +452,7 @@ void __cdecl RefreshItemInfo(void*)
 					item.quests[tmpQuestCount].allStage = allStage;
 					item.quests[tmpQuestCount].completedStage = completedStage;
 					item.quests[tmpQuestCount].progressStage = (float)completedStage / (float)(allStage == 0 ? 1 : allStage);
+					item.quests[tmpQuestCount].ptr = quest;
 
 					tmpQuestCount++;
 				}

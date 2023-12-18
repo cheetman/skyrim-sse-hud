@@ -1,12 +1,10 @@
 #include <event/BSTCrosshairRefEvent.h>
 #include <event/BSTMenuEvent.h>
 #include <fonts/IconsMaterialDesignIcons.h>
-#include <hook/hudhook.h>
 #include <imgui/imgui.h>
 #include <memory/autotake.h>
 #include <memory/lotd.h>
 #include <memory/memory.h>
-#include <memory/npc.h>
 #include <memory/player.h>
 #include <memory/stat.h>
 #include <menu/lotd.h>

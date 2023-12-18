@@ -14,6 +14,8 @@
 #include <nlohmann/json.hpp>
 #include <memory/sexlab.h>
 #include <setting/i18n.h>
+#include <menu/lotd.h>
+#include <menu/menu_quest.h>
 
 namespace setting
 {
@@ -656,7 +658,18 @@ namespace setting
 					}
 
 					if (j2.contains("scanType")) {
-						lotd::scanType = j2["scanType"].get<bool>();
+						lotd::scanType = j2["scanType"].get<int>();
+					}
+
+					if (j2.contains("colorTableHeaderBgX")) {
+						lotd::colorTableHeaderBg.x = j2["colorTableHeaderBgX"].get<float>();
+						lotd::colorTableHeaderBg.y = j2["colorTableHeaderBgY"].get<float>();
+						lotd::colorTableHeaderBg.z = j2["colorTableHeaderBgZ"].get<float>();
+						lotd::colorTableHeaderBg.w = j2["colorTableHeaderBgW"].get<float>();
+						lotd::colorTableBorderStrong.x = j2["colorTableBorderStrongX"].get<float>();
+						lotd::colorTableBorderStrong.y = j2["colorTableBorderStrongY"].get<float>();
+						lotd::colorTableBorderStrong.z = j2["colorTableBorderStrongZ"].get<float>();
+						lotd::colorTableBorderStrong.w = j2["colorTableBorderStrongW"].get<float>();
 					}
 
 				}
@@ -671,6 +684,24 @@ namespace setting
 					}
 					if (j2.contains("show_computertime_window")) {
 						stats::show_computertime_window = j2["show_computertime_window"].get<bool>();
+					}
+				}
+
+				
+				if (j.contains("QuestInfo")) {
+					auto const& j2 = j["QuestInfo"];
+					if (j2.contains("isShowQuest")) {
+						isShowQuest = j2["isShowQuest"].get<bool>();
+					}
+					if (j2.contains("colorQuestTableHeaderBgX")) {
+						menu::colorQuestTableHeaderBg.x = j2["colorQuestTableHeaderBgX"].get<float>();
+						menu::colorQuestTableHeaderBg.y = j2["colorQuestTableHeaderBgY"].get<float>();
+						menu::colorQuestTableHeaderBg.z = j2["colorQuestTableHeaderBgZ"].get<float>();
+						menu::colorQuestTableHeaderBg.w = j2["colorQuestTableHeaderBgW"].get<float>();
+						menu::colorQuestTableBorderStrong.x = j2["colorQuestTableBorderStrongX"].get<float>();
+						menu::colorQuestTableBorderStrong.y = j2["colorQuestTableBorderStrongY"].get<float>();
+						menu::colorQuestTableBorderStrong.z = j2["colorQuestTableBorderStrongZ"].get<float>();
+						menu::colorQuestTableBorderStrong.w = j2["colorQuestTableBorderStrongW"].get<float>();
 					}
 				}
 
@@ -1045,12 +1076,31 @@ namespace setting
 														 { "isCrimeIgnore", lotd::isCrimeIgnore },
 														 { "isInvIgnore", lotd::isInvIgnore },
 														 { "isShowAttached", lotd::isShowAttached },
+														{ "colorTableHeaderBgX", lotd::colorTableHeaderBg.x },
+														{ "colorTableHeaderBgY", lotd::colorTableHeaderBg.y },
+														{ "colorTableHeaderBgZ", lotd::colorTableHeaderBg.z },
+														{ "colorTableHeaderBgW", lotd::colorTableHeaderBg.w },
+														{ "colorTableBorderStrongX", lotd::colorTableBorderStrong.x },
+														{ "colorTableBorderStrongY", lotd::colorTableBorderStrong.y },
+														{ "colorTableBorderStrongZ", lotd::colorTableBorderStrong.z },
+														{ "colorTableBorderStrongW", lotd::colorTableBorderStrong.w },
 														 { "isAutoTrackLotdItems", lotd::isAutoTrackLotdItems },
 														 { "isAutoTrackLotdExcavation", lotd::isAutoTrackLotdExcavation },
 														 { "isAutoTrackLotdCards", lotd::isAutoTrackLotdCards },
 														 { "isAutoTrackLotdItemsCrimeIgnore", lotd::isAutoTrackLotdItemsCrimeIgnore },
 														 { "showDisplayItemCount", lotd::showDisplayItemCount },
 														 { "scanType", lotd::scanType }
+													 } },
+									   { "QuestInfo", { { "isShowQuest", isShowQuest },
+														{ "colorQuestTableHeaderBgX", menu::colorQuestTableHeaderBg.x },
+														{ "colorQuestTableHeaderBgY", menu::colorQuestTableHeaderBg.y },
+														{ "colorQuestTableHeaderBgZ", menu::colorQuestTableHeaderBg.z },
+														{ "colorQuestTableHeaderBgW", menu::colorQuestTableHeaderBg.w },
+														{ "colorQuestTableBorderStrongX", menu::colorQuestTableBorderStrong.x },
+														{ "colorQuestTableBorderStrongY", menu::colorQuestTableBorderStrong.y },
+														{ "colorQuestTableBorderStrongZ", menu::colorQuestTableBorderStrong.z },
+														{ "colorQuestTableBorderStrongW", menu::colorQuestTableBorderStrong.w },
+
 													 } },
 									   { "StatInfo", {
 														 { "show_gametime_window", stats::show_gametime_window },

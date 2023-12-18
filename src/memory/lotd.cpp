@@ -1844,7 +1844,7 @@ namespace lotd
 																if (isAutoTrackLotdCardsFlag) {
 																	if (cardIds.find(obj->GetFormID()) != cardIds.end()) {
 																		TrackItem trackItem;
-																		std::string name = reff->GetName();
+																		std::string name = obj->GetName();
 																		trackItem.name = ICON_MDI_CARDS_PLAYING_CLUB_OUTLINE " " + name;
 
 																		trackItem.isLotd = true;
