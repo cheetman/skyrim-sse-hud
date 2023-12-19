@@ -42,23 +42,6 @@ int show_items_window_auto_dis_local = 200;
 Item2Info* items = new Item2Info[2];
 int nowItemIndex = 0;
 
-// 物品排除
-std::unordered_set<int> excludeFormIds;
-std::vector<ExcludeForm> excludeForms;
-
-// 商贩容器
-std::unordered_set<RE::FormID> merchantContFormIds;
-bool merchantContIgnore = true;
-
-// 龙爪
-std::unordered_set<RE::FormID> clawFormIds;
-
-// 矿脉
-std::unordered_set<RE::FormID> oreFormIds;
-
-// 天气
-std::vector<WeatherForm> weatherForms;
-RE::FormID currentWeather = 0;
 
 void __cdecl RefreshGameInfo(void*)
 {
@@ -1681,6 +1664,8 @@ void __cdecl RefreshItemInfo(void*)
 											// 分类
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].formTypeStr = FormUtil::GetActiTypeName(reff, baseObj);
 
+
+										
 											tmpCountACTI++;
 
 											break;

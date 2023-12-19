@@ -176,12 +176,6 @@ struct ExcludeFormEffectIds
 		return effectId == other.effectId && spellId == other.spellId;
 	}
 
-//public:
-//	ExcludeFormEffectIds(RE::FormID effectId, RE::FormID spellId)
-//	{
-//		this->effectId = effectId;
-//		this->spellId = spellId;
-//	}
 };
 struct ExcludeFormEffectIdsHash
 {

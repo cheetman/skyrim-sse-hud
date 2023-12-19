@@ -6,8 +6,34 @@
 #include <utils/utils.h>
 #include <memory/player.h>
 
+
+
+	// 物品排除
+std::unordered_set<int> excludeFormIds;
+std::vector<ExcludeForm> excludeForms;
+
+// 商贩容器
+std::unordered_set<RE::FormID> merchantContFormIds;
+bool merchantContIgnore = true;
+
+// 龙爪
+std::unordered_set<RE::FormID> clawFormIds;
+
+// 矿脉
+std::unordered_set<RE::FormID> oreFormIds;
+
+// 天气
+std::vector<WeatherForm> weatherForms;
+RE::FormID currentWeather = 0;
+
+
 namespace data
 {
+	REL::Version gameVersion;
+
+	
+
+
 	void init()
 	{
 		for (auto id : excludeFormIds) {

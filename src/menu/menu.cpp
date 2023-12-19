@@ -26,6 +26,7 @@
 #include <hook/BSRenderManager.h>
 #include <hook/dinputhook.h>
 #include <utils/WICTextureLoader/WICTextureLoader11.h>
+#include <memory/data.h>
 //#include <utils/WICTextureLoader/WICTextureLoader11.cpp>
 
 namespace menu
@@ -1115,7 +1116,10 @@ namespace menu
 					}
 
 					if (ImGui::BeginPopupModal(I18Nc("common.setting.tab-about"), NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-						ImGui::Text("版本：v1.0.3");
+
+						
+						ImGui::Text("游戏版本：v%s", data::gameVersion.string().c_str());
+						ImGui::Text("插件版本：v1.0.4");
 
 						if (ImGui::Button(I18Nc("common.setting.btn-ok"), ImVec2(120, 0))) {
 							ImGui::CloseCurrentPopup();
@@ -1124,7 +1128,7 @@ namespace menu
 					}
 					if (ImGui::Selectable(I18Ni(ICON_MDI_INFORMATION_OUTLINE, "common.setting.tab-about"), false, 0, size)) {
 						clickCount = 0;
-						ImGui::OpenPopup(I18Nc("common.setting.tab-about"));
+						ImGui::OpenPopup(I18Nc("common.setting.tab-about")); 
 					}
 
 					ImGui::EndGroup();

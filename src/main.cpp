@@ -82,6 +82,8 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a
 			logger::critical(FMT_STRING("Unsupported runtime version {}"), ver.string());
 			return false;
 		}
+		data::gameVersion = ver;
+
 	} catch (const std::exception& e) {
 		logger::critical("failed, cause {}"sv, e.what());
 		return false;
@@ -129,6 +131,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	logger::info("registered listener"sv);
 
 	// 读取配置
+	//MessageBoxA(nullptr, "SKSEPlugin_Load", nullptr, MB_OK);
 	setting::load_settings();
 	i18n::load();
 

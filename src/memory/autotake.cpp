@@ -1517,8 +1517,236 @@ void __cdecl TimerAutoPick(void*)
 										}
 									case RE::FormType::Activator:
 										{
-											tmpCountACTI++;
+											// 灰烬
+											auto ashPile = reff->extraList.GetAshPileRef();
+											if (ashPile && ashPile.get()) {
+												auto actor = ashPile.get().get();
+								
 
+												if (tmpCountACTI > show_items_window_array_max_length) {
+													continue;
+												}
+
+												if (reff->IsMarkedForDeletion()) {
+													continue;
+												}
+												auto name = reff->GetDisplayFullName();
+												if (strlen(name) == 0) {
+													continue;
+												}
+												float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+
+												if (!currentLocation) {
+													if (distance > show_items_window_auto_dis_skyrim) {
+														continue;
+													}
+												} else {
+													if (distance > show_items_window_auto_dis_local) {
+														continue;
+													}
+												}
+
+												int tmpInvCount = 0;
+												auto inv = actor->GetInventory(FormUtil::CanDisplay);
+												for (auto& [obj, data] : inv) {
+													auto& [count, entry] = data;
+													if (count > 0 && entry) {
+														// 自动拾取
+
+														if (show_items_window_auto_achr && distance < show_items_window_auto_dis) {
+															switch (obj->GetFormType()) {
+															case RE::FormType::Weapon:
+																if (show_items_window_auto_achr_weap) {
+																	if (show_items_window_auto_weap_enchant) {
+																		if (!entry.get()->IsEnchanted()) {
+																			break;
+																		}
+																	}
+
+																	if (show_items_window_auto_weap_price) {
+																		if (obj->GetGoldValue() < show_items_window_auto_weap_price_value) {
+																			break;
+																		}
+																	}
+
+																	if (show_items_window_auto_weap_priceweight) {
+																		float weight = obj->GetWeight();
+																		if (weight == 0) {
+																			break;
+																		}
+																		if ((obj->GetGoldValue() / weight) < show_items_window_auto_weap_priceweight_value) {
+																			break;
+																		}
+																	}
+
+																	if (autoTakeForCONT(actor, obj, count, player)) {
+																		continue;
+																	}
+																}
+																break;
+															case RE::FormType::Armor:
+																if (show_items_window_auto_achr_armo) {
+																	if (show_items_window_auto_armo_enchant) {
+																		if (!entry.get()->IsEnchanted()) {
+																			break;
+																		}
+																	}
+
+																	if (show_items_window_auto_armo_price) {
+																		if (obj->GetGoldValue() < show_items_window_auto_armo_price_value) {
+																			break;
+																		}
+																	}
+
+																	if (show_items_window_auto_armo_priceweight) {
+																		float weight = obj->GetWeight();
+																		if (weight == 0) {
+																			break;
+																		}
+																		if ((obj->GetGoldValue() / weight) < show_items_window_auto_armo_priceweight_value) {
+																			break;
+																		}
+																	}
+
+																	if (autoTakeForCONT(actor, obj, count, player)) {
+																		continue;
+																	}
+																}
+																break;
+															case RE::FormType::Ammo:
+																if (show_items_window_auto_achr_ammo) {
+																	if (autoTakeForCONT(actor, obj, count, player)) {
+																		continue;
+																	}
+																}
+																break;
+															case RE::FormType::Scroll:
+																if (show_items_window_auto_achr_scrl) {
+																	if (autoTakeForCONT(actor, obj, count, player)) {
+																		continue;
+																	}
+																}
+																break;
+															case RE::FormType::Misc:
+																{
+																	if (obj->IsGold()) {
+																		if (show_items_window_auto_achr_gold) {
+																			if (autoTakeForCONT(actor, obj, count, player)) {
+																				continue;
+																			}
+																		}
+
+																	} else if (obj->IsLockpick()) {
+																		if (show_items_window_auto_achr_lock) {
+																			if (autoTakeForCONT(actor, obj, count, player)) {
+																				continue;
+																			}
+																		}
+																	} else {
+																		auto misc = obj->As<RE::TESObjectMISC>();
+																		if (misc) {
+																			if (FormUtil::HasKeyword(misc, VendorItemGem)) {
+																				if (show_items_window_auto_achr_ston) {
+																					if (autoTakeForCONT(actor, obj, count, player)) {
+																						continue;
+																					}
+																				}
+
+																			} else if (FormUtil::HasKeyword(misc, VendorItemOreIngot)) {
+																				if (show_items_window_auto_achr_anvi) {
+																					if (autoTakeForCONT(actor, obj, count, player)) {
+																						continue;
+																					}
+																				}
+																			} else if (FormUtil::HasKeyword(misc, VendorItemAnimalHide)) {
+																				if (show_items_window_auto_achr_anhd) {
+																					if (autoTakeForCONT(actor, obj, count, player)) {
+																						continue;
+																					}
+																				}
+																			} else if (FormUtil::HasKeyword(misc, VendorItemAnimalPart)) {
+																				if (show_items_window_auto_achr_anpa) {
+																					if (autoTakeForCONT(actor, obj, count, player)) {
+																						continue;
+																					}
+																				}
+																			} else if (FormUtil::HasKeyword(misc, VendorItemTool)) {
+																				if (show_items_window_auto_achr_tool) {
+																					if (autoTakeForCONT(actor, obj, count, player)) {
+																						continue;
+																					}
+																				}
+																			} else {
+																				if (show_items_window_auto_achr_misc) {
+																					if (autoTakeForCONT(actor, obj, count, player)) {
+																						continue;
+																					}
+																				}
+																			}
+																		}
+																	}
+																	break;
+																}
+
+															case RE::FormType::KeyMaster:
+																if (show_items_window_auto_achr_keym) {
+																	if (autoTakeForCONT(actor, obj, count, player)) {
+																		continue;
+																	}
+																}
+																break;
+															case RE::FormType::AlchemyItem:
+																{
+																	auto alchemyItem = obj->As<RE::AlchemyItem>();
+																	if (alchemyItem->IsFood()) {
+																		if (show_items_window_auto_achr_food) {
+																			if (autoTakeForCONT(actor, obj, count, player)) {
+																				continue;
+																			}
+																		}
+
+																	} else {
+																		if (show_items_window_auto_achr_alch) {
+																			if (autoTakeForCONT(actor, obj, count, player)) {
+																				continue;
+																			}
+																		}
+																	}
+																	break;
+																}
+															case RE::FormType::SoulGem:
+																if (show_items_window_auto_achr_sgem) {
+																	if (autoTakeForCONT(actor, obj, count, player)) {
+																		continue;
+																	}
+																}
+																break;
+															case RE::FormType::Ingredient:
+																if (show_items_window_auto_achr_ingr) {
+																	if (autoTakeForCONT(actor, obj, count, player)) {
+																		continue;
+																	}
+																}
+																break;
+															default:
+																break;
+															}
+														}
+
+														// 画面不显示则直接跳过
+														if (!activeItems) {
+															continue;
+														}
+
+														tmpInvCount++;
+														if (tmpInvCount == 200) {
+															break;
+														}
+													}
+												}
+
+												tmpCountACTI++;
+											}
 											break;
 										}
 									case RE::FormType::SoulGem:
