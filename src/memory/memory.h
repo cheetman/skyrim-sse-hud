@@ -81,29 +81,6 @@ struct ItemInfoCONT : public ItemInfo
 	std::string ownerName = "";
 };
 
-struct ExcludeForm
-{
-	RE::FormID formId = 0;
-	std::string name = "";
-	std::string formTypeStr = "";
-
-	bool operator<(const ExcludeForm& other) const
-	{
-		return formId < other.formId;
-	}
-};
-
-struct WeatherForm
-{
-	RE::FormID formId = 0;
-	std::string editorId = "";
-	RE::TESWeather::WeatherDataFlag flag = RE::TESWeather::WeatherDataFlag::kNone;
-
-	bool operator<(const WeatherForm& other) const
-	{
-		return formId < other.formId;
-	}
-};
 
 struct IncludeForm
 {
@@ -117,34 +94,6 @@ struct IncludeForm
 	}
 };
 
-struct GalleryForm
-{
-	RE::FormID formId = 0;
-	std::string name = "";
-	std::string modName = "";
-	//std::string formIdStr = "";
-
-	bool operator<(const GalleryForm& other) const
-	{
-		return formId < other.formId;
-	}
-};
-
-struct GalleryModForm
-{
-	int compileIndex = 0;
-	int smallFileCompileIndex = 0;
-	std::string filename = "";
-	std::string name = "";
-	size_t totalItemCount = 0;
-	size_t itemCount = 0;
-	//std::string formIdStr = "";
-
-	bool operator<(const GalleryModForm& other) const
-	{
-		return compileIndex < other.compileIndex;
-	}
-};
 
 
 struct QuestInfo
@@ -271,25 +220,6 @@ ItemInfo* getItemsANPA();
 ItemInfo* getItemsTOOL();
 std::vector<QuestInfo>& getQuests();
 
-/// <summary>
-/// 排除物品
-/// </summary>
-extern std::unordered_set<int> excludeFormIds;
-extern std::vector<ExcludeForm> excludeForms;
-
-
-/// <summary>
-/// 商贩物品
-/// </summary>
-extern std::unordered_set<RE::FormID> merchantContFormIds;
-extern bool merchantContIgnore;
-
-extern std::unordered_set<RE::FormID> clawFormIds;
-
-extern std::unordered_set<RE::FormID> oreFormIds;
-
-extern std::vector<WeatherForm> weatherForms;
-extern RE::FormID currentWeather;
 
 extern int screenWidth;
 extern int screenHeight;

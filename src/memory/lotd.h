@@ -159,10 +159,6 @@ namespace lotd
 	/// </summary>
 	void refreshDisplayItemsCache();
 
-	/// <summary>
-	/// 刷新追踪标记
-	/// </summary>
-	void refreshAutoTrackItem();
 	//void refreshAutoTrackExcavation();
 
 	// 身上物品
@@ -173,7 +169,6 @@ namespace lotd
 	void refreshDisplayCount();
 
 	bool checkItem(RE::FormID baseFormId);
-	std::string getTrackerName(RE::TESBoundObject* obj, std::string name);
 
 	extern int scanType;
 	static const std::unordered_map<int, std::string> scanType_items = {

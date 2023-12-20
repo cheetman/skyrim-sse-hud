@@ -28,7 +28,7 @@ struct WeatherForm
 /// <summary>
 /// 排除物品
 /// </summary>
-extern std::unordered_set<int> excludeFormIds;
+extern std::unordered_set<RE::FormID> excludeFormIds;
 extern std::vector<ExcludeForm> excludeForms;
 
 /// <summary>
@@ -48,4 +48,7 @@ namespace data
 {
 	void init();
 	extern REL::Version gameVersion;
+
+	extern std::unordered_set<RE::FormID> autoTrackFormIds;
+	extern std::vector<ExcludeForm> autoTrackForms;
 }

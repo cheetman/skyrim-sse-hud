@@ -16,6 +16,8 @@
 #include <setting/i18n.h>
 #include <menu/lotd.h>
 #include <menu/menu_quest.h>
+#include <memory/data.h>
+#include <memory/track.h>
 
 namespace setting
 {
@@ -619,7 +621,10 @@ namespace setting
 					if (j2.contains("show_item_window_track_auto_tag_OutOfRangeIcon")) {
 						menu::show_item_window_track_auto_tag_OutOfRangeIcon = j2["show_item_window_track_auto_tag_OutOfRangeIcon"].get<bool>();
 					}
-					
+
+					if (j2.contains("isAutoTrackItems")) {
+						track::isAutoTrackItems = j2["isAutoTrackItems"].get<bool>();
+					}
 				}
 
 				if (j.contains("LotdInfo")) {
@@ -740,7 +745,7 @@ namespace setting
 
 			if (json.contains("excludeFormIDs")) {
 				for (auto const& j : json["excludeFormIDs"]) {
-					excludeFormIds.insert(j.get<int>());  // 酒杯
+					excludeFormIds.insert(j.get<RE::FormID>());  // 酒杯
 				}
 			} else {
 				// 默认值
@@ -786,13 +791,13 @@ namespace setting
 
 			if (json.contains("autoContFormIDs")) {
 				for (auto const& j : json["autoContFormIDs"]) {
-					autoContFormIds.insert(j.get<int>());
+					autoContFormIds.insert(j.get<RE::FormID>());
 				}
 			}
 
 			if (json.contains("excludeNpcFormIds")) {
 				for (auto const& j : json["excludeNpcFormIds"]) {
-					excludeNpcFormIds.insert(j.get<int>());
+					excludeNpcFormIds.insert(j.get<RE::FormID>());
 				}
 			}
 
@@ -802,6 +807,13 @@ namespace setting
 						ExcludeFormEffectIds item{ j["effectId"].get<RE::FormID>(), j["spellId"].get<RE::FormID>() };
 						excludeEffectFormIds.insert(item);
 					}
+				}
+			}
+
+			
+			if (json.contains("autoTrackFormIds")) {
+				for (auto const& j : json["autoTrackFormIds"]) {
+					data::autoTrackFormIds.insert(j.get<RE::FormID>());
 				}
 			}
 
@@ -1069,6 +1081,9 @@ namespace setting
 															 { "ColorTrackLotdZ", menu::ColorTrackLotd.z },
 															 { "ColorTrackLotdW", menu::ColorTrackLotd.w },
 
+															 { "isAutoTrackItems", track::isAutoTrackItems },
+
+															 
 														 } },
 									   { "LotdInfo", {
 														 { "showlocationItemCount", lotd::showlocationItemCount },
@@ -1146,6 +1161,16 @@ namespace setting
 				arrBuff.push_back(obj);
 			}
 			json["excludeEffectFormIds"] = arrBuff;
+
+			
+			
+			nlohmann::json arrAutoTrackItem = nlohmann::json::array();
+			for (auto id : data::autoTrackFormIds) {
+				arrAutoTrackItem.push_back(id);
+			}
+			json["autoTrackFormIds"] = arrAutoTrackItem;
+
+			
 
 			std::ofstream o(settings_path);
 			o << std::setw(4) << json << std::endl;

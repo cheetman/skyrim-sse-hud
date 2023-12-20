@@ -6,6 +6,7 @@
 #include <menu/menu_track.h>
 #include <setting/i18n.h>
 #include <utils/utils.h>
+#include <memory/data.h>
 
 namespace menu
 {

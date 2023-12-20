@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory/data.h>
+#include <memory/track.h>
 #include <memory/lotd.h>
 
 class BSTBGSActorCellEvent : public RE::BSTEventSink<RE::BGSActorCellEvent>
@@ -26,12 +28,16 @@ public:
 				if (lotd::isAutoTrackLotdCards) {
 					lotd::isAutoTrackLotdCardsFlag = true;
 				}
+				if (track::isAutoTrackItems && data::autoTrackFormIds.size() > 0) {
+					track::isAutoTrackItemsFlag = true;
+				}
 			}
 		}
 		return RE::BSEventNotifyControl::kContinue;
 	}
 
-	static bool Register()
+	static bool
+		Register()
 	{
 		static BSTBGSActorCellEvent singleton;
 

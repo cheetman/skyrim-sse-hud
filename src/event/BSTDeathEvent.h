@@ -3,6 +3,7 @@
 #include <memory/lotd.h>
 #include <menu/menu_track.h>
 #include <utils/utils.h>
+#include <memory/track.h>
 
 class BSTDeathEvent : public RE::BSTEventSink<RE::TESDeathEvent>
 {
@@ -36,10 +37,10 @@ public:
 							if (success) {
 								if (trackPtrs2.find(actor) == trackPtrs2.end()) {
 									TrackItem trackItem;
-									trackItem.name = lotd::getTrackerName(obj, obj->GetName());
+									trackItem.name = track::getTrackerName(obj, obj->GetName());
 									trackItem.isLotd = true;
 									trackItem.itemBaseFormId = obj->GetFormID();
-									trackItem.isLotdCont = true;
+									trackItem.isCont = true;
 									trackPtrs2.insert(std::make_pair(actor, trackItem));
 									//menu::tintTrack(actor);
 									break;

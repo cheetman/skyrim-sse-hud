@@ -7,6 +7,7 @@
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
 #include <utils/PlayerDataProvider.h>
+#include <memory/track.h>
 
 bool show_items_window_auto_ignore = true;
 bool show_items_window_auto_notification = true;
@@ -86,7 +87,7 @@ std::unordered_set<int> excludeLocationFormIds;
 std::vector<ExcludeForm> excludeLocationForms;
 
 // 容器类型
-std::unordered_set<int> autoContFormIds;
+std::unordered_set<RE::FormID> autoContFormIds;
 std::vector<IncludeForm> autoContForms;
 //std::unordered_set<RE::TESObjectREFR*> deleteREFRs;
 
@@ -521,9 +522,8 @@ void __cdecl TimerAutoPick(void*)
 			if (lotd::isLoad) {
 				lotd::refreshCount();
 				lotd::refreshDisplayCount();
-				lotd::refreshAutoTrackItem();
-				//lotd::refreshAutoTrackExcavation();
 			}
+			track::refreshAutoTrackItem();
 			sexlab::refreshInfo();
 			stats::refreshCount();
 			continue;
@@ -532,9 +532,8 @@ void __cdecl TimerAutoPick(void*)
 			if (lotd::isLoad) {
 				lotd::refreshCount();
 				lotd::refreshDisplayCount();
-				lotd::refreshAutoTrackItem();
-				//lotd::refreshAutoTrackExcavation();
 			}
+			track::refreshAutoTrackItem();
 
 			sexlab::refreshInfo();
 			stats::refreshCount();

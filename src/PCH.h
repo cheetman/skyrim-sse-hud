@@ -26,3 +26,4 @@ namespace util
 #include "Plugin.h"
 
 #define LOTD_SPECIFIC_CODE 0
+#define SSE_CODE 1

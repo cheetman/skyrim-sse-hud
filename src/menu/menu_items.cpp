@@ -1,22 +1,108 @@
 #include "menu_items.h"
 #include <fonts/IconsMaterialDesignIcons.h>
+#include <hook/dinputhook.h>
 #include <imgui/imgui.h>
 #include <memory/autotake.h>
-#include <memory/lotd.h>
+#if SSE_CODE
+#	include <memory/lotd.h>
+#	include <menu/lotd.h>
+#endif
 #include <memory/memory.h>
 #include <memory/player.h>
 #include <memory/stat.h>
-#include <menu/lotd.h>
+#include <memory/track.h>
 #include <menu/menu.h>
+#include <menu/menu_quest.h>
 #include <menu/menu_track.h>
 #include <setting/i18n.h>
 #include <setting/setting.h>
 #include <utils/utils.h>
-#include <hook/dinputhook.h>
-#include <menu/menu_quest.h>
 
 namespace menu
 {
+	void ignoreItem(ItemInfo& item)
+	{
+		bool exist = false;
+		for (const auto& excludeForm : excludeForms) {
+			if (excludeForm.formId == item.baseFormId) {
+				exist = true;
+				break;
+			}
+		}
+		if (!exist) {
+			excludeForms.push_back({ item.baseFormId, item.name, item.formTypeStr });
+		}
+		excludeFormIds.insert(item.baseFormId);
+	}
+	void autoTrackItem(ItemInfo& item)
+	{
+		bool exist = false;
+		for (const auto& excludeForm : data::autoTrackForms) {
+			if (excludeForm.formId == item.baseFormId) {
+				exist = true;
+				break;
+			}
+		}
+		if (!exist) {
+			data::autoTrackForms.push_back({ item.baseFormId, item.name, item.formTypeStr });
+		}
+		data::autoTrackFormIds.insert(item.baseFormId);
+		if (track::isAutoTrackItems) {
+			track::isAutoTrackItemsFlag = true;
+		}
+	}
+
+	void autoTrackItemCancel(ItemInfo& item)
+	{
+		data::autoTrackFormIds.erase(item.baseFormId);
+		auto deleteFormId = item.baseFormId;
+		data::autoTrackForms.erase(std::remove_if(data::autoTrackForms.begin(), data::autoTrackForms.end(),
+									   [&deleteFormId](const ExcludeForm& x) {
+										   return x.formId == deleteFormId;
+									   }),
+			data::autoTrackForms.end());
+
+		// 删除追踪
+		{
+			std::lock_guard<std::mutex> lock(mtxTrack);
+			std::vector<RE::TESObjectREFR*> deleteReffs;
+			for (const auto& item2 : trackPtrs2) {
+				if (item2.second.isAuto) {
+					if (item2.second.itemBaseFormId == item.baseFormId) {
+						deleteReffs.push_back(item2.first);
+					}
+				}
+			}
+			for (const auto reff : deleteReffs) {
+				trackPtrs2.erase(reff);
+				menu::tintTrackClose(reff);
+			}
+		}
+	}
+
+	
+	void moveToItem(ItemInfo& item)
+	{
+		auto player = RE::PlayerCharacter::GetSingleton();
+		player->MoveTo(item.ptr);
+		/*std::string commandStr = "player.moveto ";
+								commandStr.append(item.formIdStr);
+								ScriptUtil::ExecuteCommand(commandStr);*/
+		if (activeItems) {
+			activeItems = false;
+		}
+	}
+
+	
+	void trackItem(ItemInfo& item)
+	{
+		TrackItem trackItem;
+		trackItem.name = item.name;
+		trackPtrs2.insert(std::make_pair(item.ptr, trackItem));
+		tintTrack(item.ptr);
+		menu::isTrack = true;
+	}
+
 	void __fastcall buildItemCONTInfo(int count, ItemInfoCONT* items, RE::FormType formType)
 	{
 		static ImGuiTableFlags flagsItem =
@@ -72,10 +158,7 @@ namespace menu
 
 			ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_5);
 
-			/*if (show_items_window_settings) {
-			}*/
-
-			ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
+			ImGui::TableSetupScrollFreeze(0, 1);
 			ImGui::TableHeadersRow();
 
 			for (int row_n = 0; row_n < count; row_n++) {
@@ -83,64 +166,98 @@ namespace menu
 				ImGui::PushID(item.formId + 0x1000000);
 				ImGui::TableNextRow();
 				ImGui::TableNextColumn();
-				if (item.invCount > 0) {
-					bool openFlag;
-					if (item.isCrime) {
-						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-						openFlag = ImGui::TreeNode(item.formIdStr.c_str(), "%s", item.name.c_str());
-					} else {
-						if (show_items_window_auto_conttype) {
-							if (item.isAuto) {
-								openFlag = ImGui::TreeNode(item.formIdStr.c_str(), "%s" ICON_MDI_AUTORENEW, item.name.c_str());
-							} else {
-								openFlag = ImGui::TreeNode(item.formIdStr.c_str(), "%s", item.name.c_str());
+				{
+					if (ImGui::BeginPopupContextItem("itemPopMenu")) {
+						ImGui::Text("%s", item.name.c_str());
+						ImGui::Separator();
+
+						if (trackPtrs2.find(item.ptr) == trackPtrs2.end()) {
+							if (ImGui::Button(ICON_MDI_MAP_MARKER_RADIUS " 定位")) {
+								trackItem(item);
 							}
-						} else {
-							openFlag = ImGui::TreeNode(item.formIdStr.c_str(), "%s" ICON_MDI_AUTORENEW, item.name.c_str());
 						}
-					}
 
-					if (item.isCrime) {
-						ImGui::PopStyleColor();
-					} else {
-					}
+						if (ImGui::Button("\uf101" " 传送")) {
+							moveToItem(item);
+						}
 
-					if (openFlag) {
-						for (int i2 = 0; i2 < item.invCount; i2++) {
-							auto& inv = item.invs[i2];
-							char buf[80];
-
-							if (inv.count > 1) {
-								snprintf(buf, 80, item.isEnchanted ? "%s" ICON_MDI_FLASH " (%d)" : "%s (%d)", inv.name.c_str(), inv.count);
-							} else {
-								snprintf(buf, 80, item.isEnchanted ? "%s" ICON_MDI_FLASH : "%s", inv.name.c_str());
+						if (ImGui::Button(ICON_MDI_EYE_REMOVE_OUTLINE " 忽略")) {
+							bool exist = false;
+							for (const auto& excludeForm : excludeForms) {
+								if (excludeForm.formId == item.baseFormId) {
+									exist = true;
+									break;
+								}
 							}
+							if (!exist) {
+								excludeForms.push_back({ item.baseFormId, item.name, item.formTypeStr });
+							}
+							excludeFormIds.insert(item.baseFormId);
+						}
 
-							if (inv.isCrime) {
-								ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-								if (ImGui::Selectable(buf, false)) {
-									/*auto player = RE::PlayerCharacter::GetSingleton();
+						ImGui::EndPopup();
+					}
+					if (item.invCount > 0) {
+						bool openFlag;
+						if (item.isCrime) {
+							ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+							openFlag = ImGui::TreeNode(item.formIdStr.c_str(), "%s", item.name.c_str());
+						} else {
+							if (show_items_window_auto_conttype) {
+								if (item.isAuto) {
+									openFlag = ImGui::TreeNode(item.formIdStr.c_str(), "%s" ICON_MDI_AUTORENEW, item.name.c_str());
+								} else {
+									openFlag = ImGui::TreeNode(item.formIdStr.c_str(), "%s", item.name.c_str());
+								}
+							} else {
+								openFlag = ImGui::TreeNode(item.formIdStr.c_str(), "%s" ICON_MDI_AUTORENEW, item.name.c_str());
+							}
+						}
+
+						if (item.isCrime) {
+							ImGui::PopStyleColor();
+						} else {
+						}
+						ImGui::OpenPopupOnItemClick("itemPopMenu", ImGuiPopupFlags_MouseButtonRight);
+
+						if (openFlag) {
+							for (int i2 = 0; i2 < item.invCount; i2++) {
+								auto& inv = item.invs[i2];
+								char buf[80];
+
+								if (inv.count > 1) {
+									snprintf(buf, 80, item.isEnchanted ? "%s" ICON_MDI_FLASH " (%d)" : "%s (%d)", inv.name.c_str(), inv.count);
+								} else {
+									snprintf(buf, 80, item.isEnchanted ? "%s" ICON_MDI_FLASH : "%s", inv.name.c_str());
+								}
+
+								if (inv.isCrime) {
+									ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+									if (ImGui::Selectable(buf, false)) {
+										/*auto player = RE::PlayerCharacter::GetSingleton();
 									item.ptr->RemoveItem(inv.ptr, inv.count, RE::ITEM_REMOVE_REASON::kSteal, 0, player);*/
 
-									RemoveItemCONT(nullptr, item.ptr, inv.ptr, inv.count, false);
-								}
-								ImGui::PopStyleColor();
-							} else {
-								ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.8f, 0.8f, 1.0f));
-								if (ImGui::Selectable(buf, false)) {
-									/*auto player = RE::PlayerCharacter::GetSingleton();
+										RemoveItemCONT(nullptr, item.ptr, inv.ptr, inv.count, false);
+									}
+									ImGui::PopStyleColor();
+								} else {
+									ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.8f, 0.8f, 1.0f));
+									if (ImGui::Selectable(buf, false)) {
+										/*auto player = RE::PlayerCharacter::GetSingleton();
 									item.ptr->RemoveItem(inv.ptr, inv.count, RE::ITEM_REMOVE_REASON::kRemove, 0, player);*/
 
-									RemoveItemCONT(nullptr, item.ptr, inv.ptr, inv.count, false);
+										RemoveItemCONT(nullptr, item.ptr, inv.ptr, inv.count, false);
+									}
+									ImGui::PopStyleColor();
 								}
-								ImGui::PopStyleColor();
 							}
+							ImGui::TreePop();
 						}
-						ImGui::TreePop();
-					}
 
-				} else {
-					myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), I18Nc("finder.ui.cell-null"), item.name.c_str());
+					} else {
+						myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), I18Nc("finder.ui.cell-null"), item.name.c_str());
+						ImGui::OpenPopupOnItemClick("itemPopMenu", ImGuiPopupFlags_MouseButtonRight);
+					}
 				}
 
 				ImGui::TableNextColumn();
@@ -212,40 +329,8 @@ namespace menu
 				}
 
 				ImGui::TableNextColumn();
-				if (show_items_window_settings) {
-					if (ImGui::SmallButton("\uf101")) {
-						std::string commandStr = "player.moveto ";
-						commandStr.append(item.formIdStr);
-						ScriptUtil::ExecuteCommand(commandStr);
-						if (activeItems) {
-							activeItems = false;
-						}
-					}
-
-					if (show_items_window_auto_cont && show_items_window_auto_conttype) {
-						if (!item.isAuto) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							if (ImGui::SmallButton(ICON_MDI_AUTORENEW)) {
-								bool exist = false;
-								for (const auto& includeForm : autoContForms) {
-									if (includeForm.formId == item.baseFormId) {
-										exist = true;
-										break;
-									}
-								}
-								if (!exist) {
-									autoContForms.push_back({ item.baseFormId, item.name, item.formTypeStr });
-								}
-								autoContFormIds.insert(item.baseFormId);
-							}
-						}
-					}
-				}
 
 				if (trackPtrs2.find(item.ptr) == trackPtrs2.end()) {
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-					}
 					if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
 						TrackItem trackItem;
 						trackItem.name = item.name;
@@ -342,10 +427,8 @@ namespace menu
 			}
 
 			ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_5);
-			/*if (show_items_window_settings) {
-			}*/
 
-			ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
+			ImGui::TableSetupScrollFreeze(0, 1);
 			ImGui::TableHeadersRow();
 
 			for (int row_n = 0; row_n < count; row_n++) {
@@ -353,52 +436,76 @@ namespace menu
 				ImGui::PushID(item.formId + 0x1000000);
 				ImGui::TableNextRow();
 				ImGui::TableNextColumn();
-				if (item.invCount > 0) {
-					if (item.isCrime) {
-						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-					} else {
-					}
-					auto openFlag = ImGui::TreeNode(item.formIdStr.c_str(), "%s", item.name.c_str());
 
-					if (item.isCrime) {
-						ImGui::PopStyleColor();
-					} else {
-					}
+				{
+					if (ImGui::BeginPopupContextItem("itemPopMenu")) {
+						ImGui::Text("%s", item.name.c_str());
+						ImGui::Separator();
 
-					if (openFlag) {
-						for (int i2 = 0; i2 < item.invCount; i2++) {
-							auto& inv = item.invs[i2];
-							char buf[80];
-
-							if (inv.count > 1) {
-								snprintf(buf, 80, item.isEnchanted ? "%s" ICON_MDI_FLASH " (%d)" : "%s (%d)", inv.name.c_str(), inv.count);
-							} else {
-								snprintf(buf, 80, item.isEnchanted ? "%s" ICON_MDI_FLASH : "%s", inv.name.c_str());
-							}
-
-							if (inv.isCrime) {
-								ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-								if (ImGui::Selectable(buf, false)) {
-									//auto player = RE::PlayerCharacter::GetSingleton();
-									//item.ptr->RemoveItem(inv.ptr, inv.count, RE::ITEM_REMOVE_REASON::kSteal, 0, player);
-									RemoveItemACHR(nullptr, item.ptr, inv.ptr, inv.count, false);
-								}
-								ImGui::PopStyleColor();
-							} else {
-								ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.8f, 0.8f, 1.0f));
-								if (ImGui::Selectable(buf, false)) {
-									/*auto player = RE::PlayerCharacter::GetSingleton();
-									item.ptr->RemoveItem(inv.ptr, inv.count, RE::ITEM_REMOVE_REASON::kRemove, 0, player);*/
-									RemoveItemACHR(nullptr, item.ptr, inv.ptr, inv.count, false);
-								}
-								ImGui::PopStyleColor();
+						if (trackPtrs2.find(item.ptr) == trackPtrs2.end()) {
+							if (ImGui::Button(ICON_MDI_MAP_MARKER_RADIUS " 定位")) {
+								trackItem(item);
 							}
 						}
-						ImGui::TreePop();
-					}
 
-				} else {
-					myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), I18Nc("finder.ui.cell-null"), item.name.c_str());
+						if (ImGui::Button("\uf101"  " 传送")) {
+							moveToItem(item);
+
+						}
+
+						ImGui::EndPopup();
+					}
+					if (item.invCount > 0) {
+						if (item.isCrime) {
+							ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+						} else {
+						}
+						auto openFlag = ImGui::TreeNode(item.formIdStr.c_str(), "%s", item.name.c_str());
+
+						if (item.isCrime) {
+							ImGui::PopStyleColor();
+						} else {
+						}
+
+						ImGui::OpenPopupOnItemClick("itemPopMenu", ImGuiPopupFlags_MouseButtonRight);
+
+						if (openFlag) {
+							for (int i2 = 0; i2 < item.invCount; i2++) {
+								auto& inv = item.invs[i2];
+								char buf[80];
+
+								if (inv.count > 1) {
+									snprintf(buf, 80, item.isEnchanted ? "%s" ICON_MDI_FLASH " (%d)" : "%s (%d)", inv.name.c_str(), inv.count);
+								} else {
+									snprintf(buf, 80, item.isEnchanted ? "%s" ICON_MDI_FLASH : "%s", inv.name.c_str());
+								}
+
+								if (inv.isCrime) {
+									ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+									if (ImGui::Selectable(buf, false)) {
+										//auto player = RE::PlayerCharacter::GetSingleton();
+										//item.ptr->RemoveItem(inv.ptr, inv.count, RE::ITEM_REMOVE_REASON::kSteal, 0, player);
+										RemoveItemACHR(nullptr, item.ptr, inv.ptr, inv.count, false);
+									}
+									ImGui::PopStyleColor();
+								} else {
+									ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.8f, 0.8f, 1.0f));
+									if (ImGui::Selectable(buf, false)) {
+										/*auto player = RE::PlayerCharacter::GetSingleton();
+									item.ptr->RemoveItem(inv.ptr, inv.count, RE::ITEM_REMOVE_REASON::kRemove, 0, player);*/
+										RemoveItemACHR(nullptr, item.ptr, inv.ptr, inv.count, false);
+									}
+									ImGui::PopStyleColor();
+								}
+							}
+							ImGui::TreePop();
+						}
+
+					} else {
+						myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), I18Nc("finder.ui.cell-null"), item.name.c_str());
+
+						ImGui::OpenPopupOnItemClick("itemPopMenu", ImGuiPopupFlags_MouseButtonRight);
+					}
 				}
 
 				ImGui::TableNextColumn();
@@ -431,27 +538,10 @@ namespace menu
 				}
 
 				ImGui::TableNextColumn();
-				if (show_items_window_settings) {
-					if (ImGui::SmallButton("\uf101")) {
-						std::string commandStr = "player.moveto ";
-						commandStr.append(item.formIdStr);
-						ScriptUtil::ExecuteCommand(commandStr);
-						if (activeItems) {
-							activeItems = false;
-						}
-					}
-				}
 
 				if (trackPtrs2.find(item.ptr) == trackPtrs2.end()) {
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-					}
 					if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
-						TrackItem trackItem;
-						trackItem.name = item.name;
-						trackPtrs2.insert(std::make_pair(item.ptr, trackItem));
-						tintTrack(item.ptr);
-						menu::isTrack = true;
+						trackItem(item);
 					}
 				}
 
@@ -490,7 +580,6 @@ namespace menu
 			ImGui::TableSetupColumn(I18Nc("finder.ui.column-name"), ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_1);
 			ImGui::TableSetupColumn(I18Nc("finder.ui.column-type"), ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_5);
 			ImGui::TableSetupColumn(I18Nc("finder.ui.column-value"), ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 35.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_2);
-			//ImGui::TableSetupColumn(I18Nc("finder.ui.column-weight"), ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 30.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_3);
 
 			if (show_items_window_direction) {
 				ImGui::TableSetupColumn(I18Nc("finder.ui.column-orientation"), ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_8);
@@ -506,7 +595,7 @@ namespace menu
 				ImGui::TableSetupColumn(I18Nc("finder.ui.column-modname"), ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_7);
 			}
 			ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_6);
-			ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
+			ImGui::TableSetupScrollFreeze(0, 1);
 			ImGui::TableHeadersRow();
 
 			ImGuiListClipper clipper;
@@ -517,30 +606,59 @@ namespace menu
 					ImGui::PushID(item.formId + 0x1000000);
 					ImGui::TableNextRow();
 					ImGui::TableNextColumn();
-					if (item.isCrime) {
-						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-						if (ImGui::Selectable(item.isRead ? (item.name + " " + ICON_MDI_EYE).c_str() : item.name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick)) {
-							if (item.ptr) {
-								//if (!item.isDeleted) {
-								if (!item.ptr->IsMarkedForDeletion()) {
-									addItem(nullptr, item.ptr, 1);
-									//item.isDeleted = true;
+					{
+						if (ImGui::BeginPopupContextItem("itemPopMenu")) {
+							ImGui::Text("%s", item.name.c_str());
+							ImGui::Separator();
+
+							if (trackPtrs2.find(item.ptr) == trackPtrs2.end()) {
+								if (ImGui::Button(ICON_MDI_MAP_MARKER_RADIUS " 定位")) {
+									trackItem(item);
 								}
-								//}
 							}
+
+							if (ImGui::Button("\uf101"
+											  " 传送")) {
+								moveToItem(item);
+							}
+
+							if (ImGui::Button(ICON_MDI_EYE_REMOVE_OUTLINE " 忽略")) {
+								ignoreItem(item);
+							}
+
+							if (data::autoTrackFormIds.find(item.baseFormId) == data::autoTrackFormIds.end()) {
+								if (ImGui::Button(ICON_MDI_MAGNIFY " 自动标记")) {
+									autoTrackItem(item);
+								}
+							} else {
+								if (ImGui::Button(ICON_MDI_MAGNIFY_CLOSE " 取消自动标记")) {
+									autoTrackItemCancel(item);
+								}
+							}
+
+							ImGui::EndPopup();
 						}
-						ImGui::PopStyleColor();
-					} else {
-						if (ImGui::Selectable(item.isRead ? (item.name + " " + ICON_MDI_EYE).c_str() : item.name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick)) {
-							if (item.ptr) {
-								//if (!item.isDeleted) {
-								if (!item.ptr->IsMarkedForDeletion()) {
-									//auto player = RE::PlayerCharacter::GetSingleton();
-									addItem(nullptr, item.ptr, 1);
-									//item.isDeleted = true;
+
+						if (item.isCrime) {
+							ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+							if (ImGui::Selectable(item.name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick)) {
+								if (item.ptr) {
+									if (!item.ptr->IsMarkedForDeletion()) {
+										addItem(nullptr, item.ptr, 1);
+									}
 								}
-								//}
 							}
+							ImGui::PopStyleColor();
+							ImGui::OpenPopupOnItemClick("itemPopMenu", ImGuiPopupFlags_MouseButtonRight);
+						} else {
+							if (ImGui::Selectable(item.name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick)) {
+								if (item.ptr) {
+									if (!item.ptr->IsMarkedForDeletion()) {
+										addItem(nullptr, item.ptr, 1);
+									}
+								}
+							}
+							ImGui::OpenPopupOnItemClick("itemPopMenu", ImGuiPopupFlags_MouseButtonRight);
 						}
 					}
 
@@ -549,9 +667,6 @@ namespace menu
 
 					ImGui::TableNextColumn();
 					ImGui::Text("%d", item.gold);
-
-					/*ImGui::TableNextColumn();
-					ImGui::Text("%.1f", item.weight);*/
 
 					if (show_items_window_direction) {
 						ImGui::TableNextColumn();
@@ -588,48 +703,10 @@ namespace menu
 					}
 
 					ImGui::TableNextColumn();
-					if (show_items_window_settings) {
-						if (ImGui::SmallButton(ICON_MDI_EYE_REMOVE_OUTLINE)) {
-							bool exist = false;
-							for (const auto& excludeForm : excludeForms) {
-								if (excludeForm.formId == item.baseFormId) {
-									exist = true;
-									break;
-								}
-							}
-							if (!exist) {
-								excludeForms.push_back({ item.baseFormId, item.name, item.formTypeStr });
-							}
-							excludeFormIds.insert(item.baseFormId);
-						}
-
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton("\uf101")) {
-							/*	char buf[80];
-							snprintf(buf, 80, "%0.2f, %0.2f, %0.2f", x * screenWidth, y * screenHeight, z);
-							RE::DebugNotification(buf, NULL, false);*/
-
-							//return;
-							std::string commandStr = "player.moveto ";
-							commandStr.append(item.formIdStr);
-
-							ScriptUtil::ExecuteCommand(commandStr);
-							if (activeItems) {
-								activeItems = false;
-							}
-						}
-					}
 
 					if (trackPtrs2.find(item.ptr) == trackPtrs2.end()) {
-						if (show_items_window_settings) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						}
 						if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
-							TrackItem trackItem;
-							trackItem.name = item.name;
-							trackPtrs2.insert(std::make_pair(item.ptr, trackItem));
-							tintTrack(item.ptr);
-							menu::isTrack = true;
+							trackItem(item);
 						}
 					}
 
@@ -693,24 +770,64 @@ namespace menu
 					ImGui::PushID(item.formId + 0x1000000);
 					ImGui::TableNextRow();
 					ImGui::TableNextColumn();
-					if (item.isHarvested) {
-						myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), I18Nc("finder.ui.cell-depleted"), item.name.c_str());
-					}
 
-					else if (item.isCrime) {
-						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-						if (ImGui::Selectable(item.isEnchanted ? (item.name + ICON_MDI_FLASH).c_str() : item.name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick)) {
-							if (item.ptr) {
-								char buf[120];
-								snprintf(buf, 120, "%X.Activate player", item.formId);
-								ScriptUtil::ExecuteCommand(buf);
+					{
+						if (ImGui::BeginPopupContextItem("itemPopMenu")) {
+							ImGui::Text("%s", item.name.c_str());
+							ImGui::Separator();
+
+							if (!item.isHarvested) {
+								if (trackPtrs2.find(item.ptr) == trackPtrs2.end()) {
+									if (ImGui::Button(ICON_MDI_MAP_MARKER_RADIUS " 定位")) {
+										trackItem(item);
+									}
+								}
 							}
+
+							if (ImGui::Button("\uf101"
+											  " 传送")) {
+								moveToItem(item);
+							}
+
+							if (ImGui::Button(ICON_MDI_EYE_REMOVE_OUTLINE " 忽略")) {
+								ignoreItem(item);
+							}
+							if (data::autoTrackFormIds.find(item.baseFormId) == data::autoTrackFormIds.end()) {
+								if (ImGui::Button(ICON_MDI_MAGNIFY " 自动标记")) {
+									autoTrackItem(item);
+								}
+							} else {
+								if (ImGui::Button(ICON_MDI_MAGNIFY_CLOSE " 取消自动标记")) {
+									autoTrackItemCancel(item);
+								}
+							}
+
+							ImGui::EndPopup();
 						}
-						ImGui::PopStyleColor();
-					} else {
-						if (ImGui::Selectable(item.isEnchanted ? (item.name + ICON_MDI_FLASH).c_str() : item.name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick)) {
-							if (item.ptr) {
-								/*std::uint32_t formFlags = item.ptr->formFlags;
+						if (item.isHarvested) {
+							myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f),item.name.c_str());
+
+							ImGui::OpenPopupOnItemClick("itemPopMenu", ImGuiPopupFlags_MouseButtonRight);
+						}
+
+						else if (item.isCrime) {
+							ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+							if (ImGui::Selectable(item.name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick)) {
+								if (item.ptr) {
+									char buf[120];
+									snprintf(buf, 120, "%X.Activate player", item.formId);
+#if SSE_CODE
+									ScriptUtil::ExecuteCommand(buf);
+#endif
+								}
+							}
+							ImGui::PopStyleColor();
+
+							ImGui::OpenPopupOnItemClick("itemPopMenu", ImGuiPopupFlags_MouseButtonRight);
+						} else {
+							if (ImGui::Selectable(item.name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick)) {
+								if (item.ptr) {
+									/*std::uint32_t formFlags = item.ptr->formFlags;
 
 								auto acti = item.ptr->GetBaseObject()->As<RE::TESObjectACTI>();
 								if (acti) {
@@ -734,13 +851,17 @@ namespace menu
 									int i = 1;
 								}*/
 
-								char buf[120];
-								snprintf(buf, 120, "%X.Activate player", item.formId);
-								ScriptUtil::ExecuteCommand(buf);
+									char buf[120];
+									snprintf(buf, 120, "%X.Activate player", item.formId);
+#if SSE_CODE
+									ScriptUtil::ExecuteCommand(buf);
+#endif
+								}
 							}
+
+							ImGui::OpenPopupOnItemClick("itemPopMenu", ImGuiPopupFlags_MouseButtonRight);
 						}
 					}
-
 					ImGui::TableNextColumn();
 					ImGui::Text("%s", item.formTypeStr.c_str());
 
@@ -779,43 +900,11 @@ namespace menu
 					}
 
 					ImGui::TableNextColumn();
-					if (show_items_window_settings) {
-						if (ImGui::SmallButton(ICON_MDI_EYE_REMOVE_OUTLINE)) {
-							bool exist = false;
-							for (const auto& excludeForm : excludeForms) {
-								if (excludeForm.formId == item.baseFormId) {
-									exist = true;
-									break;
-								}
-							}
-							if (!exist) {
-								excludeForms.push_back({ item.baseFormId, item.name, item.formTypeStr });
-							}
-							excludeFormIds.insert(item.baseFormId);
-						}
-
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton("\uf101")) {
-							std::string commandStr = "player.moveto ";
-							commandStr.append(item.formIdStr);
-							ScriptUtil::ExecuteCommand(commandStr);
-							if (activeItems) {
-								activeItems = false;
-							}
-						}
-					}
 
 					if (!item.isHarvested) {
 						if (trackPtrs2.find(item.ptr) == trackPtrs2.end()) {
-							if (show_items_window_settings) {
-								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							}
 							if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
-								TrackItem trackItem;
-								trackItem.name = item.name;
-								trackPtrs2.insert(std::make_pair(item.ptr, trackItem));
-								tintTrack(item.ptr);
-								menu::isTrack = true;
+								trackItem(item);
 							}
 						}
 					}
@@ -918,9 +1007,7 @@ namespace menu
 			if (show_items_window_file) {
 				ImGui::TableSetupColumn(I18Nc("finder.ui.column-modname"), ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_7);
 			}
-			//if (show_items_window_settings) {
 			ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_6);
-			//}
 			ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
 			ImGui::TableHeadersRow();
 
@@ -932,74 +1019,100 @@ namespace menu
 					ImGui::PushID(item.formId + 0x1000000);
 					ImGui::TableNextRow();
 					ImGui::TableNextColumn();
-					if (item.isHarvested && (formType == RE::FormType::Flora || formType == RE::FormType::Tree)) {
-						myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), I18Nc("finder.ui.cell-harvested"), item.name.c_str());
-					}
+					{
+						if (ImGui::BeginPopupContextItem("itemPopMenu")) {
+							ImGui::Text("%s", item.name.c_str());
+							ImGui::Separator();
 
-					else if (item.isCrime) {
-						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-						if (ImGui::Selectable(item.isEnchanted ? (item.name + ICON_MDI_FLASH).c_str() : item.name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick)) {
-							if (item.ptr) {
-								if (formType == RE::FormType::Flora) {
-									if (!(item.ptr->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
-										auto flora = item.ptr->GetBaseObject()->As<RE::TESFlora>();
-										if (flora) {
-											auto player = RE::PlayerCharacter::GetSingleton();
-											flora->Activate(item.ptr, player, 0, flora->produceItem, 1);
-										}
-									}
-								} else if (formType == RE::FormType::Tree) {
-									if (!(item.ptr->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
-										auto tree = item.ptr->GetBaseObject()->As<RE::TESObjectTREE>();
-										if (tree) {
-											auto player = RE::PlayerCharacter::GetSingleton();
-											tree->Activate(item.ptr, player, 0, tree->produceItem, 1);
-										}
-									}
-								} else {
-									if (!item.ptr->IsMarkedForDeletion()) {
-										//auto player = RE::PlayerCharacter::GetSingleton();
-										//player->StealAlarm(item.ptr, item.ptr->GetObjectReference(), 1, item.ptr->GetGoldValue() * 2, item.ptr->GetOwner(), true);
-										addItem(nullptr, item.ptr, 1);
-									}
+							if (trackPtrs2.find(item.ptr) == trackPtrs2.end()) {
+								if (ImGui::Button(ICON_MDI_MAP_MARKER_RADIUS " 定位")) {
+									trackItem(item);
 								}
 							}
+
+							if (ImGui::Button("\uf101"" 传送")) {
+								moveToItem(item);
+							}
+
+							if (ImGui::Button(ICON_MDI_EYE_REMOVE_OUTLINE " 忽略")) {
+								ignoreItem(item);
+							}
+							if (data::autoTrackFormIds.find(item.baseFormId) == data::autoTrackFormIds.end()) {
+								if (ImGui::Button(ICON_MDI_MAGNIFY " 自动标记")) {
+									autoTrackItem(item);
+								}
+							} else {
+								if (ImGui::Button(ICON_MDI_MAGNIFY_CLOSE " 取消自动标记")) {
+									autoTrackItemCancel(item);
+								}
+							}
+
+							ImGui::EndPopup();
 						}
-						ImGui::PopStyleColor();
-					} else {
-						if (ImGui::Selectable(item.isEnchanted ? (item.name + ICON_MDI_FLASH).c_str() : item.name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick)) {
-							if (item.ptr) {
-								if (formType == RE::FormType::Flora) {
-									if (!(item.ptr->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
-										auto flora = item.ptr->GetBaseObject()->As<RE::TESFlora>();
-										if (flora) {
-											auto player = RE::PlayerCharacter::GetSingleton();
-											flora->Activate(item.ptr, player, 0, flora->produceItem, 1);
+
+						if (item.isHarvested && (formType == RE::FormType::Flora || formType == RE::FormType::Tree)) {
+							myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f),  item.name.c_str());
+							ImGui::OpenPopupOnItemClick("itemPopMenu", ImGuiPopupFlags_MouseButtonRight);
+
+						} else if (item.isCrime) {
+							ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+							if (ImGui::Selectable(item.name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick)) {
+								if (item.ptr) {
+									if (formType == RE::FormType::Flora) {
+										if (!(item.ptr->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
+											auto flora = item.ptr->GetBaseObject()->As<RE::TESFlora>();
+											if (flora) {
+												auto player = RE::PlayerCharacter::GetSingleton();
+												flora->Activate(item.ptr, player, 0, flora->produceItem, 1);
+											}
 										}
-									}
-								} else if (formType == RE::FormType::Tree) {
-									if (!(item.ptr->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
-										auto tree = item.ptr->GetBaseObject()->As<RE::TESObjectTREE>();
-										if (tree) {
-											auto player = RE::PlayerCharacter::GetSingleton();
-											tree->Activate(item.ptr, player, 0, tree->produceItem, 1);
+									} else if (formType == RE::FormType::Tree) {
+										if (!(item.ptr->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
+											auto tree = item.ptr->GetBaseObject()->As<RE::TESObjectTREE>();
+											if (tree) {
+												auto player = RE::PlayerCharacter::GetSingleton();
+												tree->Activate(item.ptr, player, 0, tree->produceItem, 1);
+											}
 										}
-									}
-								} else {
-									if (!item.ptr->IsMarkedForDeletion()) {
-										addItem(nullptr, item.ptr, 1);
+									} else {
+										if (!item.ptr->IsMarkedForDeletion()) {
+											//auto player = RE::PlayerCharacter::GetSingleton();
+											//player->StealAlarm(item.ptr, item.ptr->GetObjectReference(), 1, item.ptr->GetGoldValue() * 2, item.ptr->GetOwner(), true);
+											addItem(nullptr, item.ptr, 1);
+										}
 									}
 								}
 							}
+							ImGui::OpenPopupOnItemClick("itemPopMenu", ImGuiPopupFlags_MouseButtonRight);
 
-							/*			logger::debug(
-								std::to_string(item.ptr->IsMarkedForDeletion()) 
-								+ " - " + std::to_string(item.ptr->IsDeleted()) 
-								+ " - " + std::to_string(item.ptr->IsDisabled()) 
-								+ " - " + std::to_string(item.ptr->Is3rdPersonVisible()) 
-								+ " - " + std::to_string(item.ptr->IsBoundObject()) 
-								+ " - " + std::to_string(item.ptr->IsInitiallyDisabled()) 
-							);*/
+							ImGui::PopStyleColor();
+						} else {
+							if (ImGui::Selectable( item.name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick)) {
+								if (item.ptr) {
+									if (formType == RE::FormType::Flora) {
+										if (!(item.ptr->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
+											auto flora = item.ptr->GetBaseObject()->As<RE::TESFlora>();
+											if (flora) {
+												auto player = RE::PlayerCharacter::GetSingleton();
+												flora->Activate(item.ptr, player, 0, flora->produceItem, 1);
+											}
+										}
+									} else if (formType == RE::FormType::Tree) {
+										if (!(item.ptr->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
+											auto tree = item.ptr->GetBaseObject()->As<RE::TESObjectTREE>();
+											if (tree) {
+												auto player = RE::PlayerCharacter::GetSingleton();
+												tree->Activate(item.ptr, player, 0, tree->produceItem, 1);
+											}
+										}
+									} else {
+										if (!item.ptr->IsMarkedForDeletion()) {
+											addItem(nullptr, item.ptr, 1);
+										}
+									}
+								}
+							}
+							ImGui::OpenPopupOnItemClick("itemPopMenu", ImGuiPopupFlags_MouseButtonRight);
 						}
 					}
 					switch (formType) {
@@ -1069,42 +1182,10 @@ namespace menu
 					}
 
 					ImGui::TableNextColumn();
-					if (show_items_window_settings) {
-						if (ImGui::SmallButton(ICON_MDI_EYE_REMOVE_OUTLINE)) {
-							bool exist = false;
-							for (const auto& excludeForm : excludeForms) {
-								if (excludeForm.formId == item.baseFormId) {
-									exist = true;
-									break;
-								}
-							}
-							if (!exist) {
-								excludeForms.push_back({ item.baseFormId, item.name, item.formTypeStr });
-							}
-							excludeFormIds.insert(item.baseFormId);
-						}
-
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton("\uf101")) {
-							std::string commandStr = "player.moveto ";
-							commandStr.append(item.formIdStr);
-							ScriptUtil::ExecuteCommand(commandStr);
-							if (activeItems) {
-								activeItems = false;
-							}
-						}
-					}
 
 					if (trackPtrs2.find(item.ptr) == trackPtrs2.end()) {
-						if (show_items_window_settings) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						}
 						if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
-							TrackItem trackItem;
-							trackItem.name = item.name;
-							trackPtrs2.insert(std::make_pair(item.ptr, trackItem));
-							tintTrack(item.ptr);
-							menu::isTrack = true;
+							trackItem(item);
 						}
 					}
 
@@ -1299,7 +1380,6 @@ namespace menu
 						}
 					}*/
 
-				
 				if (isShowQuest) {
 					if (getQuestCount() > 0) {
 						ImGui::TableNextColumn();
@@ -1311,6 +1391,7 @@ namespace menu
 					}
 				}
 
+#if SSE_CODE
 				if (lotd::isLoad && lotd::isShowAttached) {
 					if (lotd::getCountAttached()) {
 						ImGui::TableNextColumn();
@@ -1325,8 +1406,7 @@ namespace menu
 						ImGui::Spacing();
 					}
 				}
-
-				
+#endif
 
 				if (getItemCountWEAP() > 0) {
 					ImGui::TableNextColumn();
@@ -1808,7 +1888,6 @@ namespace menu
 				if (show_items_window_settings) {
 					ImGui::SameLine(0.0f, 8.0f * ImGui::GetTextLineHeightWithSpacing());
 
-
 					if (ImGui::BeginPopupModal(I18Nc("common.setting.popup-info"), NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
 						ImGui::Text(I18Nc("common.setting.label-configSaved"));
 						if (ImGui::Button(I18Nc("common.setting.btn-ok"), ImVec2(120, 0))) {
@@ -1850,6 +1929,7 @@ namespace menu
 								ImGui::EndTable();
 							}
 
+#if SSE_CODE
 							if (lotd::isLoad) {
 								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayLotdSection"), &lotd::isShowAttached);
 								if (lotd::isShowAttached) {
@@ -1862,6 +1942,7 @@ namespace menu
 									ImGui::Unindent();
 								}
 							}
+#endif
 
 							ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayQuest"), &isShowQuest);
 							if (isShowQuest) {
@@ -1937,91 +2018,6 @@ namespace menu
 							ImGui::PopItemWidth();
 							ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupPrompt"), &show_items_window_auto_notification);
 
-							/*if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_HUMAN_MALE, "finder.setting.label-achrItemPickupType"), ImGuiTreeNodeFlags_DefaultOpen)) {
-								if (ImGui::BeginTable("tableItemsSettingACHR", 3)) {
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_SWORD, "finder.setting.checkbox-weap"), &show_items_window_auto_achr_weap);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_SHIELD_HALF_FULL, "finder.setting.checkbox-armo"), &show_items_window_auto_achr_armo);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_ARROW_PROJECTILE, "finder.setting.checkbox-ammo"), &show_items_window_auto_achr_ammo);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE, "finder.setting.checkbox-alch"), &show_items_window_auto_achr_alch);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_FOOD_DRUMSTICK, "finder.setting.checkbox-food"), &show_items_window_auto_achr_food);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_SOURCE_BRANCH, "finder.setting.checkbox-ingr"), &show_items_window_auto_achr_ingr);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_CARDS_DIAMOND, "finder.setting.checkbox-sgen"), &show_items_window_auto_achr_sgem);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_CASH, "finder.setting.checkbox-gold"), &show_items_window_auto_achr_gold);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_SCRIPT_TEXT, "finder.setting.checkbox-scrl"), &show_items_window_auto_achr_scrl);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_KEY, "finder.setting.checkbox-keym"), &show_items_window_auto_achr_keym);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_DIAMOND_STONE, "finder.setting.checkbox-ston"), &show_items_window_auto_achr_ston);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_ANVIL, "finder.setting.checkbox-anvi"), &show_items_window_auto_achr_anvi);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_LOCK_OPEN, "finder.setting.checkbox-lock"), &show_items_window_auto_achr_lock);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_BOX_CUTTER, "finder.setting.checkbox-anhd"), &show_items_window_auto_achr_anhd);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_RABBIT, "finder.setting.checkbox-anpa"), &show_items_window_auto_achr_anpa);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_TOOLS, "finder.setting.checkbox-tool"), &show_items_window_auto_achr_tool);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_PACKAGE_VARIANT_CLOSED, "finder.setting.checkbox-misc"), &show_items_window_auto_achr_misc);
-									ImGui::EndTable();
-								}
-
-								ImGui::TreePop();
-							}*/
-
-							/*if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_ARCHIVE_OUTLINE, "finder.setting.label-contItemPickupType"), ImGuiTreeNodeFlags_DefaultOpen)) {
-								if (ImGui::BeginTable("tableItemsSettingCONT", 3)) {
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_SWORD, "finder.setting.checkbox-weap"), &show_items_window_auto_cont_weap);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_SHIELD_HALF_FULL, "finder.setting.checkbox-armo"), &show_items_window_auto_cont_armo);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_ARROW_PROJECTILE, "finder.setting.checkbox-ammo"), &show_items_window_auto_cont_ammo);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE, "finder.setting.checkbox-alch"), &show_items_window_auto_cont_alch);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_FOOD_DRUMSTICK, "finder.setting.checkbox-food"), &show_items_window_auto_cont_food);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_SOURCE_BRANCH, "finder.setting.checkbox-ingr"), &show_items_window_auto_cont_ingr);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_CARDS_DIAMOND, "finder.setting.checkbox-sgen"), &show_items_window_auto_cont_sgem);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_CASH, "finder.setting.checkbox-gold"), &show_items_window_auto_cont_gold);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_SCRIPT_TEXT, "finder.setting.checkbox-scrl"), &show_items_window_auto_cont_scrl);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_KEY, "finder.setting.checkbox-keym"), &show_items_window_auto_cont_keym);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_DIAMOND_STONE, "finder.setting.checkbox-ston"), &show_items_window_auto_cont_ston);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_ANVIL, "finder.setting.checkbox-anvi"), &show_items_window_auto_cont_anvi);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_LOCK_OPEN, "finder.setting.checkbox-lock"), &show_items_window_auto_cont_lock);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_BOX_CUTTER, "finder.setting.checkbox-anhd"), &show_items_window_auto_cont_anhd);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_RABBIT, "finder.setting.checkbox-anpa"), &show_items_window_auto_cont_anpa);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_TOOLS, "finder.setting.checkbox-tool"), &show_items_window_auto_cont_tool);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_PACKAGE_VARIANT_CLOSED, "finder.setting.checkbox-misc"), &show_items_window_auto_cont_misc);
-
-									ImGui::EndTable();
-								}
-
-								ImGui::TreePop();
-							}*/
-
 							if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_SWORD, "finder.setting.label-weaponFiltering"), ImGuiTreeNodeFlags_DefaultOpen)) {
 								ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupOnlyEnchanting"), &show_items_window_auto_weap_enchant);
 								ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupValueSetting"), &show_items_window_auto_weap_price);
@@ -2070,7 +2066,11 @@ namespace menu
 								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 								if (ImGui::SmallButton(I18Nc("finder.setting.btn-excludeCurrentLocation"))) {
 									auto player = RE::PlayerCharacter::GetSingleton();
+#if SSE_CODE
 									auto currentLocation = player->currentLocation;
+#else
+									auto currentLocation = player->GetCurrentLocation();
+#endif
 									RE::FormID formid = 0;
 									std::string name = "天际";
 									if (currentLocation) {
@@ -2143,6 +2143,7 @@ namespace menu
 							ImGui::TreePop();
 						}
 
+#if SSE_CODE
 						if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_TABLE_OF_CONTENTS, "finder.setting.label-hud"), ImGuiTreeNodeFlags_DefaultOpen)) {
 							ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyNirnRootQuantity"), &stats::showlocationNirnRootCount);
 							ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyNirnRootRedQuantity"), &stats::showlocationNirnRootRedCount);
@@ -2155,6 +2156,7 @@ namespace menu
 							}
 							ImGui::TreePop();
 						}
+#endif
 
 						if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_MAP_SEARCH_OUTLINE, "finder.setting.label-marker"), ImGuiTreeNodeFlags_DefaultOpen)) {
 							ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerNameTag"), &show_item_window_track_icon_name);
@@ -2217,6 +2219,7 @@ namespace menu
 								ImGui::Text(dinputhook::getKeyName(hotkeyTrack, hotkeyTrackModifier, isWaitTrack).c_str());
 							}
 
+#if SSE_CODE
 							if (lotd::isLoad) {
 								ImGui::Checkbox(I18Nc("finder.setting.checkbox-autoMarkLotdExcavation"), &lotd::isAutoTrackLotdExcavation);
 								ImGui::Checkbox(I18Nc("finder.setting.checkbox-autoMarkLotdCards"), &lotd::isAutoTrackLotdCards);
@@ -2230,17 +2233,61 @@ namespace menu
 									ImGui::Unindent();
 								}
 							}
+#endif
 
+							ImGui::Checkbox(I18Nc("finder.setting.checkbox-autoMarkItems"), &track::isAutoTrackItems);
+							{
+								static ImGuiTableFlags flagsItem =
+									ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
+
+								const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+								if (ImGui::BeginTable("tableItemAutoTrack", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
+									ImGui::TableSetupColumn(I18Nc("finder.ui.column-formid"), ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_1);
+									ImGui::TableSetupColumn(I18Nc("finder.ui.column-name"), ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_2);
+									ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 30.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_3);
+
+									ImGui::TableSetupScrollFreeze(0, 1);
+									ImGui::TableHeadersRow();
+
+									int deleteFormId = 0;
+
+									ImGuiListClipper clipper;
+									clipper.Begin(data::autoTrackForms.size());
+									while (clipper.Step())
+										for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
+											ExcludeForm& item = data::autoTrackForms[row_n];
+											ImGui::PushID(item.formId);
+											ImGui::TableNextRow();
+											ImGui::TableNextColumn();
+											ImGui::Text("%08X", item.formId);
+											ImGui::TableNextColumn();
+											ImGui::Text("%s", item.name.c_str());
+											ImGui::TableNextColumn();
+
+											if (ImGui::SmallButton(ICON_MDI_CLOSE)) {
+												deleteFormId = item.formId;
+											}
+
+											ImGui::PopID();
+										}
+									ImGui::EndTable();
+									if (deleteFormId) {
+										data::autoTrackFormIds.erase(deleteFormId);
+										data::autoTrackForms.erase(std::remove_if(data::autoTrackForms.begin(), data::autoTrackForms.end(),
+																	   [&deleteFormId](const ExcludeForm& x) {
+																		   return x.formId == deleteFormId;
+																	   }),
+											data::autoTrackForms.end());
+									}
+								}
+							}
 							ImGui::TreePop();
 						}
 						ImGui::EndChild();
 					}
 				}
-				//}
-
 				ImGui::EndTable();
 			}
-
 			ImGui::End();
 		}
 	}

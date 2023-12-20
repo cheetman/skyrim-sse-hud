@@ -9,7 +9,7 @@
 
 
 	// 物品排除
-std::unordered_set<int> excludeFormIds;
+std::unordered_set<RE::FormID> excludeFormIds;
 std::vector<ExcludeForm> excludeForms;
 
 // 商贩容器
@@ -31,6 +31,9 @@ namespace data
 {
 	REL::Version gameVersion;
 
+	
+	std::unordered_set<RE::FormID> autoTrackFormIds;
+	std::vector<ExcludeForm> autoTrackForms;
 	
 
 
@@ -121,6 +124,12 @@ namespace data
 		}
 
 	
+		for (auto id : autoTrackFormIds) {
+			auto form = RE::TESForm::LookupByID(id);
+			if (form) {
+				autoTrackForms.push_back({ form->GetFormID(), form->GetName(), "" });
+			}
+		}
 
 
 	}

@@ -3,6 +3,7 @@
 #include <imgui/imgui.h>
 #include <menu/menu.h>
 #include <utils/utils.h>
+#include <memory/memory.h>
 
 namespace menu
 {
@@ -57,7 +58,7 @@ namespace menu
 					char buf[32];
 					snprintf(buf, 32, "%d/%d", item.completedStage, item.allStage);
 
-					ImGui::PushItemWidth(ImGui::GetFontSize() * 2);
+					ImGui::PushItemWidth(ImGui::GetFontSize() * 2.5);
 					ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colorQuestTableHeaderBg);
 					ImGui::ProgressBar(item.progressStage, ImVec2(0, 0), buf);
 					ImGui::PopStyleColor();
@@ -67,18 +68,44 @@ namespace menu
 
 					if (item.isActive) {
 						if (ImGui::BeginPopupContextItem("questData")) {
-							if (ImGui::BeginTable("tableQuestData", 3)) {
+							ImGui::Text("%s", item.name.c_str());
+							ImGui::Separator();
+							if (ImGui::BeginTable("tableQuestData", 4)) {
 								int i = 1;
-								for (auto item : *item.ptr->waitingStages) {
+								auto quest = item.ptr;
+								auto currentStage = quest->GetCurrentStageID();
+								for (auto item2 : *quest->waitingStages) {
+									if (currentStage == item2->data.index) {
+										ImGui::TableNextColumn();
+										myTextColored(ImVec4(0, 1, 0, 1.0f), "阶段-%d", i);
+										ImGui::TableNextColumn();
+										myTextColored(ImVec4(0, 1, 0, 1.0f), "%d " ICON_MDI_FLAG_TRIANGLE, item2->data.index);
+									} else {
+										ImGui::TableNextColumn();
+										ImGui::Text("阶段-%d", i);
+										ImGui::TableNextColumn();
+										ImGui::Text("%d", item2->data.index);
+									}
+
 									ImGui::TableNextColumn();
-									ImGui::Text("阶段-%d", i);
-									ImGui::TableNextColumn();
-									ImGui::Text("%d", item->data.index);
-									ImGui::TableNextColumn();
-									if (item->data.flags.underlying() == 1) {
+									if (item2->data.flags.underlying() == 1) {
 										myTextColored(ImVec4(0, 1, 0, 1.0f), "已完成");
 									} else {
 										myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "-");
+									}
+									ImGui::TableNextColumn();
+									if (item2->data.index > currentStage) {
+										if (ImGui::SmallButton(ICON_MDI_CHECK)) {
+											int id = item2->data.index;
+											/*if (!ScriptUtil::SetCurrentStageID(nullptr, 0, quest, id)) {
+											}*/
+											std::string commandStr = "setstage  ";
+											commandStr.append(item.editorId);
+											commandStr.append(" ");
+											commandStr.append(std::to_string(id));
+											ScriptUtil::ExecuteCommand(commandStr);
+											//ImGui::CloseCurrentPopup();
+										}
 									}
 									i++;
 								}

@@ -210,7 +210,7 @@ namespace lotd
 							trackItem.isLotd = true;
 							trackItem.itemBaseFormId = item.baseFormId;
 							if (!item.ptr) {
-								trackItem.isLotdCont = true;
+								trackItem.isCont = true;
 							}
 							trackPtrs2.insert(std::make_pair(ptr, trackItem));
 							menu::tintTrack(ptr);
@@ -241,7 +241,7 @@ namespace lotd
 				trackItem.isLotd = true;
 				trackItem.itemBaseFormId = item.baseFormId;
 				if (!item.ptr) {
-					trackItem.isLotdCont = true;
+					trackItem.isCont = true;
 				}
 				trackPtrs2.insert(std::make_pair(ptr, trackItem));
 				menu::tintTrack(ptr);

@@ -20,7 +20,7 @@ ImVec4 colorProgressNpc1(0.0f, 0.8f, 0.0f, 1.0f);
 ImVec4 colorProgressNpc2(1.0f, 0.5f, 0.0f, 1.0f);
 ImVec4 colorProgressNpc3(0.8f, 0.0f, 0.0f, 1.0f);
 
-std::unordered_set<int> excludeNpcFormIds;
+std::unordered_set<RE::FormID> excludeNpcFormIds;
 std::vector<ExcludeForm> excludeNpcForms;
 
 Actor2Info* actorInfo = new Actor2Info[2];

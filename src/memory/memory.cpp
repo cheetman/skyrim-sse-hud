@@ -1,5 +1,6 @@
 #include "memory.h"
 #include <event/BSTMenuEvent.h>
+#include <fonts/IconsMaterialDesignIcons.h>
 #include <memory/autotake.h>
 #include <memory/lotd.h>
 #include <memory/npc.h>
@@ -10,6 +11,7 @@
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
 #include <utils/PlayerDataProvider.h>
+#include <setting/i18n.h>
 
 bool isShowQuest = false;
 bool isCrimeIgnore = false;
@@ -41,7 +43,6 @@ int show_items_window_auto_dis_local = 200;
 
 Item2Info* items = new Item2Info[2];
 int nowItemIndex = 0;
-
 
 void __cdecl RefreshGameInfo(void*)
 {
@@ -429,7 +430,8 @@ void __cdecl RefreshItemInfo(void*)
 					for (auto item : *quest->waitingStages) {
 						allStage++;
 						if (item->data.flags.underlying() == 1) {
-							completedStage++;
+							//completedStage++;
+							completedStage = allStage;
 						}
 					}
 					item.quests[tmpQuestCount].allStage = allStage;
@@ -602,8 +604,8 @@ void __cdecl RefreshItemInfo(void*)
 													continue;
 												}
 											}
-											auto name = reff->GetDisplayFullName();
-											if (strlen(name) == 0) {
+											std::string name = reff->GetDisplayFullName();
+											if (name.empty()) {
 												continue;
 											}
 
@@ -632,11 +634,18 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].formId = reff->GetFormID();
 											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].formIdStr = FormIDToString(reff->GetFormID());
 											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+											auto isEnchanted = reff->IsEnchanted();
+											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].isEnchanted = isEnchanted;
+											if (isEnchanted) {
+												name = name + " " + ICON_MDI_FLASH;
+											}
+											if (data::autoTrackFormIds.find(baseObj->GetFormID()) != data::autoTrackFormIds.end()) {
+												name = name + " " + ICON_MDI_MAGNIFY;
+											}
 											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].name = name;
 											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].gold = baseObj->GetGoldValue();
 											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].isCrime = isCrime;
-											items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].isEnchanted = reff->IsEnchanted();
 
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfoWEAP[tmpCountWEAP].distance = distance;
@@ -671,8 +680,8 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
-											auto name = reff->GetDisplayFullName();
-											if (strlen(name) == 0) {
+											std::string name = reff->GetDisplayFullName();
+											if (name.empty()) {
 												continue;
 											}
 
@@ -701,11 +710,18 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoARMO[tmpCountARMO].formId = reff->GetFormID();
 											items[nowItemIndex].itemInfoARMO[tmpCountARMO].formIdStr = FormIDToString(reff->GetFormID());
 											items[nowItemIndex].itemInfoARMO[tmpCountARMO].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+											auto isEnchanted = reff->IsEnchanted();
+											items[nowItemIndex].itemInfoARMO[tmpCountARMO].isEnchanted = isEnchanted;
+											if (isEnchanted) {
+												name = name + " " + ICON_MDI_FLASH;
+											}
+											if (data::autoTrackFormIds.find(baseObj->GetFormID()) != data::autoTrackFormIds.end()) {
+												name = name + " " + ICON_MDI_MAGNIFY;
+											}
 											items[nowItemIndex].itemInfoARMO[tmpCountARMO].name = name;
 											items[nowItemIndex].itemInfoARMO[tmpCountARMO].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfoARMO[tmpCountARMO].gold = baseObj->GetGoldValue();
 											items[nowItemIndex].itemInfoARMO[tmpCountARMO].isCrime = isCrime;
-											items[nowItemIndex].itemInfoARMO[tmpCountARMO].isEnchanted = reff->IsEnchanted();
 
 											if (show_items_window_direction) {
 												items[nowItemIndex].itemInfoARMO[tmpCountARMO].distance = distance;
@@ -739,8 +755,8 @@ void __cdecl RefreshItemInfo(void*)
 													continue;
 												}
 											}
-											auto name = reff->GetDisplayFullName();
-											if (strlen(name) == 0) {
+											std::string name = reff->GetDisplayFullName();
+											if (name.empty()) {
 												continue;
 											}
 
@@ -774,6 +790,9 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].formId = reff->GetFormID();
 											items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].formIdStr = FormIDToString(reff->GetFormID());
 											items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+											if (data::autoTrackFormIds.find(baseObj->GetFormID()) != data::autoTrackFormIds.end()) {
+												name = name + " " + ICON_MDI_MAGNIFY;
+											}
 											items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].name = name;
 											items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfoAMMO[tmpCountAMMO].gold = baseObj->GetGoldValue();
@@ -820,12 +839,20 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
+											std::string name = reff->GetDisplayFullName();
+											if (name.empty()) {
+												continue;
+											}
+
 											bool isCrime = reff->IsCrimeToActivate();
 
 											bool isRead = false;
 											auto book = baseObj->As<RE::TESObjectBOOK>();
 											if (book) {
 												isRead = book->IsRead();
+												if (isRead) {
+													name = name + " " + ICON_MDI_EYE;
+												}
 											}
 
 											if (isCrimeIgnore) {
@@ -839,7 +866,10 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].baseFormIdStr = FormIDToString(baseObj->GetFormID());
 											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].formId = reff->GetFormID();
 											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].formIdStr = FormIDToString(reff->GetFormID());
-											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].name = reff->GetDisplayFullName();
+											if (data::autoTrackFormIds.find(baseObj->GetFormID()) != data::autoTrackFormIds.end()) {
+												name = name + " " + ICON_MDI_MAGNIFY;
+											}
+											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].name = name;
 											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].gold = baseObj->GetGoldValue();
 											items[nowItemIndex].itemInfoBOOK[tmpCountBOOK].isCrime = isCrime;
@@ -887,8 +917,8 @@ void __cdecl RefreshItemInfo(void*)
 													continue;
 												}
 											}
-											auto name = reff->GetDisplayFullName();
-											if (strlen(name) == 0) {
+											std::string name = reff->GetDisplayFullName();
+											if (name.empty()) {
 												continue;
 											}
 											auto alchemyItem = baseObj->As<RE::AlchemyItem>();
@@ -927,6 +957,9 @@ void __cdecl RefreshItemInfo(void*)
 												items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].formId = reff->GetFormID();
 												items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].formIdStr = FormIDToString(reff->GetFormID());
 												items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+												if (data::autoTrackFormIds.find(baseObj->GetFormID()) != data::autoTrackFormIds.end()) {
+													name = name + " " + ICON_MDI_MAGNIFY;
+												}
 												items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].name = name;
 												items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].weight = reff->GetWeight();
 												items[nowItemIndex].itemInfoFOOD[tmpCountFOOD].gold = baseObj->GetGoldValue();
@@ -971,6 +1004,9 @@ void __cdecl RefreshItemInfo(void*)
 												items[nowItemIndex].itemInfoALCH[tmpCountALCH].formId = reff->GetFormID();
 												items[nowItemIndex].itemInfoALCH[tmpCountALCH].formIdStr = FormIDToString(reff->GetFormID());
 												items[nowItemIndex].itemInfoALCH[tmpCountALCH].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+												if (data::autoTrackFormIds.find(baseObj->GetFormID()) != data::autoTrackFormIds.end()) {
+													name = name + " " + ICON_MDI_MAGNIFY;
+												}
 												items[nowItemIndex].itemInfoALCH[tmpCountALCH].name = name;
 												items[nowItemIndex].itemInfoALCH[tmpCountALCH].weight = reff->GetWeight();
 												items[nowItemIndex].itemInfoALCH[tmpCountALCH].gold = baseObj->GetGoldValue();
@@ -1036,7 +1072,11 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoINGR[tmpCountINGR].formId = reff->GetFormID();
 											items[nowItemIndex].itemInfoINGR[tmpCountINGR].formIdStr = FormIDToString(reff->GetFormID());
 											items[nowItemIndex].itemInfoINGR[tmpCountINGR].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
-											items[nowItemIndex].itemInfoINGR[tmpCountINGR].name = reff->GetDisplayFullName();
+											std::string name = reff->GetDisplayFullName();
+											if (data::autoTrackFormIds.find(baseObj->GetFormID()) != data::autoTrackFormIds.end()) {
+												name = name + " " + ICON_MDI_MAGNIFY;
+											}
+											items[nowItemIndex].itemInfoINGR[tmpCountINGR].name = name;
 											items[nowItemIndex].itemInfoINGR[tmpCountINGR].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfoINGR[tmpCountINGR].gold = baseObj->GetGoldValue();
 											items[nowItemIndex].itemInfoINGR[tmpCountINGR].isCrime = isCrime;
@@ -1075,8 +1115,8 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
-											auto name = reff->GetDisplayFullName();
-											if (strlen(name) == 0) {
+											std::string name = reff->GetDisplayFullName();
+											if (name.empty()) {
 												continue;
 											}
 
@@ -1108,6 +1148,11 @@ void __cdecl RefreshItemInfo(void*)
 													items[nowItemIndex].itemInfoSTON[tmpCountSTON].formId = reff->GetFormID();
 													items[nowItemIndex].itemInfoSTON[tmpCountSTON].formIdStr = FormIDToString(reff->GetFormID());
 													items[nowItemIndex].itemInfoSTON[tmpCountSTON].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+
+													if (data::autoTrackFormIds.find(baseObj->GetFormID()) != data::autoTrackFormIds.end()) {
+														name = name + " " + ICON_MDI_MAGNIFY;
+													}
+
 													items[nowItemIndex].itemInfoSTON[tmpCountSTON].name = name;
 													items[nowItemIndex].itemInfoSTON[tmpCountSTON].weight = reff->GetWeight();
 													items[nowItemIndex].itemInfoSTON[tmpCountSTON].gold = baseObj->GetGoldValue();
@@ -1135,6 +1180,9 @@ void __cdecl RefreshItemInfo(void*)
 													items[nowItemIndex].itemInfoANVI[tmpCountANVI].formId = reff->GetFormID();
 													items[nowItemIndex].itemInfoANVI[tmpCountANVI].formIdStr = FormIDToString(reff->GetFormID());
 													items[nowItemIndex].itemInfoANVI[tmpCountANVI].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+													if (data::autoTrackFormIds.find(baseObj->GetFormID()) != data::autoTrackFormIds.end()) {
+														name = name + " " + ICON_MDI_MAGNIFY;
+													}
 													items[nowItemIndex].itemInfoANVI[tmpCountANVI].name = name;
 													items[nowItemIndex].itemInfoANVI[tmpCountANVI].weight = reff->GetWeight();
 													items[nowItemIndex].itemInfoANVI[tmpCountANVI].gold = baseObj->GetGoldValue();
@@ -1161,6 +1209,9 @@ void __cdecl RefreshItemInfo(void*)
 													items[nowItemIndex].itemInfoANHD[tmpCountANHD].formId = reff->GetFormID();
 													items[nowItemIndex].itemInfoANHD[tmpCountANHD].formIdStr = FormIDToString(reff->GetFormID());
 													items[nowItemIndex].itemInfoANHD[tmpCountANHD].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+													if (data::autoTrackFormIds.find(baseObj->GetFormID()) != data::autoTrackFormIds.end()) {
+														name = name + " " + ICON_MDI_MAGNIFY;
+													}
 													items[nowItemIndex].itemInfoANHD[tmpCountANHD].name = name;
 													items[nowItemIndex].itemInfoANHD[tmpCountANHD].weight = reff->GetWeight();
 													items[nowItemIndex].itemInfoANHD[tmpCountANHD].gold = baseObj->GetGoldValue();
@@ -1188,6 +1239,9 @@ void __cdecl RefreshItemInfo(void*)
 													items[nowItemIndex].itemInfoANPA[tmpCountANPA].formId = reff->GetFormID();
 													items[nowItemIndex].itemInfoANPA[tmpCountANPA].formIdStr = FormIDToString(reff->GetFormID());
 													items[nowItemIndex].itemInfoANPA[tmpCountANPA].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+													if (data::autoTrackFormIds.find(baseObj->GetFormID()) != data::autoTrackFormIds.end()) {
+														name = name + " " + ICON_MDI_MAGNIFY;
+													}
 													items[nowItemIndex].itemInfoANPA[tmpCountANPA].name = name;
 													items[nowItemIndex].itemInfoANPA[tmpCountANPA].weight = reff->GetWeight();
 													items[nowItemIndex].itemInfoANPA[tmpCountANPA].gold = baseObj->GetGoldValue();
@@ -1214,6 +1268,9 @@ void __cdecl RefreshItemInfo(void*)
 													items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].formId = reff->GetFormID();
 													items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].formIdStr = FormIDToString(reff->GetFormID());
 													items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+													if (data::autoTrackFormIds.find(baseObj->GetFormID()) != data::autoTrackFormIds.end()) {
+														name = name + " " + ICON_MDI_MAGNIFY;
+													}
 													items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].name = name;
 													items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].weight = reff->GetWeight();
 													items[nowItemIndex].itemInfoTOOL[tmpCountTOOL].gold = baseObj->GetGoldValue();
@@ -1239,6 +1296,9 @@ void __cdecl RefreshItemInfo(void*)
 													items[nowItemIndex].itemInfoMISC[tmpCountMISC].formId = reff->GetFormID();
 													items[nowItemIndex].itemInfoMISC[tmpCountMISC].formIdStr = FormIDToString(reff->GetFormID());
 													items[nowItemIndex].itemInfoMISC[tmpCountMISC].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+													if (data::autoTrackFormIds.find(baseObj->GetFormID()) != data::autoTrackFormIds.end()) {
+														name = name + " " + ICON_MDI_MAGNIFY;
+													}
 													items[nowItemIndex].itemInfoMISC[tmpCountMISC].name = name;
 													items[nowItemIndex].itemInfoMISC[tmpCountMISC].weight = reff->GetWeight();
 													items[nowItemIndex].itemInfoMISC[tmpCountMISC].gold = baseObj->GetGoldValue();
@@ -1386,6 +1446,11 @@ void __cdecl RefreshItemInfo(void*)
 												}
 											}
 
+											std::string name = reff->GetDisplayFullName();
+											if (name.empty()) {
+												continue;
+											}
+
 											auto flora = baseObj->As<RE::TESFlora>();
 											if (flora) {
 												if (!flora->produceItem) {
@@ -1418,7 +1483,15 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].formId = reff->GetFormID();
 											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].formIdStr = FormIDToString(reff->GetFormID());
 											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
-											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].name = reff->GetDisplayFullName();
+											auto isHarvested = (reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested);
+											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].isHarvested = isHarvested;
+											if (isHarvested) {
+												name = name + I18Nc("finder.ui.cell-harvested2");
+											}
+											if (data::autoTrackFormIds.find(baseObj->GetFormID()) != data::autoTrackFormIds.end()) {
+												name = name + " " + ICON_MDI_MAGNIFY;
+											}
+											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].name = name;
 											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].gold = baseObj->GetGoldValue();
 											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].isCrime = isCrime;
@@ -1430,34 +1503,6 @@ void __cdecl RefreshItemInfo(void*)
 											if (show_items_window_file) {
 												items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].filename = baseObj->GetFile(0)->fileName;
 											}
-
-											//// 自动拾取
-											//if ((show_items_window_auto && show_items_window_auto_flor)) {
-											//	if (show_items_window_auto_ignore) {
-											//		// 判断地点忽略
-											//		int formID = 0;
-											//		if (player->currentLocation) {
-											//			formID = player->currentLocation->GetFormID();
-											//		}
-											//		if (excludeLocationFormIds.find(formID) != excludeLocationFormIds.end()) {
-											//			continue;
-											//		}
-											//	}
-											//	if (distance < show_items_window_auto_dis) {
-											//		if (!reff->IsCrimeToActivate()) {
-											//			if (!(reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {
-											//				if (flora) {
-											//					flora->Activate(reff, player, 0, flora->produceItem, 1);
-											//					char buf[40];
-											//					snprintf(buf, 40, "%s 已自动收获", reff->GetDisplayFullName());
-											//					RE::DebugNotification(buf, NULL, false);
-											//				}
-											//			}
-											//		}
-											//	}
-											//}
-
-											items[nowItemIndex].itemInfoFLOR[tmpCountFLOR].isHarvested = (reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested);
 
 											tmpCountFLOR++;
 
@@ -1478,8 +1523,8 @@ void __cdecl RefreshItemInfo(void*)
 												MessageBox(nullptr, reff->GetDisplayFullName(), nullptr, MB_OK);
 											}
 #endif
-											auto name = reff->GetDisplayFullName();
-											if (strlen(name) == 0) {
+											std::string name = reff->GetDisplayFullName();
+											if (name.empty()) {
 												continue;
 											}
 
@@ -1521,7 +1566,15 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoTREE[tmpCountTREE].formId = reff->GetFormID();
 											items[nowItemIndex].itemInfoTREE[tmpCountTREE].formIdStr = FormIDToString(reff->GetFormID());
 											items[nowItemIndex].itemInfoTREE[tmpCountTREE].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
-											items[nowItemIndex].itemInfoTREE[tmpCountTREE].name = reff->GetDisplayFullName();
+											auto isHarvested = (reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested);
+											items[nowItemIndex].itemInfoTREE[tmpCountTREE].isHarvested = isHarvested;
+											if (isHarvested) {
+												name = name + I18Nc("finder.ui.cell-harvested2");
+											}
+											if (data::autoTrackFormIds.find(baseObj->GetFormID()) != data::autoTrackFormIds.end()) {
+												name = name + " " + ICON_MDI_MAGNIFY;
+											}
+											items[nowItemIndex].itemInfoTREE[tmpCountTREE].name = name;
 											items[nowItemIndex].itemInfoTREE[tmpCountTREE].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfoTREE[tmpCountTREE].gold = baseObj->GetGoldValue();
 											items[nowItemIndex].itemInfoTREE[tmpCountTREE].isCrime = isCrime;
@@ -1534,7 +1587,6 @@ void __cdecl RefreshItemInfo(void*)
 												items[nowItemIndex].itemInfoTREE[tmpCountTREE].filename = baseObj->GetFile(0)->fileName;
 											}
 
-											items[nowItemIndex].itemInfoTREE[tmpCountTREE].isHarvested = (reff->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested);
 
 											tmpCountTREE++;
 
@@ -1559,6 +1611,11 @@ void __cdecl RefreshItemInfo(void*)
 												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
 													continue;
 												}
+											}
+
+											std::string name = reff->GetDisplayFullName();
+											if (name.empty()) {
+												continue;
 											}
 
 											float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
@@ -1586,7 +1643,10 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].formId = reff->GetFormID();
 											items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].formIdStr = FormIDToString(reff->GetFormID());
 											items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
-											items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].name = reff->GetDisplayFullName();
+											if (data::autoTrackFormIds.find(baseObj->GetFormID()) != data::autoTrackFormIds.end()) {
+												name = name + " " + ICON_MDI_MAGNIFY;
+											}
+											items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].name = name;
 											items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].gold = baseObj->GetGoldValue();
 											items[nowItemIndex].itemInfoKEYM[tmpCountKEYM].isCrime = isCrime;
@@ -1612,8 +1672,8 @@ void __cdecl RefreshItemInfo(void*)
 												continue;
 											}
 
-											auto name = reff->GetDisplayFullName();
-											if (strlen(name) == 0) {
+											std::string name = reff->GetDisplayFullName();
+											if (name.empty()) {
 												continue;
 											}
 
@@ -1647,7 +1707,16 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].baseFormIdStr = FormIDToString(baseObj->GetFormID());
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].formId = reff->GetFormID();
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].formIdStr = FormIDToString(reff->GetFormID());
-											items[nowItemIndex].itemInfoACTI[tmpCountACTI].name = reff->GetDisplayFullName();
+											auto isDestroyed = (reff->formFlags & RE::TESForm::RecordFlags::kDestroyed);
+											items[nowItemIndex].itemInfoACTI[tmpCountACTI].isHarvested = isDestroyed;
+											if (isDestroyed) {
+												name = name + I18Nc("finder.ui.cell-depleted2");
+											}
+
+											if (data::autoTrackFormIds.find(baseObj->GetFormID()) != data::autoTrackFormIds.end()) {
+												name = name + " " + ICON_MDI_MAGNIFY;
+											}
+											items[nowItemIndex].itemInfoACTI[tmpCountACTI].name = name;
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].gold = baseObj->GetGoldValue();
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].isCrime = isCrime;
@@ -1660,12 +1729,9 @@ void __cdecl RefreshItemInfo(void*)
 												items[nowItemIndex].itemInfoACTI[tmpCountACTI].filename = baseObj->GetFile(0)->fileName;
 											}
 
-											items[nowItemIndex].itemInfoACTI[tmpCountACTI].isHarvested = (reff->formFlags & RE::TESForm::RecordFlags::kDestroyed);
 											// 分类
 											items[nowItemIndex].itemInfoACTI[tmpCountACTI].formTypeStr = FormUtil::GetActiTypeName(reff, baseObj);
 
-
-										
 											tmpCountACTI++;
 
 											break;
@@ -1685,8 +1751,8 @@ void __cdecl RefreshItemInfo(void*)
 													continue;
 												}
 											}
-											auto name = reff->GetDisplayFullName();
-											if (strlen(name) == 0) {
+											std::string name = reff->GetDisplayFullName();
+											if (name.empty()) {
 												continue;
 											}
 
@@ -1723,6 +1789,9 @@ void __cdecl RefreshItemInfo(void*)
 											items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].formId = reff->GetFormID();
 											items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].formIdStr = FormIDToString(reff->GetFormID());
 											items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].formTypeStr = GetFormTypeName(baseObj->formType.underlying());
+											if (data::autoTrackFormIds.find(baseObj->GetFormID()) != data::autoTrackFormIds.end()) {
+												name = name + " " + ICON_MDI_MAGNIFY;
+											}
 											items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].name = name;
 											items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].weight = reff->GetWeight();
 											items[nowItemIndex].itemInfoSGEM[tmpCountSGEM].gold = baseObj->GetGoldValue();

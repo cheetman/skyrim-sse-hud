@@ -1,7 +1,8 @@
 #pragma once
 #include <PCH.h>
 #include <iostream>
-#include <memory\memory.h>
+//#include <memory\memory.h>
+#include <memory\data.h>
 #include <stdlib.h>
 #include <string>
 #include <windows.h>
@@ -244,6 +245,26 @@ namespace QuestUtil
 
 namespace ScriptUtil
 {
+
+	
+	inline bool SetCurrentStageID(RE::BSScript::IVirtualMachine* vm, RE::VMStackID stackID, RE::TESQuest* quest, int iStage)
+	{
+		using func_t = decltype(SetCurrentStageID);
+		REL::Relocation<func_t> func{ REL::ID(56310) };
+		return func(vm, stackID, quest, iStage);
+	}
+
+
+	//inline bool SetStageID(RE::BSScript::IVirtualMachine* vm, RE::VMStackID stackID, RE::TESQuest* quest, int iStage)
+	//{
+	//	using func_t = decltype(SetCurrentStageID);
+	//	REL::Relocation<func_t> func{ REL::ID(56310) };
+	//	return func(vm, stackID, quest, iStage);
+	//}
+	//
+		
+		
+
 	inline void EffectShaderPlay(RE::BSScript::IVirtualMachine* vm, RE::VMStackID stackID, RE::TESEffectShader* shader, RE::TESObjectREFR* object, float duration)
 	{
 		using func_t = decltype(EffectShaderPlay);

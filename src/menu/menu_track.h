@@ -6,8 +6,10 @@ struct TrackItem
 	std::string name = "";
 	RE::FormID itemBaseFormId = 0;
 	bool isLotd = false;
-	bool isLotdCont = false;
+	bool isAuto = false;
+	bool isCont = false;
 	bool isEnemy = false;
+	bool isTree = false;
 };
 
 extern std::unordered_map<RE::TESObjectREFR*, TrackItem> trackPtrs2;

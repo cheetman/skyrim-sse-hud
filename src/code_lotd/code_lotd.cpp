@@ -10,6 +10,7 @@
 #include <menu/theme.h>
 #include <setting/i18n.h>
 #include <setting/setting.h>
+#include <memory/track.h>
 
 namespace lotdcode
 {
@@ -36,7 +37,7 @@ namespace lotdcode
 			if (lotd::isLoad) {
 				lotd::refreshCount();
 				lotd::refreshDisplayCount();
-				lotd::refreshAutoTrackItem();
+				track::refreshAutoTrackItem();
 			}
 
 			if (menu::show_player_debug_window) {

@@ -4,6 +4,7 @@
 #include <menu/menu_track.h>
 #include <event/BSTContainerChangedEvent.h>
 #include <memory/data.h>
+#include <memory/track.h>
 #include <memory/sexlab.h>
 #include <event/BSTPositionPlayerEvent.h>
 #include <event/BSTBGSActorCellEvent.h>
@@ -69,6 +70,9 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 			}
 			if (lotd::isAutoTrackLotdCards) {
 				lotd::isAutoTrackLotdCardsFlag = true;
+			}
+			if (track::isAutoTrackItems && data::autoTrackFormIds.size() > 0) {
+				track::isAutoTrackItemsFlag = true;
 			}
 
 			break;

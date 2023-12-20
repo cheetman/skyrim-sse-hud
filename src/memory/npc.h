@@ -2,6 +2,8 @@
 #include <memory/memory.h>
 #include <imgui/imgui.h>
 
+struct ExcludeForm;
+
 struct InventoryInfo
 {
 	RE::TESBoundObject* ptr = nullptr;
@@ -126,7 +128,7 @@ extern ImVec4 colorProgressNpc1;
 extern ImVec4 colorProgressNpc2;
 extern ImVec4 colorProgressNpc3;
 
-extern std::unordered_set<int> excludeNpcFormIds;
+extern std::unordered_set<RE::FormID> excludeNpcFormIds;
 extern std::vector<ExcludeForm> excludeNpcForms;
 
 

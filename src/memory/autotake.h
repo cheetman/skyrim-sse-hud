@@ -3,7 +3,7 @@
 struct IncludeForm;
 struct ExcludeForm;
 
-extern std::unordered_set<int> autoContFormIds;
+extern std::unordered_set<RE::FormID> autoContFormIds;
 extern std::vector<IncludeForm> autoContForms;
 extern std::unordered_set<int> excludeLocationFormIds;
 extern std::vector<ExcludeForm> excludeLocationForms;

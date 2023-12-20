@@ -3,6 +3,8 @@
 #include <menu/menu.h>
 #include <menu/menu_track.h>
 #include <memory/lotd.h>
+#include <memory/data.h>
+#include <memory/track.h>
 
 
 
@@ -53,6 +55,9 @@ public:
 
 				if (lotd::isAutoTrackLotdCards) {
 					lotd::isAutoTrackLotdCardsFlag = true;
+				}
+				if (track::isAutoTrackItems && data::autoTrackFormIds.size() > 0) {
+					track::isAutoTrackItemsFlag = true;
 				}
 
 			}
