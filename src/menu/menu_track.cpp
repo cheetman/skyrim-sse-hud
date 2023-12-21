@@ -87,6 +87,14 @@ namespace menu
 								trackPtrs2.erase(ptr);
 								break;
 							}
+
+							if (item.second.isAuto && item.second.isTree) {
+								if (ptr->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested) {
+									trackPtrs2.erase(ptr);
+									break;
+								}
+							}
+
 							auto p = ptr->GetPosition();
 							bool result = ca->WorldPtToScreenPt3(ca->worldToCam, ca->port, p, x1, y1, z1, 1e-5f);
 							if (!result) {
@@ -117,7 +125,7 @@ namespace menu
 										ImGui::SetWindowFontScale(menu::font_scale + show_item_window_track_icon_scale);
 									}
 
-									if (item.second.isLotd) {
+									if (item.second.isLotd || item.second.isAuto) {
 										if (show_item_window_track_icon_name) {
 											if (show_item_window_track_auto_tag_OutOfRangeIcon && distance > 30.0f) {
 												myTextColored(ColorTrackLotd, ICON_MDI_MAP_MARKER_RADIUS " %0.0fm", distance);
@@ -129,7 +137,7 @@ namespace menu
 										}
 									} else {
 										if (show_item_window_track_icon_name) {
-											ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %s %0.1fm", item.second.name.c_str(), distance);
+											ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS "%s %0.1fm", item.second.name.c_str(), distance);
 										} else {
 											ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %0.1fm", distance);
 										}
@@ -149,6 +157,8 @@ namespace menu
 								trackActorPtrs2.erase(ptr);
 								break;
 							}
+
+
 							auto p = ptr->GetPosition();
 							bool result = ca->WorldPtToScreenPt3(ca->worldToCam, ca->port, p, x1, y1, z1, 1e-5f);
 							if (!result) {

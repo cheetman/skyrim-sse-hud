@@ -7,6 +7,7 @@
 #	include <memory/lotd.h>
 #	include <menu/lotd.h>
 #endif
+#include <imgui/imgui_internal.h>
 #include <memory/memory.h>
 #include <memory/player.h>
 #include <memory/stat.h>
@@ -47,6 +48,7 @@ namespace menu
 			data::autoTrackForms.push_back({ item.baseFormId, item.name, item.formTypeStr });
 		}
 		data::autoTrackFormIds.insert(item.baseFormId);
+		track::isAutoTrackItems = true;
 		if (track::isAutoTrackItems) {
 			track::isAutoTrackItemsFlag = true;
 		}
@@ -80,7 +82,6 @@ namespace menu
 		}
 	}
 
-	
 	void moveToItem(ItemInfo& item)
 	{
 		auto player = RE::PlayerCharacter::GetSingleton();
@@ -93,7 +94,6 @@ namespace menu
 		}
 	}
 
-	
 	void trackItem(ItemInfo& item)
 	{
 		TrackItem trackItem;
@@ -177,7 +177,8 @@ namespace menu
 							}
 						}
 
-						if (ImGui::Button("\uf101" " 传送")) {
+						if (ImGui::Button("\uf101"
+										  " 传送")) {
 							moveToItem(item);
 						}
 
@@ -213,6 +214,25 @@ namespace menu
 								openFlag = ImGui::TreeNode(item.formIdStr.c_str(), "%s" ICON_MDI_AUTORENEW, item.name.c_str());
 							}
 						}
+
+						
+						if (ImGui::IsItemHovered()) {
+								ImGui::BeginTooltip();
+
+								//ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+								for (int i2 = 0; i2 < item.invCount; i2++) {
+									auto& inv = item.invs[i2];
+									if (inv.count > 1) {
+										ImGui::Text("%s (%d)", inv.name.c_str(), inv.count);
+									} else {
+										ImGui::Text("%s", inv.name.c_str());
+									}
+								}
+								//ImGui::PopTextWrapPos();
+								ImGui::EndTooltip();
+							
+						}
+
 
 						if (item.isCrime) {
 							ImGui::PopStyleColor();
@@ -253,7 +273,6 @@ namespace menu
 							}
 							ImGui::TreePop();
 						}
-
 					} else {
 						myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), I18Nc("finder.ui.cell-null"), item.name.c_str());
 						ImGui::OpenPopupOnItemClick("itemPopMenu", ImGuiPopupFlags_MouseButtonRight);
@@ -448,9 +467,9 @@ namespace menu
 							}
 						}
 
-						if (ImGui::Button("\uf101"  " 传送")) {
+						if (ImGui::Button("\uf101"
+										  " 传送")) {
 							moveToItem(item);
-
 						}
 
 						ImGui::EndPopup();
@@ -461,6 +480,23 @@ namespace menu
 						} else {
 						}
 						auto openFlag = ImGui::TreeNode(item.formIdStr.c_str(), "%s", item.name.c_str());
+
+						if (ImGui::IsItemHovered()) {
+							ImGui::BeginTooltip();
+
+							//ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+							for (int i2 = 0; i2 < item.invCount; i2++) {
+								auto& inv = item.invs[i2];
+								if (inv.count > 1) {
+									ImGui::Text("%s (%d)", inv.name.c_str(), inv.count);
+								} else {
+									ImGui::Text("%s", inv.name.c_str());
+								}
+							}
+							//ImGui::PopTextWrapPos();
+							ImGui::EndTooltip();
+						}
+
 
 						if (item.isCrime) {
 							ImGui::PopStyleColor();
@@ -805,7 +841,7 @@ namespace menu
 							ImGui::EndPopup();
 						}
 						if (item.isHarvested) {
-							myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f),item.name.c_str());
+							myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), item.name.c_str());
 
 							ImGui::OpenPopupOnItemClick("itemPopMenu", ImGuiPopupFlags_MouseButtonRight);
 						}
@@ -1030,7 +1066,8 @@ namespace menu
 								}
 							}
 
-							if (ImGui::Button("\uf101"" 传送")) {
+							if (ImGui::Button("\uf101"
+											  " 传送")) {
 								moveToItem(item);
 							}
 
@@ -1051,7 +1088,7 @@ namespace menu
 						}
 
 						if (item.isHarvested && (formType == RE::FormType::Flora || formType == RE::FormType::Tree)) {
-							myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f),  item.name.c_str());
+							myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), item.name.c_str());
 							ImGui::OpenPopupOnItemClick("itemPopMenu", ImGuiPopupFlags_MouseButtonRight);
 
 						} else if (item.isCrime) {
@@ -1087,7 +1124,7 @@ namespace menu
 
 							ImGui::PopStyleColor();
 						} else {
-							if (ImGui::Selectable( item.name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick)) {
+							if (ImGui::Selectable(item.name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick)) {
 								if (item.ptr) {
 									if (formType == RE::FormType::Flora) {
 										if (!(item.ptr->formFlags & RE::TESObjectREFR::RecordFlags::kHarvested)) {

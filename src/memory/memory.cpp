@@ -419,27 +419,29 @@ void __cdecl RefreshItemInfo(void*)
 				}*/
 
 				if (quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD) && !quest->IsCompleted()) {
-					item.quests[tmpQuestCount].name = quest->GetFullName();
-					item.quests[tmpQuestCount].formId = quest->GetFormID();
-					item.quests[tmpQuestCount].currentInstanceID = quest->currentInstanceID;
-					item.quests[tmpQuestCount].currentStage = quest->GetCurrentStageID();
-					item.quests[tmpQuestCount].editorId = quest->GetFormEditorID();
-					item.quests[tmpQuestCount].isActive = quest->IsActive();
-					int completedStage = 0;
-					int allStage = 0;
-					for (auto item : *quest->waitingStages) {
-						allStage++;
-						if (item->data.flags.underlying() == 1) {
-							//completedStage++;
-							completedStage = allStage;
+					if (quest->waitingStages) {
+						item.quests[tmpQuestCount].name = quest->GetFullName();
+						item.quests[tmpQuestCount].formId = quest->GetFormID();
+						item.quests[tmpQuestCount].currentInstanceID = quest->currentInstanceID;
+						item.quests[tmpQuestCount].currentStage = quest->GetCurrentStageID();
+						item.quests[tmpQuestCount].editorId = quest->GetFormEditorID();
+						item.quests[tmpQuestCount].isActive = quest->IsActive();
+						int completedStage = 0;
+						int allStage = 0;
+						for (auto item : *quest->waitingStages) {
+							allStage++;
+							if (item->data.flags.underlying() == 1) {
+								//completedStage++;
+								completedStage = allStage;
+							}
 						}
-					}
-					item.quests[tmpQuestCount].allStage = allStage;
-					item.quests[tmpQuestCount].completedStage = completedStage;
-					item.quests[tmpQuestCount].progressStage = (float)completedStage / (float)(allStage == 0 ? 1 : allStage);
-					item.quests[tmpQuestCount].ptr = quest;
+						item.quests[tmpQuestCount].allStage = allStage;
+						item.quests[tmpQuestCount].completedStage = completedStage;
+						item.quests[tmpQuestCount].progressStage = (float)completedStage / (float)(allStage == 0 ? 1 : allStage);
+						item.quests[tmpQuestCount].ptr = quest;
 
-					tmpQuestCount++;
+						tmpQuestCount++;
+					}
 				}
 			}
 
