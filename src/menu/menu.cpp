@@ -36,6 +36,8 @@ namespace menu
 	ID3D11Resource* texture;
 	bool istestload = false;*/
 
+	bool showOther = false;
+
 	std::map<int, std::vector<EquipmentItem>> equipments;
 
 	bool auto_remove_ammo = false;
@@ -1085,7 +1087,6 @@ namespace menu
 
 				ImGui::Begin("上古卷轴物品定位小助手", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
-				static bool showOther = false;
 				static int clickCount = 0;
 
 				static int selected = 0;
@@ -1119,7 +1120,7 @@ namespace menu
 
 						
 						ImGui::Text("游戏版本：v%s", data::gameVersion.string().c_str());
-						ImGui::Text("插件版本：v1.1.1");
+						ImGui::Text("插件版本：v1.2.1");
 
 						if (ImGui::Button(I18Nc("common.setting.btn-ok"), ImVec2(120, 0))) {
 							ImGui::CloseCurrentPopup();
@@ -1421,12 +1422,25 @@ namespace menu
 										if (showAll) {
 											ImGui::TableNextColumn();
 											ImGui::Text("%s", setting::getLotdItemListModName(pair.first).c_str());
+
+											if (ImGui::IsItemHovered()) {
+												ImGui::BeginTooltip();
+												ImGui::Text("%s", pair.first.c_str());
+												ImGui::EndTooltip();
+											}
+
 											ImGui::TableNextColumn();
 											myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), I18Nc("lotd.setting.label-notInstalled"));
 										}
 									} else {
 										ImGui::TableNextColumn();
 										ImGui::Text("%s", setting::getLotdItemListModName(pair.first).c_str());
+										if (ImGui::IsItemHovered()) {
+											ImGui::BeginTooltip();
+											ImGui::Text("%s", pair.first.c_str());
+											ImGui::EndTooltip();
+										}
+
 										ImGui::TableNextColumn();
 										myTextColored(ImVec4(0.0f, 1, 0.0f, 1.0f), I18Nc("lotd.setting.label-installed"), pair.second.size());
 									}

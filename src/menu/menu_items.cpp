@@ -196,6 +196,24 @@ namespace menu
 							excludeFormIds.insert(item.baseFormId);
 						}
 
+						if (showOther) {
+							if (ImGui::Button(ICON_MDI_FILE_DOWNLOAD_OUTLINE " 导出文件")) {
+								if (item.invCount > 0) {
+									std::ofstream outfile("ContFormIdList.txt", std::ios::trunc);
+									if (outfile.is_open()) {
+										for (int i2 = 0; i2 < item.invCount; i2++) {
+											auto& inv = item.invs[i2];
+											char buffer[50];
+											sprintf(buffer, "%x", inv.ptr->GetFormID());
+											std::string hex_str = buffer;
+											outfile << hex_str << "\n";
+										}
+										outfile.close();
+									}
+								}
+							}
+						}
+
 						ImGui::EndPopup();
 					}
 					if (item.invCount > 0) {
@@ -215,24 +233,21 @@ namespace menu
 							}
 						}
 
-						
 						if (ImGui::IsItemHovered()) {
-								ImGui::BeginTooltip();
+							ImGui::BeginTooltip();
 
-								//ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-								for (int i2 = 0; i2 < item.invCount; i2++) {
-									auto& inv = item.invs[i2];
-									if (inv.count > 1) {
-										ImGui::Text("%s (%d)", inv.name.c_str(), inv.count);
-									} else {
-										ImGui::Text("%s", inv.name.c_str());
-									}
+							//ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+							for (int i2 = 0; i2 < item.invCount; i2++) {
+								auto& inv = item.invs[i2];
+								if (inv.count > 1) {
+									ImGui::Text("%s (%d)", inv.name.c_str(), inv.count);
+								} else {
+									ImGui::Text("%s", inv.name.c_str());
 								}
-								//ImGui::PopTextWrapPos();
-								ImGui::EndTooltip();
-							
+							}
+							//ImGui::PopTextWrapPos();
+							ImGui::EndTooltip();
 						}
-
 
 						if (item.isCrime) {
 							ImGui::PopStyleColor();
@@ -496,7 +511,6 @@ namespace menu
 							//ImGui::PopTextWrapPos();
 							ImGui::EndTooltip();
 						}
-
 
 						if (item.isCrime) {
 							ImGui::PopStyleColor();

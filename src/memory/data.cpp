@@ -131,6 +131,10 @@ namespace data
 			}
 		}
 
-
+		// 初始化任务最大值
+		auto quests = RE::TESDataHandler::GetSingleton()->GetFormArray<RE::TESQuest>();
+		auto items = getItem2Info();
+		items->quests.resize(quests.size());
+		items[1].quests.resize(quests.size());
 	}
 }

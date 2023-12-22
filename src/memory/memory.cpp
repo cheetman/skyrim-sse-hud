@@ -12,6 +12,7 @@
 #include <utils/NameUtil.h>
 #include <utils/PlayerDataProvider.h>
 #include <setting/i18n.h>
+#include <memory/quest.h>
 
 bool isShowQuest = false;
 bool isCrimeIgnore = false;
@@ -191,6 +192,11 @@ std::vector<QuestInfo>& getQuests()
 	return items[!nowItemIndex].quests;
 }
 
+Item2Info* getItem2Info()
+{
+	return items;
+}
+
 int getItemCount()
 {
 	return items[!nowItemIndex].itemCount;
@@ -331,16 +337,6 @@ void clearItemInfoCache()
 	items[1].itemCountTOOL = 0;
 }
 
-bool compareForQuest(const QuestInfo& info1, const QuestInfo& info2)
-{
-	if (info1.isActive != info2.isActive) {
-		return info1.isActive > info2.isActive;
-	} else if (info1.progressStage != info2.progressStage) {
-		return info1.progressStage > info2.progressStage;
-	} else {
-		return info1.formId > info2.formId;
-	}
-}
 
 void __cdecl RefreshItemInfo(void*)
 {
@@ -382,71 +378,9 @@ void __cdecl RefreshItemInfo(void*)
 
 		Sleep(100);
 
-		int tmpQuestCount = 0;
 		if (isShowQuest) {
 			auto& item = items[nowItemIndex];
-
-			if (item.quests.size() == 0) {
-				item.quests.resize(10000);
-			}
-
-			for (const auto quest : RE::TESDataHandler::GetSingleton()->GetFormArray<RE::TESQuest>()) {
-				/*if (quest->IsActive()) {
-					item.quests[tmpQuestCount].name = quest->GetFullName();
-					item.quests[tmpQuestCount].formId = quest->GetFormID();
-					item.quests[tmpQuestCount].currentInstanceID = quest->currentInstanceID;
-					item.quests[tmpQuestCount].currentStage = quest->GetCurrentStageID();
-					item.quests[tmpQuestCount].editorId = quest->GetFormEditorID();
-					tmpQuestCount++;
-				}*/
-
-				/*if (quest->IsStarting()) {
-					item.quests[tmpQuestCount].name = quest->GetFullName();
-					item.quests[tmpQuestCount].formId = quest->GetFormID();
-					item.quests[tmpQuestCount].currentInstanceID = quest->currentInstanceID;
-					item.quests[tmpQuestCount].currentStage = quest->GetCurrentStageID();
-					item.quests[tmpQuestCount].editorId = quest->GetFormEditorID();
-					tmpQuestCount++;
-				}
-
-				if (quest->IsCompleted()) {
-					item.quests[tmpQuestCount].name = quest->GetFullName();
-					item.quests[tmpQuestCount].formId = quest->GetFormID();
-					item.quests[tmpQuestCount].currentInstanceID = quest->currentInstanceID;
-					item.quests[tmpQuestCount].currentStage = quest->GetCurrentStageID();
-					item.quests[tmpQuestCount].editorId = quest->GetFormEditorID();
-					tmpQuestCount++;
-				}*/
-
-				if (quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD) && !quest->IsCompleted()) {
-					if (quest->waitingStages) {
-						item.quests[tmpQuestCount].name = quest->GetFullName();
-						item.quests[tmpQuestCount].formId = quest->GetFormID();
-						item.quests[tmpQuestCount].currentInstanceID = quest->currentInstanceID;
-						item.quests[tmpQuestCount].currentStage = quest->GetCurrentStageID();
-						item.quests[tmpQuestCount].editorId = quest->GetFormEditorID();
-						item.quests[tmpQuestCount].isActive = quest->IsActive();
-						int completedStage = 0;
-						int allStage = 0;
-						for (auto item : *quest->waitingStages) {
-							allStage++;
-							if (item->data.flags.underlying() == 1) {
-								//completedStage++;
-								completedStage = allStage;
-							}
-						}
-						item.quests[tmpQuestCount].allStage = allStage;
-						item.quests[tmpQuestCount].completedStage = completedStage;
-						item.quests[tmpQuestCount].progressStage = (float)completedStage / (float)(allStage == 0 ? 1 : allStage);
-						item.quests[tmpQuestCount].ptr = quest;
-
-						tmpQuestCount++;
-					}
-				}
-			}
-
-			std::partial_sort(item.quests.begin(), item.quests.begin() + tmpQuestCount, item.quests.begin() + tmpQuestCount, compareForQuest);
-			items[nowItemIndex].questCount = tmpQuestCount;
+			quest::refreshQuestInfo(item);
 		}
 
 		int tmpCount = 0;

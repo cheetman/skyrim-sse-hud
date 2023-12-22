@@ -4,6 +4,7 @@
 #include <RE/N/NiPoint3.h>
 #include <string>
 #include <unordered_set>
+#include <memory/quest.h>
 
 
 
@@ -94,33 +95,6 @@ struct IncludeForm
 	}
 };
 
-
-
-struct QuestInfo
-{
-	RE::TESQuest* ptr = nullptr;
-	RE::FormID formId = 0;
-	std::uint16_t currentStage = 0;
-	std::uint32_t currentInstanceID = 0;
-	std::string formIdStr = "";
-	RE::FormID baseFormId = 0;
-	std::string editorId = "";
-	std::string formTypeStr = "";
-	std::string filename = "";
-
-	std::string name = "";
-	bool isActive = false;
-	RE::LOCK_LEVEL lockLevel;
-	bool isDeleted = false;
-	bool isHarvested = false;
-	bool isEnchanted = false;
-
-	int completedStage = 0;
-	int allStage = 0;
-	float progressStage = 0;
-	float distance = 0.0f;
-	bool isAuto = false;
-};
 
 struct Item2Info
 {
@@ -220,6 +194,7 @@ ItemInfo* getItemsANPA();
 ItemInfo* getItemsTOOL();
 std::vector<QuestInfo>& getQuests();
 
+Item2Info* getItem2Info();
 
 extern int screenWidth;
 extern int screenHeight;

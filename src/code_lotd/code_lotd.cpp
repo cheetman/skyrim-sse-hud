@@ -154,7 +154,7 @@ namespace lotdcode
 				}
 
 				if (ImGui::BeginPopupModal(I18Nc("common.setting.tab-about"), NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-					ImGui::Text("版本：v1.2.1");
+					ImGui::Text("版本：v1.3.0");
 					ImGui::Text("作者：Cheatman、火锅");
 
 					if (ImGui::Button(I18Nc("common.setting.btn-ok"), ImVec2(120, 0))) {

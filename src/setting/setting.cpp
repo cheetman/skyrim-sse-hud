@@ -2,34 +2,36 @@
 #include <fstream>
 #include <iostream>
 #include <memory/autotake.h>
+#include <memory/data.h>
 #include <memory/lotd.h>
 #include <memory/memory.h>
 #include <memory/npc.h>
 #include <memory/player.h>
+#include <memory/sexlab.h>
 #include <memory/stat.h>
+#include <memory/track.h>
+#include <menu/lotd.h>
 #include <menu/menu.h>
 #include <menu/menu_npc.h>
+#include <menu/menu_quest.h>
 #include <menu/menu_track.h>
 #include <menu/theme.h>
 #include <nlohmann/json.hpp>
-#include <memory/sexlab.h>
 #include <setting/i18n.h>
-#include <menu/lotd.h>
-#include <menu/menu_quest.h>
-#include <memory/data.h>
-#include <memory/track.h>
 
 namespace setting
 {
 	std::filesystem::path settings_path = "data\\skse\\plugins\\sse-hud.json";
 	std::filesystem::path settings_path_gallery = "";
 	std::filesystem::path settings_path_lotd_item_list = "data\\skse\\plugins\\ItemFinderPlus\\lotd\\ItemFinderPlus-LotdItemList.json";
+	std::filesystem::path settings_path_lotd_item_list_refr = "data\\skse\\plugins\\ItemFinderPlus\\lotd\\ItemFinderPlus-LotdItemList(Refr).json";
 	std::filesystem::path settings_path_lotd_item_display_list = "data\\skse\\plugins\\ItemFinderPlus\\lotd\\ItemFinderPlus-LotdItemDisplayList.json";
 	std::filesystem::path settings_path_lotd_item_display_list_modnames = "data\\skse\\plugins\\ItemFinderPlus\\lotd\\ItemFinderPlus-LotdItemList-ModNames.json";
 	//std::vector<GalleryData> galleryList;
 	std::vector<LotdItemList> lotdItemLists;
+	std::vector<LotdItemList> lotdItemListsRefr;
 	std::vector<LotdItemDisplayCont> lotdItemDisplayLists;
-	std::vector<std::uint32_t> displayConts;
+	//std::vector<std::uint32_t> displayConts;
 
 	std::unordered_map<std::string, std::string> LotdItemListModNames;
 
@@ -44,12 +46,6 @@ namespace setting
 
 	bool load_settings_lotd()
 	{
-		displayConts.clear();
-		displayConts.push_back(0x00126087);
-		displayConts.push_back(0x002ACDD9);
-		displayConts.push_back(0x006C22C2);
-		displayConts.push_back(0x002F8E89);
-		//displayConts.push_back(0x00000911);
 
 		try {
 			std::ifstream i(settings_path_lotd_item_list);
@@ -83,6 +79,40 @@ namespace setting
 			return false;
 		}
 
+		
+		try {
+			std::ifstream i(settings_path_lotd_item_list_refr);
+			nlohmann::json json;
+			i >> json;
+
+			for (const auto& obj : json) {
+				if (obj.contains("listEditorId")) {
+					LotdItemList data;
+					data.listEditorId = obj["listEditorId"];
+
+					if (obj.contains("roomName")) {
+						data.roomName = obj["roomName"];
+					}
+
+					if (obj.contains("modName")) {
+						data.modName = obj["modName"];
+					}
+
+					if (obj.contains("listFormId")) {
+						std::string formidstr = obj["listFormId"];
+						data.listFormId = std::stoi(formidstr, 0, 16);
+					}
+
+					lotdItemListsRefr.push_back(data);
+				}
+			}
+
+		} catch (std::exception const& ex) {
+			logger::error(ex.what());
+			return false;
+		}
+
+
 		try {
 			std::ifstream i(settings_path_lotd_item_display_list_modnames);
 			nlohmann::json json;
@@ -101,11 +131,8 @@ namespace setting
 			return false;
 		}
 
-		return true;
-	}
+		
 
-	bool load_settings_lotd_display()
-	{
 		try {
 			std::ifstream i(settings_path_lotd_item_display_list);
 			nlohmann::json json;
@@ -129,6 +156,7 @@ namespace setting
 			logger::error(ex.what());
 			return false;
 		}
+
 		return true;
 	}
 
@@ -192,7 +220,7 @@ namespace setting
 					std::string languageName = j["languageName"];
 					i18n::languageName = languageName;
 				}
-				
+
 				if (j.contains("font_scale")) {
 					menu::font_scale = j["font_scale"].get<float>();
 				}
@@ -617,7 +645,6 @@ namespace setting
 						menu::ColorTrackLotd.w = j2["ColorTrackLotdW"].get<float>();
 					}
 
-					
 					if (j2.contains("show_item_window_track_auto_tag_OutOfRangeIcon")) {
 						menu::show_item_window_track_auto_tag_OutOfRangeIcon = j2["show_item_window_track_auto_tag_OutOfRangeIcon"].get<bool>();
 					}
@@ -657,7 +684,7 @@ namespace setting
 					if (j2.contains("isAutoTrackLotdItemsCrimeIgnore")) {
 						lotd::isAutoTrackLotdItemsCrimeIgnore = j2["isAutoTrackLotdItemsCrimeIgnore"].get<bool>();
 					}
-					
+
 					if (j2.contains("showDisplayItemCount")) {
 						lotd::showDisplayItemCount = j2["showDisplayItemCount"].get<bool>();
 					}
@@ -676,7 +703,6 @@ namespace setting
 						lotd::colorTableBorderStrong.z = j2["colorTableBorderStrongZ"].get<float>();
 						lotd::colorTableBorderStrong.w = j2["colorTableBorderStrongW"].get<float>();
 					}
-
 				}
 
 				if (j.contains("StatInfo")) {
@@ -692,7 +718,6 @@ namespace setting
 					}
 				}
 
-				
 				if (j.contains("QuestInfo")) {
 					auto const& j2 = j["QuestInfo"];
 					if (j2.contains("isShowQuest")) {
@@ -739,7 +764,6 @@ namespace setting
 					if (j2.contains("show_player_base_info_window_max_fix")) {
 						show_player_base_info_window_max_fix = j2["show_player_base_info_window_max_fix"].get<bool>();
 					}
-					
 				}
 			}
 
@@ -810,7 +834,6 @@ namespace setting
 				}
 			}
 
-			
 			if (json.contains("autoTrackFormIds")) {
 				for (auto const& j : json["autoTrackFormIds"]) {
 					data::autoTrackFormIds.insert(j.get<RE::FormID>());
@@ -899,25 +922,8 @@ namespace setting
 								 } },
 				{ "windowSetting", {
 
-									   { "playerBaseInfo", {
-															   { "isShow", show_player_base_info_window },
-															   { "show_player_base_info_window_sep", menu::show_player_base_info_window_sep },
-															   { "flag_process", menu::flag_process },
-															   { "colorProgressHpX", menu::colorProgressHp.x },
-															   { "colorProgressHpY", menu::colorProgressHp.y },
-															   { "colorProgressHpZ", menu::colorProgressHp.z },
-															   { "colorProgressHpW", menu::colorProgressHp.w },
-															   { "colorProgressMpX", menu::colorProgressMp.x },
-															   { "colorProgressMpY", menu::colorProgressMp.y },
-															   { "colorProgressMpZ", menu::colorProgressMp.z },
-															   { "colorProgressMpW", menu::colorProgressMp.w },
-															   { "colorProgressSpX", menu::colorProgressSp.x },
-															   { "colorProgressSpY", menu::colorProgressSp.y },
-															   { "colorProgressSpZ", menu::colorProgressSp.z },
-															   { "colorProgressSpW", menu::colorProgressSp.w }, 
-															   { "show_player_base_info_window_max_fix", show_player_base_info_window_max_fix }
-															   
-															   
+									   { "playerBaseInfo", { { "isShow", show_player_base_info_window }, { "show_player_base_info_window_sep", menu::show_player_base_info_window_sep }, { "flag_process", menu::flag_process }, { "colorProgressHpX", menu::colorProgressHp.x }, { "colorProgressHpY", menu::colorProgressHp.y }, { "colorProgressHpZ", menu::colorProgressHp.z }, { "colorProgressHpW", menu::colorProgressHp.w }, { "colorProgressMpX", menu::colorProgressMp.x }, { "colorProgressMpY", menu::colorProgressMp.y }, { "colorProgressMpZ", menu::colorProgressMp.z }, { "colorProgressMpW", menu::colorProgressMp.w }, { "colorProgressSpX", menu::colorProgressSp.x }, { "colorProgressSpY", menu::colorProgressSp.y }, { "colorProgressSpZ", menu::colorProgressSp.z }, { "colorProgressSpW", menu::colorProgressSp.w }, { "show_player_base_info_window_max_fix", show_player_base_info_window_max_fix }
+
 														   } },
 									   { "playerModInfo", {
 															  { "isShow", show_player_mod_window },
@@ -1083,40 +1089,19 @@ namespace setting
 
 															 { "isAutoTrackItems", track::isAutoTrackItems },
 
-															 
 														 } },
-									   { "LotdInfo", {
-														 { "showlocationItemCount", lotd::showlocationItemCount },
-														 { "isArmoryIgnore", lotd::isArmoryIgnore },
-														 { "isCrimeIgnore", lotd::isCrimeIgnore },
-														 { "isInvIgnore", lotd::isInvIgnore },
-														 { "isShowAttached", lotd::isShowAttached },
-														{ "colorTableHeaderBgX", lotd::colorTableHeaderBg.x },
-														{ "colorTableHeaderBgY", lotd::colorTableHeaderBg.y },
-														{ "colorTableHeaderBgZ", lotd::colorTableHeaderBg.z },
-														{ "colorTableHeaderBgW", lotd::colorTableHeaderBg.w },
-														{ "colorTableBorderStrongX", lotd::colorTableBorderStrong.x },
-														{ "colorTableBorderStrongY", lotd::colorTableBorderStrong.y },
-														{ "colorTableBorderStrongZ", lotd::colorTableBorderStrong.z },
-														{ "colorTableBorderStrongW", lotd::colorTableBorderStrong.w },
-														 { "isAutoTrackLotdItems", lotd::isAutoTrackLotdItems },
-														 { "isAutoTrackLotdExcavation", lotd::isAutoTrackLotdExcavation },
-														 { "isAutoTrackLotdCards", lotd::isAutoTrackLotdCards },
-														 { "isAutoTrackLotdItemsCrimeIgnore", lotd::isAutoTrackLotdItemsCrimeIgnore },
-														 { "showDisplayItemCount", lotd::showDisplayItemCount },
-														 { "scanType", lotd::scanType }
-													 } },
-									   { "QuestInfo", { { "isShowQuest", isShowQuest },
-														{ "colorQuestTableHeaderBgX", menu::colorQuestTableHeaderBg.x },
-														{ "colorQuestTableHeaderBgY", menu::colorQuestTableHeaderBg.y },
-														{ "colorQuestTableHeaderBgZ", menu::colorQuestTableHeaderBg.z },
-														{ "colorQuestTableHeaderBgW", menu::colorQuestTableHeaderBg.w },
-														{ "colorQuestTableBorderStrongX", menu::colorQuestTableBorderStrong.x },
-														{ "colorQuestTableBorderStrongY", menu::colorQuestTableBorderStrong.y },
-														{ "colorQuestTableBorderStrongZ", menu::colorQuestTableBorderStrong.z },
-														{ "colorQuestTableBorderStrongW", menu::colorQuestTableBorderStrong.w },
+									   { "LotdInfo", { { "showlocationItemCount", lotd::showlocationItemCount }, { "isArmoryIgnore", lotd::isArmoryIgnore }, { "isCrimeIgnore", lotd::isCrimeIgnore }, { "isInvIgnore", lotd::isInvIgnore }, { "isShowAttached", lotd::isShowAttached }, { "colorTableHeaderBgX", lotd::colorTableHeaderBg.x }, { "colorTableHeaderBgY", lotd::colorTableHeaderBg.y }, { "colorTableHeaderBgZ", lotd::colorTableHeaderBg.z }, { "colorTableHeaderBgW", lotd::colorTableHeaderBg.w }, { "colorTableBorderStrongX", lotd::colorTableBorderStrong.x }, { "colorTableBorderStrongY", lotd::colorTableBorderStrong.y }, { "colorTableBorderStrongZ", lotd::colorTableBorderStrong.z }, { "colorTableBorderStrongW", lotd::colorTableBorderStrong.w }, { "isAutoTrackLotdItems", lotd::isAutoTrackLotdItems }, { "isAutoTrackLotdExcavation", lotd::isAutoTrackLotdExcavation }, { "isAutoTrackLotdCards", lotd::isAutoTrackLotdCards }, { "isAutoTrackLotdItemsCrimeIgnore", lotd::isAutoTrackLotdItemsCrimeIgnore }, { "showDisplayItemCount", lotd::showDisplayItemCount }, { "scanType", lotd::scanType } } }, { "QuestInfo", {
+																																																																																																																																																																																																																																																																																								{ "isShowQuest", isShowQuest },
+																																																																																																																																																																																																																																																																																								{ "colorQuestTableHeaderBgX", menu::colorQuestTableHeaderBg.x },
+																																																																																																																																																																																																																																																																																								{ "colorQuestTableHeaderBgY", menu::colorQuestTableHeaderBg.y },
+																																																																																																																																																																																																																																																																																								{ "colorQuestTableHeaderBgZ", menu::colorQuestTableHeaderBg.z },
+																																																																																																																																																																																																																																																																																								{ "colorQuestTableHeaderBgW", menu::colorQuestTableHeaderBg.w },
+																																																																																																																																																																																																																																																																																								{ "colorQuestTableBorderStrongX", menu::colorQuestTableBorderStrong.x },
+																																																																																																																																																																																																																																																																																								{ "colorQuestTableBorderStrongY", menu::colorQuestTableBorderStrong.y },
+																																																																																																																																																																																																																																																																																								{ "colorQuestTableBorderStrongZ", menu::colorQuestTableBorderStrong.z },
+																																																																																																																																																																																																																																																																																								{ "colorQuestTableBorderStrongW", menu::colorQuestTableBorderStrong.w },
 
-													 } },
+																																																																																																																																																																																																																																																																																							} },
 									   { "StatInfo", {
 														 { "show_gametime_window", stats::show_gametime_window },
 														 { "show_playtime_window", stats::show_playtime_window },
@@ -1162,15 +1147,11 @@ namespace setting
 			}
 			json["excludeEffectFormIds"] = arrBuff;
 
-			
-			
 			nlohmann::json arrAutoTrackItem = nlohmann::json::array();
 			for (auto id : data::autoTrackFormIds) {
 				arrAutoTrackItem.push_back(id);
 			}
 			json["autoTrackFormIds"] = arrAutoTrackItem;
-
-			
 
 			std::ofstream o(settings_path);
 			o << std::setw(4) << json << std::endl;

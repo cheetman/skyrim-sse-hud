@@ -41,11 +41,14 @@ namespace setting
 	extern std::filesystem::path settings_path;
 	extern std::filesystem::path settings_path_gallery;
 	extern std::filesystem::path settings_path_lotd_item_list;
+	extern std::filesystem::path settings_path_lotd_item_list_refr;
 	extern std::filesystem::path settings_path_lotd_item_display_list;
 	extern std::filesystem::path settings_path_lotd_item_display_list_modnames;
 	extern std::vector<LotdItemList> lotdItemLists;
+	extern std::vector<LotdItemList> lotdItemListsRefr;
+	
 	extern std::vector<LotdItemDisplayCont> lotdItemDisplayLists;
-	extern std::vector<std::uint32_t> displayConts;
+	//extern std::vector<std::uint32_t> displayConts;
 
 	/// <summary>
 	/// 名称多语言

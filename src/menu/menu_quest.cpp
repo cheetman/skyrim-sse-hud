@@ -1,14 +1,64 @@
 #include "menu_quest.h"
 #include <fonts/IconsMaterialDesignIcons.h>
 #include <imgui/imgui.h>
+#include <memory/memory.h>
+#include <memory/quest.h>
 #include <menu/menu.h>
 #include <utils/utils.h>
-#include <memory/memory.h>
 
 namespace menu
 {
+	bool isShowQuestText = false;
+
 	ImVec4 colorQuestTableHeaderBg(0.0f, 0.7f, 0.0f, 0.75f);
 	ImVec4 colorQuestTableBorderStrong(0.286f, 1, 0, 0.7f);
+
+	std::regex pattern("<Alias=(\\w+)>|<Alias.ShortName=(\\w+)>");
+
+	void addItem(RE::TESBoundObject* objPtr)
+	{
+		auto player = RE::PlayerCharacter::GetSingleton();
+		char buf[80];
+		snprintf(buf, 80, "%s 已获取", objPtr->GetName());
+		RE::DebugNotification(buf, NULL, false);
+		ScriptUtil::AddItem(nullptr, 0, player, objPtr, 1, true);
+	}
+
+	void moveToItem(RE::TESObjectREFR* refPtr)
+	{
+		auto player = RE::PlayerCharacter::GetSingleton();
+		player->MoveTo(refPtr);
+		if (activeItems) {
+			activeItems = false;
+		}
+	}
+
+	void moveToNpc(RE::TESNPC* npcPtr)
+	{
+		RE::Actor* actorTarget = nullptr;
+		{
+			const auto& [map, lock] = RE::TESForm::GetAllForms();
+			const RE::BSReadWriteLock locker{ lock };
+			for (auto& [id, form] : *map) {
+				if (form && form->Is(RE::FormType::ActorCharacter)) {
+					auto actor = form->As<RE::Actor>();
+					if (actor && !actor->IsPlayerRef()) {
+						if (actor->GetActorBase() == npcPtr) {
+							actorTarget = actor;
+							break;
+						}
+					}
+				}
+			}
+		}
+		if (actorTarget) {
+			auto player = RE::PlayerCharacter::GetSingleton();
+			player->MoveTo(actorTarget);
+			if (activeItems) {
+				activeItems = false;
+			}
+		}
+	}
 
 	void buildQuestItem(int count, std::vector<QuestInfo>& items)
 	{
@@ -18,7 +68,9 @@ namespace menu
 		const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
 		int columnCount = 2;
 
-		// 显示formid
+		if (show_items_window_refid) {
+			columnCount++;
+		}
 		if (show_items_window_formid) {
 			columnCount++;
 		}
@@ -34,8 +86,10 @@ namespace menu
 		if (ImGui::BeginTable("tableQuest", columnCount, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 15, TEXT_BASE_HEIGHT * show_inv_window_height), 0.0f)) {
 			//ImGui::TableSetupColumn("进度", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, TableColumn_1);
 			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 150.0f * ImGui::GetIO().FontGlobalScale, TableColumn_2);
-			ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed, 60.0f * ImGui::GetIO().FontGlobalScale, TableColumn_3);
-
+			ImGui::TableSetupColumn("任务类型", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, TableColumn_3);
+			if (show_items_window_refid) {
+				ImGui::TableSetupColumn("EDITORID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, TableColumn_6);
+			}
 			if (show_items_window_formid) {
 				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, TableColumn_7);
 			}
@@ -69,8 +123,27 @@ namespace menu
 					if (item.isActive) {
 						if (ImGui::BeginPopupContextItem("questData")) {
 							ImGui::Text("%s", item.name.c_str());
+							ImGui::SameLine();
+							if (isShowQuestText) {
+								if (ImGui::SmallButton(ICON_MDI_PLAYLIST_REMOVE)) {
+									isShowQuestText = false;
+								}
+							} else {
+								if (ImGui::SmallButton(ICON_MDI_PLAYLIST_CHECK)) {
+									isShowQuestText = true;
+								}
+							}
+
 							ImGui::Separator();
-							if (ImGui::BeginTable("tableQuestData", 4)) {
+
+							int columnCount = 0;
+							if (isShowQuestText) {
+								columnCount = 6;
+							} else {
+								columnCount = 5;
+							}
+
+							if (ImGui::BeginTable("tableQuestData", columnCount)) {
 								int i = 1;
 								auto quest = item.ptr;
 								auto currentStage = quest->GetCurrentStageID();
@@ -85,6 +158,173 @@ namespace menu
 										ImGui::Text("阶段-%d", i);
 										ImGui::TableNextColumn();
 										ImGui::Text("%d", item2->data.index);
+									}
+
+									bool existObjectives = false;
+									for (auto obj : quest->objectives) {
+										if (obj->index == item2->data.index) {
+											if (isShowQuestText) {
+												ImGui::TableNextColumn();
+												std::string text = obj->displayText.c_str();
+												std::smatch match;
+
+												while (std::regex_search(text, match, pattern)) {
+													if (match.str(1).length() > 0) {
+														std::string str = match.str(1);
+														bool exist = false;
+														for (int i = 0; i < item.aliasCount; i++) {
+															auto& alias = item.aliases[i];
+															if (alias.aliasName == str) {
+																text = match.prefix().str() + "【" + alias.targetName + "】" + match.suffix().str();
+																exist = true;
+																break;
+															}
+														}
+														if (!exist) {
+															text = match.prefix().str() + "【空】" + match.suffix().str();
+														}
+													} else if (match.str(2).length() > 0) {
+														std::string str = match.str(2);
+														bool exist = false;
+														for (int i = 0; i < item.aliasCount; i++) {
+															auto& alias = item.aliases[i];
+															if (alias.aliasName == str) {
+																text = match.prefix().str() + "【" + alias.targetName + "】" + match.suffix().str();
+																exist = true;
+																break;
+															}
+														}
+														if (!exist) {
+															text = match.prefix().str() + "【空】" + match.suffix().str();
+														}
+													}
+												}
+
+												ImGui::Text("%s", text.c_str());
+											}
+
+											ImGui::TableNextColumn();
+											if (obj->targets && obj->numTargets > 0) {
+												for (int i2 = 0; i2 < obj->numTargets; i2++) {
+													for (int j = 0; j < item.aliasCount; j++) {
+														auto& alias = item.aliases[j];
+														if (alias.aliasID == obj->targets[i2]->alias) {
+															//auto firstTarget = obj->targets[0];
+															//if (alias.aliasID == firstTarget->alias) {
+															/*if (ImGui::BeginPopupContextItem("questData2")) {
+															for (int i2 = 0; i2 < obj->numTargets; i2++) {
+																for (int j2 = 0; j2 < item.aliasCount; j2++) {
+																	auto& alias2 = item.aliases[j2];
+																	if (alias2.aliasID == obj->targets[i2]->alias) {
+																		ImGui::PushID(obj->index + (i2 + 1) * 100);
+																		if (alias2.refPtr) {
+																			std::string targetName = ICON_MDI_MAP_MARKER_RADIUS + std::string(" ") + alias2.targetName;
+																			if (ImGui::Selectable(targetName.c_str())) {
+																				moveToItem(alias2.refPtr);
+																			}
+																		} else if (alias2.npcPtr) {
+																			std::string targetName = ICON_MDI_ACCOUNT + std::string(" ") + alias2.targetName;
+																			if (ImGui::Selectable(targetName.c_str())) {
+																				moveToNpc(alias2.npcPtr);
+																			}
+																		} else if (alias2.objPtr) {
+																			std::string targetName = ICON_MDI_HAND_COIN + std::string(" ") + alias2.targetName;
+																			if (ImGui::Selectable(targetName.c_str())) {
+																				addItem(alias2.objPtr);
+																			}
+																		}
+
+																		ImGui::PopID();
+																		break;
+																	}
+																}
+															}
+															ImGui::EndPopup();
+														}*/
+															if (!alias.refPtr && !alias.npcPtr && !alias.objPtr) {
+																break;
+															}
+
+															if (i2 > 0) {
+																if (!isShowQuestText) {
+																	break;
+																}
+																ImGui::SameLine();
+																ImGui::Text("|");
+																ImGui::SameLine();
+															}
+															/*	ImGui::BeginGroup();
+															{*/
+															ImGui::PushID(obj->index * 100 + i2);
+															if (alias.refPtr) {
+																std::string targetName = ICON_MDI_MAP_MARKER_RADIUS + std::string(" ") + alias.targetName;
+																bool active = false;
+																if (isShowQuestText) {
+																	active = ImGui::SmallButton(targetName.c_str());
+																} else {
+																	active = ImGui::Selectable(targetName.c_str());
+																}
+																if (active) {
+																	//if (obj->numTargets == 1) {
+																	moveToItem(alias.refPtr);
+																	/*} else {
+																	ImGui::OpenPopup("questData2");
+																}*/
+																}
+															} else if (alias.npcPtr) {
+																std::string targetName = ICON_MDI_ACCOUNT + std::string(" ") + alias.targetName;
+																bool active = false;
+																if (isShowQuestText) {
+																	active = ImGui::SmallButton(targetName.c_str());
+																} else {
+																	active = ImGui::Selectable(targetName.c_str());
+																}
+																if (active) {
+																	//if (obj->numTargets == 1) {
+																	moveToNpc(alias.npcPtr);
+																	/*} else {
+																	ImGui::OpenPopup("questData2");
+																}*/
+																}
+															} else if (alias.objPtr) {
+																std::string targetName = ICON_MDI_HAND_COIN + std::string(" ") + alias.targetName;
+																bool active = false;
+																if (isShowQuestText) {
+																	active = ImGui::SmallButton(targetName.c_str());
+																} else {
+																	active = ImGui::Selectable(targetName.c_str());
+																}
+																if (active) {
+																	//if (obj->numTargets == 1) {
+																	addItem(alias.objPtr);
+																	/*} else {
+																	ImGui::OpenPopup("questData2");
+																}*/
+																}
+															}
+
+															ImGui::PopID();
+															//}
+
+															//ImGui::EndGroup();
+															break;
+														}
+													}
+												}
+											}
+
+											existObjectives = true;
+											break;
+										}
+									}
+
+									if (!existObjectives) {
+										if (isShowQuestText) {
+											ImGui::TableNextColumn();
+											ImGui::TableNextColumn();
+										} else {
+											ImGui::TableNextColumn();
+										}
 									}
 
 									ImGui::TableNextColumn();
@@ -112,6 +352,25 @@ namespace menu
 
 								ImGui::EndTable();
 							}
+
+							//ImGui::Separator();
+							//// 目标
+
+							//if (ImGui::BeginTable("tableQuestData2", 5)) {
+							//	for (int i = 0; i < item.aliasCount; i++) {
+							//		ImGui::TableNextColumn();
+							//		ImGui::Text("id:%d", item.aliases[i].aliasID);
+							//		ImGui::TableNextColumn();
+							//		ImGui::Text("%s", item.aliases[i].aliasName.c_str());
+							//		ImGui::TableNextColumn();
+							//		ImGui::Text("%s:%s", item.aliases[i].type.c_str(), item.aliases[i].fillType.c_str());
+							//		ImGui::TableNextColumn();
+							//		ImGui::Text("%08X", item.aliases[i].targetFormId);
+							//		ImGui::TableNextColumn();
+							//		ImGui::Text("%s", item.aliases[i].targetName.c_str());
+							//	}
+							//	ImGui::EndTable();
+							//}
 							ImGui::EndPopup();
 						}
 
@@ -125,11 +384,15 @@ namespace menu
 
 					ImGui::TableNextColumn();
 					if (item.isActive) {
-						ImGui::Text("%s", item.editorId.c_str());
+						ImGui::Text("%s", item.questTypeName.c_str());
 					} else {
-						myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "%s", item.editorId.c_str());
+						myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "%s", item.questTypeName.c_str());
 					}
 
+					if (show_items_window_refid) {
+						ImGui::TableNextColumn();
+						ImGui::Text("%s", item.editorId.c_str());
+					}
 					if (show_items_window_formid) {
 						ImGui::TableNextColumn();
 						ImGui::Text("%08X", item.formId);

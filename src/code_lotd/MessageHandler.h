@@ -158,6 +158,7 @@
 					setting::settings_path_lotd_item_list = "data\\skse\\plugins\\LotdFinder\\lotd\\ItemFinderPlus-LotdItemList.json";
 					setting::settings_path_lotd_item_display_list = "data\\skse\\plugins\\LotdFinder\\lotd\\ItemFinderPlus-LotdItemDisplayList.json";
 					setting::settings_path_lotd_item_display_list_modnames = "data\\skse\\plugins\\LotdFinder\\lotd\\ItemFinderPlus-LotdItemList-ModNames.json";
+					setting::settings_path_lotd_item_list_refr = "data\\skse\\plugins\\LotdFinder\\lotd\\ItemFinderPlus-LotdItemList(Refr).json";
 					lotd::init();
 					BSTPositionPlayerEvent::Register();
 					BSTBGSActorCellEvent::Register();

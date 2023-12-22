@@ -126,6 +126,7 @@ namespace lotd
 		roomNames.insert({ "NaturalScience", "自然科学" });
 		roomNames.insert({ "MuseumStoreroom", "博物馆储藏室" });
 		roomNames.insert({ "Guildhouse", "探险家协会" });
+		roomNames.insert({ "SafeHouse", "安全屋" });
 		roomNames.insert({ "noknown", "-" });
 
 		/*displayIdsC["00126087"];
@@ -148,6 +149,9 @@ namespace lotd
 		// 地点排除
 		locationIds.insert(FormUtil::GetFormId(0x139074, lotdCompileIndex, lotdSmallFileCompileIndex));
 		locationIds.insert(FormUtil::GetFormId(0x1432E2, lotdCompileIndex, lotdSmallFileCompileIndex));
+		locationIds.insert(FormUtil::GetFormId(0x2BB744, lotdCompileIndex, lotdSmallFileCompileIndex));
+		locationIds.insert(FormUtil::GetFormId(0x2BB745, lotdCompileIndex, lotdSmallFileCompileIndex));
+		locationIds.insert(FormUtil::GetFormId(0x34D523, lotdCompileIndex, lotdSmallFileCompileIndex));
 		locationIds.insert(FormUtil::GetFormId(0x5D2D82, lotdCompileIndex, lotdSmallFileCompileIndex));
 		locationIds.insert(FormUtil::GetFormId(0x5D2D83, lotdCompileIndex, lotdSmallFileCompileIndex));
 		locationIds.insert(FormUtil::GetFormId(0x5D2D87, lotdCompileIndex, lotdSmallFileCompileIndex));
@@ -157,15 +161,55 @@ namespace lotd
 		locationIds.insert(FormUtil::GetFormId(0x5D7E92, lotdCompileIndex, lotdSmallFileCompileIndex));
 		locationIds.insert(FormUtil::GetFormId(0x5D7E94, lotdCompileIndex, lotdSmallFileCompileIndex));
 		locationIds.insert(FormUtil::GetFormId(0x5D7E95, lotdCompileIndex, lotdSmallFileCompileIndex));
+		locationIds.insert(FormUtil::GetFormId(0x66B745, lotdCompileIndex, lotdSmallFileCompileIndex));
+
+		// 地点排除 - 遗忘大厅
+		{
+			bool exist = true;
+			auto fileLotdHUB = handler->LookupModByName("LOTD_HUB.esp");
+			if (!fileLotdHUB || fileLotdHUB->compileIndex == 0xFF) {
+				exist = false;
+			}
+			if (exist) {
+				auto locationFormId = FormUtil::GetFormId(0x2EA7C, fileLotdHUB->compileIndex, fileLotdHUB->smallFileCompileIndex);
+				if (RE::TESForm::LookupByID(locationFormId)) {
+					locationIds.insert(locationFormId);
+				}
+				locationFormId = FormUtil::GetFormId(0xD6353, fileLotdHUB->compileIndex, fileLotdHUB->smallFileCompileIndex);
+				if (RE::TESForm::LookupByID(locationFormId)) {
+					locationIds.insert(locationFormId);
+				}
+			}
+		}
 
 		// 挖掘点
 		excavationIds.insert(FormUtil::GetFormId(0x51FCCB, lotdCompileIndex, lotdSmallFileCompileIndex));
 		excavationIds.insert(FormUtil::GetFormId(0x51FCD1, lotdCompileIndex, lotdSmallFileCompileIndex));
 		excavationIds.insert(FormUtil::GetFormId(0x51FCD2, lotdCompileIndex, lotdSmallFileCompileIndex));
 
+		/*displayConts.clear();
+		displayConts.push_back(0x00126087);
+		displayConts.push_back(0x002ACDD9);
+		displayConts.push_back(0x006C22C2);
+		displayConts.push_back(0x002F8E89);*/
+		//displayConts.push_back(0x00000911);
+		//
 		// 陈列品箱子
-		for (auto& contId : setting::displayConts) {
+		/*for (auto& contId : setting::displayConts) {
 			displayIdsC[FormUtil::GetFormId(contId, lotdCompileIndex, lotdSmallFileCompileIndex)];
+		}*/
+		for (auto& cont : setting::lotdItemDisplayLists) {
+			auto fileLotd = handler->LookupModByName(cont.modName);
+			if (!fileLotd || fileLotd->compileIndex == 0xFF) {
+				continue;
+			}
+
+			/*lotdCompileIndex = fileLotd->compileIndex;
+			lotdSmallFileCompileIndex = fileLotd->smallFileCompileIndex;*/
+			auto contFormId = FormUtil::GetFormId(cont.contId, fileLotd->compileIndex, fileLotd->smallFileCompileIndex);
+			if (RE::TESForm::LookupByID(contFormId)) {
+				displayIdsC[contFormId];
+			}
 		}
 
 		// 检查mod
@@ -183,7 +227,6 @@ namespace lotd
 				}
 			}
 		}
-
 
 		scanAll();
 	}
@@ -279,6 +322,101 @@ namespace lotd
 							formIds.insert(form->formID);
 							// 集合 按照mod区分
 							formIdsM[listItem.modName].insert(form->formID);
+						}
+					}
+				} else {
+					int d = 1;
+				}
+			}
+			lists.push_back(list);
+		}
+
+		for (auto& listItem : setting::lotdItemListsRefr) {
+			List list(listItem.listEditorId, listItem.roomName);
+			// 不存在初始化
+			if (listsR.find(listItem.roomName) == listsR.end()) {
+				std::vector<Form> forms;
+				listsR.insert({ listItem.roomName, forms });
+			}
+			if (formIdsR.find(listItem.roomName) == formIdsR.end()) {
+				std::unordered_set<RE::FormID> formids;
+				formIdsR.insert({ listItem.roomName, formids });
+			}
+			if (formIdsM.find(listItem.modName) == formIdsM.end()) {
+				std::unordered_set<RE::FormID> formids;
+				formIdsM.insert({ listItem.modName, formids });
+			}
+			if (loadCountsM.find(listItem.modName) == loadCountsM.end()) {
+				loadCountsM[listItem.modName] == 0;
+			}
+
+			auto fileLotd2 = handler->LookupModByName(listItem.modName);
+			if (fileLotd2 && fileLotd2->compileIndex != 0xFF) {
+				auto lotdCompileIndex2 = fileLotd2->compileIndex;
+				auto lotdSmallFileCompileIndex2 = fileLotd2->smallFileCompileIndex;
+
+				auto formid = FormUtil::GetFormId(listItem.listFormId, lotdCompileIndex2, lotdSmallFileCompileIndex2);
+
+				RE::BGSListForm* listform = nullptr;
+				if (scanType == 1) {
+					listform = RE::TESForm::LookupByID<RE::BGSListForm>(formid);
+				} else if (scanType == 2) {
+					listform = RE::TESForm::LookupByEditorID<RE::BGSListForm>(listItem.listEditorId);
+				}
+
+				if (listform) {
+					loadCountsM[listItem.modName]++;
+					for (auto form4 : listform->forms) {
+						if (form4->Is(RE::FormType::Activator)) {
+							list.sizeACTI++;
+						} else if (form4->Is(RE::FormType::Reference)) {
+							auto reff = form4->AsReference();
+							if (reff) {
+								auto baseObj = reff->GetBaseObject();
+								if (baseObj) {
+									list.size++;
+									// 集合 按照他的FLST区分
+									list.forms.push_back({ baseObj->formID, baseObj->formType.get(), baseObj->GetName(), GetFormTypeName(baseObj->formType.underlying()), listItem.roomName });
+									// 集合 按照房间区分
+									listsR[listItem.roomName].push_back({ baseObj->formID, baseObj->formType.get(), baseObj->GetName(), GetFormTypeName(baseObj->formType.underlying()), listItem.roomName });
+									formIdsR[listItem.roomName].insert(baseObj->formID);
+									formIds.insert(baseObj->formID);
+									// 集合 按照mod区分
+									formIdsM[listItem.modName].insert(baseObj->formID);
+								}
+							}
+
+						} else if (form4->Is(RE::FormType::FormList)) {
+							list.sizeFLST++;
+							auto listform2 = form4->As<RE::BGSListForm>();
+							if (listform2) {
+								for (auto form3 : listform2->forms) {
+									if (form3->Is(RE::FormType::Activator)) {
+										list.sizeACTI2++;
+									} else if (form3->Is(RE::FormType::FormList)) {
+										list.sizeFLST2++;
+									} else if (form3->Is(RE::FormType::Reference)) {
+										auto reff = form4->AsReference();
+										if (reff) {
+											auto baseObj = reff->GetBaseObject();
+											if (baseObj) {
+												list.size2++;
+												// 集合 按照他的FLST区分
+												list.forms.push_back({ baseObj->formID, baseObj->formType.get(), baseObj->GetName(), GetFormTypeName(baseObj->formType.underlying()), listItem.roomName });
+												// 集合 按照房间区分
+												listsR[listItem.roomName].push_back({ baseObj->formID, baseObj->formType.get(), baseObj->GetName(), GetFormTypeName(baseObj->formType.underlying()), listItem.roomName });
+												formIdsR[listItem.roomName].insert(baseObj->formID);
+												formIds.insert(baseObj->formID);
+												// 集合 按照mod区分
+												formIdsM[listItem.modName].insert(baseObj->formID);
+											}
+										}
+									}
+								}
+							}
+
+						} else {
+						
 						}
 					}
 				} else {
@@ -1443,10 +1581,6 @@ namespace lotd
 
 		nowItemIndex = !nowItemIndex;
 	}
-
-
-
-
 
 	void refreshCount()
 	{

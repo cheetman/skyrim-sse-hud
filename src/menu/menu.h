@@ -43,6 +43,8 @@ namespace menu
 	extern bool flag_process;
 	extern bool flag_base_info_setting;
 
+	extern bool showOther;
+
 	struct EquipmentItem
 	{
 		RE::TESBoundObject* item;
