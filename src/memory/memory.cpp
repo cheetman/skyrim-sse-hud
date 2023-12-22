@@ -14,6 +14,9 @@
 #include <setting/i18n.h>
 #include <memory/quest.h>
 
+bool isRCMenuMove = true;
+
+
 bool isShowQuest = false;
 bool isCrimeIgnore = false;
 

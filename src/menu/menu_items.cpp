@@ -171,15 +171,16 @@ namespace menu
 						ImGui::Text("%s", item.name.c_str());
 						ImGui::Separator();
 
-						if (trackPtrs2.find(item.ptr) == trackPtrs2.end()) {
+						/*if (trackPtrs2.find(item.ptr) == trackPtrs2.end()) {
 							if (ImGui::Button(ICON_MDI_MAP_MARKER_RADIUS " 定位")) {
 								trackItem(item);
 							}
-						}
-
-						if (ImGui::Button("\uf101"
-										  " 传送")) {
-							moveToItem(item);
+						}*/
+						if (isRCMenuMove) {
+							if (ImGui::Button("\uf101"
+											  " 传送")) {
+								moveToItem(item);
+							}
 						}
 
 						if (ImGui::Button(ICON_MDI_EYE_REMOVE_OUTLINE " 忽略")) {
@@ -364,6 +365,27 @@ namespace menu
 
 				ImGui::TableNextColumn();
 
+				if (show_items_window_settings) {
+					if (show_items_window_auto_cont && show_items_window_auto_conttype) {
+						if (!item.isAuto) {
+							if (ImGui::SmallButton(ICON_MDI_AUTORENEW)) {
+								bool exist = false;
+								for (const auto& includeForm : autoContForms) {
+									if (includeForm.formId == item.baseFormId) {
+										exist = true;
+										break;
+									}
+								}
+								if (!exist) {
+									autoContForms.push_back({ item.baseFormId, item.name, item.formTypeStr });
+								}
+								autoContFormIds.insert(item.baseFormId);
+							}
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+						}
+					}
+				}
+
 				if (trackPtrs2.find(item.ptr) == trackPtrs2.end()) {
 					if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
 						TrackItem trackItem;
@@ -371,6 +393,16 @@ namespace menu
 						trackPtrs2.insert(std::make_pair(item.ptr, trackItem));
 						tintTrack(item.ptr);
 						menu::isTrack = true;
+					}
+					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				}
+
+				if (show_items_window_settings) {
+					if (!isRCMenuMove) {
+						if (ImGui::SmallButton("\uf101")) {
+							moveToItem(item);
+						}
+						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 					}
 				}
 
@@ -476,15 +508,11 @@ namespace menu
 						ImGui::Text("%s", item.name.c_str());
 						ImGui::Separator();
 
-						if (trackPtrs2.find(item.ptr) == trackPtrs2.end()) {
-							if (ImGui::Button(ICON_MDI_MAP_MARKER_RADIUS " 定位")) {
-								trackItem(item);
+						if (isRCMenuMove) {
+							if (ImGui::Button("\uf101"
+											  " 传送")) {
+								moveToItem(item);
 							}
-						}
-
-						if (ImGui::Button("\uf101"
-										  " 传送")) {
-							moveToItem(item);
 						}
 
 						ImGui::EndPopup();
@@ -588,10 +616,19 @@ namespace menu
 				}
 
 				ImGui::TableNextColumn();
-
 				if (trackPtrs2.find(item.ptr) == trackPtrs2.end()) {
 					if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
 						trackItem(item);
+					}
+					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				}
+
+				if (show_items_window_settings) {
+					if (!isRCMenuMove) {
+						if (ImGui::SmallButton("\uf101")) {
+							moveToItem(item);
+						}
+						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 					}
 				}
 
@@ -661,15 +698,17 @@ namespace menu
 							ImGui::Text("%s", item.name.c_str());
 							ImGui::Separator();
 
-							if (trackPtrs2.find(item.ptr) == trackPtrs2.end()) {
+						/*	if (trackPtrs2.find(item.ptr) == trackPtrs2.end()) {
 								if (ImGui::Button(ICON_MDI_MAP_MARKER_RADIUS " 定位")) {
 									trackItem(item);
 								}
-							}
+							}*/
 
-							if (ImGui::Button("\uf101"
-											  " 传送")) {
-								moveToItem(item);
+							if (isRCMenuMove) {
+								if (ImGui::Button("\uf101"
+												  " 传送")) {
+									moveToItem(item);
+								}
 							}
 
 							if (ImGui::Button(ICON_MDI_EYE_REMOVE_OUTLINE " 忽略")) {
@@ -758,6 +797,16 @@ namespace menu
 						if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
 							trackItem(item);
 						}
+						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+					}
+
+					if (show_items_window_settings) {
+						if (!isRCMenuMove) {
+							if (ImGui::SmallButton("\uf101")) {
+								moveToItem(item);
+							}
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+						}
 					}
 
 					ImGui::PopID();
@@ -826,17 +875,19 @@ namespace menu
 							ImGui::Text("%s", item.name.c_str());
 							ImGui::Separator();
 
-							if (!item.isHarvested) {
+							/*if (!item.isHarvested) {
 								if (trackPtrs2.find(item.ptr) == trackPtrs2.end()) {
 									if (ImGui::Button(ICON_MDI_MAP_MARKER_RADIUS " 定位")) {
 										trackItem(item);
 									}
 								}
-							}
+							}*/
 
-							if (ImGui::Button("\uf101"
-											  " 传送")) {
-								moveToItem(item);
+							if (isRCMenuMove) {
+								if (ImGui::Button("\uf101"
+												  " 传送")) {
+									moveToItem(item);
+								}
 							}
 
 							if (ImGui::Button(ICON_MDI_EYE_REMOVE_OUTLINE " 忽略")) {
@@ -956,6 +1007,16 @@ namespace menu
 							if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
 								trackItem(item);
 							}
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+						}
+					}
+
+					if (show_items_window_settings) {
+						if (!isRCMenuMove) {
+							if (ImGui::SmallButton("\uf101")) {
+								moveToItem(item);
+							}
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 						}
 					}
 
@@ -1074,15 +1135,17 @@ namespace menu
 							ImGui::Text("%s", item.name.c_str());
 							ImGui::Separator();
 
-							if (trackPtrs2.find(item.ptr) == trackPtrs2.end()) {
+							/*if (trackPtrs2.find(item.ptr) == trackPtrs2.end()) {
 								if (ImGui::Button(ICON_MDI_MAP_MARKER_RADIUS " 定位")) {
 									trackItem(item);
 								}
-							}
+							}*/
 
-							if (ImGui::Button("\uf101"
-											  " 传送")) {
-								moveToItem(item);
+							if (isRCMenuMove) {
+								if (ImGui::Button("\uf101"
+												  " 传送")) {
+									moveToItem(item);
+								}
 							}
 
 							if (ImGui::Button(ICON_MDI_EYE_REMOVE_OUTLINE " 忽略")) {
@@ -1237,6 +1300,16 @@ namespace menu
 					if (trackPtrs2.find(item.ptr) == trackPtrs2.end()) {
 						if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
 							trackItem(item);
+						}
+						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+					}
+
+					if (show_items_window_settings) {
+						if (!isRCMenuMove) {
+							if (ImGui::SmallButton("\uf101")) {
+								moveToItem(item);
+							}
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 						}
 					}
 
@@ -2002,6 +2075,8 @@ namespace menu
 								ImGui::ColorEdit4(I18Nc("finder.setting.color-questTableHeaderBg"), &colorQuestTableHeaderBg.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
 								ImGui::Unindent();
 							}
+
+							ImGui::Checkbox("传送按钮移动到右键菜单", &isRCMenuMove);
 
 							ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
 							ImGui::SliderInt(I18Nc("finder.setting.slider-rangelocal"), &show_items_window_auto_dis_local, 10, 2000, "%d米");

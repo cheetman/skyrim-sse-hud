@@ -33,6 +33,7 @@ extern bool show_items_window_direction;
 extern bool show_items_window_ignore;
 extern int show_items_window_array_max_length;
 
+extern bool isRCMenuMove;
 
 struct ItemInvInfo
 {
@@ -205,6 +206,7 @@ static const RE::FormID VendorItemAnimalHide = 0x000914EA;
 static const RE::FormID VendorItemAnimalPart = 0x000914EB;
 static const RE::FormID VendorItemTool = 0x000914EE;
 
+static const RE::FormID LocTypePlayerHouse = 0x000FC1A3;
 
 extern int show_items_window_auto_dis_skyrim;
 extern int show_items_window_auto_dis_local;

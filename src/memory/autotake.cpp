@@ -589,6 +589,14 @@ void __cdecl TimerAutoPick(void*)
 			}
 		}
 
+		if (player->currentLocation) {
+			if (FormUtil::HasKeyword(player->currentLocation, LocTypePlayerHouse)) {
+				continue;
+			}
+		}
+		
+
+
 		{
 			const auto& [map, lock] = RE::TESForm::GetAllForms();
 			const RE::BSReadWriteLock locker{ lock };

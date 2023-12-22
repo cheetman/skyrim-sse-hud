@@ -1120,7 +1120,7 @@ namespace menu
 
 						
 						ImGui::Text("游戏版本：v%s", data::gameVersion.string().c_str());
-						ImGui::Text("插件版本：v1.2.1");
+						ImGui::Text("插件版本：v1.2.3");
 
 						if (ImGui::Button(I18Nc("common.setting.btn-ok"), ImVec2(120, 0))) {
 							ImGui::CloseCurrentPopup();

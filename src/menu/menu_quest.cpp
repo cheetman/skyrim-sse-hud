@@ -301,6 +301,9 @@ namespace menu
 																	ImGui::OpenPopup("questData2");
 																}*/
 																}
+
+															} else {
+																ImGui::Text("%s:%s:%s:%08x", alias.type, alias.fillType, alias.targetName, alias.targetFormId);
 															}
 
 															ImGui::PopID();

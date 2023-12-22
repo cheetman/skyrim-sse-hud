@@ -652,6 +652,9 @@ namespace setting
 					if (j2.contains("isAutoTrackItems")) {
 						track::isAutoTrackItems = j2["isAutoTrackItems"].get<bool>();
 					}
+					if (j2.contains("isRCMenuMove")) {
+						isRCMenuMove = j2["isRCMenuMove"].get<bool>();
+					}
 				}
 
 				if (j.contains("LotdInfo")) {
@@ -1089,6 +1092,9 @@ namespace setting
 
 															 { "isAutoTrackItems", track::isAutoTrackItems },
 
+															 { "isRCMenuMove", isRCMenuMove },
+
+															 
 														 } },
 									   { "LotdInfo", { { "showlocationItemCount", lotd::showlocationItemCount }, { "isArmoryIgnore", lotd::isArmoryIgnore }, { "isCrimeIgnore", lotd::isCrimeIgnore }, { "isInvIgnore", lotd::isInvIgnore }, { "isShowAttached", lotd::isShowAttached }, { "colorTableHeaderBgX", lotd::colorTableHeaderBg.x }, { "colorTableHeaderBgY", lotd::colorTableHeaderBg.y }, { "colorTableHeaderBgZ", lotd::colorTableHeaderBg.z }, { "colorTableHeaderBgW", lotd::colorTableHeaderBg.w }, { "colorTableBorderStrongX", lotd::colorTableBorderStrong.x }, { "colorTableBorderStrongY", lotd::colorTableBorderStrong.y }, { "colorTableBorderStrongZ", lotd::colorTableBorderStrong.z }, { "colorTableBorderStrongW", lotd::colorTableBorderStrong.w }, { "isAutoTrackLotdItems", lotd::isAutoTrackLotdItems }, { "isAutoTrackLotdExcavation", lotd::isAutoTrackLotdExcavation }, { "isAutoTrackLotdCards", lotd::isAutoTrackLotdCards }, { "isAutoTrackLotdItemsCrimeIgnore", lotd::isAutoTrackLotdItemsCrimeIgnore }, { "showDisplayItemCount", lotd::showDisplayItemCount }, { "scanType", lotd::scanType } } }, { "QuestInfo", {
 																																																																																																																																																																																																																																																																																								{ "isShowQuest", isShowQuest },
