@@ -9,6 +9,7 @@
 namespace menu
 {
 	bool isShowQuestText = false;
+	bool isShowQuestStageAll = false;
 
 	ImVec4 colorQuestTableHeaderBg(0.0f, 0.7f, 0.0f, 0.75f);
 	ImVec4 colorQuestTableBorderStrong(0.286f, 1, 0, 0.7f);
@@ -58,6 +59,21 @@ namespace menu
 				activeItems = false;
 			}
 		}
+	}
+
+	QuestAliasInfo* findAlias(QuestInfo& item, std::uint32_t aliasID)
+	{
+		for (int j = 0; j < item.aliasCount; j++) {
+			auto& alias = item.aliases[j];
+			if (alias.aliasID == aliasID) {
+				alias.isLink = true;
+				if (!alias.refPtr && !alias.npcPtr && !alias.objPtr) {
+					return nullptr;
+				}
+				return &alias;
+			}
+		}
+		return nullptr;
 	}
 
 	void buildQuestItem(int count, std::vector<QuestInfo>& items)
@@ -134,6 +150,17 @@ namespace menu
 								}
 							}
 
+							ImGui::SameLine();
+							if (isShowQuestStageAll) {
+								if (ImGui::SmallButton(ICON_MDI_CHECKBOX_INTERMEDIATE_VARIANT)) {
+									isShowQuestStageAll = false;
+								}
+							} else {
+								if (ImGui::SmallButton(ICON_MDI_CHECKBOX_INTERMEDIATE)) {
+									isShowQuestStageAll = true;
+								}
+							}
+
 							ImGui::Separator();
 
 							int columnCount = 0;
@@ -143,108 +170,99 @@ namespace menu
 								columnCount = 5;
 							}
 
-							if (ImGui::BeginTable("tableQuestData", columnCount)) {
-								int i = 1;
-								auto quest = item.ptr;
-								auto currentStage = quest->GetCurrentStageID();
-								for (auto item2 : *quest->waitingStages) {
-									if (currentStage == item2->data.index) {
-										ImGui::TableNextColumn();
-										myTextColored(ImVec4(0, 1, 0, 1.0f), "阶段-%d", i);
-										ImGui::TableNextColumn();
-										myTextColored(ImVec4(0, 1, 0, 1.0f), "%d " ICON_MDI_FLAG_TRIANGLE, item2->data.index);
-									} else {
-										ImGui::TableNextColumn();
-										ImGui::Text("阶段-%d", i);
-										ImGui::TableNextColumn();
-										ImGui::Text("%d", item2->data.index);
-									}
+							{
+								ImGui::BeginGroup();
 
-									bool existObjectives = false;
-									for (auto obj : quest->objectives) {
-										if (obj->index == item2->data.index) {
-											if (isShowQuestText) {
-												ImGui::TableNextColumn();
-												std::string text = obj->displayText.c_str();
-												std::smatch match;
+								if (ImGui::BeginTable("tableQuestData", columnCount)) {
+									int i = 0;
+									auto quest = item.ptr;
+									auto currentStage = quest->GetCurrentStageID();
+									for (auto item2 : *quest->waitingStages) {
+										i++;
 
-												while (std::regex_search(text, match, pattern)) {
-													if (match.str(1).length() > 0) {
-														std::string str = match.str(1);
-														bool exist = false;
-														for (int i = 0; i < item.aliasCount; i++) {
-															auto& alias = item.aliases[i];
-															if (alias.aliasName == str) {
-																text = match.prefix().str() + "【" + alias.targetName + "】" + match.suffix().str();
-																exist = true;
-																break;
+										bool existObjectives = false;
+										// 没内容就不显示
+										if (!isShowQuestStageAll) {
+											for (auto obj : quest->objectives) {
+												if (obj->index == item2->data.index) {
+													existObjectives = true;
+													break;
+												}
+											}
+
+											if (!existObjectives && currentStage != item2->data.index) {
+												continue;
+											}
+										}
+
+										if (currentStage == item2->data.index) {
+											ImGui::TableNextColumn();
+											myTextColored(ImVec4(1, 1, 0, 1.0f), "阶段-%d", i);
+											ImGui::TableNextColumn();
+											myTextColored(ImVec4(1, 1, 0, 1.0f), "%d " ICON_MDI_FLAG_TRIANGLE, item2->data.index);
+										} else {
+											ImGui::TableNextColumn();
+											ImGui::Text("阶段-%d", i);
+											ImGui::TableNextColumn();
+											ImGui::Text("%d", item2->data.index);
+										}
+
+										for (auto obj : quest->objectives) {
+											if (obj->index == item2->data.index) {
+												if (isShowQuestText) {
+													ImGui::TableNextColumn();
+													std::string text = obj->displayText.c_str();
+													std::smatch match;
+
+													while (std::regex_search(text, match, pattern)) {
+														if (match.str(1).length() > 0) {
+															std::string str = match.str(1);
+															bool exist = false;
+															for (int i = 0; i < item.aliasCount; i++) {
+																auto& alias = item.aliases[i];
+																if (alias.aliasName == str) {
+																	text = match.prefix().str() + "【" + alias.targetName + "】" + match.suffix().str();
+																	exist = true;
+																	break;
+																}
+															}
+															if (!exist) {
+																text = match.prefix().str() + "【空】" + match.suffix().str();
+															}
+														} else if (match.str(2).length() > 0) {
+															std::string str = match.str(2);
+															bool exist = false;
+															for (int i = 0; i < item.aliasCount; i++) {
+																auto& alias = item.aliases[i];
+																if (alias.aliasName == str) {
+																	text = match.prefix().str() + "【" + alias.targetName + "】" + match.suffix().str();
+																	exist = true;
+																	break;
+																}
+															}
+															if (!exist) {
+																text = match.prefix().str() + "【空】" + match.suffix().str();
 															}
 														}
-														if (!exist) {
-															text = match.prefix().str() + "【空】" + match.suffix().str();
+													}
+
+													if (item2->data.flags.underlying() == 1) {
+														if (currentStage == item2->data.index) {
+															myTextColored(ImVec4(1, 1, 0, 1.0f), "%s", text.c_str());
+														} else {
+															ImGui::Text("%s", text.c_str());
 														}
-													} else if (match.str(2).length() > 0) {
-														std::string str = match.str(2);
-														bool exist = false;
-														for (int i = 0; i < item.aliasCount; i++) {
-															auto& alias = item.aliases[i];
-															if (alias.aliasName == str) {
-																text = match.prefix().str() + "【" + alias.targetName + "】" + match.suffix().str();
-																exist = true;
-																break;
-															}
-														}
-														if (!exist) {
-															text = match.prefix().str() + "【空】" + match.suffix().str();
-														}
+													} else {
+														ImGui::Text("%s", text.c_str());
 													}
 												}
 
-												ImGui::Text("%s", text.c_str());
-											}
+												ImGui::TableNextColumn();
+												if (obj->targets && obj->numTargets > 0) {
+													for (int i2 = 0; i2 < obj->numTargets; i2++) {
+														auto alias = findAlias(item, obj->targets[i2]->alias);
 
-											ImGui::TableNextColumn();
-											if (obj->targets && obj->numTargets > 0) {
-												for (int i2 = 0; i2 < obj->numTargets; i2++) {
-													for (int j = 0; j < item.aliasCount; j++) {
-														auto& alias = item.aliases[j];
-														if (alias.aliasID == obj->targets[i2]->alias) {
-															//auto firstTarget = obj->targets[0];
-															//if (alias.aliasID == firstTarget->alias) {
-															/*if (ImGui::BeginPopupContextItem("questData2")) {
-															for (int i2 = 0; i2 < obj->numTargets; i2++) {
-																for (int j2 = 0; j2 < item.aliasCount; j2++) {
-																	auto& alias2 = item.aliases[j2];
-																	if (alias2.aliasID == obj->targets[i2]->alias) {
-																		ImGui::PushID(obj->index + (i2 + 1) * 100);
-																		if (alias2.refPtr) {
-																			std::string targetName = ICON_MDI_MAP_MARKER_RADIUS + std::string(" ") + alias2.targetName;
-																			if (ImGui::Selectable(targetName.c_str())) {
-																				moveToItem(alias2.refPtr);
-																			}
-																		} else if (alias2.npcPtr) {
-																			std::string targetName = ICON_MDI_ACCOUNT + std::string(" ") + alias2.targetName;
-																			if (ImGui::Selectable(targetName.c_str())) {
-																				moveToNpc(alias2.npcPtr);
-																			}
-																		} else if (alias2.objPtr) {
-																			std::string targetName = ICON_MDI_HAND_COIN + std::string(" ") + alias2.targetName;
-																			if (ImGui::Selectable(targetName.c_str())) {
-																				addItem(alias2.objPtr);
-																			}
-																		}
-
-																		ImGui::PopID();
-																		break;
-																	}
-																}
-															}
-															ImGui::EndPopup();
-														}*/
-															if (!alias.refPtr && !alias.npcPtr && !alias.objPtr) {
-																break;
-															}
-
+														if (alias) {
 															if (i2 > 0) {
 																if (!isShowQuestText) {
 																	break;
@@ -253,127 +271,153 @@ namespace menu
 																ImGui::Text("|");
 																ImGui::SameLine();
 															}
-															/*	ImGui::BeginGroup();
-															{*/
 															ImGui::PushID(obj->index * 100 + i2);
-															if (alias.refPtr) {
-																std::string targetName = ICON_MDI_MAP_MARKER_RADIUS + std::string(" ") + alias.targetName;
+															if (alias->refPtr) {
 																bool active = false;
 																if (isShowQuestText) {
-																	active = ImGui::SmallButton(targetName.c_str());
+																	active = ImGui::SmallButton(alias->targetName.c_str());
 																} else {
-																	active = ImGui::Selectable(targetName.c_str());
+																	active = ImGui::Selectable(alias->targetName.c_str());
 																}
 																if (active) {
-																	//if (obj->numTargets == 1) {
-																	moveToItem(alias.refPtr);
-																	/*} else {
-																	ImGui::OpenPopup("questData2");
-																}*/
+																	moveToItem(alias->refPtr);
 																}
-															} else if (alias.npcPtr) {
-																std::string targetName = ICON_MDI_ACCOUNT + std::string(" ") + alias.targetName;
+															} else if (alias->npcPtr) {
 																bool active = false;
 																if (isShowQuestText) {
-																	active = ImGui::SmallButton(targetName.c_str());
+																	active = ImGui::SmallButton(alias->targetName.c_str());
 																} else {
-																	active = ImGui::Selectable(targetName.c_str());
+																	active = ImGui::Selectable(alias->targetName.c_str());
 																}
 																if (active) {
-																	//if (obj->numTargets == 1) {
-																	moveToNpc(alias.npcPtr);
-																	/*} else {
-																	ImGui::OpenPopup("questData2");
-																}*/
+																	moveToNpc(alias->npcPtr);
 																}
-															} else if (alias.objPtr) {
-																std::string targetName = ICON_MDI_HAND_COIN + std::string(" ") + alias.targetName;
+															} else if (alias->objPtr) {
+																std::string targetName = ICON_MDI_HAND_COIN + std::string(" ") + alias->targetName;
 																bool active = false;
 																if (isShowQuestText) {
-																	active = ImGui::SmallButton(targetName.c_str());
+																	active = ImGui::SmallButton(alias->targetName.c_str());
 																} else {
-																	active = ImGui::Selectable(targetName.c_str());
+																	active = ImGui::Selectable(alias->targetName.c_str());
 																}
 																if (active) {
-																	//if (obj->numTargets == 1) {
-																	addItem(alias.objPtr);
-																	/*} else {
-																	ImGui::OpenPopup("questData2");
-																}*/
+																	addItem(alias->objPtr);
 																}
 
 															} else {
-																ImGui::Text("%s:%s:%s:%08x", alias.type, alias.fillType, alias.targetName, alias.targetFormId);
+																// 调试
+																ImGui::Text("%s:%s:%s:%08x", alias->type.c_str(), alias->fillType.c_str(), alias->targetName.c_str(), alias->targetFormId);
 															}
 
 															ImGui::PopID();
-															//}
-
-															//ImGui::EndGroup();
 															break;
 														}
 													}
 												}
+
+												existObjectives = true;
+												break;
 											}
-
-											existObjectives = true;
-											break;
 										}
-									}
 
-									if (!existObjectives) {
-										if (isShowQuestText) {
-											ImGui::TableNextColumn();
-											ImGui::TableNextColumn();
+										if (!existObjectives) {
+											if (isShowQuestText) {
+												ImGui::TableNextColumn();
+												ImGui::TableNextColumn();
+											} else {
+												ImGui::TableNextColumn();
+											}
+										}
+
+										ImGui::TableNextColumn();
+										if (item2->data.flags.underlying() == 1) {
+											if (currentStage == item2->data.index) {
+												myTextColored(ImVec4(1, 1, 0, 1.0f), "进行中");
+											} else {
+												myTextColored(ImVec4(0, 1, 0, 1.0f), "已完成");
+											}
 										} else {
-											ImGui::TableNextColumn();
+											myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "-");
+										}
+										ImGui::TableNextColumn();
+										if (item2->data.index > currentStage) {
+											if (ImGui::SmallButton(ICON_MDI_CHECK)) {
+												int id = item2->data.index;
+												std::string commandStr = "setstage  ";
+												commandStr.append(item.editorId);
+												commandStr.append(" ");
+												commandStr.append(std::to_string(id));
+												ScriptUtil::ExecuteCommand(commandStr);
+											}
 										}
 									}
 
-									ImGui::TableNextColumn();
-									if (item2->data.flags.underlying() == 1) {
-										myTextColored(ImVec4(0, 1, 0, 1.0f), "已完成");
-									} else {
-										myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "-");
-									}
-									ImGui::TableNextColumn();
-									if (item2->data.index > currentStage) {
-										if (ImGui::SmallButton(ICON_MDI_CHECK)) {
-											int id = item2->data.index;
-											/*if (!ScriptUtil::SetCurrentStageID(nullptr, 0, quest, id)) {
-											}*/
-											std::string commandStr = "setstage  ";
-											commandStr.append(item.editorId);
-											commandStr.append(" ");
-											commandStr.append(std::to_string(id));
-											ScriptUtil::ExecuteCommand(commandStr);
-											//ImGui::CloseCurrentPopup();
-										}
-									}
-									i++;
+									ImGui::EndTable();
 								}
-
-								ImGui::EndTable();
+								ImGui::EndGroup();
 							}
-
 							//ImGui::Separator();
-							//// 目标
 
-							//if (ImGui::BeginTable("tableQuestData2", 5)) {
-							//	for (int i = 0; i < item.aliasCount; i++) {
-							//		ImGui::TableNextColumn();
-							//		ImGui::Text("id:%d", item.aliases[i].aliasID);
-							//		ImGui::TableNextColumn();
-							//		ImGui::Text("%s", item.aliases[i].aliasName.c_str());
-							//		ImGui::TableNextColumn();
-							//		ImGui::Text("%s:%s", item.aliases[i].type.c_str(), item.aliases[i].fillType.c_str());
-							//		ImGui::TableNextColumn();
-							//		ImGui::Text("%08X", item.aliases[i].targetFormId);
-							//		ImGui::TableNextColumn();
-							//		ImGui::Text("%s", item.aliases[i].targetName.c_str());
-							//	}
-							//	ImGui::EndTable();
-							//}
+							if (isShowQuestText) 
+							{
+								//ImGui::Separator();
+								ImGui::Spacing();
+								ImGui::BeginGroup();
+
+								ImGui::Text("其他目标:");
+								if (ImGui::BeginTable("tableQuestData2", 3)) {
+									std::unordered_set<RE::FormID> filter;
+									for (int i = 0; i < item.aliasCount; i++) {
+										auto& alias = item.aliases[i];
+										if (item.aliases[i].targetName.empty() || alias.isLink) {
+											continue;
+										}
+										
+										if (alias.refPtr) {
+										/*	if (alias.refPtr->IsPlayerRef()) {
+												continue;
+											}*/
+											if (filter.find(alias.refPtr->GetFormID()) != filter.end()) {
+												continue;
+											}
+											filter.insert(alias.refPtr->GetFormID());
+											ImGui::TableNextColumn();
+											ImGui::PushID(i);
+											if (ImGui::SmallButton(item.aliases[i].targetName.c_str())) {
+												moveToItem(alias.refPtr);
+											}
+											ImGui::PopID();
+										} else if (alias.npcPtr) {
+											if (alias.npcPtr->IsPlayer()) {
+												continue;
+											}
+											if (filter.find(alias.npcPtr->GetFormID()) != filter.end()) {
+												continue;
+											}
+											filter.insert(alias.npcPtr->GetFormID());
+
+											ImGui::TableNextColumn();
+											ImGui::PushID(i);
+											if (ImGui::SmallButton(item.aliases[i].targetName.c_str())) {
+												moveToNpc(alias.npcPtr);
+											}
+											ImGui::PopID();
+										}
+
+										/*ImGui::Text("id:%d", item.aliases[i].aliasID);
+									ImGui::TableNextColumn();
+									ImGui::Text("%s", item.aliases[i].aliasName.c_str());
+									ImGui::TableNextColumn();
+									ImGui::Text("%s:%s", item.aliases[i].type.c_str(), item.aliases[i].fillType.c_str());
+									ImGui::TableNextColumn();
+									ImGui::Text("%08X", item.aliases[i].targetFormId);
+									ImGui::TableNextColumn();
+									ImGui::Text("%s", item.aliases[i].targetName.c_str());*/
+									}
+									ImGui::EndTable();
+								}
+								ImGui::EndGroup();
+							}
 							ImGui::EndPopup();
 						}
 

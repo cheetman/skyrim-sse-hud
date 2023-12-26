@@ -245,15 +245,12 @@ namespace QuestUtil
 
 namespace ScriptUtil
 {
-
-	
 	inline bool SetCurrentStageID(RE::BSScript::IVirtualMachine* vm, RE::VMStackID stackID, RE::TESQuest* quest, int iStage)
 	{
 		using func_t = decltype(SetCurrentStageID);
 		REL::Relocation<func_t> func{ REL::ID(56310) };
 		return func(vm, stackID, quest, iStage);
 	}
-
 
 	//inline bool SetStageID(RE::BSScript::IVirtualMachine* vm, RE::VMStackID stackID, RE::TESQuest* quest, int iStage)
 	//{
@@ -262,8 +259,6 @@ namespace ScriptUtil
 	//	return func(vm, stackID, quest, iStage);
 	//}
 	//
-		
-		
 
 	inline void EffectShaderPlay(RE::BSScript::IVirtualMachine* vm, RE::VMStackID stackID, RE::TESEffectShader* shader, RE::TESObjectREFR* object, float duration)
 	{
@@ -341,11 +336,11 @@ namespace ScriptUtil
 		}
 	}
 
-
 	class VMStackCallbackFunctor : public RE::BSScript::IStackCallbackFunctor
 	{
 	public:
-		VMStackCallbackFunctor(std::function<void(float)> callback) : callback_(callback) {}
+		VMStackCallbackFunctor(std::function<void(float)> callback) :
+			callback_(callback) {}
 
 		virtual inline void
 			operator()(RE::BSScript::Variable a_result) override
@@ -366,11 +361,28 @@ namespace ScriptUtil
 		std::function<void(float)> callback_;
 	};
 
-
 }
 
 namespace FormUtil
 {
+	bool inline IsQuestItem(RE::ExtraDataList* extraData)
+	{
+		if (!extraData)
+			return false;
+
+		auto exAliasArray = extraData->GetByType<RE::ExtraAliasInstanceArray>();
+		if (!exAliasArray)
+			return false;
+
+		return std::find_if(exAliasArray->aliases.cbegin(), exAliasArray->aliases.cend(),
+				   [=](const RE::BGSRefAliasInstanceData* alias) -> bool {
+					   if (alias->alias->IsQuestObject()) {
+						   return true;
+					   }
+					   return false;
+				   }) != exAliasArray->aliases.cend();
+	}
+
 	/*using _GetFormEditorID = const char* (*)(std::uint32_t);
 
 	inline std::string GetEditorID(const RE::TESForm* a_form)

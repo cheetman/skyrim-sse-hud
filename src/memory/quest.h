@@ -14,7 +14,7 @@ struct QuestAliasInfo
 	RE::TESNPC* npcPtr = nullptr;
 	RE::TESBoundObject* objPtr = nullptr;
 
-
+	bool isLink = false;
 };
 
 struct QuestInfo

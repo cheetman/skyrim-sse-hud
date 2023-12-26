@@ -1,5 +1,6 @@
 #include "quest.h"
 #include <memory/memory.h>
+#include <fonts/IconsMaterialDesignIcons.h>
 
 namespace quest
 {
@@ -96,10 +97,10 @@ namespace quest
 						questTypeName = "内战任务";
 						break;
 					case RE::QUEST_DATA::Type::kDLC01_Vampire:
-						questTypeName = "DLC1黎明守卫任务";
+						questTypeName = "DLC1黎明守卫";
 						break;
 					case RE::QUEST_DATA::Type::kDLC02_Dragonborn:
-						questTypeName = "DLC2龙裔任务";
+						questTypeName = "DLC2龙裔";
 						break;
 					default:
 						break;
@@ -123,7 +124,6 @@ namespace quest
 						item.quests[tmpQuestCount].aliases[aliasCount].fillType = "";
 						item.quests[tmpQuestCount].aliases[aliasCount].refPtr = nullptr;
 						item.quests[tmpQuestCount].aliases[aliasCount].npcPtr = nullptr;
-						
 
 						if (alias->GetVMTypeID() == RE::BGSRefAlias::VMTYPEID) {
 							auto reference = skyrim_cast<RE::BGSRefAlias*>(alias);
@@ -133,7 +133,11 @@ namespace quest
 									item.quests[tmpQuestCount].aliases[aliasCount].fillType = "Forced";
 									auto ref = reference->fillData.forced.forcedRef;
 									if (ref) {
-										item.quests[tmpQuestCount].aliases[aliasCount].targetName = ref.get().get()->GetDisplayFullName();
+										std::string name = ref.get().get()->GetDisplayFullName();
+										if (name.empty()) {
+											continue;
+										}
+										item.quests[tmpQuestCount].aliases[aliasCount].targetName = ICON_MDI_MAP_MARKER_RADIUS + std::string(" ") + name;
 										item.quests[tmpQuestCount].aliases[aliasCount].targetFormId = ref.get().get()->GetFormID();
 										item.quests[tmpQuestCount].aliases[aliasCount].refPtr = ref.get().get();
 									}
@@ -141,7 +145,11 @@ namespace quest
 									item.quests[tmpQuestCount].aliases[aliasCount].fillType = "UniqueActor";
 									auto ref = reference->fillData.uniqueActor.uniqueActor;
 									if (ref) {
-										item.quests[tmpQuestCount].aliases[aliasCount].targetName = ref->GetFullName();
+										std::string name = ref->GetFullName();
+										if (name.empty()) {
+											continue;
+										}
+										item.quests[tmpQuestCount].aliases[aliasCount].targetName = ICON_MDI_ACCOUNT + std::string(" ") + name;
 										item.quests[tmpQuestCount].aliases[aliasCount].targetFormId = ref->GetFormID();
 										item.quests[tmpQuestCount].aliases[aliasCount].npcPtr = ref;
 									}
@@ -150,9 +158,6 @@ namespace quest
 									auto obj = reference->fillData.created.object;
 									if (obj) {
 										if (reference->fillData.created.alias.create == RE::BGSRefAlias::CreatedFillData::Alias::Create::kIn) {
-
-
-
 										}
 										item.quests[tmpQuestCount].aliases[aliasCount].targetName = obj->GetName();
 										item.quests[tmpQuestCount].aliases[aliasCount].targetFormId = obj->GetFormID();
@@ -167,13 +172,11 @@ namespace quest
 								if (reference->fillType == RE::BGSBaseAlias::FILL_TYPE::kForced) {
 									item.quests[tmpQuestCount].aliases[aliasCount].fillType = "Forced";
 									if (reference->unk28) {
-										item.quests[tmpQuestCount].aliases[aliasCount].targetName = ((RE::BGSLocation*) reference->unk28)->GetFullName();
+										item.quests[tmpQuestCount].aliases[aliasCount].targetName = ((RE::BGSLocation*)reference->unk28)->GetFullName();
 										item.quests[tmpQuestCount].aliases[aliasCount].targetFormId = ((RE::BGSLocation*)reference->unk28)->GetFormID();
 									}
-
-								} 
+								}
 							}
-
 						}
 						/*if (testLocation) {
 							item.quests[tmpQuestCount].aliases[aliasCount].targetFormId9 = (std::uint64_t)testLocation;

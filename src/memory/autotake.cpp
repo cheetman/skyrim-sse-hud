@@ -108,6 +108,10 @@ bool __fastcall autoTakeArmo(RE::TESObjectREFR* reff, RE::PlayerCharacter* playe
 		if (distance < show_items_window_auto_dis) {
 			if (!reff->IsCrimeToActivate()) {
 				if (!reff->IsMarkedForDeletion()) {
+					if (FormUtil::IsQuestItem(&reff->extraList)) {
+						return false;
+					}
+
 					// 增加判断
 					if (show_items_window_auto_armo_enchant) {
 						if (!reff->IsEnchanted()) {
@@ -168,6 +172,11 @@ bool __fastcall autoTakeWeap(RE::TESObjectREFR* reff, RE::PlayerCharacter* playe
 		if (distance < show_items_window_auto_dis) {
 			if (!reff->IsCrimeToActivate()) {
 				if (!reff->IsMarkedForDeletion()) {
+					//reff->extraList.GetCount();
+					if (FormUtil::IsQuestItem(&reff->extraList)) {
+						return false;
+					}
+
 					// 增加判断
 					if (show_items_window_auto_weap_enchant) {
 						if (!reff->IsEnchanted()) {
@@ -228,6 +237,9 @@ bool __fastcall autoTake(RE::TESObjectREFR* reff, RE::PlayerCharacter* player, b
 		if (distance < show_items_window_auto_dis) {
 			if (!reff->IsCrimeToActivate()) {
 				if (!reff->IsMarkedForDeletion()) {
+					if (FormUtil::IsQuestItem(&reff->extraList)) {
+						return false;
+					}
 					if (show_items_window_auto_ignore) {
 						// 判断地点忽略
 						int formID = 0;
@@ -369,6 +381,7 @@ bool __fastcall autoTakeForACHR(RE::Actor* actor, RE::TESBoundObject* obj, int c
 			return false;
 		}
 	}
+	
 	// 限制数量
 	if (checkTakeCount()) {
 		return true;
@@ -650,8 +663,15 @@ void __cdecl TimerAutoPick(void*)
 									auto& [count, entry] = data;
 									if (count > 0 && entry) {
 										// 自动拾取
-
 										if (show_items_window_auto_achr && distance < show_items_window_auto_dis) {
+
+											/*if (FormUtil::IsQuestItem(&entry.get()->extraLists) {
+												return false;
+											}*/
+
+											if (entry.get()->IsQuestObject()) {
+												continue;
+											}
 											switch (obj->GetFormType()) {
 											case RE::FormType::Weapon:
 												if (show_items_window_auto_achr_weap) {
@@ -1232,7 +1252,9 @@ void __cdecl TimerAutoPick(void*)
 												for (auto& [obj, data] : inv) {
 													auto& [count, entry] = data;
 													if (count > 0 && entry) {
-														//entry.get()->IsQuestObject()
+														if (entry.get()->IsQuestObject()) {
+															continue;
+														}
 														bool stealing = player->WouldBeStealing(reff);
 														bool isCrimeInv = !entry.get()->IsOwnedBy(player, !stealing);
 														// 并且不犯罪 判断是否拾取

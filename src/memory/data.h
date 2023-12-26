@@ -51,4 +51,20 @@ namespace data
 
 	extern std::unordered_set<RE::FormID> autoTrackFormIds;
 	extern std::vector<ExcludeForm> autoTrackForms;
+
+
+	
+	struct PositionData
+	{
+		std::string name;
+		RE::TESObjectCELL* cellPtr = nullptr;
+		RE::FormID cellId = 0;
+		RE::TESWorldSpace* worldSpacePtr = nullptr;
+		RE::FormID worldSpaceId = 0;
+		RE::NiPoint3 position;
+		RE::NiPoint3 angle;
+	};
+
+	extern std::vector<PositionData> moveToPositions;
+	extern std::vector<PositionData> tmpMoveToPositions;
 }

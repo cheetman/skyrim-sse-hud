@@ -698,7 +698,7 @@ namespace menu
 							ImGui::Text("%s", item.name.c_str());
 							ImGui::Separator();
 
-						/*	if (trackPtrs2.find(item.ptr) == trackPtrs2.end()) {
+							/*	if (trackPtrs2.find(item.ptr) == trackPtrs2.end()) {
 								if (ImGui::Button(ICON_MDI_MAP_MARKER_RADIUS " 定位")) {
 									trackItem(item);
 								}
@@ -1394,9 +1394,80 @@ namespace menu
 				window_flags2 |= ImGuiWindowFlags_NoBackground;
 			if (auto_resize)
 				window_flags2 |= ImGuiWindowFlags_AlwaysAutoResize;
-
 			ImGui::Begin("附近物品信息", nullptr, window_flags2);
+
+			if (ImGui::BeginPopupContextItem("PopupMoveTo")) {
+				ImGui::Text("", playerInfo.location.c_str());
+				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				if (ImGui::SmallButton("保存当前位置")) {
+					auto player = RE::PlayerCharacter::GetSingleton();
+					data::PositionData data;
+					data.cellPtr = player->GetParentCell();
+					data.cellId = player->GetParentCell()->GetFormID();
+					data.worldSpacePtr = player->GetWorldspace();
+					if (data.worldSpacePtr) {
+						data.worldSpaceId = player->GetWorldspace()->GetFormID();
+					}
+					data.position = player->GetPosition();
+					data.angle = player->data.angle;
+					data.name = playerInfo.location;
+					data::moveToPositions.push_back(data);
+				}
+				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %s", playerInfo.location.c_str());
+
+				static ImGuiTableFlags flagsItem =
+					ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
+
+				const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+				if (ImGui::BeginTable("tableItemPosition", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 10), 0.0f)) {
+					ImGui::TableSetupColumn("地点", ImGuiTableColumnFlags_WidthFixed, 90 * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_1);
+					ImGui::TableSetupColumn("位置", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_2);
+					ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 20.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_5);
+					ImGui::TableSetupScrollFreeze(0, 1);
+					ImGui::TableHeadersRow();
+
+					int i = 0;
+					int deleteRowIndex = -1;
+					for (auto& position : data::moveToPositions) {
+						ImGui::PushID(i);
+						ImGui::TableNextRow();
+						ImGui::TableNextColumn();
+
+						if (ImGui::Selectable(position.name.c_str())) {
+							auto player = RE::PlayerCharacter::GetSingleton();
+							player->MoveTo_Impl(RE::ObjectRefHandle(), position.cellPtr, position.worldSpacePtr, position.position, position.angle);
+							activeItems = false;
+						}
+						ImGui::TableNextColumn();
+						ImGui::Text("[%.0f,%.0f]", position.position.x, position.position.y);
+						ImGui::TableNextColumn();
+
+						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+						if (ImGui::SmallButton(ICON_MDI_CLOSE)) {
+							deleteRowIndex = i;
+						}
+						i++;
+						ImGui::PopID();
+					}
+
+					if (deleteRowIndex != -1) {
+						data::moveToPositions.erase(data::moveToPositions.begin() + deleteRowIndex);
+					}
+
+					ImGui::EndTable();
+				}
+				ImGui::EndPopup();
+			}
 			ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %s", playerInfo.location.c_str());
+
+			if (show_items_window_settings) {
+				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				if (ImGui::SmallButton("\uf101")) {
+					ImGui::OpenPopup("PopupMoveTo");
+				}
+			}
+
 			if (show_items_window_formid) {
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 				ImGui::Text("[%08X]", playerInfo.locationId);
@@ -1407,6 +1478,7 @@ namespace menu
 					ImGui::Text("[%08X]", playerInfo.parentLocationId);
 				}
 			}
+
 
 			{
 				std::lock_guard<std::mutex> lock(mtxTrack);

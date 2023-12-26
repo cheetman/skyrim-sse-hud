@@ -3,12 +3,10 @@
 #include <memory/lotd.h>
 #include <memory/memory.h>
 #include <memory/npc.h>
-#include <utils/utils.h>
 #include <memory/player.h>
+#include <utils/utils.h>
 
-
-
-	// 物品排除
+// 物品排除
 std::unordered_set<RE::FormID> excludeFormIds;
 std::vector<ExcludeForm> excludeForms;
 
@@ -26,16 +24,15 @@ std::unordered_set<RE::FormID> oreFormIds;
 std::vector<WeatherForm> weatherForms;
 RE::FormID currentWeather = 0;
 
-
 namespace data
 {
 	REL::Version gameVersion;
 
-	
 	std::unordered_set<RE::FormID> autoTrackFormIds;
 	std::vector<ExcludeForm> autoTrackForms;
-	
 
+	std::vector<PositionData> moveToPositions;
+	std::vector<PositionData> tmpMoveToPositions;
 
 	void init()
 	{
@@ -109,21 +106,17 @@ namespace data
 			weatherForms.push_back({ form->GetFormID(), form->GetFormEditorID(), form->data.flags.get() });
 		}
 
-		
 		for (auto ids : excludeEffectFormIds) {
 			auto form = RE::TESForm::LookupByID(ids.effectId);
 			auto formSpell = RE::TESForm::LookupByID(ids.spellId);
 			if (form && formSpell) {
-				excludeEffectForms.push_back({ 
-					form->GetFormID(),
+				excludeEffectForms.push_back({ form->GetFormID(),
 					formSpell->GetFormID(),
 					form->GetName(),
-					formSpell->GetName()
-				});
+					formSpell->GetName() });
 			}
 		}
 
-	
 		for (auto id : autoTrackFormIds) {
 			auto form = RE::TESForm::LookupByID(id);
 			if (form) {
@@ -136,5 +129,22 @@ namespace data
 		auto items = getItem2Info();
 		items->quests.resize(quests.size());
 		items[1].quests.resize(quests.size());
+
+		// 初始化位置配置
+		for (auto item : tmpMoveToPositions) {
+			auto form = RE::TESForm::LookupByID<RE::TESObjectCELL>(item.cellId);
+			if (!form) {
+				continue;
+			}
+			item.cellPtr = form;
+			if (!item.worldSpaceId) {
+				auto form2 = RE::TESForm::LookupByID<RE::TESWorldSpace>(item.worldSpaceId);
+				if (!form2) {
+					continue;
+				}
+				item.worldSpacePtr = form2;
+			}
+			moveToPositions.push_back(item);
+		}
 	}
 }

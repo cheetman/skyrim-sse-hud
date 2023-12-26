@@ -46,7 +46,6 @@ namespace setting
 
 	bool load_settings_lotd()
 	{
-
 		try {
 			std::ifstream i(settings_path_lotd_item_list);
 			nlohmann::json json;
@@ -79,7 +78,6 @@ namespace setting
 			return false;
 		}
 
-		
 		try {
 			std::ifstream i(settings_path_lotd_item_list_refr);
 			nlohmann::json json;
@@ -112,7 +110,6 @@ namespace setting
 			return false;
 		}
 
-
 		try {
 			std::ifstream i(settings_path_lotd_item_display_list_modnames);
 			nlohmann::json json;
@@ -130,8 +127,6 @@ namespace setting
 			logger::error(ex.what());
 			return false;
 		}
-
-		
 
 		try {
 			std::ifstream i(settings_path_lotd_item_display_list);
@@ -843,6 +838,24 @@ namespace setting
 				}
 			}
 
+			if (json.contains("moveToPositions")) {
+				for (auto const& j : json["moveToPositions"]) {
+					if (j.contains("name") && j.contains("cellId")) {
+						data::PositionData item;
+						item.name = j["name"];
+						item.position.x = j["positionX"].get<float>();
+						item.position.y = j["positionY"].get<float>();
+						item.position.z = j["positionZ"].get<float>();
+						item.angle.x = j["angleX"].get<float>();
+						item.angle.y = j["angleY"].get<float>();
+						item.angle.z = j["angleZ"].get<float>();
+						item.cellId = j["cellId"].get<RE::FormID>();
+						item.worldSpaceId = j["worldSpaceId"].get<RE::FormID>();
+						data::tmpMoveToPositions.push_back(item);
+					}
+				}
+			}
+
 		} catch (std::exception const& ex) {
 			logger::error(ex.what());
 			//log() << "Unable to save settings file: " << ex.what() << std::endl;
@@ -1094,7 +1107,6 @@ namespace setting
 
 															 { "isRCMenuMove", isRCMenuMove },
 
-															 
 														 } },
 									   { "LotdInfo", { { "showlocationItemCount", lotd::showlocationItemCount }, { "isArmoryIgnore", lotd::isArmoryIgnore }, { "isCrimeIgnore", lotd::isCrimeIgnore }, { "isInvIgnore", lotd::isInvIgnore }, { "isShowAttached", lotd::isShowAttached }, { "colorTableHeaderBgX", lotd::colorTableHeaderBg.x }, { "colorTableHeaderBgY", lotd::colorTableHeaderBg.y }, { "colorTableHeaderBgZ", lotd::colorTableHeaderBg.z }, { "colorTableHeaderBgW", lotd::colorTableHeaderBg.w }, { "colorTableBorderStrongX", lotd::colorTableBorderStrong.x }, { "colorTableBorderStrongY", lotd::colorTableBorderStrong.y }, { "colorTableBorderStrongZ", lotd::colorTableBorderStrong.z }, { "colorTableBorderStrongW", lotd::colorTableBorderStrong.w }, { "isAutoTrackLotdItems", lotd::isAutoTrackLotdItems }, { "isAutoTrackLotdExcavation", lotd::isAutoTrackLotdExcavation }, { "isAutoTrackLotdCards", lotd::isAutoTrackLotdCards }, { "isAutoTrackLotdItemsCrimeIgnore", lotd::isAutoTrackLotdItemsCrimeIgnore }, { "showDisplayItemCount", lotd::showDisplayItemCount }, { "scanType", lotd::scanType } } }, { "QuestInfo", {
 																																																																																																																																																																																																																																																																																								{ "isShowQuest", isShowQuest },
@@ -1123,7 +1135,6 @@ namespace setting
 			nlohmann::json arrLocation = nlohmann::json::array();
 			nlohmann::json arrAutoCont = nlohmann::json::array();
 			nlohmann::json arrNpc = nlohmann::json::array();
-			nlohmann::json arrBuff = nlohmann::json::array();
 
 			for (auto id : excludeFormIds) {
 				arr.push_back(id);
@@ -1145,6 +1156,7 @@ namespace setting
 			}
 			json["excludeNpcFormIds"] = arrNpc;
 
+			nlohmann::json arrBuff = nlohmann::json::array();
 			for (auto ids : excludeEffectFormIds) {
 				nlohmann::json obj;
 				obj["effectId"] = ids.effectId;
@@ -1158,6 +1170,22 @@ namespace setting
 				arrAutoTrackItem.push_back(id);
 			}
 			json["autoTrackFormIds"] = arrAutoTrackItem;
+
+			nlohmann::json arrPosition = nlohmann::json::array();
+			for (auto item : data::moveToPositions) {
+				nlohmann::json obj;
+				obj["name"] = item.name;
+				obj["positionX"] = item.position.x;
+				obj["positionY"] = item.position.y;
+				obj["positionZ"] = item.position.z;
+				obj["angleX"] = item.angle.x;
+				obj["angleY"] = item.angle.y;
+				obj["angleZ"] = item.angle.z;
+				obj["cellId"] = item.cellId;
+				obj["worldSpaceId"] = item.worldSpaceId;
+				arrPosition.push_back(obj);
+			}
+			json["moveToPositions"] = arrPosition;
 
 			std::ofstream o(settings_path);
 			o << std::setw(4) << json << std::endl;
