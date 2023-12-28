@@ -124,6 +124,7 @@ namespace quest
 						item.quests[tmpQuestCount].aliases[aliasCount].fillType = "";
 						item.quests[tmpQuestCount].aliases[aliasCount].refPtr = nullptr;
 						item.quests[tmpQuestCount].aliases[aliasCount].npcPtr = nullptr;
+						item.quests[tmpQuestCount].aliases[aliasCount].isLink = false;
 
 						if (alias->GetVMTypeID() == RE::BGSRefAlias::VMTYPEID) {
 							auto reference = skyrim_cast<RE::BGSRefAlias*>(alias);

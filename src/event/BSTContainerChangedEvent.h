@@ -25,13 +25,22 @@ public:
 					islotdContChanged = true;
 				}
 			}
-
-			// 判断如果获取到物品则删除其他标记
-			if (a_event->newContainer == 0x00000014) {
-				if (a_event->baseObj) {
+		}
+		// 判断如果获取到物品则删除其他标记
+		if (a_event->newContainer == 0x00000014) {
+			if (a_event->baseObj) {
+				if (lotd::isLoad) {
 					std::lock_guard<std::mutex> lock(mtxTrack);
 					std::vector<RE::TESObjectREFR*> deleteReffs;
 					for (const auto& item : trackPtrs2) {
+						// 补充
+						if (item.second.isAuto) {
+							if (item.first->GetFormID() == a_event->oldContainer && item.second.itemBaseFormId == a_event->baseObj) {
+								deleteReffs.push_back(item.first);
+								break;
+							}
+						}
+
 						if (item.second.isLotd) {
 							if (item.second.itemBaseFormId == a_event->baseObj) {
 								deleteReffs.push_back(item.first);

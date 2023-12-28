@@ -11,7 +11,8 @@ extern std::vector<ExcludeForm> excludeLocationForms;
 
 extern bool show_items_window_auto_ignore;
 extern int show_items_window_auto_dis;
-
+ 
+extern bool show_items_window_auto_keym;
 extern bool show_items_window_auto_ammo;
 extern bool show_items_window_auto_flor;
 extern bool show_items_window_auto_food;

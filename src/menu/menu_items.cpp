@@ -1768,6 +1768,14 @@ namespace menu
 						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##52")) {
 							takeAllItem(getItemCountKEYM(), getItemsKEYM(), RE::FormType::KeyMaster);
 						}
+						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##52"), &show_items_window_auto_keym);
+					}
+					else {
+						if (show_items_window_auto_keym) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::Text(ICON_MDI_AUTORENEW);
+						}
 					}
 					buildItemInfo(getItemCountKEYM(), getItemsKEYM(), RE::FormType::KeyMaster);
 					ImGui::Spacing();

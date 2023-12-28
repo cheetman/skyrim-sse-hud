@@ -12,6 +12,7 @@
 bool show_items_window_auto_ignore = true;
 bool show_items_window_auto_notification = true;
 bool show_items_window_auto_ammo = false;
+bool show_items_window_auto_keym = false;
 bool show_items_window_auto_weap = false;
 bool show_items_window_auto_armo = false;
 bool show_items_window_auto_flor = false;
@@ -1541,6 +1542,40 @@ void __cdecl TimerAutoPick(void*)
 										}
 									case RE::FormType::KeyMaster:
 										{
+											if (tmpCountKEYM > show_items_window_array_max_length) {
+												continue;
+											}
+
+											if (reff->IsMarkedForDeletion()) {
+												continue;
+											}
+											if (show_items_window_ignore) {
+												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
+													continue;
+												}
+											}
+											auto name = reff->GetDisplayFullName();
+											if (strlen(name) == 0) {
+												continue;
+											}
+
+											float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+
+											if (!currentLocation) {
+												if (distance > show_items_window_auto_dis_skyrim) {
+													continue;
+												}
+											} else {
+												if (distance > show_items_window_auto_dis_local) {
+													continue;
+												}
+											}
+
+											// 自动拾取判断
+											if (autoTake(reff, player, show_items_window_auto_keym, distance)) {
+												continue;
+											}
+
 											tmpCountKEYM++;
 											break;
 										}

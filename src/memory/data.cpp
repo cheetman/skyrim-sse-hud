@@ -137,7 +137,7 @@ namespace data
 				continue;
 			}
 			item.cellPtr = form;
-			if (!item.worldSpaceId) {
+			if (item.worldSpaceId) {
 				auto form2 = RE::TESForm::LookupByID<RE::TESWorldSpace>(item.worldSpaceId);
 				if (!form2) {
 					continue;

@@ -374,9 +374,9 @@ namespace menu
 										}
 										
 										if (alias.refPtr) {
-										/*	if (alias.refPtr->IsPlayerRef()) {
+											if (alias.refPtr->IsPlayerRef()) {
 												continue;
-											}*/
+											}
 											if (filter.find(alias.refPtr->GetFormID()) != filter.end()) {
 												continue;
 											}
