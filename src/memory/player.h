@@ -54,6 +54,9 @@ struct PlayerInfo
 	float xp = 0.0f;
 	float levelThreshold = 0.0f;
 
+	RE::TESObjectCELL* cellPtr = nullptr;
+	std::string cellName = "";
+
 	//RE::FormID weather = 0;
 };
 // 装备防具信息

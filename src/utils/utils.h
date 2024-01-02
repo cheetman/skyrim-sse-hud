@@ -361,6 +361,32 @@ namespace ScriptUtil
 		std::function<void(float)> callback_;
 	};
 
+	
+
+	class VMIntStackCallbackFunctor : public RE::BSScript::IStackCallbackFunctor
+	{
+	public:
+		VMIntStackCallbackFunctor(std::function<void(int)> callback) :
+			callback_(callback) {}
+
+		virtual inline void
+			operator()(RE::BSScript::Variable a_result) override
+		{
+			if (a_result.IsNoneObject()) {
+				//logger::info("result is none");
+			} else if (a_result.IsInt()) {
+				//setRmHeight(a_result.GetFloat());
+				callback_(a_result.GetSInt());
+			} else {
+				logger::info("result is not a int");
+			}
+		}
+
+		virtual inline void SetObject(const RE::BSTSmartPointer<RE::BSScript::Object>& a_object){};
+
+	private:
+		std::function<void(int)> callback_;
+	};
 }
 
 namespace FormUtil

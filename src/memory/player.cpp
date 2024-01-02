@@ -100,6 +100,14 @@ void refreshPlayerInfo()
 			playerInfo.parentLocationId = -1;
 		}
 
+		auto cell = player->GetParentCell();
+		playerInfo.cellPtr = cell;
+		if (cell) {
+			playerInfo.cellName = cell->GetFullName();
+		} else {
+			playerInfo.cellName = "";
+		}
+
 		playerInfo.Angle = player->GetAngle();
 		playerInfo.Position = player->GetPosition();
 

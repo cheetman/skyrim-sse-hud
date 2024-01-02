@@ -18,6 +18,7 @@
 #include <setting/i18n.h>
 #include <setting/setting.h>
 #include <utils/utils.h>
+#include <menu/list_quest.h>
 
 namespace menu
 {
@@ -35,6 +36,7 @@ namespace menu
 		}
 		excludeFormIds.insert(item.baseFormId);
 	}
+
 	void autoTrackItem(ItemInfo& item)
 	{
 		bool exist = false;
@@ -1581,6 +1583,10 @@ namespace menu
 						ImGui::TableNextColumn();
 						ImGui::AlignTextToFramePadding();
 						ImGui::Text(I18Ni(ICON_MDI_CALENDAR_CHECK_OUTLINE, "finder.ui.label-quest"), getQuestCount());
+						//ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+						/*if (ImGui::SmallButton("测试任务")) {
+							list::isShowQuest = true;
+						}*/
 
 						buildQuestItem(getQuestCount(), getQuests());
 						ImGui::Spacing();

@@ -1,12 +1,12 @@
 #include <fonts/IconsMaterialDesignIcons.h>
 #include <imgui/imgui.h>
+#include <memory/data.h>
 #include <memory/npc.h>
 #include <menu/menu.h>
 #include <menu/menu_npc.h>
 #include <menu/menu_track.h>
 #include <setting/i18n.h>
 #include <utils/utils.h>
-#include <memory/data.h>
 
 namespace menu
 {
@@ -16,6 +16,30 @@ namespace menu
 	bool show_enemy = true;
 	bool show_teammate = true;
 	bool show_horse = true;
+
+	void trackActor(ActorInfo& item, bool isEnemy)
+	{
+		TrackItem trackItem;
+		trackItem.name = item.name;
+		trackItem.isEnemy = isEnemy;
+		trackActorPtrs2.insert(std::make_pair(item.ptr, trackItem));
+		menu::isTrack = true;
+	}
+
+	void moveToPlayer(ActorInfo& actor)
+	{
+		auto player = RE::PlayerCharacter::GetSingleton();
+		actor.ptr->MoveTo(player);
+	}
+
+	void moveToNpc(ActorInfo& item)
+	{
+		auto player = RE::PlayerCharacter::GetSingleton();
+		player->MoveTo(item.ptr);
+		if (activeItems) {
+			activeItems = false;
+		}
+	}
 
 	void __fastcall buildNpcInfo(int active2, ActorInfo* actor2Info, int actorCount, bool isEnemy = false)
 	{
@@ -197,18 +221,28 @@ namespace menu
 				}
 
 				if (activeItems) {
-					if (trackActorPtrs2.find(item.ptr) == trackActorPtrs2.end()) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::PushID(i + 3000);
-						if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
-							TrackItem trackItem;
-							trackItem.name = item.name;
-							trackItem.isEnemy = isEnemy;
-							trackActorPtrs2.insert(std::make_pair(item.ptr, trackItem));
-							menu::isTrack = true;
+					ImGui::PushID(i + 3000);
+					if (!item.isTeammate) {
+						if (trackActorPtrs2.find(item.ptr) == trackActorPtrs2.end()) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS)) {
+								trackActor(item, isEnemy);
+							}
 						}
-						ImGui::PopID();
 					}
+
+					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+					if (ImGui::SmallButton(ICON_MDI_ARROW_DOWN_LEFT_BOLD)) {
+						moveToPlayer(item);
+					}
+
+					if (!item.isTeammate) {
+						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+						if (ImGui::SmallButton("\uf101")) {
+							moveToNpc(item);
+						}
+					}
+					ImGui::PopID();
 				}
 			}
 		}
@@ -263,11 +297,7 @@ namespace menu
 								for (int i = 0; i < getEnemyCount(); i++) {
 									auto& item = actorInfo[i];
 									if (trackActorPtrs2.find(item.ptr) == trackActorPtrs2.end()) {
-										TrackItem trackItem;
-										trackItem.name = item.name;
-										trackItem.isEnemy = true;
-										trackActorPtrs2.insert(std::make_pair(item.ptr, trackItem));
-										menu::isTrack = true;
+										trackActor(item, true);
 									}
 								}
 							}
@@ -355,11 +385,7 @@ namespace menu
 								for (int i = 0; i < getEnemyCount(); i++) {
 									auto& item = actorInfo[i];
 									if (trackActorPtrs2.find(item.ptr) == trackActorPtrs2.end()) {
-										TrackItem trackItem;
-										trackItem.name = item.name;
-										trackItem.isEnemy = true;
-										trackActorPtrs2.insert(std::make_pair(item.ptr, trackItem));
-										menu::isTrack = true;
+										trackActor(item, true);
 									}
 								}
 							}
@@ -368,7 +394,7 @@ namespace menu
 				}
 				if (show_enemy) {
 					auto actorInfo = getEnemy2Data();
-					buildNpcInfo(active, actorInfo, getEnemyCount(),true);
+					buildNpcInfo(active, actorInfo, getEnemyCount(), true);
 				}
 			}
 

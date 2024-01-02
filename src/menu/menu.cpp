@@ -28,6 +28,7 @@
 #include <utils/WICTextureLoader/WICTextureLoader11.h>
 #include <memory/data.h>
 //#include <utils/WICTextureLoader/WICTextureLoader11.cpp>
+#include <menu/list_quest.h>
 
 namespace menu
 {
@@ -652,15 +653,15 @@ namespace menu
 		if (sexlab::isShowPlayOSLArousal && sexlab::isLoadOSLAroused) {
 			ImGui::Begin("欲望信息", nullptr, window_flags);
 
-			ImGui::Text(ICON_MDI_HEART " 性欲:");
+			ImGui::Text(ICON_MDI_HEART " 性欲：");
 			ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 
-			auto progress = sexlab::OSLArousal / 100.0f;
+			auto progress = sexlab::arousal / 100.0f;
 			char buf[32];
-			snprintf(buf, 32, "%0.1f/%d", sexlab::OSLArousal, 100);
+			snprintf(buf, 32, "%0.1f/%d", sexlab::arousal, 100);
 
 			ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-			float rate = sexlab::OSLArousal / (sexlab::OSLArousalBaseline == 0.0f ? 1.0f : sexlab::OSLArousalBaseline);
+			float rate = sexlab::arousal / (sexlab::arousalBase == 0.0f ? 1.0f : sexlab::arousalBase);
 			if (rate > 0.80f) {
 				ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colorProgressNpc3);
 			} else if (rate < 0.45f) {
@@ -985,6 +986,10 @@ namespace menu
 		//}
 
 		if (active) {
+
+			list::renderQuest();
+
+
 			static bool show_demo_window = false;
 			static bool show_another_window = false;
 
@@ -1120,7 +1125,7 @@ namespace menu
 
 						
 						ImGui::Text("游戏版本：v%s", data::gameVersion.string().c_str());
-						ImGui::Text("插件版本：v1.2.6");
+						ImGui::Text("插件版本：v1.2.6 ");
 
 						if (ImGui::Button(I18Nc("common.setting.btn-ok"), ImVec2(120, 0))) {
 							ImGui::CloseCurrentPopup();
@@ -1662,7 +1667,20 @@ namespace menu
 						ImGui::Text(I18Ni(ICON_MDI_HEART, "common.setting.label-sexlab"));
 						{
 							ImGui::Indent();
-							ImGui::Checkbox(I18Nc("hud.setting.checkbox-displayOSLArousal"), &sexlab::isShowPlayOSLArousal);
+							if (sexlab::isLoadOSLAroused) {
+								ImGui::Checkbox(I18Nc("hud.setting.checkbox-displayOSLArousal"), &sexlab::isShowPlayOSLArousal);
+							} else {
+								ImGui::BeginDisabled();
+								ImGui::Checkbox(I18Nc("hud.setting.checkbox-displayOSLArousal"), &sexlab::isShowPlayOSLArousal);
+								ImGui::EndDisabled();
+							}
+							if (sexlab::isLoadSexlabAroused) {
+								ImGui::Checkbox(I18Nc("hud.setting.checkbox-displaySexlabArousal"), &sexlab::isShowPlaySexlabAroused);
+							} else {
+								ImGui::BeginDisabled();
+								ImGui::Checkbox(I18Nc("hud.setting.checkbox-displaySexlabArousal"), &sexlab::isShowPlaySexlabAroused);
+								ImGui::EndDisabled();
+							}
 							ImGui::Unindent();
 						}
 						ImGui::Spacing();

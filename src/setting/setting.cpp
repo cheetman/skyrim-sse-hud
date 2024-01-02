@@ -376,6 +376,12 @@ namespace setting
 					if (j2.contains("show_inv_window_height")) {
 						show_inv_window_height = j2["show_inv_window_height"].get<int>();
 					}
+					if (j2.contains("refresh_time_auto")) {
+						refresh_time_auto = j2["refresh_time_auto"].get<int>();
+					}
+					if (j2.contains("show_items_window_auto_every_max")) {
+						show_items_window_auto_every_max = j2["show_items_window_auto_every_max"].get<int>();
+					}
 					if (j2.contains("show_items_window_auto_dis")) {
 						show_items_window_auto_dis = j2["show_items_window_auto_dis"].get<int>();
 					}
@@ -440,6 +446,9 @@ namespace setting
 					if (j2.contains("show_items_window_auto_tool")) {
 						show_items_window_auto_tool = j2["show_items_window_auto_tool"].get<bool>();
 					}
+					if (j2.contains("show_items_window_auto_keym")) {
+						show_items_window_auto_keym = j2["show_items_window_auto_keym"].get<bool>();
+					}
 
 					if (j2.contains("show_items_window_auto_achr_food")) {
 						show_items_window_auto_achr_food = j2["show_items_window_auto_achr_food"].get<bool>();
@@ -497,6 +506,8 @@ namespace setting
 					if (j2.contains("show_items_window_auto_cont_ingr")) {
 						show_items_window_auto_cont_ingr = j2["show_items_window_auto_cont_ingr"].get<bool>();
 					}
+
+					
 
 					if (j2.contains("show_items_window_auto_cont_food")) {
 						show_items_window_auto_cont_food = j2["show_items_window_auto_cont_food"].get<bool>();
@@ -1011,6 +1022,8 @@ namespace setting
 													} },
 									   { "ItemMenuInfo", {
 															 { "show_items_window_auto_dis", show_items_window_auto_dis },
+															 { "refresh_time_auto", refresh_time_auto },
+															 { "show_items_window_auto_every_max", show_items_window_auto_every_max },
 															 { "show_inv_window_height", show_inv_window_height },
 															 { "show_items_window_auto_dis_skyrim", show_items_window_auto_dis_skyrim },
 															 { "show_items_window_auto_dis_local", show_items_window_auto_dis_local },
@@ -1029,6 +1042,8 @@ namespace setting
 															 { "show_items_window_auto_armo", show_items_window_auto_armo },
 															 { "show_items_window_auto_anvi", show_items_window_auto_anvi },
 															 { "show_items_window_auto_ston", show_items_window_auto_ston },
+															 { "show_items_window_auto_keym", show_items_window_auto_keym },
+															 
 															 { "show_items_window_auto_anhd", show_items_window_auto_anhd },
 															 { "show_items_window_auto_anpa", show_items_window_auto_anpa },
 															 { "show_items_window_auto_tool", show_items_window_auto_tool },
