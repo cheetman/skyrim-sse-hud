@@ -1,21 +1,10 @@
 #pragma once
 #include <memory/memory.h>
 #include <imgui/imgui.h>
+#include <memory/player_inv.h>
 
 struct ExcludeForm;
 
-struct InventoryInfo
-{
-	RE::TESBoundObject* ptr = nullptr;
-	RE::InventoryEntryData* invPtr = nullptr;
-	RE::ExtraDataList* invExtraPtr = nullptr;
-	std::string name = "";
-	std::string formIdStr = "";
-	RE::FormID formId = 0;
-	int count = 0;
-	float weight = 0;
-	bool isWorn = 0;
-};
 
 struct ActorInfo
 {
@@ -91,26 +80,6 @@ struct Actor2Info
 	ActorInfo horseInfo[100];
 };
 
-struct PlayerInventoryInfo
-{
-	int inventoryARMOCount = 0;
-	int inventoryWEAPCount = 0;
-	int inventoryBOOKCount = 0;
-	int inventoryAMMOCount = 0;
-	int inventoryALCHCount = 0;
-	int inventoryFOODCount = 0;
-	int inventoryINGRCount = 0;
-	int inventoryCount = 0;
-	int gold = 0;
-	InventoryInfo inventorysARMO[300];
-	InventoryInfo inventorysWEAP[300];
-	InventoryInfo inventorysBOOK[300];
-	InventoryInfo inventorysAMMO[100];
-	InventoryInfo inventorysALCH[300];
-	InventoryInfo inventorysFOOD[300];
-	InventoryInfo inventorysINGR[300];
-	InventoryInfo inventorys[300];
-};
 
 
 extern int show_npc_window_dis_meter;
@@ -118,7 +87,6 @@ extern bool show_npc_window_dis;
 extern bool show_npc_window_direction;
 extern bool show_npc_window_dead_hidden;
 extern bool show_enemy_window;
-extern bool show_inv_window;
 extern bool show_npc_window;
 extern bool show_npc_window_process;
 extern bool show_npc_window_process_combat;
@@ -141,24 +109,6 @@ int getNpcCount();
 int getHorseCount();
 int getEnemyCount();
 
-int getPlayerInvCount();
-int getPlayerInvBOOKCount();
-int getPlayerInvWEAPCount();
-int getPlayerInvARMOCount();
-int getPlayerInvAMMOCount();
-int getPlayerInvALCHCount();
-int getPlayerInvFOODCount();
-int getPlayerInvINGRCount();
-int getPlayerGoldCount();
-InventoryInfo* getPlayerInvData();
-InventoryInfo* getPlayerInvARMOData();
-InventoryInfo* getPlayerInvBOOKData();
-InventoryInfo* getPlayerInvWEAPData();
-InventoryInfo* getPlayerInvAMMOData();
-InventoryInfo* getPlayerInvALCHData();
-InventoryInfo* getPlayerInvFOODData();
-InventoryInfo* getPlayerInvINGRData();
-InventoryInfo* getPlayerInvData(int);
 
 
 void __cdecl RefreshActorInfo(void*);

@@ -9,7 +9,6 @@ bool show_npc_window_dis = false;
 bool show_npc_window_direction = false;
 int show_npc_window_array_max_length = 98;
 bool show_enemy_window = false;
-bool show_inv_window = false;
 bool show_npc_window = false;
 bool show_npc_window_ignore = false;
 bool show_npc_window_process = false;
@@ -78,135 +77,7 @@ bool compareByLevel(const ActorInfo& info1, const ActorInfo& info2)
 	}
 }
 
-bool compareForInventory(const InventoryInfo& info1, const InventoryInfo& info2)
-{
-	if (info1.isWorn != info2.isWorn) {
-		return info1.isWorn > info2.isWorn;
-	} else {
-		return info1.formId < info2.formId;
-	}
-}
 
-PlayerInventoryInfo* MyInventoryInfo = new PlayerInventoryInfo[2];
-
-int getPlayerGoldCount()
-{
-	return MyInventoryInfo[!nowIndex].gold;
-}
-int getPlayerInvCount()
-{
-	return MyInventoryInfo[!nowIndex].inventoryCount;
-}
-int getPlayerInvBOOKCount()
-{
-	return MyInventoryInfo[!nowIndex].inventoryBOOKCount;
-}
-int getPlayerInvWEAPCount()
-{
-	return MyInventoryInfo[!nowIndex].inventoryWEAPCount;
-}
-int getPlayerInvARMOCount()
-{
-	return MyInventoryInfo[!nowIndex].inventoryARMOCount;
-}
-int getPlayerInvAMMOCount()
-{
-	return MyInventoryInfo[!nowIndex].inventoryAMMOCount;
-}
-int getPlayerInvFOODCount()
-{
-	return MyInventoryInfo[!nowIndex].inventoryFOODCount;
-}
-int getPlayerInvALCHCount()
-{
-	return MyInventoryInfo[!nowIndex].inventoryALCHCount;
-}
-int getPlayerInvINGRCount()
-{
-	return MyInventoryInfo[!nowIndex].inventoryINGRCount;
-}
-
-InventoryInfo* getPlayerInvData()
-{
-	return &MyInventoryInfo[!nowIndex].inventorys[0];
-}
-InventoryInfo* getPlayerInvARMOData()
-{
-	return &MyInventoryInfo[!nowIndex].inventorysARMO[0];
-}
-InventoryInfo* getPlayerInvWEAPData()
-{
-	return &MyInventoryInfo[!nowIndex].inventorysWEAP[0];
-}
-InventoryInfo* getPlayerInvBOOKData()
-{
-	return &MyInventoryInfo[!nowIndex].inventorysBOOK[0];
-}
-InventoryInfo* getPlayerInvAMMOData()
-{
-	return &MyInventoryInfo[!nowIndex].inventorysAMMO[0];
-}
-InventoryInfo* getPlayerInvFOODData()
-{
-	return &MyInventoryInfo[!nowIndex].inventorysFOOD[0];
-}
-InventoryInfo* getPlayerInvALCHData()
-{
-	return &MyInventoryInfo[!nowIndex].inventorysALCH[0];
-}
-InventoryInfo* getPlayerInvINGRData()
-{
-	return &MyInventoryInfo[!nowIndex].inventorysINGR[0];
-}
-
-InventoryInfo* getPlayerInvData(int i)
-{
-	return &MyInventoryInfo[!nowIndex].inventorys[i];
-}
-
-void __fastcall buildPlayerInvData(InventoryInfo inv[], int& i, RE::TESBoundObject* item, RE::InventoryEntryData* entry, std::int32_t count)
-{
-	// 要判断extras
-
-	if (entry->extraLists) {
-		for (auto& xList : *entry->extraLists) {
-			if (xList) {
-				auto xCount = xList->GetCount();
-
-				//logger::trace("Inv Name {} {} "sv, i, StringUtil::Utf8ToGbk(entry->GetDisplayName()));
-				//logger::trace("Inv2 Name {} {} "sv, xCount, StringUtil::Utf8ToGbk(xList->GetDisplayName(item)));
-
-				inv[i].ptr = item;
-				inv[i].invPtr = entry;
-				inv[i].invExtraPtr = xList;
-				inv[i].count = xCount;
-				inv[i].formId = item->GetFormID();
-				inv[i].formIdStr = FormIDToString(item->GetFormID());
-				inv[i].name = xList->GetDisplayName(item);
-				inv[i].weight = item->GetWeight();
-				inv[i++].isWorn = (xList->HasType<RE::ExtraWorn>() || xList->HasType<RE::ExtraWornLeft>());
-
-				count -= xCount;
-			}
-		}
-	}
-	if (count > 0) {
-		inv[i].ptr = item;
-		inv[i].invPtr = entry;
-		inv[i].invExtraPtr = nullptr;
-		inv[i].count = count;
-		inv[i].formId = item->GetFormID();
-		inv[i].formIdStr = FormIDToString(item->GetFormID());
-		//inv[i].name = entry->GetDisplayName();
-		inv[i].name = item->GetName();
-
-		inv[i].weight = item->GetWeight();
-		//inv[i++].isWorn = entry->IsWorn();
-		inv[i++].isWorn = false;
-	}
-
-	//logger::trace("Inv Name {} {} "sv, i, StringUtil::Utf8ToGbk(entry->GetDisplayName()));
-}
 
 void RefreshInventory(RE::Actor* actor, ActorInfo* actorInfo, int tmpIndex)
 {
@@ -287,80 +158,7 @@ void __cdecl RefreshActorInfo(void*)
 		Sleep(100);
 
 		{
-			if (show_inv_window) {
-				// 刷新自己的装备
-				const auto inv = player->GetInventory();
-				MyInventoryInfo[nowIndex].inventoryARMOCount = 0;
-				MyInventoryInfo[nowIndex].inventoryBOOKCount = 0;
-				MyInventoryInfo[nowIndex].inventoryWEAPCount = 0;
-				MyInventoryInfo[nowIndex].inventoryAMMOCount = 0;
-				MyInventoryInfo[nowIndex].inventoryALCHCount = 0;
-				MyInventoryInfo[nowIndex].inventoryFOODCount = 0;
-				MyInventoryInfo[nowIndex].inventoryINGRCount = 0;
-				MyInventoryInfo[nowIndex].inventoryCount = 0;
-				MyInventoryInfo[nowIndex].gold = 0;
-
-				for (const auto& [item, invData] : inv) {
-					const auto& [count, entry] = invData;
-					//if (count > 0 && entry->IsWorn()) {
-					//const auto armor = item->As<RE::TESObjectARMO>();
-					if (count > 0) {
-						//actorInfo[tmpIndex].Inventorys[i].formIdStr = FormIDToString(armor->GetFormID());
-						if (item->GetWeight() >= 0) {
-							if (item->IsGold()) {
-								MyInventoryInfo[nowIndex].gold = count;
-							} else if (item->IsArmor()) {
-								buildPlayerInvData(MyInventoryInfo[nowIndex].inventorysARMO, MyInventoryInfo[nowIndex].inventoryARMOCount, item, entry.get(), count);
-							} else if (item->IsWeapon()) {
-								buildPlayerInvData(MyInventoryInfo[nowIndex].inventorysWEAP, MyInventoryInfo[nowIndex].inventoryWEAPCount, item, entry.get(), count);
-							} else if (item->IsAmmo()) {
-								buildPlayerInvData(MyInventoryInfo[nowIndex].inventorysAMMO, MyInventoryInfo[nowIndex].inventoryAMMOCount, item, entry.get(), count);
-							} else if (item->IsBook()) {
-								buildPlayerInvData(MyInventoryInfo[nowIndex].inventorysBOOK, MyInventoryInfo[nowIndex].inventoryBOOKCount, item, entry.get(), count);
-							} else if (item->GetFormType() == RE::FormType::AlchemyItem) {
-								auto alchemyItem = item->As<RE::AlchemyItem>();
-								if (alchemyItem->IsFood()) {
-									buildPlayerInvData(MyInventoryInfo[nowIndex].inventorysFOOD, MyInventoryInfo[nowIndex].inventoryFOODCount, item, entry.get(), count);
-								} else {
-									buildPlayerInvData(MyInventoryInfo[nowIndex].inventorysALCH, MyInventoryInfo[nowIndex].inventoryALCHCount, item, entry.get(), count);
-								}
-							} else if (item->GetFormType() == RE::FormType::Ingredient) {
-								buildPlayerInvData(MyInventoryInfo[nowIndex].inventorysINGR, MyInventoryInfo[nowIndex].inventoryINGRCount, item, entry.get(), count);
-							} else {
-								buildPlayerInvData(MyInventoryInfo[nowIndex].inventorys, MyInventoryInfo[nowIndex].inventoryCount, item, entry.get(), count);
-							}
-						}
-					}
-				}
-
-				if (MyInventoryInfo[nowIndex].inventoryARMOCount > 1) {
-					std::sort(MyInventoryInfo[nowIndex].inventorysARMO, MyInventoryInfo[nowIndex].inventorysARMO + MyInventoryInfo[nowIndex].inventoryARMOCount, compareForInventory);
-				}
-				if (MyInventoryInfo[nowIndex].inventoryWEAPCount > 1) {
-					std::sort(MyInventoryInfo[nowIndex].inventorysWEAP, MyInventoryInfo[nowIndex].inventorysWEAP + MyInventoryInfo[nowIndex].inventoryWEAPCount, compareForInventory);
-				}
-				if (MyInventoryInfo[nowIndex].inventoryBOOKCount > 1) {
-					std::sort(MyInventoryInfo[nowIndex].inventorysBOOK, MyInventoryInfo[nowIndex].inventorysBOOK + MyInventoryInfo[nowIndex].inventoryBOOKCount, compareForInventory);
-				}
-				if (MyInventoryInfo[nowIndex].inventoryCount > 1) {
-					std::sort(MyInventoryInfo[nowIndex].inventorys, MyInventoryInfo[nowIndex].inventorys + MyInventoryInfo[nowIndex].inventoryCount, compareForInventory);
-				}
-				if (MyInventoryInfo[nowIndex].inventoryAMMOCount > 1) {
-					std::sort(MyInventoryInfo[nowIndex].inventorysAMMO, MyInventoryInfo[nowIndex].inventorysAMMO + MyInventoryInfo[nowIndex].inventoryAMMOCount, compareForInventory);
-				}
-				if (MyInventoryInfo[nowIndex].inventoryALCHCount > 1) {
-					std::sort(MyInventoryInfo[nowIndex].inventorysALCH, MyInventoryInfo[nowIndex].inventorysALCH + MyInventoryInfo[nowIndex].inventoryALCHCount, compareForInventory);
-				}
-				if (MyInventoryInfo[nowIndex].inventoryFOODCount > 1) {
-					std::sort(MyInventoryInfo[nowIndex].inventorysFOOD, MyInventoryInfo[nowIndex].inventorysFOOD + MyInventoryInfo[nowIndex].inventoryFOODCount, compareForInventory);
-				}
-				if (MyInventoryInfo[nowIndex].inventoryINGRCount > 1) {
-					std::sort(MyInventoryInfo[nowIndex].inventorysINGR, MyInventoryInfo[nowIndex].inventorysINGR + MyInventoryInfo[nowIndex].inventoryINGRCount, compareForInventory);
-				}
-
-				// 双缓冲可以不用
-				//MyInventoryInfo[nowIndex].inventoryCount = i;
-			}
+			RefreshPlayerInvInfo();
 		}
 
 		if (show_npc_window) {

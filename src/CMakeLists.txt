@@ -33,6 +33,8 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/memory/lotd.cpp"
 	"${SOURCE_DIR}/memory/npc.h"
 	"${SOURCE_DIR}/memory/npc.cpp"
+	"${SOURCE_DIR}/memory/player_inv.h"
+	"${SOURCE_DIR}/memory/player_inv.cpp"
 	"${SOURCE_DIR}/menu/menu.h"
 	"${SOURCE_DIR}/menu/menu.cpp"
 	"${SOURCE_DIR}/menu/lotd.h"
@@ -133,6 +135,8 @@ set(SOURCE_FILES
 	"${SOURCE_DIR}/code_lotd/dinputhook.cpp"
 	"${SOURCE_DIR}/menu/list_quest.h"
 	"${SOURCE_DIR}/menu/list_quest.cpp"
+	"${SOURCE_DIR}/menu/menu_player_inv.h"
+	"${SOURCE_DIR}/menu/menu_player_inv.cpp"
 	
 
 )
