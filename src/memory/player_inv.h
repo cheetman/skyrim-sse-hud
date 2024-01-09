@@ -13,7 +13,12 @@ struct InventoryInfo
 	RE::FormID formId = 0;
 	int count = 0;
 	float weight = 0;
-	bool isWorn = 0;
+	bool isWorn = false;
+	bool isEnchanted = false;
+	std::uint16_t uniqueID = 0;
+	std::string debugName = "";
+	bool isAlchemyEnt = false;
+	bool isSmithingEnt = false;
 };
 bool compareForInventory(const InventoryInfo& info1, const InventoryInfo& info2);
 
@@ -36,6 +41,11 @@ struct PlayerInventoryInfo
 	InventoryInfo inventorysFOOD[300];
 	InventoryInfo inventorysINGR[300];
 	InventoryInfo inventorys[300];
+
+	std::vector<InventoryInfo> inventorysAlchemy;
+	std::vector<InventoryInfo> inventorysSmithing;
+	int inventorysAlchemyCount = 0;
+	int inventorysSmithingCount = 0;
 };
 
 
@@ -48,6 +58,8 @@ int getPlayerInvALCHCount();
 int getPlayerInvFOODCount();
 int getPlayerInvINGRCount();
 int getPlayerGoldCount();
+int getPlayerInvAlchemyCount();
+int getPlayerInvSmithingCount();
 InventoryInfo* getPlayerInvData();
 InventoryInfo* getPlayerInvARMOData();
 InventoryInfo* getPlayerInvBOOKData();
@@ -57,5 +69,7 @@ InventoryInfo* getPlayerInvALCHData();
 InventoryInfo* getPlayerInvFOODData();
 InventoryInfo* getPlayerInvINGRData();
 InventoryInfo* getPlayerInvData(int);
+std::vector<InventoryInfo>& getPlayerInvAlchemy();
+std::vector<InventoryInfo>& getPlayerInvSmithing();
 
 void RefreshPlayerInvInfo();

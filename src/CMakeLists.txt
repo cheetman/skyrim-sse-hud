@@ -248,3 +248,13 @@ if("${COPY_OUTPUT}")
 		VERBATIM
 	)
 endif()
+
+
+#add_custom_command(
+    #TARGET "${PROJECT_NAME}"
+    #POST_BUILD
+    #COMMAND "${CMAKE_COMMAND}" -E echo "Opening directory: ${Skyrim64Path}/Data/SKSE/Plugins/"
+    #COMMAND "${CMAKE_COMMAND}" -E chdir "${Skyrim64Path}/Data/SKSE/Plugins/"# && start .
+    #COMMENT "Open directory after build"
+#)
+

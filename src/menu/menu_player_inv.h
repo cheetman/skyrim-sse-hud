@@ -1,0 +1,9 @@
+
+
+
+
+namespace menu
+{
+	void renderPlayerInv();
+
+}

@@ -1,8 +1,6 @@
 #include "player_inv.h"
+#include <fonts/IconsMaterialDesignIcons.h>
 #include <utils/GeneralUtil.h>
-
-
-
 
 int nowIndexPI = 0;
 bool show_inv_window = false;
@@ -45,6 +43,14 @@ int getPlayerInvINGRCount()
 {
 	return MyInventoryInfo[!nowIndexPI].inventoryINGRCount;
 }
+int getPlayerInvAlchemyCount()
+{
+	return MyInventoryInfo[!nowIndexPI].inventorysAlchemyCount;
+}
+int getPlayerInvSmithingCount()
+{
+	return MyInventoryInfo[!nowIndexPI].inventorysSmithingCount;
+}
 
 InventoryInfo* getPlayerInvData()
 {
@@ -84,6 +90,14 @@ InventoryInfo* getPlayerInvData(int i)
 	return &MyInventoryInfo[!nowIndexPI].inventorys[i];
 }
 
+std::vector<InventoryInfo>& getPlayerInvAlchemy()
+{
+	return MyInventoryInfo[!nowIndexPI].inventorysAlchemy;
+}
+std::vector<InventoryInfo>& getPlayerInvSmithing()
+{
+	return MyInventoryInfo[!nowIndexPI].inventorysSmithing;
+}
 
 bool compareForInventory(const InventoryInfo& info1, const InventoryInfo& info2)
 {
@@ -94,8 +108,52 @@ bool compareForInventory(const InventoryInfo& info1, const InventoryInfo& info2)
 	}
 }
 
+void buildPlayerAlchemy(InventoryInfo inv[], std::int32_t count)
+{
+	auto& listAlchemy = MyInventoryInfo[nowIndexPI].inventorysAlchemy;
+	auto& listSmithing = MyInventoryInfo[nowIndexPI].inventorysSmithing;
+	int tmpCountAlchemy = 0;
+	int tmpCountSmithing = 0;
 
+	for (int i = 0; i < count; i++) {
+		auto& item = inv[i];
+		if (item.isAlchemyEnt) {
 
+			if (tmpCountAlchemy + 1 > listAlchemy.size()) {
+				listAlchemy.resize(listAlchemy.size() + 20);
+			}
+
+			listAlchemy[tmpCountAlchemy].ptr = inv[i].ptr;
+			listAlchemy[tmpCountAlchemy].invPtr = inv[i].invPtr;
+			listAlchemy[tmpCountAlchemy].invExtraPtr = inv[i].invExtraPtr;
+			listAlchemy[tmpCountAlchemy].count = inv[i].count;
+			listAlchemy[tmpCountAlchemy].formId = inv[i].formId;
+			listAlchemy[tmpCountAlchemy].name = inv[i].name;
+			listAlchemy[tmpCountAlchemy].uniqueID = inv[i].uniqueID;
+			listAlchemy[tmpCountAlchemy].isWorn = inv[i].isWorn;
+			listAlchemy[tmpCountAlchemy].weight = inv[i].weight;
+			tmpCountAlchemy++;
+
+		} else if (item.isSmithingEnt) {
+			if (tmpCountSmithing + 1 > listSmithing.size()) {
+				listSmithing.resize(listSmithing.size() + 20);
+			}
+			listSmithing[tmpCountSmithing].ptr = inv[i].ptr;
+			listSmithing[tmpCountSmithing].invPtr = inv[i].invPtr;
+			listSmithing[tmpCountSmithing].invExtraPtr = inv[i].invExtraPtr;
+			listSmithing[tmpCountSmithing].count = inv[i].count;
+			listSmithing[tmpCountSmithing].formId = inv[i].formId;
+			listSmithing[tmpCountSmithing].name = inv[i].name;
+			listSmithing[tmpCountSmithing].uniqueID = inv[i].uniqueID;
+			listSmithing[tmpCountSmithing].isWorn = inv[i].isWorn;
+			listSmithing[tmpCountSmithing].weight = inv[i].weight;
+			tmpCountSmithing++;
+		}
+	}
+
+	MyInventoryInfo[nowIndexPI].inventorysAlchemyCount = tmpCountAlchemy;
+	MyInventoryInfo[nowIndexPI].inventorysSmithingCount = tmpCountSmithing;
+}
 
 void __fastcall buildPlayerInvData(InventoryInfo inv[], int& i, RE::TESBoundObject* item, RE::InventoryEntryData* entry, std::int32_t count)
 {
@@ -104,6 +162,10 @@ void __fastcall buildPlayerInvData(InventoryInfo inv[], int& i, RE::TESBoundObje
 	if (entry->extraLists) {
 		for (auto& xList : *entry->extraLists) {
 			if (xList) {
+				inv[i].isAlchemyEnt = false;
+				inv[i].isSmithingEnt = false;
+				inv[i].isEnchanted = false;
+				inv[i].debugName = "";
 				auto xCount = xList->GetCount();
 
 				//logger::trace("Inv Name {} {} "sv, i, StringUtil::Utf8ToGbk(entry->GetDisplayName()));
@@ -114,8 +176,60 @@ void __fastcall buildPlayerInvData(InventoryInfo inv[], int& i, RE::TESBoundObje
 				inv[i].invExtraPtr = xList;
 				inv[i].count = xCount;
 				inv[i].formId = item->GetFormID();
-				inv[i].formIdStr = FormIDToString(item->GetFormID());
-				inv[i].name = xList->GetDisplayName(item);
+				//inv[i].formIdStr = FormIDToString(item->GetFormID());
+
+				// 附魔
+				auto ench = item->As<RE::TESEnchantableForm>();
+				if (ench && ench->formEnchanting) {
+					inv[i].isEnchanted = true;
+					for (auto effect : ench->formEnchanting->effects) {
+						inv[i].debugName += "|";
+						inv[i].debugName += effect->baseEffect->GetFullName();
+						if (effect->baseEffect->GetFormID() == 0x8B65C) {
+							inv[i].isAlchemyEnt = true;
+
+						} else if (effect->baseEffect->GetFormID() == 0x7A102) {
+							inv[i].isSmithingEnt = true;
+						}
+					}
+				}
+
+				const auto xEnch = xList->GetByType<RE::ExtraEnchantment>();
+				if (xEnch && xEnch->enchantment) {
+					inv[i].isEnchanted = true;
+					for (auto effect : xEnch->enchantment->effects) {
+						inv[i].debugName += "|";
+						inv[i].debugName += effect->baseEffect->GetFullName();
+
+						if (effect->baseEffect->GetFormID() == 0x8B65C) {
+							inv[i].isAlchemyEnt = true;
+						} else if (effect->baseEffect->GetFormID() == 0x7A102) {
+							inv[i].isSmithingEnt = true;
+						}
+					}
+
+				}
+
+		/*		const auto player = RE::PlayerCharacter::GetSingleton();
+				const auto invChanges = player->GetInventoryChanges()*/
+
+				auto uid = xList->GetByType<RE::ExtraUniqueID>();
+				if (uid) {
+					inv[i].uniqueID = uid->uniqueID;
+				} else {
+					inv[i].uniqueID = 0;
+				}
+
+				std::stringstream ss;
+				ss << xList->GetDisplayName(item) << " ";
+				if (xCount > 1) {
+					ss << "(" << xCount << ")";
+				}
+				if (inv[i].isEnchanted) {
+					ss << " " << ICON_MDI_FLASH;
+				}
+
+				inv[i].name = ss.str();
 				inv[i].weight = item->GetWeight();
 				inv[i++].isWorn = (xList->HasType<RE::ExtraWorn>() || xList->HasType<RE::ExtraWornLeft>());
 
@@ -124,15 +238,47 @@ void __fastcall buildPlayerInvData(InventoryInfo inv[], int& i, RE::TESBoundObje
 		}
 	}
 	if (count > 0) {
+		inv[i].isAlchemyEnt = false;
+		inv[i].isSmithingEnt = false;
+		inv[i].isEnchanted = false;
+		inv[i].debugName = "";
+
 		inv[i].ptr = item;
 		inv[i].invPtr = entry;
 		inv[i].invExtraPtr = nullptr;
 		inv[i].count = count;
 		inv[i].formId = item->GetFormID();
-		inv[i].formIdStr = FormIDToString(item->GetFormID());
+		//inv[i].formIdStr = FormIDToString(item->GetFormID());
 		//inv[i].name = entry->GetDisplayName();
-		inv[i].name = item->GetName();
 
+		auto ench = item->As<RE::TESEnchantableForm>();
+		if (ench && ench->formEnchanting) {
+			inv[i].isEnchanted = true;
+
+			for (auto effect : ench->formEnchanting->effects) {
+				inv[i].debugName += "|";
+				inv[i].debugName += effect->baseEffect->GetFullName();
+				if (effect->baseEffect->GetFormID() == 0x8B65C) {
+					inv[i].isAlchemyEnt = true;
+
+				} else if (effect->baseEffect->GetFormID() == 0x7A102) {
+					inv[i].isSmithingEnt = true;
+				}
+			}
+		}
+
+		std::stringstream ss;
+		ss << item->GetName() << " ";
+		if (count > 1) {
+			ss << "(" << count << ")";
+		}
+		if (inv[i].isEnchanted) {
+			ss << " " << ICON_MDI_FLASH;
+		}
+
+		inv[i].name = ss.str();
+
+		inv[i].uniqueID = 0;
 		inv[i].weight = item->GetWeight();
 		//inv[i++].isWorn = entry->IsWorn();
 		inv[i++].isWorn = false;
@@ -141,10 +287,8 @@ void __fastcall buildPlayerInvData(InventoryInfo inv[], int& i, RE::TESBoundObje
 	//logger::trace("Inv Name {} {} "sv, i, StringUtil::Utf8ToGbk(entry->GetDisplayName()));
 }
 
-
-
-void RefreshPlayerInvInfo() {
-
+void RefreshPlayerInvInfo()
+{
 	if (show_inv_window) {
 		// 刷新自己的装备
 		auto player = RE::PlayerCharacter::GetSingleton();
@@ -158,11 +302,16 @@ void RefreshPlayerInvInfo() {
 		MyInventoryInfo[nowIndexPI].inventoryINGRCount = 0;
 		MyInventoryInfo[nowIndexPI].inventoryCount = 0;
 		MyInventoryInfo[nowIndexPI].gold = 0;
+		MyInventoryInfo[nowIndexPI].inventorysAlchemyCount = 0;
+		MyInventoryInfo[nowIndexPI].inventorysSmithingCount = 0;
 
 		for (const auto& [item, invData] : inv) {
 			const auto& [count, entry] = invData;
 			//if (count > 0 && entry->IsWorn()) {
 			//const auto armor = item->As<RE::TESObjectARMO>();
+
+			//entry.get()->IsEnchanted();
+
 			if (count > 0) {
 				//actorInfo[tmpIndex].Inventorys[i].formIdStr = FormIDToString(armor->GetFormID());
 				if (item->GetWeight() >= 0) {
@@ -217,12 +366,12 @@ void RefreshPlayerInvInfo() {
 			std::sort(MyInventoryInfo[nowIndexPI].inventorysINGR, MyInventoryInfo[nowIndexPI].inventorysINGR + MyInventoryInfo[nowIndexPI].inventoryINGRCount, compareForInventory);
 		}
 
+		
+		buildPlayerAlchemy(MyInventoryInfo[nowIndexPI].inventorysARMO, MyInventoryInfo[nowIndexPI].inventoryARMOCount);
+
 		// 双缓冲可以不用
 		//MyInventoryInfo[nowIndexPI].inventoryCount = i;
+
+		nowIndexPI = !nowIndexPI;
 	}
-
-
-
 }
-
-

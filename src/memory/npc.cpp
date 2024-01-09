@@ -158,7 +158,7 @@ void __cdecl RefreshActorInfo(void*)
 		Sleep(100);
 
 		{
-			RefreshPlayerInvInfo();
+			//RefreshPlayerInvInfo();
 		}
 
 		if (show_npc_window) {

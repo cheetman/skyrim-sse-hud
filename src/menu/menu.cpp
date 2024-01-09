@@ -25,10 +25,11 @@
 //#include <wincodec.h>
 #include <hook/BSRenderManager.h>
 #include <hook/dinputhook.h>
-#include <utils/WICTextureLoader/WICTextureLoader11.h>
 #include <memory/data.h>
+#include <utils/WICTextureLoader/WICTextureLoader11.h>
 //#include <utils/WICTextureLoader/WICTextureLoader11.cpp>
 #include <menu/list_quest.h>
+#include <menu/menu_player_inv.h>
 
 namespace menu
 {
@@ -172,76 +173,6 @@ namespace menu
 	};
 
 	std::vector<RE::Actor*> actors;
-
-	void __fastcall buildPlayerInvInfo(int count, InventoryInfo inv[])
-	{
-		static ImGuiTableFlags flags =
-			/*	ImGuiTableFlags_Reorderable
-			| ImGuiTableFlags_Hideable*/
-			ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_NoBordersInBody
-			/*	| ImGuiTableFlags_NoBordersInBody
-				| ImGuiTableFlags_ScrollX
-				| ImGuiTableFlags_SizingFixedFit*/
-			;
-
-		const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
-		if (ImGui::BeginTable("table_sorting", 6, flags, ImVec2(0.0f, TEXT_BASE_HEIGHT * show_inv_window_height), 0.0f)) {
-			ImGui::TableSetupColumn("已装备", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_ID);
-			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 100.0f, PlayerInfoColumnID_1);
-			ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_2);
-			ImGui::TableSetupColumn("重量", ImGuiTableColumnFlags_WidthFixed, 40, PlayerInfoColumnID_3);
-			ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed, 100.0f, PlayerInfoColumnID_4);
-			//ImGui::TableSetupColumn("地址", ImGuiTableColumnFlags_WidthFixed, 0.0f, PlayerInfoColumnID_5);
-			ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
-			ImGui::TableHeadersRow();
-
-			ImGuiListClipper clipper;
-			clipper.Begin(count);
-			while (clipper.Step())
-				for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
-					// Display a data item
-					//InventoryInfo* item = getPlayerInvData(row_n);
-					InventoryInfo& item = inv[row_n];
-					//if (item) {
-					ImGui::PushID(row_n + 7000);
-					ImGui::TableNextRow();
-					ImGui::TableNextColumn();
-					ImGui::Text("%s", item.isWorn ? "×" : "");
-					ImGui::TableNextColumn();
-
-					if (ImGui::Selectable(item.name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick)) {
-						//if (ImGui::IsMouseDoubleClicked(0)) {
-						if (item.ptr->IsAmmo() || item.ptr->IsArmor() || item.ptr->IsWeapon()) {
-							RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
-							auto actorEquipManager = RE::ActorEquipManager::GetSingleton();
-							if (item.isWorn) {
-								actorEquipManager->UnequipObject(player, item.ptr, item.invExtraPtr, 1);
-								item.isWorn = false;
-							} else {
-								actorEquipManager->EquipObject(player, item.ptr, item.invExtraPtr, 1);
-								item.isWorn = true;
-							}
-						}
-						//}
-					}
-					ImGui::TableNextColumn();
-					//if (isShowFriend && isShowEnemy) {
-					ImGui::Text("%d", item.count);
-					//}
-					ImGui::TableNextColumn();
-					//if (isAim) {
-					ImGui::Text("%.1f", item.weight);
-					//}
-					ImGui::TableNextColumn();
-					ImGui::Text("%s", item.formIdStr.c_str());
-					//ImGui::TableNextColumn();
-					//ImGui::Text("0x%X", item->address);
-					ImGui::PopID();
-					//}
-				}
-			ImGui::EndTable();
-		}
-	}
 
 	void __fastcall render()
 	{
@@ -718,50 +649,7 @@ namespace menu
 
 		if (show_inv_window) {
 			if (active || !show_inv_window_active) {
-				ImGui::Begin("防具信息", nullptr, window_flags);
-				ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
-				if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
-					if (ImGui::BeginTabItem(ICON_MDI_SWORD " 武器", 0, 0)) {
-						buildPlayerInvInfo(getPlayerInvWEAPCount(), getPlayerInvWEAPData());
-						ImGui::EndTabItem();
-					}
-					if (ImGui::BeginTabItem(ICON_MDI_SHIELD " 装备", 0, 0)) {
-						buildPlayerInvInfo(getPlayerInvARMOCount(), getPlayerInvARMOData());
-						ImGui::EndTabItem();
-					}
-					if (ImGui::BeginTabItem(ICON_MDI_ARROW_PROJECTILE " 弹药", 0, 0)) {
-						buildPlayerInvInfo(getPlayerInvAMMOCount(), getPlayerInvAMMOData());
-						ImGui::EndTabItem();
-					}
-					if (ImGui::BeginTabItem(ICON_MDI_SOURCE_BRANCH " 材料", 0, 0)) {
-						buildPlayerInvInfo(getPlayerInvINGRCount(), getPlayerInvINGRData());
-						ImGui::EndTabItem();
-					}
-
-					if (ImGui::BeginTabItem(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE " 药水", 0, 0)) {
-						buildPlayerInvInfo(getPlayerInvALCHCount(), getPlayerInvALCHData());
-						ImGui::EndTabItem();
-					}
-					if (ImGui::BeginTabItem(ICON_MDI_FOOD_DRUMSTICK " 食物", 0, 0)) {
-						buildPlayerInvInfo(getPlayerInvFOODCount(), getPlayerInvFOODData());
-						ImGui::EndTabItem();
-					}
-					if (ImGui::BeginTabItem(ICON_MDI_BOOK_OPEN_VARIANT " 书信", 0, 0)) {
-						buildPlayerInvInfo(getPlayerInvBOOKCount(), getPlayerInvBOOKData());
-						ImGui::EndTabItem();
-					}
-					if (ImGui::BeginTabItem(ICON_MDI_AXIS_ARROW " 杂项", 0, 0)) {
-						buildPlayerInvInfo(getPlayerInvCount(), getPlayerInvData());
-						ImGui::EndTabItem();
-					}
-
-					ImGui::EndTabBar();
-				}
-
-				ImGui::Text("\uf0d6 %d", getPlayerGoldCount());
-				//ImGui::Text("负重：%0.1f/%0.0f", playerInfo.equippedWeight, playerInfo.carryWeight);
-
-				ImGui::End();
+				renderPlayerInv();
 			}
 		}
 
@@ -986,9 +874,7 @@ namespace menu
 		//}
 
 		if (active) {
-
 			list::renderQuest();
-
 
 			static bool show_demo_window = false;
 			static bool show_another_window = false;
@@ -1122,10 +1008,8 @@ namespace menu
 					}
 
 					if (ImGui::BeginPopupModal(I18Nc("common.setting.tab-about"), NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-
-						
 						ImGui::Text("游戏版本：v%s", data::gameVersion.string().c_str());
-						ImGui::Text("插件版本：v1.2.6 ");
+						ImGui::Text("插件版本：v1.2.7 ");
 
 						if (ImGui::Button(I18Nc("common.setting.btn-ok"), ImVec2(120, 0))) {
 							ImGui::CloseCurrentPopup();
@@ -1134,7 +1018,7 @@ namespace menu
 					}
 					if (ImGui::Selectable(I18Ni(ICON_MDI_INFORMATION_OUTLINE, "common.setting.tab-about"), false, 0, size)) {
 						clickCount = 0;
-						ImGui::OpenPopup(I18Nc("common.setting.tab-about")); 
+						ImGui::OpenPopup(I18Nc("common.setting.tab-about"));
 					}
 
 					ImGui::EndGroup();
@@ -1539,17 +1423,15 @@ namespace menu
 							ImGui::Checkbox(I18Nc("hud.setting.checkbox-displayPositionInfo"), &show_player_debug_window);
 							renderStatSettings();
 							//ImGui::TableNextColumn();
-							/*ImGui::TableNextColumn();
-								ImGui::Checkbox("物品栏信息", &show_inv_window);
-								if (show_inv_window) {
-									if (ImGui::TreeNodeEx("设置##2", ImGuiTreeNodeFlags_DefaultOpen)) {
-										ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-										ImGui::DragInt("显示数据", &show_inv_window_height, 1, 15, 80, "%d条");
-										ImGui::Checkbox("激活菜单时显示", &show_inv_window_active);
-										ImGui::PopItemWidth();
-										ImGui::TreePop();
-									}
-								}*/
+							ImGui::Checkbox("物品栏信息", &show_inv_window);
+							if (show_inv_window) {
+								ImGui::Indent();
+								ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
+								ImGui::DragInt("显示数据", &show_inv_window_height, 1, 15, 80, "%d条");
+								ImGui::Checkbox("激活菜单时显示", &show_inv_window_active);
+								ImGui::PopItemWidth();
+								ImGui::Unindent();
+							}
 
 							//ImGui::EndTable();
 							//}
