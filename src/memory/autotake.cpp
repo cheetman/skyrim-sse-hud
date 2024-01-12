@@ -548,7 +548,6 @@ void __cdecl TimerAutoPick(void*)
 				lotd::refreshDisplayCount();
 			}
 			track::refreshAutoTrackItem();
-
 			sexlab::refreshInfo();
 			stats::refreshCount();
 		}
