@@ -661,6 +661,20 @@ namespace setting
 					if (j2.contains("isRCMenuMove")) {
 						isRCMenuMove = j2["isRCMenuMove"].get<bool>();
 					}
+
+					if (j2.contains("show_items_window_auto_enable")) {
+						show_items_window_auto_enable = j2["show_items_window_auto_enable"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_cont_book")) {
+						show_items_window_auto_cont_book = j2["show_items_window_auto_cont_book"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_achr_book")) {
+						show_items_window_auto_achr_book = j2["show_items_window_auto_achr_book"].get<bool>();
+					}
+					if (j2.contains("show_items_window_auto_book")) {
+						show_items_window_auto_book = j2["show_items_window_auto_book"].get<bool>();
+					}
+					
 				}
 
 				if (j.contains("LotdInfo")) {
@@ -1121,9 +1135,31 @@ namespace setting
 															 { "isAutoTrackItems", track::isAutoTrackItems },
 
 															 { "isRCMenuMove", isRCMenuMove },
+															 { "show_items_window_auto_book", show_items_window_auto_book },
+															 { "show_items_window_auto_cont_book", show_items_window_auto_cont_book },
+															 { "show_items_window_auto_achr_book", show_items_window_auto_achr_book },
+															 { "show_items_window_auto_enable", show_items_window_auto_enable },
 
 														 } },
-									   { "LotdInfo", { { "showlocationItemCount", lotd::showlocationItemCount }, { "isArmoryIgnore", lotd::isArmoryIgnore }, { "isCrimeIgnore", lotd::isCrimeIgnore }, { "isInvIgnore", lotd::isInvIgnore }, { "isShowAttached", lotd::isShowAttached }, { "colorTableHeaderBgX", lotd::colorTableHeaderBg.x }, { "colorTableHeaderBgY", lotd::colorTableHeaderBg.y }, { "colorTableHeaderBgZ", lotd::colorTableHeaderBg.z }, { "colorTableHeaderBgW", lotd::colorTableHeaderBg.w }, { "colorTableBorderStrongX", lotd::colorTableBorderStrong.x }, { "colorTableBorderStrongY", lotd::colorTableBorderStrong.y }, { "colorTableBorderStrongZ", lotd::colorTableBorderStrong.z }, { "colorTableBorderStrongW", lotd::colorTableBorderStrong.w }, { "isAutoTrackLotdItems", lotd::isAutoTrackLotdItems }, { "isAutoTrackLotdExcavation", lotd::isAutoTrackLotdExcavation }, { "isAutoTrackLotdCards", lotd::isAutoTrackLotdCards }, { "isAutoTrackLotdItemsCrimeIgnore", lotd::isAutoTrackLotdItemsCrimeIgnore }, { "showDisplayItemCount", lotd::showDisplayItemCount }, { "scanType", lotd::scanType } } }, { "QuestInfo", {
+									   { "LotdInfo", { { "showlocationItemCount", lotd::showlocationItemCount }
+																 , { "isArmoryIgnore", lotd::isArmoryIgnore }
+																 , { "isCrimeIgnore", lotd::isCrimeIgnore }
+																 , { "isInvIgnore", lotd::isInvIgnore }
+																 , { "isShowAttached", lotd::isShowAttached }
+																 , { "colorTableHeaderBgX", lotd::colorTableHeaderBg.x }
+																 , { "colorTableHeaderBgY", lotd::colorTableHeaderBg.y }
+																 , { "colorTableHeaderBgZ", lotd::colorTableHeaderBg.z }
+																 , { "colorTableHeaderBgW", lotd::colorTableHeaderBg.w }
+																 , { "colorTableBorderStrongX", lotd::colorTableBorderStrong.x }
+																 , { "colorTableBorderStrongY", lotd::colorTableBorderStrong.y }
+																 , { "colorTableBorderStrongZ", lotd::colorTableBorderStrong.z }
+																 , { "colorTableBorderStrongW", lotd::colorTableBorderStrong.w }
+																 , { "isAutoTrackLotdItems", lotd::isAutoTrackLotdItems }
+																 , { "isAutoTrackLotdExcavation", lotd::isAutoTrackLotdExcavation }
+																 , { "isAutoTrackLotdCards", lotd::isAutoTrackLotdCards }
+																 , { "isAutoTrackLotdItemsCrimeIgnore", lotd::isAutoTrackLotdItemsCrimeIgnore }
+																 , { "showDisplayItemCount", lotd::showDisplayItemCount }
+																 , { "scanType", lotd::scanType } } }, { "QuestInfo", {
 																																																																																																																																																																																																																																																																																								{ "isShowQuest", isShowQuest },
 																																																																																																																																																																																																																																																																																								{ "colorQuestTableHeaderBgX", menu::colorQuestTableHeaderBg.x },
 																																																																																																																																																																																																																																																																																								{ "colorQuestTableHeaderBgY", menu::colorQuestTableHeaderBg.y },

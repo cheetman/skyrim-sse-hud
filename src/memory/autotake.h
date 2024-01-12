@@ -18,6 +18,7 @@ extern bool show_items_window_auto_flor;
 extern bool show_items_window_auto_food;
 extern bool show_items_window_auto_ingr;
 extern bool show_items_window_auto_alch;
+extern bool show_items_window_auto_book;
 extern bool show_items_window_auto_misc;
 extern bool show_items_window_auto_tree;
 extern bool show_items_window_auto_sgem;
@@ -40,6 +41,7 @@ extern bool show_items_window_auto_achr_misc;
 extern bool show_items_window_auto_achr_gold;
 extern bool show_items_window_auto_achr_scrl;
 extern bool show_items_window_auto_achr_keym;
+extern bool show_items_window_auto_achr_book;
 extern bool show_items_window_auto_achr_weap;
 extern bool show_items_window_auto_achr_armo;
 extern bool show_items_window_auto_achr_ston;
@@ -54,6 +56,7 @@ extern bool show_items_window_auto_cont_alch;
 extern bool show_items_window_auto_cont_sgem;
 extern bool show_items_window_auto_cont_ammo;
 extern bool show_items_window_auto_cont_misc;
+extern bool show_items_window_auto_cont_book;
 extern bool show_items_window_auto_cont_gold;
 extern bool show_items_window_auto_cont_scrl;
 extern bool show_items_window_auto_cont_keym;
@@ -81,6 +84,10 @@ extern int show_items_window_auto_armo_priceweight_value;
 extern int refresh_time_auto;
 extern int show_items_window_auto_every_max;
 extern int show_items_window_auto_every;
+
+extern bool show_items_window_auto_enable;
+
+
 
 void addItem(RE::PlayerCharacter* contReff, RE::TESObjectREFR* reff, int count);
 void addItemAuto(RE::PlayerCharacter* contReff, RE::TESObjectREFR* reff, int count);

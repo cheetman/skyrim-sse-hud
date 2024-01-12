@@ -12,13 +12,13 @@
 #include <memory/player.h>
 #include <memory/stat.h>
 #include <memory/track.h>
+#include <menu/list_quest.h>
 #include <menu/menu.h>
 #include <menu/menu_quest.h>
 #include <menu/menu_track.h>
 #include <setting/i18n.h>
 #include <setting/setting.h>
 #include <utils/utils.h>
-#include <menu/list_quest.h>
 
 namespace menu
 {
@@ -1028,7 +1028,7 @@ namespace menu
 		}
 	}
 
-	void __fastcall buildItemInfo(int count, ItemInfo* items, RE::FormType formType)
+	void __fastcall buildItemInfo(int count, ItemInfo* items, RE::FormType formType, int xxx = 0)
 	{
 		static ImGuiTableFlags flagsItem =
 			ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
@@ -1068,7 +1068,7 @@ namespace menu
 			columnCount++;
 		}
 
-		if (ImGui::BeginTable(("tableItem3" + std::to_string((int)formType)).c_str(), columnCount, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 15, TEXT_BASE_HEIGHT * show_inv_window_height), 0.0f)) {
+		if (ImGui::BeginTable(("tableItem3" + std::to_string((int)formType + xxx)).c_str(), columnCount, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 15, TEXT_BASE_HEIGHT * show_inv_window_height), 0.0f)) {
 			//ImGui::TableSetupColumn("已装备", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_ID);
 			ImGui::TableSetupColumn(I18Nc("finder.ui.column-name"), ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_1);
 			switch (formType) {
@@ -1481,7 +1481,6 @@ namespace menu
 				}
 			}
 
-
 			{
 				std::lock_guard<std::mutex> lock(mtxTrack);
 				if (trackPtrs2.size() > 0 || trackActorPtrs2.size() > 0) {
@@ -1682,6 +1681,13 @@ namespace menu
 						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##43")) {
 							takeAllItemBOOK(getItemCountBOOK(), getItemsBOOK(), RE::FormType::Book);
 						}
+						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##43"), &show_items_window_auto_book);
+					} else {
+						if (show_items_window_auto_book) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::Text(ICON_MDI_AUTORENEW);
+						}
 					}
 					buildItemInfoBOOK(getItemCountBOOK(), getItemsBOOK(), RE::FormType::Book);
 				}
@@ -1776,8 +1782,7 @@ namespace menu
 						}
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##52"), &show_items_window_auto_keym);
-					}
-					else {
+					} else {
 						if (show_items_window_auto_keym) {
 							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 							ImGui::Text(ICON_MDI_AUTORENEW);
@@ -1803,7 +1808,7 @@ namespace menu
 							ImGui::Text(ICON_MDI_AUTORENEW);
 						}
 					}
-					buildItemInfo(getItemCountSTON(), getItemsSTON(), RE::FormType::Misc);
+					buildItemInfo(getItemCountSTON(), getItemsSTON(), RE::FormType::Misc,301);
 					ImGui::Spacing();
 				}
 				if (getItemCountANVI() > 0) {
@@ -1823,7 +1828,7 @@ namespace menu
 							ImGui::Text(ICON_MDI_AUTORENEW);
 						}
 					}
-					buildItemInfo(getItemCountANVI(), getItemsANVI(), RE::FormType::Misc);
+					buildItemInfo(getItemCountANVI(), getItemsANVI(), RE::FormType::Misc, 302);
 					ImGui::Spacing();
 				}
 				if (getItemCountANHD() > 0) {
@@ -1843,7 +1848,7 @@ namespace menu
 							ImGui::Text(ICON_MDI_AUTORENEW);
 						}
 					}
-					buildItemInfo(getItemCountANHD(), getItemsANHD(), RE::FormType::Misc);
+					buildItemInfo(getItemCountANHD(), getItemsANHD(), RE::FormType::Misc, 303);
 					ImGui::Spacing();
 				}
 				if (getItemCountANPA() > 0) {
@@ -1863,7 +1868,7 @@ namespace menu
 							ImGui::Text(ICON_MDI_AUTORENEW);
 						}
 					}
-					buildItemInfo(getItemCountANPA(), getItemsANPA(), RE::FormType::Misc);
+					buildItemInfo(getItemCountANPA(), getItemsANPA(), RE::FormType::Misc, 304);
 					ImGui::Spacing();
 				}
 				if (getItemCountTOOL() > 0) {
@@ -1883,7 +1888,7 @@ namespace menu
 							ImGui::Text(ICON_MDI_AUTORENEW);
 						}
 					}
-					buildItemInfo(getItemCountTOOL(), getItemsTOOL(), RE::FormType::Misc);
+					buildItemInfo(getItemCountTOOL(), getItemsTOOL(), RE::FormType::Misc, 305);
 					ImGui::Spacing();
 				}
 				if (getItemCountMISC() > 0) {
@@ -1981,6 +1986,8 @@ namespace menu
 									ImGui::TableNextColumn();
 									ImGui::Checkbox(I18Ni(ICON_MDI_KEY, "finder.setting.checkbox-keym"), &show_items_window_auto_achr_keym);
 									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_BOOK_OPEN_VARIANT, "书信"), &show_items_window_auto_achr_book);
+									ImGui::TableNextColumn();
 									ImGui::Checkbox(I18Ni(ICON_MDI_DIAMOND_STONE, "finder.setting.checkbox-ston"), &show_items_window_auto_achr_ston);
 									ImGui::TableNextColumn();
 									ImGui::Checkbox(I18Ni(ICON_MDI_ANVIL, "finder.setting.checkbox-anvi"), &show_items_window_auto_achr_anvi);
@@ -2046,6 +2053,8 @@ namespace menu
 									ImGui::Checkbox(I18Ni(ICON_MDI_SCRIPT_TEXT, "finder.setting.checkbox-scrl"), &show_items_window_auto_cont_scrl);
 									ImGui::TableNextColumn();
 									ImGui::Checkbox(I18Ni(ICON_MDI_KEY, "finder.setting.checkbox-keym"), &show_items_window_auto_cont_keym);
+									ImGui::TableNextColumn();
+									ImGui::Checkbox(I18Ni(ICON_MDI_BOOK_OPEN_VARIANT, "书信"), &show_items_window_auto_cont_book);
 									ImGui::TableNextColumn();
 									ImGui::Checkbox(I18Ni(ICON_MDI_DIAMOND_STONE, "finder.setting.checkbox-ston"), &show_items_window_auto_cont_ston);
 									ImGui::TableNextColumn();
@@ -2223,6 +2232,7 @@ namespace menu
 
 						ImGui::Spacing();
 						if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_AUTORENEW, "finder.setting.label-autoPickup"), ImGuiTreeNodeFlags_DefaultOpen)) {
+							ImGui::Checkbox("启用", &show_items_window_auto_enable);
 							ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
 							ImGui::SliderInt(I18Nc("finder.setting.slider-pickupRange"), &show_items_window_auto_dis, 1, 100, "%d米");
 							ImGui::SliderInt(I18Nc("finder.setting.slider-pickupFrequency"), &refresh_time_auto, 1, 10, "%d秒");

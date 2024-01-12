@@ -4,10 +4,10 @@
 #include <event/BSTMenuEvent.h>
 #include <memory/sexlab.h>
 #include <memory/stat.h>
+#include <memory/track.h>
 #include <utils/GeneralUtil.h>
 #include <utils/NameUtil.h>
 #include <utils/PlayerDataProvider.h>
-#include <memory/track.h>
 
 bool show_items_window_auto_ignore = true;
 bool show_items_window_auto_notification = true;
@@ -21,6 +21,7 @@ bool show_items_window_auto_tree = false;
 bool show_items_window_auto_food = false;
 bool show_items_window_auto_ingr = false;
 bool show_items_window_auto_alch = false;
+bool show_items_window_auto_book = false;
 bool show_items_window_auto_misc = false;
 bool show_items_window_auto_sgem = false;
 bool show_items_window_auto_achr = false;
@@ -38,6 +39,7 @@ bool show_items_window_auto_achr_sgem = false;
 bool show_items_window_auto_achr_ammo = false;
 bool show_items_window_auto_achr_scrl = false;
 bool show_items_window_auto_achr_keym = false;
+bool show_items_window_auto_achr_book = false;
 bool show_items_window_auto_achr_misc = false;
 bool show_items_window_auto_achr_gold = false;
 bool show_items_window_auto_achr_weap = false;
@@ -55,6 +57,7 @@ bool show_items_window_auto_cont_sgem = false;
 bool show_items_window_auto_cont_ammo = false;
 bool show_items_window_auto_cont_scrl = false;
 bool show_items_window_auto_cont_keym = false;
+bool show_items_window_auto_cont_book = false;
 bool show_items_window_auto_cont_misc = false;
 bool show_items_window_auto_cont_gold = false;
 bool show_items_window_auto_cont_weap = false;
@@ -82,6 +85,8 @@ int show_items_window_auto_dis = 2;
 int refresh_time_auto = 1;
 int show_items_window_auto_every_max = 10;
 int show_items_window_auto_every = 0;
+
+bool show_items_window_auto_enable = true;
 
 // 地点排除
 std::unordered_set<int> excludeLocationFormIds;
@@ -382,7 +387,7 @@ bool __fastcall autoTakeForACHR(RE::Actor* actor, RE::TESBoundObject* obj, int c
 			return false;
 		}
 	}
-	
+
 	// 限制数量
 	if (checkTakeCount()) {
 		return true;
@@ -530,7 +535,7 @@ void __cdecl TimerAutoPick(void*)
 			continue;
 		}
 
-		if (!show_items_window && !show_items_window_auto_ammo && !show_items_window_auto_flor && !show_items_window_auto_food && !show_items_window_auto_ingr && !show_items_window_auto_alch && !show_items_window_auto_misc && !show_items_window_auto_tree && !show_items_window_auto_sgem && !show_items_window_auto_achr && !show_items_window_auto_cont && !show_items_window_auto_ston && !show_items_window_auto_anvi && !show_items_window_auto_anhd && !show_items_window_auto_anpa && !show_items_window_auto_tool) {
+		if (!show_items_window_auto_enable || (!show_items_window && !show_items_window_auto_ammo && !show_items_window_auto_flor && !show_items_window_auto_food && !show_items_window_auto_ingr && !show_items_window_auto_alch && !show_items_window_auto_misc && !show_items_window_auto_tree && !show_items_window_auto_sgem && !show_items_window_auto_achr && !show_items_window_auto_cont && !show_items_window_auto_ston && !show_items_window_auto_anvi && !show_items_window_auto_anhd && !show_items_window_auto_anpa && !show_items_window_auto_tool && !show_items_window_auto_book)) {
 			Sleep(1000);
 			// 暂时挂在这里
 			if (lotd::isLoad) {
@@ -607,8 +612,6 @@ void __cdecl TimerAutoPick(void*)
 				continue;
 			}
 		}
-		
-
 
 		{
 			const auto& [map, lock] = RE::TESForm::GetAllForms();
@@ -664,7 +667,6 @@ void __cdecl TimerAutoPick(void*)
 									if (count > 0 && entry) {
 										// 自动拾取
 										if (show_items_window_auto_achr && distance < show_items_window_auto_dis) {
-
 											/*if (FormUtil::IsQuestItem(&entry.get()->extraLists) {
 												return false;
 											}*/
@@ -846,6 +848,19 @@ void __cdecl TimerAutoPick(void*)
 													}
 												}
 												break;
+											case RE::FormType::Book:
+												if (show_items_window_auto_achr_book) {
+													auto book = obj->As<RE::TESObjectBOOK>();
+													if (book) {
+														if (book->IsRead()) {
+															continue;
+														}
+													}
+													if (autoTakeForACHR(actor, obj, count, player)) {
+														continue;
+													}
+												}
+												break;
 											default:
 												break;
 											}
@@ -1002,6 +1017,47 @@ void __cdecl TimerAutoPick(void*)
 										}
 									case RE::FormType::Book:
 										{
+											if (tmpCountBOOK > show_items_window_array_max_length) {
+												continue;
+											}
+
+											if (reff->IsMarkedForDeletion()) {
+												continue;
+											}
+											if (show_items_window_ignore) {
+												if (excludeFormIds.find(baseObj->GetFormID()) != excludeFormIds.end()) {
+													continue;
+												}
+											}
+											auto name = reff->GetDisplayFullName();
+											if (strlen(name) == 0) {
+												continue;
+											}
+
+											float distance = ValueUtil::calculateDistance(reff->GetPosition(), player->GetPosition()) / 100.0f;
+
+											if (!currentLocation) {
+												if (distance > show_items_window_auto_dis_skyrim) {
+													continue;
+												}
+											} else {
+												if (distance > show_items_window_auto_dis_local) {
+													continue;
+												}
+											}
+
+											auto book = baseObj->As<RE::TESObjectBOOK>();
+											if (book) {
+												if (book->IsRead()) {
+													continue;
+												}
+											}
+
+											// 自动拾取判断
+											if (autoTake(reff, player, show_items_window_auto_book, distance)) {
+												continue;
+											}
+
 											tmpCountBOOK++;
 											break;
 										}
@@ -1433,6 +1489,21 @@ void __cdecl TimerAutoPick(void*)
 																	}
 																}
 																break;
+
+															case RE::FormType::Book:
+																if (show_items_window_auto_cont_book) {
+																	auto book = obj->As<RE::TESObjectBOOK>();
+																	if (book) {
+																		if (book->IsRead()) {
+																			continue;
+																		}
+																	}
+																	if (autoTakeForCONT(reff, obj, count, player)) {
+																		continue;
+																	}
+																}
+																break;
+
 															default:
 																break;
 															}
@@ -1584,7 +1655,6 @@ void __cdecl TimerAutoPick(void*)
 											auto ashPile = reff->extraList.GetAshPileRef();
 											if (ashPile && ashPile.get()) {
 												auto actor = ashPile.get().get();
-								
 
 												if (tmpCountACTI > show_items_window_array_max_length) {
 													continue;
