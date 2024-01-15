@@ -881,6 +881,51 @@ namespace setting
 				}
 			}
 
+			if (json.contains("favorAlchemy")) {
+				for (auto const& j : json["favorAlchemy"]) {
+					if (j.contains("formId")) {
+						FavorInfo item;
+						item.formId = j["formId"];
+						for (auto const& j2 : j["entDetail"]) {
+							FavorEntDetailInfo detail;
+							detail.formId = j2["formId"].get<RE::FormID>();
+							detail.value = j2["value"].get<float>();
+							item.entDetail.push_back(detail);
+						}
+						for (auto const& j2 : j["entDetail2"]) {
+							FavorEntDetailInfo detail;
+							detail.formId = j2["formId"].get<RE::FormID>();
+							detail.value = j2["value"].get<float>();
+							item.entDetail2.push_back(detail);
+						}
+						favorAlchemy.push_back(item);
+					}
+				}
+			}
+
+			
+			if (json.contains("favorSmithing")) {
+				for (auto const& j : json["favorSmithing"]) {
+					if (j.contains("formId")) {
+						FavorInfo item;
+						item.formId = j["formId"];
+						for (auto const& j2 : j["entDetail"]) {
+							FavorEntDetailInfo detail;
+							detail.formId = j2["formId"].get<RE::FormID>();
+							detail.value = j2["value"].get<float>();
+							item.entDetail.push_back(detail);
+						}
+						for (auto const& j2 : j["entDetail2"]) {
+							FavorEntDetailInfo detail;
+							detail.formId = j2["formId"].get<RE::FormID>();
+							detail.value = j2["value"].get<float>();
+							item.entDetail2.push_back(detail);
+						}
+						favorSmithing.push_back(item);
+					}
+				}
+			}
+
 		} catch (std::exception const& ex) {
 			logger::error(ex.what());
 			//log() << "Unable to save settings file: " << ex.what() << std::endl;
@@ -1237,6 +1282,56 @@ namespace setting
 				arrPosition.push_back(obj);
 			}
 			json["moveToPositions"] = arrPosition;
+
+			
+			nlohmann::json arrFavorAlchemy = nlohmann::json::array();
+			for (auto item : favorAlchemy) {
+				nlohmann::json obj;
+				obj["formId"] = item.formId;
+				nlohmann::json entDetail = nlohmann::json::array();
+				for (auto item2 : item.entDetail) {
+					nlohmann::json obj2;
+					obj2["formId"] = item2.formId;
+					obj2["value"] = item2.value;
+					entDetail.push_back(obj2);
+				}
+				obj["entDetail"] = entDetail;
+				nlohmann::json entDetail2 = nlohmann::json::array();
+				for (auto item2 : item.entDetail2) {
+					nlohmann::json obj2;
+					obj2["formId"] = item2.formId;
+					obj2["value"] = item2.value;
+					entDetail2.push_back(obj2);
+				}
+				obj["entDetail2"] = entDetail2;
+				arrFavorAlchemy.push_back(obj);
+			}
+			json["favorAlchemy"] = arrFavorAlchemy;
+
+			
+			nlohmann::json arrFavorSmithing = nlohmann::json::array();
+			for (auto item : favorSmithing) {
+				nlohmann::json obj;
+				obj["formId"] = item.formId;
+				nlohmann::json entDetail = nlohmann::json::array();
+				for (auto item2 : item.entDetail) {
+					nlohmann::json obj2;
+					obj2["formId"] = item2.formId;
+					obj2["value"] = item2.value;
+					entDetail.push_back(obj2);
+				}
+				obj["entDetail"] = entDetail;
+				nlohmann::json entDetail2 = nlohmann::json::array();
+				for (auto item2 : item.entDetail2) {
+					nlohmann::json obj2;
+					obj2["formId"] = item2.formId;
+					obj2["value"] = item2.value;
+					entDetail2.push_back(obj2);
+				}
+				obj["entDetail2"] = entDetail2;
+				arrFavorSmithing.push_back(obj);
+			}
+			json["favorSmithing"] = arrFavorSmithing;
 
 			std::ofstream o(settings_path);
 			o << std::setw(4) << json << std::endl;

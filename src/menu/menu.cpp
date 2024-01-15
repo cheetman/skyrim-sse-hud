@@ -647,11 +647,11 @@ namespace menu
 			renderNpc(window_flags);
 		}
 
-		if (show_inv_window) {
+		/*if (show_inv_window) {
 			if (active || !show_inv_window_active) {
 				renderPlayerInv();
 			}
-		}
+		}*/
 
 		if (show_items_window) {
 			/*ImGui::Begin("物品信息", nullptr, window_flags);
@@ -1422,8 +1422,7 @@ namespace menu
 							ImGui::Checkbox(I18Nc("hud.setting.checkbox-displayWeaponInfo"), &show_player_weapon_window);
 							ImGui::Checkbox(I18Nc("hud.setting.checkbox-displayPositionInfo"), &show_player_debug_window);
 							renderStatSettings();
-							//ImGui::TableNextColumn();
-							ImGui::Checkbox("物品栏信息", &show_inv_window);
+					/*		ImGui::Checkbox("物品栏信息", &show_inv_window);
 							if (show_inv_window) {
 								ImGui::Indent();
 								ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
@@ -1431,10 +1430,8 @@ namespace menu
 								ImGui::Checkbox("激活菜单时显示", &show_inv_window_active);
 								ImGui::PopItemWidth();
 								ImGui::Unindent();
-							}
+							}*/
 
-							//ImGui::EndTable();
-							//}
 
 							ImGui::EndGroup();
 
@@ -1556,13 +1553,13 @@ namespace menu
 								ImGui::Checkbox(I18Nc("hud.setting.checkbox-displayOSLArousal"), &sexlab::isShowPlayOSLArousal);
 								ImGui::EndDisabled();
 							}
-							if (sexlab::isLoadSexlabAroused) {
+							/*if (sexlab::isLoadSexlabAroused) {
 								ImGui::Checkbox(I18Nc("hud.setting.checkbox-displaySexlabArousal"), &sexlab::isShowPlaySexlabAroused);
 							} else {
 								ImGui::BeginDisabled();
 								ImGui::Checkbox(I18Nc("hud.setting.checkbox-displaySexlabArousal"), &sexlab::isShowPlaySexlabAroused);
 								ImGui::EndDisabled();
-							}
+							}*/
 							ImGui::Unindent();
 						}
 						ImGui::Spacing();

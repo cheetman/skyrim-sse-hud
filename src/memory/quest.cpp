@@ -107,7 +107,7 @@ namespace quest
 					}
 					item.quests[tmpQuestCount].questTypeName = questTypeName;
 					item.quests[tmpQuestCount].filename = quest->GetFile(0)->fileName;
-
+					item.quests[tmpQuestCount].flag = quest->data.flags.underlying();
 					// 目标
 					int aliasCount = quest->aliases.size();
 					if (item.quests[tmpQuestCount].aliases.size() < aliasCount) {

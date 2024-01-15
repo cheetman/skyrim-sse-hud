@@ -23,8 +23,8 @@ namespace menu
 	{
 		FavorInfo info;
 		info.formId = item.formId;
-		/*	info.name = item.name;
-		info.invExtraPtr = item.invExtraPtr;
+		info.name = item.name;
+		/* info.invExtraPtr = item.invExtraPtr;
 		info.invPtr = item.invPtr;
 		info.ptr = item.ptr;
 		info.slotMaskStr = item.slotMaskStr;
@@ -146,12 +146,12 @@ namespace menu
 		const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
 		snprintf(buff, 50, "tablePlayerInvAlchemy %d", type);
 		if (ImGui::BeginTable(buff, 5, flags, ImVec2(TEXT_BASE_HEIGHT * 15, TEXT_BASE_HEIGHT * show_inv_window_height), 0.0f)) {
-			ImGui::TableSetupColumn(" ", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 15.0f, TableColumn_2);
-			ImGui::TableSetupColumn("插槽", ImGuiTableColumnFlags_WidthFixed, 30.0f, TableColumn_1);
-			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 120.0f, TableColumn_3);
-			ImGui::TableSetupColumn("加成", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f, TableColumn_4);
+			ImGui::TableSetupColumn(" ", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 15.0f * ImGui::GetIO().FontGlobalScale, TableColumn_2);
+			ImGui::TableSetupColumn("插槽", ImGuiTableColumnFlags_WidthFixed, 30.0f * ImGui::GetIO().FontGlobalScale, TableColumn_1);
+			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 120.0f * ImGui::GetIO().FontGlobalScale, TableColumn_3);
+			ImGui::TableSetupColumn("加成", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f * ImGui::GetIO().FontGlobalScale, TableColumn_4);
 			//ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_2);
-			ImGui::TableSetupColumn("重量", ImGuiTableColumnFlags_WidthFixed, 40, TableColumn_5);
+			ImGui::TableSetupColumn("重量", ImGuiTableColumnFlags_WidthFixed, 40 * ImGui::GetIO().FontGlobalScale, TableColumn_5);
 			ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
 			ImGui::TableHeadersRow();
 
@@ -171,14 +171,38 @@ namespace menu
 					if (ImGui::BeginPopupContextItem("itemPopMenuInvAlchemy")) {
 						if (item.isFavor) {
 							if (ImGui::Button(ICON_MDI_STAR_OFF " 取消收藏")) {
+								if (type == 1) {
+									// 再检查一下
+									auto result = getFavor(item, favorAlchemy);
+									if (result >= 0) {
+										favorAlchemy.erase(favorAlchemy.begin() + result);
+										ImGui::CloseCurrentPopup();
+										RefreshInfo();
+									}
+								} else if (type == 2) {
+									// 再检查一下
+									auto result = getFavor(item, favorSmithing);
+									if (result >= 0) {
+										favorSmithing.erase(favorSmithing.begin() + result);
+										ImGui::CloseCurrentPopup();
+										RefreshInfo();
+									}
+								}
 							}
 						} else {
 							if (ImGui::Button(ICON_MDI_STAR " 收藏")) {
-								// 再检查一下
-								if (!isFavor(item, favorAlchemy)) {
-									addFavor(item, type);
-									ImGui::CloseCurrentPopup();
-									RefreshInfo();
+								if (type == 1) {
+									if (getFavor(item, favorAlchemy) == -1) {
+										addFavor(item, type);
+										ImGui::CloseCurrentPopup();
+										RefreshInfo();
+									}
+								} else if (type == 2) {
+									if (getFavor(item, favorSmithing) == -1) {
+										addFavor(item, type);
+										ImGui::CloseCurrentPopup();
+										RefreshInfo();
+									}
 								}
 							}
 						}
@@ -249,12 +273,12 @@ namespace menu
 
 		const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
 		if (ImGui::BeginTable(buff, 5, flags, ImVec2(TEXT_BASE_HEIGHT * 15, TEXT_BASE_HEIGHT * show_inv_window_height), 0.0f)) {
-			ImGui::TableSetupColumn(" ", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 15.0f, TableColumn_2);
-			ImGui::TableSetupColumn("插槽", ImGuiTableColumnFlags_WidthFixed, 30.0f, TableColumn_1);
-			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 120.0f, TableColumn_3);
-			ImGui::TableSetupColumn("加成", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f, TableColumn_4);
+			ImGui::TableSetupColumn(" ", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 15.0f * ImGui::GetIO().FontGlobalScale, TableColumn_2);
+			ImGui::TableSetupColumn("插槽", ImGuiTableColumnFlags_WidthFixed, 30.0f * ImGui::GetIO().FontGlobalScale, TableColumn_1);
+			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 120.0f * ImGui::GetIO().FontGlobalScale, TableColumn_3);
+			ImGui::TableSetupColumn("加成", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f * ImGui::GetIO().FontGlobalScale, TableColumn_4);
 			//ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_2);
-			ImGui::TableSetupColumn("重量", ImGuiTableColumnFlags_WidthFixed, 40, TableColumn_5);
+			ImGui::TableSetupColumn("重量", ImGuiTableColumnFlags_WidthFixed, 40.0f * ImGui::GetIO().FontGlobalScale, TableColumn_5);
 			ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
 			ImGui::TableHeadersRow();
 
@@ -268,45 +292,102 @@ namespace menu
 					ImGui::PushID(row_n);
 					ImGui::TableNextRow();
 					ImGui::TableNextColumn();
-					ImGui::Text("%s", item.isWorn ? "×" : "");
+					if (item.ptr) {
+						ImGui::Text("%s", item.isWorn ? "×" : "");
+					}
 					ImGui::TableNextColumn();
-					ImGui::Text("%s", item.slotMaskStr.c_str());
+					if (item.ptr) {
+						ImGui::Text("%s", item.slotMaskStr.c_str());
+					}
 					ImGui::TableNextColumn();
+
+					if (ImGui::BeginPopupContextItem("itemPopMenuInvFavor")) {
+						if (ImGui::Button(ICON_MDI_STAR_OFF " 取消收藏")) {
+							if (type == 1) {
+								// 再检查一下
+								if (item.ptr) {
+									auto result = getFavor(item, favorAlchemy);
+									if (result >= 0) {
+										favorAlchemy.erase(favorAlchemy.begin() + result);
+										ImGui::CloseCurrentPopup();
+										RefreshInfo();
+									}
+								} else {
+									auto pointerToDelete = item.favPtr;
+									favorAlchemy.erase(std::remove_if(favorAlchemy.begin(), favorAlchemy.end(),
+														   [pointerToDelete](const FavorInfo& info) {
+															   return &info == pointerToDelete;
+														   }),
+										favorAlchemy.end());
+
+									ImGui::CloseCurrentPopup();
+									RefreshInfo();
+								}
+							} else if (type == 2) {
+								if (item.ptr) {
+									// 再检查一下
+									auto result = getFavor(item, favorSmithing);
+									if (result >= 0) {
+										favorSmithing.erase(favorSmithing.begin() + result);
+										ImGui::CloseCurrentPopup();
+										RefreshInfo();
+									}
+								} else {
+									auto pointerToDelete = item.favPtr;
+									favorSmithing.erase(std::remove_if(favorSmithing.begin(), favorSmithing.end(),
+														   [pointerToDelete](const FavorInfo& info) {
+															   return &info == pointerToDelete;
+														   }),
+										favorSmithing.end());
+
+									ImGui::CloseCurrentPopup();
+									RefreshInfo();
+								}
+							}
+						}
+						ImGui::EndPopup();
+					}
 					snprintf(buff, 50, "%s", item.name.c_str());
-					if (ImGui::Selectable(buff, false, ImGuiSelectableFlags_AllowDoubleClick)) {
-						if (item.ptr->IsAmmo() || item.ptr->IsArmor() || item.ptr->IsWeapon()) {
-							auto player = RE::PlayerCharacter::GetSingleton();
-							auto actorEquipManager = RE::ActorEquipManager::GetSingleton();
-							if (item.isWorn) {
-								actorEquipManager->UnequipObject(player, item.ptr, item.invExtraPtr, 1);
-								//item.isWorn = false;
-								//RefreshPlayerInvInfo();
-								RefreshInfo();
+					if (item.ptr) {
+						if (ImGui::Selectable(buff, false, ImGuiSelectableFlags_AllowDoubleClick)) {
+							if (item.ptr->IsAmmo() || item.ptr->IsArmor() || item.ptr->IsWeapon()) {
+								auto player = RE::PlayerCharacter::GetSingleton();
+								auto actorEquipManager = RE::ActorEquipManager::GetSingleton();
+								if (item.isWorn) {
+									actorEquipManager->UnequipObject(player, item.ptr, item.invExtraPtr, 1);
+									RefreshInfo();
+								} else {
+									actorEquipManager->EquipObject(player, item.ptr, item.invExtraPtr, 1);
+									RefreshInfo();
+								}
+							}
+						}
+					} else {
+						myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1), buff);
+					}
+					ImGui::OpenPopupOnItemClick("itemPopMenuInvFavor", ImGuiPopupFlags_MouseButtonRight);
+
+					ImGui::TableNextColumn();
+					if (item.ptr) {
+						if (type == 1) {
+							if (item.isBest) {
+								myTextColored(ImVec4(0, 0.8f, 0, 1), "%s%0.0f%%", ICON_MDI_TRANSFER_UP, item.AlchemyValue);
 							} else {
-								actorEquipManager->EquipObject(player, item.ptr, item.invExtraPtr, 1);
-								//item.isWorn = true;
-								RefreshInfo();
+								myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1), "%s%0.0f%%", ICON_MDI_TRANSFER_UP, item.AlchemyValue);
+							}
+						} else if (type == 2) {
+							if (item.isBest) {
+								myTextColored(ImVec4(0, 0.8f, 0, 1), "%s%0.0f%%", ICON_MDI_TRANSFER_UP, item.SmithingValue);
+							} else {
+								myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1), "%s%0.0f%%", ICON_MDI_TRANSFER_UP, item.SmithingValue);
 							}
 						}
 					}
 
 					ImGui::TableNextColumn();
-					if (type == 1) {
-						if (item.isBest) {
-							myTextColored(ImVec4(0, 0.8f, 0, 1), "%s%0.0f%%", ICON_MDI_TRANSFER_UP, item.AlchemyValue);
-						} else {
-							myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1), "%s%0.0f%%", ICON_MDI_TRANSFER_UP, item.AlchemyValue);
-						}
-					} else if (type == 2) {
-						if (item.isBest) {
-							myTextColored(ImVec4(0, 0.8f, 0, 1), "%s%0.0f%%", ICON_MDI_TRANSFER_UP, item.SmithingValue);
-						} else {
-							myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1), "%s%0.0f%%", ICON_MDI_TRANSFER_UP, item.SmithingValue);
-						}
+					if (item.ptr) {
+						ImGui::Text("%.1f", item.weight);
 					}
-
-					ImGui::TableNextColumn();
-					ImGui::Text("%.1f", item.weight);
 					//}
 					/*ImGui::TableNextColumn();
 					ImGui::Text("%s", item.formIdStr.c_str());*/
@@ -331,8 +412,8 @@ namespace menu
 		if (ImGui::BeginTable("tablePlayerInvPotion", 2, flags, ImVec2(TEXT_BASE_HEIGHT * 15, TEXT_BASE_HEIGHT * show_inv_window_height), 0.0f)) {
 			//ImGui::TableSetupColumn("装备", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 30.0f, TableColumn_2);
 			//ImGui::TableSetupColumn("插槽", ImGuiTableColumnFlags_WidthFixed, 40.0f, TableColumn_1);
-			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 120.0f, TableColumn_3);
-			ImGui::TableSetupColumn("加成", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f, TableColumn_4);
+			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 120.0f * ImGui::GetIO().FontGlobalScale, TableColumn_3);
+			ImGui::TableSetupColumn("加成", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 40.0f * ImGui::GetIO().FontGlobalScale, TableColumn_4);
 			//ImGui::TableSetupColumn("数量", ImGuiTableColumnFlags_WidthFixed, 40.0f, PlayerInfoColumnID_2);
 			//ImGui::TableSetupColumn("重量", ImGuiTableColumnFlags_WidthFixed, 40, TableColumn_5);
 			ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
@@ -400,6 +481,86 @@ namespace menu
 		}
 	}
 
+	void renderPlayerInv2()
+	{
+		/*if (ImGui::Button("刷新列表")) {
+			RefreshPlayerInvInfo();
+		}
+		ImGui::Separator();*/
+
+		{
+			ImGui::Text(ICON_MDI_BOWL_MIX " 炼金");
+			ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+			myTextColored(ImVec4(0.0f, 0.8f, 0.0f, 1.0f), ICON_MDI_TRANSFER_UP "%.0f%%", playerInfo.kAlchemyModifier + playerInfo.kAlchemySkillAdvance + playerInfo.kAlchemyPowerModifier);
+			ImGui::Separator();
+
+			ImGui::BeginGroup();
+
+			ImGui::Text(ICON_MDI_SHIELD_HALF_FULL " 装备(%d)", getPlayerInvAlchemyCount());
+			if (playerInfo.kAlchemyModifier > 0.0f) {
+				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				myTextColored(ImVec4(0.0f, 0.8f, 0.0f, 1.0f), ICON_MDI_TRANSFER_UP "%.0f%%", playerInfo.kAlchemyModifier);
+			}
+			buildPlayerInvAlchemyInfo(getPlayerInvAlchemy(), getPlayerInvAlchemyCount(), 1);
+			ImGui::EndGroup();
+			ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+			ImGui::BeginGroup();
+			ImGui::Text(ICON_MDI_STAR " 收藏(%d)", getPlayerInvAlchemyFavorCount());
+			buildPlayerInvFavorInfo(getPlayerInvAlchemyFavor(), getPlayerInvAlchemyFavorCount(), 1);
+			ImGui::EndGroup();
+		}
+		ImGui::Spacing();
+		{
+			ImGui::Text(ICON_MDI_ANVIL " 锻造");
+			ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+			myTextColored(ImVec4(0.0f, 0.8f, 0.0f, 1.0f), ICON_MDI_TRANSFER_UP "%.0f%%", playerInfo.kSmithingModifier + playerInfo.kSmithingSkillAdvance + playerInfo.kSmithingPowerModifier);
+			ImGui::Separator();
+
+			ImGui::BeginGroup();
+
+			ImGui::Text(ICON_MDI_SHIELD_HALF_FULL " 装备(%d)", getPlayerInvSmithingCount());
+			if (playerInfo.kSmithingModifier > 0.0f) {
+				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				myTextColored(ImVec4(0.0f, 0.8f, 0.0f, 1.0f), ICON_MDI_TRANSFER_UP "%.0f%%", playerInfo.kSmithingModifier);
+			}
+			buildPlayerInvAlchemyInfo(getPlayerInvSmithing(), getPlayerInvSmithingCount(), 2);
+			ImGui::EndGroup();
+			ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+			ImGui::BeginGroup();
+			ImGui::Text(ICON_MDI_STAR " 收藏(%d)", getPlayerInvSmithingFavorCount());
+			buildPlayerInvFavorInfo(getPlayerInvSmithingFavor(), getPlayerInvSmithingFavorCount(), 2);
+			ImGui::EndGroup();
+			ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+			ImGui::BeginGroup();
+			ImGui::Text(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE " 锻造药水(%d)", getPlayerInvSmithingPotionCount());
+			if (playerInfo.kSmithingPowerModifier > 0.0f) {
+				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				myTextColored(ImVec4(0.0f, 0.8f, 0.0f, 1.0f), ICON_MDI_TRANSFER_UP "%.0f%% ", playerInfo.kSmithingPowerModifier);
+			}
+
+			buildPlayerInvPotionInfo(getPlayerInvSmithingPotion(), getPlayerInvSmithingPotionCount(), 2);
+			ImGui::EndGroup();
+		}
+		ImGui::Spacing();
+		/*ImGui::Separator();
+		ImGui::Spacing();*/
+		{
+			ImGui::Text(ICON_MDI_FLASH " 附魔");
+			ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+			myTextColored(ImVec4(0.0f, 0.8f, 0.0f, 1.0f), ICON_MDI_TRANSFER_UP "%.0f%%", playerInfo.kEnchantingModifier + playerInfo.kEnchantingSkillAdvance + playerInfo.kEnchantingPowerModifier);
+			ImGui::Separator();
+			ImGui::BeginGroup();
+
+			ImGui::Text(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE " 附魔药水(%d)", getPlayerInvEnchantingPotionCount());
+			if (playerInfo.kEnchantingPowerModifier > 0.0f) {
+				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+				myTextColored(ImVec4(0.0f, 0.8f, 0.0f, 1.0f), ICON_MDI_TRANSFER_UP "%.0f%% ", playerInfo.kEnchantingPowerModifier);
+			}
+
+			buildPlayerInvPotionInfo(getPlayerInvEnchantingPotion(), getPlayerInvEnchantingPotionCount(), 3);
+			ImGui::EndGroup();
+		}
+	}
 	void renderPlayerInv()
 	{
 		ImGui::Begin("玩家物品信息", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
@@ -432,7 +593,7 @@ namespace menu
 			}
 			ImGui::Separator();
 			if (selected == 0) {
-				ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+				/*ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 				if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
 					if (ImGui::BeginTabItem(ICON_MDI_SWORD " 武器", 0, 0)) {
 						buildPlayerInvInfo(getPlayerInvWEAPCount(), getPlayerInvWEAPData());
@@ -471,7 +632,7 @@ namespace menu
 					ImGui::EndTabBar();
 				}
 
-				ImGui::Text("\uf0d6 %d", getPlayerGoldCount());
+				ImGui::Text("\uf0d6 %d", getPlayerGoldCount());*/
 				//ImGui::Text("负重：%0.1f/%0.0f", playerInfo.equippedWeight, playerInfo.carryWeight);
 			} else if (selected == 1) {
 				{

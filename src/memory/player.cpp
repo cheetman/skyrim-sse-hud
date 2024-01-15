@@ -152,7 +152,7 @@ void refreshPlayerInfo()
 		}
 
 		// 技能信息
-		if (show_player_mod_window) {
+		if (show_player_mod_window || activeItems) {
 			playerInfo.kOneHandedModifier = player->GetActorValue(RE::ActorValue::kOneHandedModifier);
 			playerInfo.kTwoHandedModifier = player->GetActorValue(RE::ActorValue::kTwoHandedModifier);
 			playerInfo.kMarksmanModifier = player->GetActorValue(RE::ActorValue::kMarksmanModifier);

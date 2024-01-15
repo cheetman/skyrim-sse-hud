@@ -14,14 +14,19 @@
 #include <memory/track.h>
 #include <menu/list_quest.h>
 #include <menu/menu.h>
+#include <menu/menu_player_inv.h>
 #include <menu/menu_quest.h>
 #include <menu/menu_track.h>
 #include <setting/i18n.h>
 #include <setting/setting.h>
 #include <utils/utils.h>
+#include <memory/player_inv.h>
 
 namespace menu
 {
+
+	
+					
 	void ignoreItem(ItemInfo& item)
 	{
 		bool exist = false;
@@ -1382,6 +1387,9 @@ namespace menu
 		}
 	}
 
+	
+	int selectedPage = 0;
+
 	void renderItems()
 	{
 		if (activeItems) {
@@ -1398,109 +1406,114 @@ namespace menu
 				window_flags2 |= ImGuiWindowFlags_AlwaysAutoResize;
 			ImGui::Begin("附近物品信息", nullptr, window_flags2);
 
-			if (ImGui::BeginPopupContextItem("PopupMoveTo")) {
-				ImGui::Text("", playerInfo.location.c_str());
-				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-				if (ImGui::SmallButton("保存当前位置")) {
-					auto player = RE::PlayerCharacter::GetSingleton();
-					data::PositionData data;
-					data.cellPtr = player->GetParentCell();
-					data.cellId = player->GetParentCell()->GetFormID();
-					data.worldSpacePtr = player->GetWorldspace();
-					if (data.worldSpacePtr) {
-						data.worldSpaceId = player->GetWorldspace()->GetFormID();
-					}
-					data.position = player->GetPosition();
-					data.angle = player->data.angle;
-					data.name = playerInfo.location;
-					data::moveToPositions.push_back(data);
-				}
-				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-				ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %s", playerInfo.location.c_str());
-
-				static ImGuiTableFlags flagsItem =
-					ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
-
-				const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
-				if (ImGui::BeginTable("tableItemPosition", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 10), 0.0f)) {
-					ImGui::TableSetupColumn("地点", ImGuiTableColumnFlags_WidthFixed, 90 * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_1);
-					ImGui::TableSetupColumn("位置", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_2);
-					ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 20.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_5);
-					ImGui::TableSetupScrollFreeze(0, 1);
-					ImGui::TableHeadersRow();
-
-					int i = 0;
-					int deleteRowIndex = -1;
-					for (auto& position : data::moveToPositions) {
-						ImGui::PushID(i);
-						ImGui::TableNextRow();
-						ImGui::TableNextColumn();
-
-						if (ImGui::Selectable(position.name.c_str())) {
-							auto player = RE::PlayerCharacter::GetSingleton();
-							player->MoveTo_Impl(RE::ObjectRefHandle(), position.cellPtr, position.worldSpacePtr, position.position, position.angle);
-							activeItems = false;
-						}
-						ImGui::TableNextColumn();
-						ImGui::Text("[%.0f,%.0f]", position.position.x, position.position.y);
-						ImGui::TableNextColumn();
-
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_CLOSE)) {
-							deleteRowIndex = i;
-						}
-						i++;
-						ImGui::PopID();
-					}
-
-					if (deleteRowIndex != -1) {
-						data::moveToPositions.erase(data::moveToPositions.begin() + deleteRowIndex);
-					}
-
-					ImGui::EndTable();
-				}
-				ImGui::EndPopup();
-			}
-			ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %s", playerInfo.location.c_str());
-
-			if (show_items_window_settings) {
-				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-				if (ImGui::SmallButton("\uf101")) {
-					ImGui::OpenPopup("PopupMoveTo");
-				}
-			}
-
-			if (show_items_window_formid) {
-				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-				ImGui::Text("[%08X]", playerInfo.locationId);
-				if (playerInfo.parentLocationId != -1) {
-					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-					ImGui::Text(" - %s", playerInfo.parentLocation.c_str());
-					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-					ImGui::Text("[%08X]", playerInfo.parentLocationId);
-				}
-			}
 
 			{
-				std::lock_guard<std::mutex> lock(mtxTrack);
-				if (trackPtrs2.size() > 0 || trackActorPtrs2.size() > 0) {
-					ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-					if (ImGui::SmallButton(I18Nc("finder.ui.btn-deleteMarker"))) {
-						for (auto& item : trackPtrs2) {
-							tintTrackClose(item.first);
+				ImGui::BeginGroup();
+
+				if (selectedPage == 0) {
+					if (ImGui::BeginPopupContextItem("PopupMoveTo")) {
+						ImGui::Text("", playerInfo.location.c_str());
+						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+						if (ImGui::SmallButton("保存当前位置")) {
+							auto player = RE::PlayerCharacter::GetSingleton();
+							data::PositionData data;
+							data.cellPtr = player->GetParentCell();
+							data.cellId = player->GetParentCell()->GetFormID();
+							data.worldSpacePtr = player->GetWorldspace();
+							if (data.worldSpacePtr) {
+								data.worldSpaceId = player->GetWorldspace()->GetFormID();
+							}
+							data.position = player->GetPosition();
+							data.angle = player->data.angle;
+							data.name = playerInfo.location;
+							data::moveToPositions.push_back(data);
 						}
-						trackPtrs2.clear();
-						trackActorPtrs2.clear();
+						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+						ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %s", playerInfo.location.c_str());
+
+						static ImGuiTableFlags flagsItem =
+							ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
+
+						const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+						if (ImGui::BeginTable("tableItemPosition", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 10), 0.0f)) {
+							ImGui::TableSetupColumn("地点", ImGuiTableColumnFlags_WidthFixed, 90 * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_1);
+							ImGui::TableSetupColumn("位置", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_2);
+							ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 20.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_5);
+							ImGui::TableSetupScrollFreeze(0, 1);
+							ImGui::TableHeadersRow();
+
+							int i = 0;
+							int deleteRowIndex = -1;
+							for (auto& position : data::moveToPositions) {
+								ImGui::PushID(i);
+								ImGui::TableNextRow();
+								ImGui::TableNextColumn();
+
+								if (ImGui::Selectable(position.name.c_str())) {
+									auto player = RE::PlayerCharacter::GetSingleton();
+									player->MoveTo_Impl(RE::ObjectRefHandle(), position.cellPtr, position.worldSpacePtr, position.position, position.angle);
+									activeItems = false;
+								}
+								ImGui::TableNextColumn();
+								ImGui::Text("[%.0f,%.0f]", position.position.x, position.position.y);
+								ImGui::TableNextColumn();
+
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								if (ImGui::SmallButton(ICON_MDI_CLOSE)) {
+									deleteRowIndex = i;
+								}
+								i++;
+								ImGui::PopID();
+							}
+
+							if (deleteRowIndex != -1) {
+								data::moveToPositions.erase(data::moveToPositions.begin() + deleteRowIndex);
+							}
+
+							ImGui::EndTable();
+						}
+						ImGui::EndPopup();
 					}
-				}
-			}
+					ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %s", playerInfo.location.c_str());
 
-			if (ImGui::BeginTable("tableItem", 5)) {
-				//if (lotd::isShow) {
-				//lotd::render();
+					if (show_items_window_settings) {
+						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+						if (ImGui::SmallButton("\uf101")) {
+							ImGui::OpenPopup("PopupMoveTo");
+						}
+					}
 
-				//} else {
-				/*	{
+					if (show_items_window_formid) {
+						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+						ImGui::Text("[%08X]", playerInfo.locationId);
+						if (playerInfo.parentLocationId != -1) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::Text(" - %s", playerInfo.parentLocation.c_str());
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							ImGui::Text("[%08X]", playerInfo.parentLocationId);
+						}
+					}
+
+					{
+						std::lock_guard<std::mutex> lock(mtxTrack);
+						if (trackPtrs2.size() > 0 || trackActorPtrs2.size() > 0) {
+							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+							if (ImGui::SmallButton(I18Nc("finder.ui.btn-deleteMarker"))) {
+								for (auto& item : trackPtrs2) {
+									tintTrackClose(item.first);
+								}
+								trackPtrs2.clear();
+								trackActorPtrs2.clear();
+							}
+						}
+					}
+
+					if (ImGui::BeginTable("tableItem", 5)) {
+						//if (lotd::isShow) {
+						//lotd::render();
+
+						//} else {
+						/*	{
 						ImGui::TableNextColumn();
 
 						char buff[20];
@@ -1577,940 +1590,974 @@ namespace menu
 						}
 					}*/
 
-				if (isShowQuest) {
-					if (getQuestCount() > 0) {
-						ImGui::TableNextColumn();
-						ImGui::AlignTextToFramePadding();
-						ImGui::Text(I18Ni(ICON_MDI_CALENDAR_CHECK_OUTLINE, "finder.ui.label-quest"), getQuestCount());
-						//ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						/*if (ImGui::SmallButton("测试任务")) {
+						if (isShowQuest) {
+							if (getQuestCount() > 0) {
+								ImGui::TableNextColumn();
+								ImGui::AlignTextToFramePadding();
+								ImGui::Text(I18Ni(ICON_MDI_CALENDAR_CHECK_OUTLINE, "finder.ui.label-quest"), getQuestCount());
+								//ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								/*if (ImGui::SmallButton("测试任务")) {
 							list::isShowQuest = true;
 						}*/
 
-						buildQuestItem(getQuestCount(), getQuests());
-						ImGui::Spacing();
-					}
-				}
-
-#if SSE_CODE
-				if (lotd::isLoad && lotd::isShowAttached) {
-					if (lotd::getCountAttached()) {
-						ImGui::TableNextColumn();
-						ImGui::AlignTextToFramePadding();
-
-						ImGui::Text(I18Ni(ICON_MDI_GREENHOUSE, "finder.ui.label-lotdCollection"), lotd::getCountAttached());
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS "##99")) {
-							trackAllItem(lotd::getCountAttached(), lotd::getItemsAttached());
-						}
-						lotd::buildItemInfoAttached(lotd::getCountAttached(), lotd::getItemsAttached());
-						ImGui::Spacing();
-					}
-				}
-#endif
-
-				if (getItemCountWEAP() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::AlignTextToFramePadding();
-					ImGui::Text(I18Ni(ICON_MDI_SWORD, "finder.ui.label-weap"), getItemCountWEAP());
-
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##41")) {
-							takeAllItem(getItemCountWEAP(), getItemsWEAP(), RE::FormType::Weapon);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##41"), &show_items_window_auto_weap);
-					} else {
-						if (show_items_window_auto_weap) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfo(getItemCountWEAP(), getItemsWEAP(), RE::FormType::Weapon);
-					ImGui::Spacing();
-				}
-				if (getItemCountARMO() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::AlignTextToFramePadding();
-					ImGui::Text(I18Ni(ICON_MDI_SHIELD, "finder.ui.label-armo"), getItemCountARMO());
-
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##47")) {
-							takeAllItem(getItemCountARMO(), getItemsARMO(), RE::FormType::Armor);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##26"), &show_items_window_auto_armo);
-					} else {
-						if (show_items_window_auto_armo) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfo(getItemCountARMO(), getItemsARMO(), RE::FormType::Armor);
-					ImGui::Spacing();
-				}
-				if (getItemCountAMMO() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::AlignTextToFramePadding();
-					ImGui::Text(I18Ni(ICON_MDI_ARROW_PROJECTILE, "finder.ui.label-ammo"), getItemCountAMMO());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##42")) {
-							takeAllItem(getItemCountAMMO(), getItemsAMMO(), RE::FormType::Ammo);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##47"), &show_items_window_auto_ammo);
-					} else {
-						if (show_items_window_auto_ammo) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfo(getItemCountAMMO(), getItemsAMMO(), RE::FormType::Ammo);
-					ImGui::Spacing();
-				}
-				if (getItemCountBOOK() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::AlignTextToFramePadding();
-					ImGui::Text(I18Ni(ICON_MDI_BOOK_OPEN_VARIANT, "finder.ui.label-book"), getItemCountBOOK());
-
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##43")) {
-							takeAllItemBOOK(getItemCountBOOK(), getItemsBOOK(), RE::FormType::Book);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##43"), &show_items_window_auto_book);
-					} else {
-						if (show_items_window_auto_book) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfoBOOK(getItemCountBOOK(), getItemsBOOK(), RE::FormType::Book);
-				}
-				if (getItemCountALCH() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::AlignTextToFramePadding();
-					ImGui::Text(I18Ni(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE, "finder.ui.label-alch"), getItemCountALCH());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##44")) {
-							takeAllItem(getItemCountALCH(), getItemsALCH(), RE::FormType::AlchemyItem);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##44"), &show_items_window_auto_alch);
-					} else {
-						if (show_items_window_auto_alch) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfo(getItemCountALCH(), getItemsALCH(), RE::FormType::AlchemyItem);
-					ImGui::Spacing();
-				}
-				if (getItemCountFOOD() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::AlignTextToFramePadding();
-					ImGui::Text(I18Ni(ICON_MDI_FOOD_DRUMSTICK, "finder.ui.label-food"), getItemCountFOOD());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##45")) {
-							takeAllItem(getItemCountFOOD(), getItemsFOOD(), RE::FormType::PluginInfo);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##45"), &show_items_window_auto_food);
-					} else {
-						if (show_items_window_auto_food) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfo(getItemCountFOOD(), getItemsFOOD(), RE::FormType::PluginInfo);  // 临时用PluginInfo
-					ImGui::Spacing();
-				}
-				if (getItemCountINGR() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::AlignTextToFramePadding();
-					ImGui::Text(I18Ni(ICON_MDI_SOURCE_BRANCH, "finder.ui.label-ingr"), getItemCountINGR());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##48")) {
-							takeAllItem(getItemCountINGR(), getItemsINGR(), RE::FormType::Ingredient);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##48"), &show_items_window_auto_ingr);
-					} else {
-						if (show_items_window_auto_ingr) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfo(getItemCountINGR(), getItemsINGR(), RE::FormType::Ingredient);
-					ImGui::Spacing();
-				}
-				if (getItemCountSGEM() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::AlignTextToFramePadding();
-					ImGui::Text(I18Ni(ICON_MDI_CARDS_DIAMOND, "finder.ui.label-sgen"), getItemCountSGEM());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##53")) {
-							takeAllItem(getItemCountSGEM(), getItemsSGEM(), RE::FormType::SoulGem);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##532"), &show_items_window_auto_sgem);
-					} else {
-						if (show_items_window_auto_sgem) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfo(getItemCountSGEM(), getItemsSGEM(), RE::FormType::SoulGem);
-				}
-				if (getItemCountKEYM() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::AlignTextToFramePadding();
-					ImGui::Text(I18Ni(ICON_MDI_KEY, "finder.ui.label-keym"), getItemCountKEYM());
-
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##52")) {
-							takeAllItem(getItemCountKEYM(), getItemsKEYM(), RE::FormType::KeyMaster);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##52"), &show_items_window_auto_keym);
-					} else {
-						if (show_items_window_auto_keym) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfo(getItemCountKEYM(), getItemsKEYM(), RE::FormType::KeyMaster);
-					ImGui::Spacing();
-				}
-				if (getItemCountSTON() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::AlignTextToFramePadding();
-					ImGui::Text(I18Ni(ICON_MDI_DIAMOND_STONE, "finder.ui.label-ston"), getItemCountSTON());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-1")) {
-							takeAllItem(getItemCountSTON(), getItemsSTON(), RE::FormType::Misc);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##32-1"), &show_items_window_auto_ston);
-					} else {
-						if (show_items_window_auto_ston) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfo(getItemCountSTON(), getItemsSTON(), RE::FormType::Misc,301);
-					ImGui::Spacing();
-				}
-				if (getItemCountANVI() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::AlignTextToFramePadding();
-					ImGui::Text(I18Ni(ICON_MDI_ANVIL, "finder.ui.label-anvi"), getItemCountANVI());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-2")) {
-							takeAllItem(getItemCountANVI(), getItemsANVI(), RE::FormType::Misc);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##32-2"), &show_items_window_auto_anvi);
-					} else {
-						if (show_items_window_auto_anvi) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfo(getItemCountANVI(), getItemsANVI(), RE::FormType::Misc, 302);
-					ImGui::Spacing();
-				}
-				if (getItemCountANHD() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::AlignTextToFramePadding();
-					ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-anhd"), getItemCountANHD());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-3")) {
-							takeAllItem(getItemCountANHD(), getItemsANHD(), RE::FormType::Misc);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##32-3"), &show_items_window_auto_anhd);
-					} else {
-						if (show_items_window_auto_anhd) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfo(getItemCountANHD(), getItemsANHD(), RE::FormType::Misc, 303);
-					ImGui::Spacing();
-				}
-				if (getItemCountANPA() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::AlignTextToFramePadding();
-					ImGui::Text(I18Ni(ICON_MDI_RABBIT, "finder.ui.label-anpa"), getItemCountANPA());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-4")) {
-							takeAllItem(getItemCountANPA(), getItemsANPA(), RE::FormType::Misc);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##32-4"), &show_items_window_auto_anpa);
-					} else {
-						if (show_items_window_auto_anpa) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfo(getItemCountANPA(), getItemsANPA(), RE::FormType::Misc, 304);
-					ImGui::Spacing();
-				}
-				if (getItemCountTOOL() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::AlignTextToFramePadding();
-					ImGui::Text(I18Ni(ICON_MDI_TOOLS, "finder.ui.label-tool"), getItemCountTOOL());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-5")) {
-							takeAllItem(getItemCountTOOL(), getItemsTOOL(), RE::FormType::Misc);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##32-5"), &show_items_window_auto_tool);
-					} else {
-						if (show_items_window_auto_tool) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfo(getItemCountTOOL(), getItemsTOOL(), RE::FormType::Misc, 305);
-					ImGui::Spacing();
-				}
-				if (getItemCountMISC() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::AlignTextToFramePadding();
-					ImGui::Text(I18Ni(ICON_MDI_PACKAGE_VARIANT_CLOSED, "finder.ui.label-misc"), getItemCountMISC());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##49")) {
-							takeAllItem(getItemCountMISC(), getItemsMISC(), RE::FormType::Misc);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##49"), &show_items_window_auto_misc);
-					} else {
-						if (show_items_window_auto_misc) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfo(getItemCountMISC(), getItemsMISC(), RE::FormType::Misc);
-					ImGui::Spacing();
-				}
-				if (getItemCountFLOR() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::AlignTextToFramePadding();
-					ImGui::Text(I18Ni(ICON_MDI_BASKET_OUTLINE, "finder.ui.label-flor"), getItemCountFLOR());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##50")) {
-							takeAllItem(getItemCountFLOR(), getItemsFLOR(), RE::FormType::Flora);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##50"), &show_items_window_auto_flor);
-					} else {
-						if (show_items_window_auto_flor) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfo(getItemCountFLOR(), getItemsFLOR(), RE::FormType::Flora);
-					ImGui::Spacing();
-				}
-				if (getItemCountTREE() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::AlignTextToFramePadding();
-					ImGui::Text(I18Ni(ICON_MDI_FLOWER_TULIP_OUTLINE, "finder.ui.label-tree"), getItemCountTREE());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##53")) {
-							takeAllItem(getItemCountTREE(), getItemsTREE(), RE::FormType::Tree);
-						}
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##53"), &show_items_window_auto_tree);
-					} else {
-						if (show_items_window_auto_tree) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemInfo(getItemCountTREE(), getItemsTREE(), RE::FormType::Tree);
-					ImGui::Spacing();
-				}
-				if (getItemCountACHR() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::AlignTextToFramePadding();
-					ImGui::Text(I18Ni(ICON_MDI_HUMAN_MALE, "finder.ui.label-achr"), getItemCountACHR());
-
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##62"), &show_items_window_auto_achr);
-						if (show_items_window_auto_achr) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							if (ImGui::BeginPopupContextItem("PopupFilterAchr")) {
-								ImGui::Text(I18Ni(ICON_MDI_HUMAN_MALE, "finder.setting.label-achrItemPickupType"));
-								ImGui::Separator();
-								if (ImGui::BeginTable("tableFilterAchr", 3)) {
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_SWORD, "finder.setting.checkbox-weap"), &show_items_window_auto_achr_weap);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_SHIELD_HALF_FULL, "finder.setting.checkbox-armo"), &show_items_window_auto_achr_armo);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_ARROW_PROJECTILE, "finder.setting.checkbox-ammo"), &show_items_window_auto_achr_ammo);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE, "finder.setting.checkbox-alch"), &show_items_window_auto_achr_alch);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_FOOD_DRUMSTICK, "finder.setting.checkbox-food"), &show_items_window_auto_achr_food);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_SOURCE_BRANCH, "finder.setting.checkbox-ingr"), &show_items_window_auto_achr_ingr);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_CARDS_DIAMOND, "finder.setting.checkbox-sgen"), &show_items_window_auto_achr_sgem);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_CASH, "finder.setting.checkbox-gold"), &show_items_window_auto_achr_gold);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_SCRIPT_TEXT, "finder.setting.checkbox-scrl"), &show_items_window_auto_achr_scrl);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_KEY, "finder.setting.checkbox-keym"), &show_items_window_auto_achr_keym);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_BOOK_OPEN_VARIANT, "书信"), &show_items_window_auto_achr_book);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_DIAMOND_STONE, "finder.setting.checkbox-ston"), &show_items_window_auto_achr_ston);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_ANVIL, "finder.setting.checkbox-anvi"), &show_items_window_auto_achr_anvi);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_LOCK_OPEN, "finder.setting.checkbox-lock"), &show_items_window_auto_achr_lock);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_BOX_CUTTER, "finder.setting.checkbox-anhd"), &show_items_window_auto_achr_anhd);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_RABBIT, "finder.setting.checkbox-anpa"), &show_items_window_auto_achr_anpa);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_TOOLS, "finder.setting.checkbox-tool"), &show_items_window_auto_achr_tool);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_PACKAGE_VARIANT_CLOSED, "finder.setting.checkbox-misc"), &show_items_window_auto_achr_misc);
-									ImGui::EndTable();
-								}
-
-								ImGui::EndPopup();
+								buildQuestItem(getQuestCount(), getQuests());
+								ImGui::Spacing();
 							}
-
-							if (ImGui::Button(ICON_MDI_FILTER_CHECK "##achr")) {
-								ImGui::OpenPopup("PopupFilterAchr");
-							}
-						}
-					} else {
-						if (show_items_window_auto_achr) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemACHRInfo(getItemCountACHR(), getItemsACHR(), RE::FormType::ActorCharacter);
-					ImGui::Spacing();
-				}
-				if (getItemCountCONT() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::AlignTextToFramePadding();
-					ImGui::Text(I18Ni(ICON_MDI_ARCHIVE_OUTLINE, "finder.ui.label-cont"), getItemCountCONT());
-					if (show_items_window_settings) {
-						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-						ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##28"), &show_items_window_auto_cont);
-						if (show_items_window_auto_cont) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							if (ImGui::BeginPopupContextItem("PopupFilterCont")) {
-								ImGui::Text(I18Ni(ICON_MDI_ARCHIVE_OUTLINE, "finder.setting.label-contItemPickupType"));
-								ImGui::Separator();
-								if (ImGui::BeginTable("tableFilterCont", 3)) {
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_SWORD, "finder.setting.checkbox-weap"), &show_items_window_auto_cont_weap);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_SHIELD_HALF_FULL, "finder.setting.checkbox-armo"), &show_items_window_auto_cont_armo);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_ARROW_PROJECTILE, "finder.setting.checkbox-ammo"), &show_items_window_auto_cont_ammo);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE, "finder.setting.checkbox-alch"), &show_items_window_auto_cont_alch);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_FOOD_DRUMSTICK, "finder.setting.checkbox-food"), &show_items_window_auto_cont_food);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_SOURCE_BRANCH, "finder.setting.checkbox-ingr"), &show_items_window_auto_cont_ingr);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_CARDS_DIAMOND, "finder.setting.checkbox-sgen"), &show_items_window_auto_cont_sgem);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_CASH, "finder.setting.checkbox-gold"), &show_items_window_auto_cont_gold);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_SCRIPT_TEXT, "finder.setting.checkbox-scrl"), &show_items_window_auto_cont_scrl);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_KEY, "finder.setting.checkbox-keym"), &show_items_window_auto_cont_keym);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_BOOK_OPEN_VARIANT, "书信"), &show_items_window_auto_cont_book);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_DIAMOND_STONE, "finder.setting.checkbox-ston"), &show_items_window_auto_cont_ston);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_ANVIL, "finder.setting.checkbox-anvi"), &show_items_window_auto_cont_anvi);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_LOCK_OPEN, "finder.setting.checkbox-lock"), &show_items_window_auto_cont_lock);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_BOX_CUTTER, "finder.setting.checkbox-anhd"), &show_items_window_auto_cont_anhd);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_RABBIT, "finder.setting.checkbox-anpa"), &show_items_window_auto_cont_anpa);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_TOOLS, "finder.setting.checkbox-tool"), &show_items_window_auto_cont_tool);
-									ImGui::TableNextColumn();
-									ImGui::Checkbox(I18Ni(ICON_MDI_PACKAGE_VARIANT_CLOSED, "finder.setting.checkbox-misc"), &show_items_window_auto_cont_misc);
-									ImGui::EndTable();
-								}
-
-								ImGui::EndPopup();
-							}
-
-							if (ImGui::Button(ICON_MDI_FILTER_CHECK "##cont")) {
-								ImGui::OpenPopup("PopupFilterCont");
-							}
-						}
-					} else {
-						if (show_items_window_auto_cont) {
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							ImGui::Text(ICON_MDI_AUTORENEW);
-						}
-					}
-					buildItemCONTInfo(getItemCountCONT(), getItemsCONT(), RE::FormType::Container);
-					ImGui::Spacing();
-				}
-				if (getItemCountACTI() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text(I18Ni(ICON_MDI_COGS, "finder.ui.label-acti"), getItemCountACTI());
-
-					buildItemInfoACTI(getItemCountACTI(), getItemsACTI(), RE::FormType::Activator);
-					ImGui::Spacing();
-				}
-				if (getItemCount() > 0) {
-					ImGui::TableNextColumn();
-					ImGui::Text(I18Nc("finder.ui.label-othe"));
-					buildItemInfo(getItemCount(), getItems(), RE::FormType::None);
-					ImGui::Spacing();
-				}
-
-				ImGui::TableNextColumn();
-				ImGui::Checkbox(I18Ni(ICON_MDI_MORE, "finder.setting.checkbox-more"), &show_items_window_settings);
-				if (show_items_window_settings) {
-					ImGui::SameLine(0.0f, 8.0f * ImGui::GetTextLineHeightWithSpacing());
-
-					if (ImGui::BeginPopupModal(I18Nc("common.setting.popup-info"), NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-						ImGui::Text(I18Nc("common.setting.label-configSaved"));
-						if (ImGui::Button(I18Nc("common.setting.btn-ok"), ImVec2(120, 0))) {
-							ImGui::CloseCurrentPopup();
-						}
-						ImGui::EndPopup();
-					}
-
-					if (ImGui::Button(I18Ni(ICON_MDI_CONTENT_SAVE, "common.setting.btn-saveConfig"))) {
-						setting::save_settings();
-						ImGui::OpenPopup(I18Nc("common.setting.popup-info"));
-					}
-
-					{
-						ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
-
-						ImGui::BeginChild("childItemsSetting", ImVec2(ImGui::GetTextLineHeightWithSpacing() * 15, ImGui::GetTextLineHeightWithSpacing() * ((float)show_inv_window_height - 0.5f)), true, window_flags);
-
-						// 界面设置
-						if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_TABLE, "finder.setting.label-displaySetting"), ImGuiTreeNodeFlags_DefaultOpen)) {
-							if (ImGui::BeginTable("tableItemsSetting", 2)) {
-								ImGui::TableNextColumn();
-								ImGui::Checkbox(I18Nc("finder.setting.checkbox-transparentBackground"), &no_background_items);
-								ImGui::TableNextColumn();
-								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayFormid"), &show_items_window_formid);
-								ImGui::TableNextColumn();
-								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayRefid"), &show_items_window_refid);
-								ImGui::TableNextColumn();
-								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayPosition"), &show_items_window_direction);
-								ImGui::TableNextColumn();
-								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayModname"), &show_items_window_file);
-								ImGui::TableNextColumn();
-								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNo3D"), &show_items_window_3D);
-								ImGui::TableNextColumn();
-								ImGui::Checkbox(I18Nc("finder.setting.checkbox-privateItemHidden"), &isCrimeIgnore);
-								ImGui::TableNextColumn();
-								ImGui::Checkbox(I18Nc("finder.setting.checkbox-merchantContIgnore"), &merchantContIgnore);
-
-								ImGui::EndTable();
-							}
-
-#if SSE_CODE
-							if (lotd::isLoad) {
-								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayLotdSection"), &lotd::isShowAttached);
-								if (lotd::isShowAttached) {
-									ImGui::Indent();
-									//ImGui::Checkbox(I18Nc("finder.setting.checkbox-excludePlayerItems"), &lotd::isInvIgnore);
-									ImGui::Checkbox(I18Nc("finder.setting.checkbox-lotdPrivateItemHidden"), &lotd::isCrimeIgnore);
-									ImGui::Checkbox(I18Nc("finder.setting.checkbox-excludeArmoryItems"), &lotd::isArmoryIgnore);
-									ImGui::ColorEdit4(I18Nc("finder.setting.color-lotdTableBorderStrong"), &lotd::colorTableBorderStrong.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
-									ImGui::ColorEdit4(I18Nc("finder.setting.color-lotdTableHeaderBg"), &lotd::colorTableHeaderBg.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
-									ImGui::Unindent();
-								}
-							}
-#endif
-
-							ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayQuest"), &isShowQuest);
-							if (isShowQuest) {
-								ImGui::Indent();
-								ImGui::ColorEdit4(I18Nc("finder.setting.color-questTableBorderStrong"), &colorQuestTableBorderStrong.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
-								ImGui::ColorEdit4(I18Nc("finder.setting.color-questTableHeaderBg"), &colorQuestTableHeaderBg.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
-								ImGui::Unindent();
-							}
-
-							ImGui::Checkbox("传送按钮移动到右键菜单", &isRCMenuMove);
-
-							ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-							ImGui::SliderInt(I18Nc("finder.setting.slider-rangelocal"), &show_items_window_auto_dis_local, 10, 2000, "%d米");
-							ImGui::SliderInt(I18Nc("finder.setting.slider-rangeskyrim"), &show_items_window_auto_dis_skyrim, 20, 10000, "%d米");
-							ImGui::SliderInt(I18Nc("finder.setting.slider-tableHeight"), &show_inv_window_height, 7, 18, "%d行");
-							ImGui::PopItemWidth();
-
-							ImGui::Checkbox(I18Nc("finder.setting.checkbox-ignoreItem"), &show_items_window_ignore);
-							if (show_items_window_ignore) {
-								static ImGuiTableFlags flagsItem =
-									ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
-
-								const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
-								if (ImGui::BeginTable("tableItemIngore", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
-									ImGui::TableSetupColumn(I18Nc("finder.ui.column-formid"), ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_1);
-									ImGui::TableSetupColumn(I18Nc("finder.ui.column-name"), ImGuiTableColumnFlags_WidthFixed, 60.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_2);
-									ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 40.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_3);
-
-									ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
-									ImGui::TableHeadersRow();
-
-									int deleteFormId = 0;
-
-									ImGuiListClipper clipper;
-									clipper.Begin(excludeForms.size());
-									while (clipper.Step())
-										for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
-											ExcludeForm& item = excludeForms[row_n];
-											ImGui::PushID(item.formId + 0x2000000);
-											ImGui::TableNextRow();
-											ImGui::TableNextColumn();
-											ImGui::Text("%08X", item.formId);
-											ImGui::TableNextColumn();
-											ImGui::Text("%s", item.name.c_str());
-											ImGui::TableNextColumn();
-											//ImGui::Text("%s", item.formTypeStr.c_str());
-
-											if (ImGui::SmallButton(ICON_MDI_CLOSE)) {
-												deleteFormId = item.formId;
-											}
-
-											ImGui::PopID();
-										}
-									ImGui::EndTable();
-									if (deleteFormId) {
-										excludeFormIds.erase(deleteFormId);
-										excludeForms.erase(std::remove_if(excludeForms.begin(), excludeForms.end(),
-															   [&deleteFormId](const ExcludeForm& x) {
-																   return x.formId == deleteFormId;
-															   }),
-											excludeForms.end());
-									}
-								}
-							}
-
-							ImGui::TreePop();
-						}
-
-						ImGui::Spacing();
-						if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_AUTORENEW, "finder.setting.label-autoPickup"), ImGuiTreeNodeFlags_DefaultOpen)) {
-							ImGui::Checkbox("启用", &show_items_window_auto_enable);
-							ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-							ImGui::SliderInt(I18Nc("finder.setting.slider-pickupRange"), &show_items_window_auto_dis, 1, 100, "%d米");
-							ImGui::SliderInt(I18Nc("finder.setting.slider-pickupFrequency"), &refresh_time_auto, 1, 10, "%d秒");
-							ImGui::SliderInt(I18Nc("finder.setting.slider-pickupQuantity"), &show_items_window_auto_every_max, 1, 10, "%d个");
-							ImGui::PopItemWidth();
-							ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupPrompt"), &show_items_window_auto_notification);
-
-							if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_SWORD, "finder.setting.label-weaponFiltering"), ImGuiTreeNodeFlags_DefaultOpen)) {
-								ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupOnlyEnchanting"), &show_items_window_auto_weap_enchant);
-								ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupValueSetting"), &show_items_window_auto_weap_price);
-								ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-								if (show_items_window_auto_weap_price) {
-									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									ImGui::SliderInt("##设置价格", &show_items_window_auto_weap_price_value, 100, 10000, I18Nc("finder.setting.slider-exceed"));
-								}
-								ImGui::PopItemWidth();
-
-								ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupValueRadioSetting"), &show_items_window_auto_weap_priceweight);
-								ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-								if (show_items_window_auto_weap_priceweight) {
-									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									ImGui::SliderInt("##设置价重比", &show_items_window_auto_weap_priceweight_value, 2, 500, I18Nc("finder.setting.slider-exceed"));
-								}
-								ImGui::PopItemWidth();
-
-								ImGui::TreePop();
-							}
-
-							if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_SHIELD_HALF_FULL, "finder.setting.label-armorFiltering"), ImGuiTreeNodeFlags_DefaultOpen)) {
-								ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupOnlyEnchanting"), &show_items_window_auto_armo_enchant);
-
-								ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupValueSetting"), &show_items_window_auto_armo_price);
-								ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-								if (show_items_window_auto_armo_price) {
-									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									ImGui::SliderInt("##设置价格2", &show_items_window_auto_armo_price_value, 100, 10000, I18Nc("finder.setting.slider-exceed"));
-								}
-								ImGui::PopItemWidth();
-
-								ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupValueRadioSetting"), &show_items_window_auto_armo_priceweight);
-								ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
-								if (show_items_window_auto_armo_priceweight) {
-									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									ImGui::SliderInt("##设置价重比2", &show_items_window_auto_armo_priceweight_value, 2, 500, I18Nc("finder.setting.slider-exceed"));
-								}
-								ImGui::PopItemWidth();
-
-								ImGui::TreePop();
-							}
-
-							ImGui::Checkbox(I18Nc("finder.setting.checkbox-locationFiltering"), &show_items_window_auto_ignore);
-							if (show_items_window_auto_ignore) {
-								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-								if (ImGui::SmallButton(I18Nc("finder.setting.btn-excludeCurrentLocation"))) {
-									auto player = RE::PlayerCharacter::GetSingleton();
-#if SSE_CODE
-									auto currentLocation = player->currentLocation;
-#else
-									auto currentLocation = player->GetCurrentLocation();
-#endif
-									RE::FormID formid = 0;
-									std::string name = "天际";
-									if (currentLocation) {
-										formid = currentLocation->GetFormID();
-										name = currentLocation->GetFullName();
-									}
-									bool exist = false;
-									for (const auto& excludeForm : excludeLocationForms) {
-										if (excludeForm.formId == formid) {
-											exist = true;
-											break;
-										}
-									}
-									if (!exist) {
-										excludeLocationForms.push_back({ formid, name, "" });
-									}
-									excludeLocationFormIds.insert(formid);
-								}
-								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-								ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %s", playerInfo.location.c_str());
-								static ImGuiTableFlags flagsItem =
-									ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
-
-								const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
-								if (ImGui::BeginTable("tableItemLocationIngore", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
-									ImGui::TableSetupColumn(I18Nc("finder.ui.column-formid"), ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_1);
-									ImGui::TableSetupColumn(I18Nc("finder.ui.column-name"), ImGuiTableColumnFlags_WidthFixed, 60.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_2);
-									ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 40.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_3);
-
-									ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
-									ImGui::TableHeadersRow();
-
-									int deleteFormId = 0;
-
-									ImGuiListClipper clipper;
-									clipper.Begin(excludeLocationForms.size());
-									while (clipper.Step())
-										for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
-											ExcludeForm& item = excludeLocationForms[row_n];
-											ImGui::PushID(item.formId + 0x3000000);
-											ImGui::TableNextRow();
-											ImGui::TableNextColumn();
-											ImGui::Text("%08X", item.formId);
-											ImGui::TableNextColumn();
-											ImGui::Text("%s", item.name.c_str());
-											ImGui::TableNextColumn();
-											//ImGui::Text("%s", item.formTypeStr.c_str());
-
-											if (ImGui::SmallButton(ICON_MDI_CLOSE)) {
-												deleteFormId = item.formId == 0 ? -1 : item.formId;
-											}
-
-											ImGui::PopID();
-										}
-									ImGui::EndTable();
-									if (deleteFormId != 0) {
-										if (deleteFormId == -1) {
-											deleteFormId = 0;
-										}
-										excludeLocationFormIds.erase(deleteFormId);
-										excludeLocationForms.erase(std::remove_if(excludeLocationForms.begin(), excludeLocationForms.end(),
-																	   [&deleteFormId](const ExcludeForm& x) {
-																		   return x.formId == deleteFormId;
-																	   }),
-											excludeLocationForms.end());
-									}
-								}
-							}
-
-							ImGui::TreePop();
 						}
 
 #if SSE_CODE
-						if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_TABLE_OF_CONTENTS, "finder.setting.label-hud"), ImGuiTreeNodeFlags_DefaultOpen)) {
-							ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyNirnRootQuantity"), &stats::showlocationNirnRootCount);
-							ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyNirnRootRedQuantity"), &stats::showlocationNirnRootRedCount);
-							ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyVeinQuantity"), &stats::showlocationOreCount);
-
-							if (lotd::isLoad) {
-								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyLotdItemsQuantity"), &lotd::showlocationItemCount);
-								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyLotdExcavationQuantity"), &stats::showlocationExCount);
-								ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayLotdItemsQuantity"), &lotd::showDisplayItemCount);
-							}
-							ImGui::TreePop();
-						}
-#endif
-
-						if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_MAP_SEARCH_OUTLINE, "finder.setting.label-marker"), ImGuiTreeNodeFlags_DefaultOpen)) {
-							ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerNameTag"), &show_item_window_track_icon_name);
-							if (menu::show_item_window_track_icon_name) {
-								ImGui::Indent();
-								ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerOutOfRangeIcon"), &menu::show_item_window_track_auto_tag_OutOfRangeIcon);
-								ImGui::Unindent();
-							}
-							ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerHighLight"), &show_item_window_track_highlight);
-
-							ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerAutoZoom"), &show_item_window_track_auto_tag);
-							if (show_item_window_track_auto_tag) {
-								ImGui::Indent();
+						if (lotd::isLoad && lotd::isShowAttached) {
+							if (lotd::getCountAttached()) {
+								ImGui::TableNextColumn();
 								ImGui::AlignTextToFramePadding();
-								ImGui::Text(I18Nc("finder.setting.slider-markerZoomMax"));
-								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-								ImGui::PushItemWidth(ImGui::GetFontSize() * 5);
-								ImGui::SliderFloat("##markerZoomMax", &show_item_window_track_icon_scale_max, 1.0f, 10.0f, "+%0.1f");
-								ImGui::PopItemWidth();
 
-								ImGui::AlignTextToFramePadding();
-								ImGui::Text(I18Nc("finder.setting.slider-markerZoomMin"));
+								ImGui::Text(I18Ni(ICON_MDI_GREENHOUSE, "finder.ui.label-lotdCollection"), lotd::getCountAttached());
 								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-								ImGui::PushItemWidth(ImGui::GetFontSize() * 5);
-								ImGui::SliderFloat("##markerZoomMin", &show_item_window_track_icon_scale_min, 0.1f, 1.0f, "+%0.1f");
-								ImGui::PopItemWidth();
-								ImGui::Unindent();
-							} else {
-								ImGui::Indent();
-								ImGui::AlignTextToFramePadding();
-								ImGui::Text(I18Nc("finder.setting.slider-markerZoom"));
-								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-								ImGui::PushItemWidth(ImGui::GetFontSize() * 5);
-								ImGui::SliderFloat("##markerZoom", &show_item_window_track_icon_scale, 0.0f, 10.0f, "+%0.1f");
-								ImGui::PopItemWidth();
-								ImGui::Unindent();
+								if (ImGui::SmallButton(ICON_MDI_MAP_MARKER_RADIUS "##99")) {
+									trackAllItem(lotd::getCountAttached(), lotd::getItemsAttached());
+								}
+								lotd::buildItemInfoAttached(lotd::getCountAttached(), lotd::getItemsAttached());
+								ImGui::Spacing();
 							}
+						}
+#endif
 
+						if (getItemCountWEAP() > 0) {
+							ImGui::TableNextColumn();
 							ImGui::AlignTextToFramePadding();
-							if (ImGui::BeginPopupContextItem("PopupDisplayType")) {
-								for (auto& item : menu::displayType) {
-									if (ImGui::Selectable(item.second.c_str())) {
-										menu::show_item_window_track_displayType = item.first;
-										if (item.first == 2) {
-											menu::isTrack = false;
+							ImGui::Text(I18Ni(ICON_MDI_SWORD, "finder.ui.label-weap"), getItemCountWEAP());
+
+							if (show_items_window_settings) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##41")) {
+									takeAllItem(getItemCountWEAP(), getItemsWEAP(), RE::FormType::Weapon);
+								}
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##41"), &show_items_window_auto_weap);
+							} else {
+								if (show_items_window_auto_weap) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::Text(ICON_MDI_AUTORENEW);
+								}
+							}
+							buildItemInfo(getItemCountWEAP(), getItemsWEAP(), RE::FormType::Weapon);
+							ImGui::Spacing();
+						}
+						if (getItemCountARMO() > 0) {
+							ImGui::TableNextColumn();
+							ImGui::AlignTextToFramePadding();
+							ImGui::Text(I18Ni(ICON_MDI_SHIELD, "finder.ui.label-armo"), getItemCountARMO());
+
+							if (show_items_window_settings) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##47")) {
+									takeAllItem(getItemCountARMO(), getItemsARMO(), RE::FormType::Armor);
+								}
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##26"), &show_items_window_auto_armo);
+							} else {
+								if (show_items_window_auto_armo) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::Text(ICON_MDI_AUTORENEW);
+								}
+							}
+							buildItemInfo(getItemCountARMO(), getItemsARMO(), RE::FormType::Armor);
+							ImGui::Spacing();
+						}
+						if (getItemCountAMMO() > 0) {
+							ImGui::TableNextColumn();
+							ImGui::AlignTextToFramePadding();
+							ImGui::Text(I18Ni(ICON_MDI_ARROW_PROJECTILE, "finder.ui.label-ammo"), getItemCountAMMO());
+							if (show_items_window_settings) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##42")) {
+									takeAllItem(getItemCountAMMO(), getItemsAMMO(), RE::FormType::Ammo);
+								}
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##47"), &show_items_window_auto_ammo);
+							} else {
+								if (show_items_window_auto_ammo) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::Text(ICON_MDI_AUTORENEW);
+								}
+							}
+							buildItemInfo(getItemCountAMMO(), getItemsAMMO(), RE::FormType::Ammo);
+							ImGui::Spacing();
+						}
+						if (getItemCountBOOK() > 0) {
+							ImGui::TableNextColumn();
+							ImGui::AlignTextToFramePadding();
+							ImGui::Text(I18Ni(ICON_MDI_BOOK_OPEN_VARIANT, "finder.ui.label-book"), getItemCountBOOK());
+
+							if (show_items_window_settings) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##43")) {
+									takeAllItemBOOK(getItemCountBOOK(), getItemsBOOK(), RE::FormType::Book);
+								}
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##43"), &show_items_window_auto_book);
+							} else {
+								if (show_items_window_auto_book) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::Text(ICON_MDI_AUTORENEW);
+								}
+							}
+							buildItemInfoBOOK(getItemCountBOOK(), getItemsBOOK(), RE::FormType::Book);
+						}
+						if (getItemCountALCH() > 0) {
+							ImGui::TableNextColumn();
+							ImGui::AlignTextToFramePadding();
+							ImGui::Text(I18Ni(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE, "finder.ui.label-alch"), getItemCountALCH());
+							if (show_items_window_settings) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##44")) {
+									takeAllItem(getItemCountALCH(), getItemsALCH(), RE::FormType::AlchemyItem);
+								}
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##44"), &show_items_window_auto_alch);
+							} else {
+								if (show_items_window_auto_alch) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::Text(ICON_MDI_AUTORENEW);
+								}
+							}
+							buildItemInfo(getItemCountALCH(), getItemsALCH(), RE::FormType::AlchemyItem);
+							ImGui::Spacing();
+						}
+						if (getItemCountFOOD() > 0) {
+							ImGui::TableNextColumn();
+							ImGui::AlignTextToFramePadding();
+							ImGui::Text(I18Ni(ICON_MDI_FOOD_DRUMSTICK, "finder.ui.label-food"), getItemCountFOOD());
+							if (show_items_window_settings) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##45")) {
+									takeAllItem(getItemCountFOOD(), getItemsFOOD(), RE::FormType::PluginInfo);
+								}
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##45"), &show_items_window_auto_food);
+							} else {
+								if (show_items_window_auto_food) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::Text(ICON_MDI_AUTORENEW);
+								}
+							}
+							buildItemInfo(getItemCountFOOD(), getItemsFOOD(), RE::FormType::PluginInfo);  // 临时用PluginInfo
+							ImGui::Spacing();
+						}
+						if (getItemCountINGR() > 0) {
+							ImGui::TableNextColumn();
+							ImGui::AlignTextToFramePadding();
+							ImGui::Text(I18Ni(ICON_MDI_SOURCE_BRANCH, "finder.ui.label-ingr"), getItemCountINGR());
+							if (show_items_window_settings) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##48")) {
+									takeAllItem(getItemCountINGR(), getItemsINGR(), RE::FormType::Ingredient);
+								}
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##48"), &show_items_window_auto_ingr);
+							} else {
+								if (show_items_window_auto_ingr) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::Text(ICON_MDI_AUTORENEW);
+								}
+							}
+							buildItemInfo(getItemCountINGR(), getItemsINGR(), RE::FormType::Ingredient);
+							ImGui::Spacing();
+						}
+						if (getItemCountSGEM() > 0) {
+							ImGui::TableNextColumn();
+							ImGui::AlignTextToFramePadding();
+							ImGui::Text(I18Ni(ICON_MDI_CARDS_DIAMOND, "finder.ui.label-sgen"), getItemCountSGEM());
+							if (show_items_window_settings) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##53")) {
+									takeAllItem(getItemCountSGEM(), getItemsSGEM(), RE::FormType::SoulGem);
+								}
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##532"), &show_items_window_auto_sgem);
+							} else {
+								if (show_items_window_auto_sgem) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::Text(ICON_MDI_AUTORENEW);
+								}
+							}
+							buildItemInfo(getItemCountSGEM(), getItemsSGEM(), RE::FormType::SoulGem);
+						}
+						if (getItemCountKEYM() > 0) {
+							ImGui::TableNextColumn();
+							ImGui::AlignTextToFramePadding();
+							ImGui::Text(I18Ni(ICON_MDI_KEY, "finder.ui.label-keym"), getItemCountKEYM());
+
+							if (show_items_window_settings) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##52")) {
+									takeAllItem(getItemCountKEYM(), getItemsKEYM(), RE::FormType::KeyMaster);
+								}
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##52"), &show_items_window_auto_keym);
+							} else {
+								if (show_items_window_auto_keym) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::Text(ICON_MDI_AUTORENEW);
+								}
+							}
+							buildItemInfo(getItemCountKEYM(), getItemsKEYM(), RE::FormType::KeyMaster);
+							ImGui::Spacing();
+						}
+						if (getItemCountSTON() > 0) {
+							ImGui::TableNextColumn();
+							ImGui::AlignTextToFramePadding();
+							ImGui::Text(I18Ni(ICON_MDI_DIAMOND_STONE, "finder.ui.label-ston"), getItemCountSTON());
+							if (show_items_window_settings) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-1")) {
+									takeAllItem(getItemCountSTON(), getItemsSTON(), RE::FormType::Misc);
+								}
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##32-1"), &show_items_window_auto_ston);
+							} else {
+								if (show_items_window_auto_ston) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::Text(ICON_MDI_AUTORENEW);
+								}
+							}
+							buildItemInfo(getItemCountSTON(), getItemsSTON(), RE::FormType::Misc, 301);
+							ImGui::Spacing();
+						}
+						if (getItemCountANVI() > 0) {
+							ImGui::TableNextColumn();
+							ImGui::AlignTextToFramePadding();
+							ImGui::Text(I18Ni(ICON_MDI_ANVIL, "finder.ui.label-anvi"), getItemCountANVI());
+							if (show_items_window_settings) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-2")) {
+									takeAllItem(getItemCountANVI(), getItemsANVI(), RE::FormType::Misc);
+								}
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##32-2"), &show_items_window_auto_anvi);
+							} else {
+								if (show_items_window_auto_anvi) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::Text(ICON_MDI_AUTORENEW);
+								}
+							}
+							buildItemInfo(getItemCountANVI(), getItemsANVI(), RE::FormType::Misc, 302);
+							ImGui::Spacing();
+						}
+						if (getItemCountANHD() > 0) {
+							ImGui::TableNextColumn();
+							ImGui::AlignTextToFramePadding();
+							ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-anhd"), getItemCountANHD());
+							if (show_items_window_settings) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-3")) {
+									takeAllItem(getItemCountANHD(), getItemsANHD(), RE::FormType::Misc);
+								}
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##32-3"), &show_items_window_auto_anhd);
+							} else {
+								if (show_items_window_auto_anhd) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::Text(ICON_MDI_AUTORENEW);
+								}
+							}
+							buildItemInfo(getItemCountANHD(), getItemsANHD(), RE::FormType::Misc, 303);
+							ImGui::Spacing();
+						}
+						if (getItemCountANPA() > 0) {
+							ImGui::TableNextColumn();
+							ImGui::AlignTextToFramePadding();
+							ImGui::Text(I18Ni(ICON_MDI_RABBIT, "finder.ui.label-anpa"), getItemCountANPA());
+							if (show_items_window_settings) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-4")) {
+									takeAllItem(getItemCountANPA(), getItemsANPA(), RE::FormType::Misc);
+								}
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##32-4"), &show_items_window_auto_anpa);
+							} else {
+								if (show_items_window_auto_anpa) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::Text(ICON_MDI_AUTORENEW);
+								}
+							}
+							buildItemInfo(getItemCountANPA(), getItemsANPA(), RE::FormType::Misc, 304);
+							ImGui::Spacing();
+						}
+						if (getItemCountTOOL() > 0) {
+							ImGui::TableNextColumn();
+							ImGui::AlignTextToFramePadding();
+							ImGui::Text(I18Ni(ICON_MDI_TOOLS, "finder.ui.label-tool"), getItemCountTOOL());
+							if (show_items_window_settings) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##32-5")) {
+									takeAllItem(getItemCountTOOL(), getItemsTOOL(), RE::FormType::Misc);
+								}
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##32-5"), &show_items_window_auto_tool);
+							} else {
+								if (show_items_window_auto_tool) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::Text(ICON_MDI_AUTORENEW);
+								}
+							}
+							buildItemInfo(getItemCountTOOL(), getItemsTOOL(), RE::FormType::Misc, 305);
+							ImGui::Spacing();
+						}
+						if (getItemCountMISC() > 0) {
+							ImGui::TableNextColumn();
+							ImGui::AlignTextToFramePadding();
+							ImGui::Text(I18Ni(ICON_MDI_PACKAGE_VARIANT_CLOSED, "finder.ui.label-misc"), getItemCountMISC());
+							if (show_items_window_settings) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##49")) {
+									takeAllItem(getItemCountMISC(), getItemsMISC(), RE::FormType::Misc);
+								}
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##49"), &show_items_window_auto_misc);
+							} else {
+								if (show_items_window_auto_misc) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::Text(ICON_MDI_AUTORENEW);
+								}
+							}
+							buildItemInfo(getItemCountMISC(), getItemsMISC(), RE::FormType::Misc);
+							ImGui::Spacing();
+						}
+						if (getItemCountFLOR() > 0) {
+							ImGui::TableNextColumn();
+							ImGui::AlignTextToFramePadding();
+							ImGui::Text(I18Ni(ICON_MDI_BASKET_OUTLINE, "finder.ui.label-flor"), getItemCountFLOR());
+							if (show_items_window_settings) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##50")) {
+									takeAllItem(getItemCountFLOR(), getItemsFLOR(), RE::FormType::Flora);
+								}
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##50"), &show_items_window_auto_flor);
+							} else {
+								if (show_items_window_auto_flor) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::Text(ICON_MDI_AUTORENEW);
+								}
+							}
+							buildItemInfo(getItemCountFLOR(), getItemsFLOR(), RE::FormType::Flora);
+							ImGui::Spacing();
+						}
+						if (getItemCountTREE() > 0) {
+							ImGui::TableNextColumn();
+							ImGui::AlignTextToFramePadding();
+							ImGui::Text(I18Ni(ICON_MDI_FLOWER_TULIP_OUTLINE, "finder.ui.label-tree"), getItemCountTREE());
+							if (show_items_window_settings) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								if (ImGui::SmallButton(ICON_MDI_ARCHIVE_ARROW_DOWN "##53")) {
+									takeAllItem(getItemCountTREE(), getItemsTREE(), RE::FormType::Tree);
+								}
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##53"), &show_items_window_auto_tree);
+							} else {
+								if (show_items_window_auto_tree) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::Text(ICON_MDI_AUTORENEW);
+								}
+							}
+							buildItemInfo(getItemCountTREE(), getItemsTREE(), RE::FormType::Tree);
+							ImGui::Spacing();
+						}
+						if (getItemCountACHR() > 0) {
+							ImGui::TableNextColumn();
+							ImGui::AlignTextToFramePadding();
+							ImGui::Text(I18Ni(ICON_MDI_HUMAN_MALE, "finder.ui.label-achr"), getItemCountACHR());
+
+							if (show_items_window_settings) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##62"), &show_items_window_auto_achr);
+								if (show_items_window_auto_achr) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									if (ImGui::BeginPopupContextItem("PopupFilterAchr")) {
+										ImGui::Text(I18Ni(ICON_MDI_HUMAN_MALE, "finder.setting.label-achrItemPickupType"));
+										ImGui::Separator();
+										if (ImGui::BeginTable("tableFilterAchr", 3)) {
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_SWORD, "finder.setting.checkbox-weap"), &show_items_window_auto_achr_weap);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_SHIELD_HALF_FULL, "finder.setting.checkbox-armo"), &show_items_window_auto_achr_armo);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_ARROW_PROJECTILE, "finder.setting.checkbox-ammo"), &show_items_window_auto_achr_ammo);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE, "finder.setting.checkbox-alch"), &show_items_window_auto_achr_alch);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_FOOD_DRUMSTICK, "finder.setting.checkbox-food"), &show_items_window_auto_achr_food);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_SOURCE_BRANCH, "finder.setting.checkbox-ingr"), &show_items_window_auto_achr_ingr);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_CARDS_DIAMOND, "finder.setting.checkbox-sgen"), &show_items_window_auto_achr_sgem);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_CASH, "finder.setting.checkbox-gold"), &show_items_window_auto_achr_gold);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_SCRIPT_TEXT, "finder.setting.checkbox-scrl"), &show_items_window_auto_achr_scrl);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_KEY, "finder.setting.checkbox-keym"), &show_items_window_auto_achr_keym);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_BOOK_OPEN_VARIANT, "书信"), &show_items_window_auto_achr_book);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_DIAMOND_STONE, "finder.setting.checkbox-ston"), &show_items_window_auto_achr_ston);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_ANVIL, "finder.setting.checkbox-anvi"), &show_items_window_auto_achr_anvi);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_LOCK_OPEN, "finder.setting.checkbox-lock"), &show_items_window_auto_achr_lock);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_BOX_CUTTER, "finder.setting.checkbox-anhd"), &show_items_window_auto_achr_anhd);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_RABBIT, "finder.setting.checkbox-anpa"), &show_items_window_auto_achr_anpa);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_TOOLS, "finder.setting.checkbox-tool"), &show_items_window_auto_achr_tool);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_PACKAGE_VARIANT_CLOSED, "finder.setting.checkbox-misc"), &show_items_window_auto_achr_misc);
+											ImGui::EndTable();
 										}
+
+										ImGui::EndPopup();
 									}
+
+									if (ImGui::Button(ICON_MDI_FILTER_CHECK "##achr")) {
+										ImGui::OpenPopup("PopupFilterAchr");
+									}
+								}
+							} else {
+								if (show_items_window_auto_achr) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::Text(ICON_MDI_AUTORENEW);
+								}
+							}
+							buildItemACHRInfo(getItemCountACHR(), getItemsACHR(), RE::FormType::ActorCharacter);
+							ImGui::Spacing();
+						}
+						if (getItemCountCONT() > 0) {
+							ImGui::TableNextColumn();
+							ImGui::AlignTextToFramePadding();
+							ImGui::Text(I18Ni(ICON_MDI_ARCHIVE_OUTLINE, "finder.ui.label-cont"), getItemCountCONT());
+							if (show_items_window_settings) {
+								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+								ImGui::Checkbox(I18Nc2("finder.ui.checkbox-autoPickup", "##28"), &show_items_window_auto_cont);
+								if (show_items_window_auto_cont) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									if (ImGui::BeginPopupContextItem("PopupFilterCont")) {
+										ImGui::Text(I18Ni(ICON_MDI_ARCHIVE_OUTLINE, "finder.setting.label-contItemPickupType"));
+										ImGui::Separator();
+										if (ImGui::BeginTable("tableFilterCont", 3)) {
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_SWORD, "finder.setting.checkbox-weap"), &show_items_window_auto_cont_weap);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_SHIELD_HALF_FULL, "finder.setting.checkbox-armo"), &show_items_window_auto_cont_armo);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_ARROW_PROJECTILE, "finder.setting.checkbox-ammo"), &show_items_window_auto_cont_ammo);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE, "finder.setting.checkbox-alch"), &show_items_window_auto_cont_alch);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_FOOD_DRUMSTICK, "finder.setting.checkbox-food"), &show_items_window_auto_cont_food);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_SOURCE_BRANCH, "finder.setting.checkbox-ingr"), &show_items_window_auto_cont_ingr);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_CARDS_DIAMOND, "finder.setting.checkbox-sgen"), &show_items_window_auto_cont_sgem);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_CASH, "finder.setting.checkbox-gold"), &show_items_window_auto_cont_gold);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_SCRIPT_TEXT, "finder.setting.checkbox-scrl"), &show_items_window_auto_cont_scrl);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_KEY, "finder.setting.checkbox-keym"), &show_items_window_auto_cont_keym);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_BOOK_OPEN_VARIANT, "书信"), &show_items_window_auto_cont_book);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_DIAMOND_STONE, "finder.setting.checkbox-ston"), &show_items_window_auto_cont_ston);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_ANVIL, "finder.setting.checkbox-anvi"), &show_items_window_auto_cont_anvi);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_LOCK_OPEN, "finder.setting.checkbox-lock"), &show_items_window_auto_cont_lock);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_BOX_CUTTER, "finder.setting.checkbox-anhd"), &show_items_window_auto_cont_anhd);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_RABBIT, "finder.setting.checkbox-anpa"), &show_items_window_auto_cont_anpa);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_TOOLS, "finder.setting.checkbox-tool"), &show_items_window_auto_cont_tool);
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(I18Ni(ICON_MDI_PACKAGE_VARIANT_CLOSED, "finder.setting.checkbox-misc"), &show_items_window_auto_cont_misc);
+											ImGui::EndTable();
+										}
+
+										ImGui::EndPopup();
+									}
+
+									if (ImGui::Button(ICON_MDI_FILTER_CHECK "##cont")) {
+										ImGui::OpenPopup("PopupFilterCont");
+									}
+								}
+							} else {
+								if (show_items_window_auto_cont) {
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									ImGui::Text(ICON_MDI_AUTORENEW);
+								}
+							}
+							buildItemCONTInfo(getItemCountCONT(), getItemsCONT(), RE::FormType::Container);
+							ImGui::Spacing();
+						}
+						if (getItemCountACTI() > 0) {
+							ImGui::TableNextColumn();
+							ImGui::Text(I18Ni(ICON_MDI_COGS, "finder.ui.label-acti"), getItemCountACTI());
+
+							buildItemInfoACTI(getItemCountACTI(), getItemsACTI(), RE::FormType::Activator);
+							ImGui::Spacing();
+						}
+						if (getItemCount() > 0) {
+							ImGui::TableNextColumn();
+							ImGui::Text(I18Nc("finder.ui.label-othe"));
+							buildItemInfo(getItemCount(), getItems(), RE::FormType::None);
+							ImGui::Spacing();
+						}
+
+						ImGui::TableNextColumn();
+						ImGui::Checkbox(I18Ni(ICON_MDI_MORE, "finder.setting.checkbox-more"), &show_items_window_settings);
+						if (show_items_window_settings) {
+							ImGui::SameLine(0.0f, 8.0f * ImGui::GetTextLineHeightWithSpacing());
+
+							if (ImGui::BeginPopupModal(I18Nc("common.setting.popup-info"), NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+								ImGui::Text(I18Nc("common.setting.label-configSaved"));
+								if (ImGui::Button(I18Nc("common.setting.btn-ok"), ImVec2(120, 0))) {
+									ImGui::CloseCurrentPopup();
 								}
 								ImGui::EndPopup();
 							}
-							ImGui::Text(I18Nc("finder.setting.btn-markerDisplayType"));
-							ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-							if (ImGui::Button(menu::displayType.at(menu::show_item_window_track_displayType).c_str(), ImVec2(ImGui::GetFontSize() * 5, 0))) {
-								ImGui::OpenPopup("PopupDisplayType");
+
+							if (ImGui::Button(I18Ni(ICON_MDI_CONTENT_SAVE, "common.setting.btn-saveConfig"))) {
+								setting::save_settings();
+								ImGui::OpenPopup(I18Nc("common.setting.popup-info"));
 							}
-							if (menu::show_item_window_track_displayType != 0) {
-								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-								ImGui::Text("当前绑定:");
-								ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-								ImGui::Text(dinputhook::getKeyName(hotkeyTrack, hotkeyTrackModifier, isWaitTrack).c_str());
-							}
+
+							{
+								ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
+
+								ImGui::BeginChild("childItemsSetting", ImVec2(ImGui::GetTextLineHeightWithSpacing() * 15, ImGui::GetTextLineHeightWithSpacing() * ((float)show_inv_window_height - 0.5f)), true, window_flags);
+
+								// 界面设置
+								if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_TABLE, "finder.setting.label-displaySetting"), ImGuiTreeNodeFlags_DefaultOpen)) {
+									if (ImGui::BeginTable("tableItemsSetting", 2)) {
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(I18Nc("finder.setting.checkbox-transparentBackground"), &no_background_items);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayFormid"), &show_items_window_formid);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayRefid"), &show_items_window_refid);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayPosition"), &show_items_window_direction);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayModname"), &show_items_window_file);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNo3D"), &show_items_window_3D);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(I18Nc("finder.setting.checkbox-privateItemHidden"), &isCrimeIgnore);
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(I18Nc("finder.setting.checkbox-merchantContIgnore"), &merchantContIgnore);
+
+										ImGui::EndTable();
+									}
 
 #if SSE_CODE
-							if (lotd::isLoad) {
-								ImGui::Checkbox(I18Nc("finder.setting.checkbox-autoMarkLotdExcavation"), &lotd::isAutoTrackLotdExcavation);
-								ImGui::Checkbox(I18Nc("finder.setting.checkbox-autoMarkLotdCards"), &lotd::isAutoTrackLotdCards);
-								ImGui::Checkbox(I18Nc("finder.setting.checkbox-autoMarkLotdItems"), &lotd::isAutoTrackLotdItems);
-								if (lotd::isAutoTrackLotdItems) {
-									ImGui::Indent();
-									ImGui::Checkbox(I18Nc("finder.setting.checkbox-excludePrivateItems"), &lotd::isAutoTrackLotdItemsCrimeIgnore);
-									ImGui::Checkbox(I18Nc("finder.setting.checkbox-excludeArmoryItems"), &lotd::isArmoryIgnore);
-									ImGui::ColorEdit4(I18Nc("finder.setting.color-markerTagColorLotd"), &menu::ColorTrackLotd.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
-
-									ImGui::Unindent();
-								}
-							}
+									if (lotd::isLoad) {
+										ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayLotdSection"), &lotd::isShowAttached);
+										if (lotd::isShowAttached) {
+											ImGui::Indent();
+											//ImGui::Checkbox(I18Nc("finder.setting.checkbox-excludePlayerItems"), &lotd::isInvIgnore);
+											ImGui::Checkbox(I18Nc("finder.setting.checkbox-lotdPrivateItemHidden"), &lotd::isCrimeIgnore);
+											ImGui::Checkbox(I18Nc("finder.setting.checkbox-excludeArmoryItems"), &lotd::isArmoryIgnore);
+											ImGui::ColorEdit4(I18Nc("finder.setting.color-lotdTableBorderStrong"), &lotd::colorTableBorderStrong.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+											ImGui::ColorEdit4(I18Nc("finder.setting.color-lotdTableHeaderBg"), &lotd::colorTableHeaderBg.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+											ImGui::Unindent();
+										}
+									}
 #endif
 
-							ImGui::Checkbox(I18Nc("finder.setting.checkbox-autoMarkItems"), &track::isAutoTrackItems);
-							{
-								static ImGuiTableFlags flagsItem =
-									ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
+									ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayQuest"), &isShowQuest);
+									if (isShowQuest) {
+										ImGui::Indent();
+										ImGui::ColorEdit4(I18Nc("finder.setting.color-questTableBorderStrong"), &colorQuestTableBorderStrong.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+										ImGui::ColorEdit4(I18Nc("finder.setting.color-questTableHeaderBg"), &colorQuestTableHeaderBg.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+										ImGui::Unindent();
+									}
 
-								const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
-								if (ImGui::BeginTable("tableItemAutoTrack", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
-									ImGui::TableSetupColumn(I18Nc("finder.ui.column-formid"), ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_1);
-									ImGui::TableSetupColumn(I18Nc("finder.ui.column-name"), ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_2);
-									ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 30.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_3);
+									ImGui::Checkbox("传送按钮移动到右键菜单", &isRCMenuMove);
 
-									ImGui::TableSetupScrollFreeze(0, 1);
-									ImGui::TableHeadersRow();
+									ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
+									ImGui::SliderInt(I18Nc("finder.setting.slider-rangelocal"), &show_items_window_auto_dis_local, 10, 2000, "%d米");
+									ImGui::SliderInt(I18Nc("finder.setting.slider-rangeskyrim"), &show_items_window_auto_dis_skyrim, 20, 10000, "%d米");
+									ImGui::SliderInt(I18Nc("finder.setting.slider-tableHeight"), &show_inv_window_height, 7, 18, "%d行");
+									ImGui::PopItemWidth();
 
-									int deleteFormId = 0;
+									ImGui::Checkbox(I18Nc("finder.setting.checkbox-ignoreItem"), &show_items_window_ignore);
+									if (show_items_window_ignore) {
+										static ImGuiTableFlags flagsItem =
+											ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
 
-									ImGuiListClipper clipper;
-									clipper.Begin(data::autoTrackForms.size());
-									while (clipper.Step())
-										for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
-											ExcludeForm& item = data::autoTrackForms[row_n];
-											ImGui::PushID(item.formId);
-											ImGui::TableNextRow();
-											ImGui::TableNextColumn();
-											ImGui::Text("%08X", item.formId);
-											ImGui::TableNextColumn();
-											ImGui::Text("%s", item.name.c_str());
-											ImGui::TableNextColumn();
+										const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+										if (ImGui::BeginTable("tableItemIngore", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
+											ImGui::TableSetupColumn(I18Nc("finder.ui.column-formid"), ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_1);
+											ImGui::TableSetupColumn(I18Nc("finder.ui.column-name"), ImGuiTableColumnFlags_WidthFixed, 60.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_2);
+											ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 40.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_3);
 
-											if (ImGui::SmallButton(ICON_MDI_CLOSE)) {
-												deleteFormId = item.formId;
-											}
+											ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
+											ImGui::TableHeadersRow();
 
-											ImGui::PopID();
-										}
-									ImGui::EndTable();
-									if (deleteFormId) {
-										data::autoTrackFormIds.erase(deleteFormId);
-										data::autoTrackForms.erase(std::remove_if(data::autoTrackForms.begin(), data::autoTrackForms.end(),
+											int deleteFormId = 0;
+
+											ImGuiListClipper clipper;
+											clipper.Begin(excludeForms.size());
+											while (clipper.Step())
+												for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
+													ExcludeForm& item = excludeForms[row_n];
+													ImGui::PushID(item.formId + 0x2000000);
+													ImGui::TableNextRow();
+													ImGui::TableNextColumn();
+													ImGui::Text("%08X", item.formId);
+													ImGui::TableNextColumn();
+													ImGui::Text("%s", item.name.c_str());
+													ImGui::TableNextColumn();
+													//ImGui::Text("%s", item.formTypeStr.c_str());
+
+													if (ImGui::SmallButton(ICON_MDI_CLOSE)) {
+														deleteFormId = item.formId;
+													}
+
+													ImGui::PopID();
+												}
+											ImGui::EndTable();
+											if (deleteFormId) {
+												excludeFormIds.erase(deleteFormId);
+												excludeForms.erase(std::remove_if(excludeForms.begin(), excludeForms.end(),
 																	   [&deleteFormId](const ExcludeForm& x) {
 																		   return x.formId == deleteFormId;
 																	   }),
-											data::autoTrackForms.end());
+													excludeForms.end());
+											}
+										}
 									}
+
+									ImGui::TreePop();
 								}
+
+								ImGui::Spacing();
+								if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_AUTORENEW, "finder.setting.label-autoPickup"), ImGuiTreeNodeFlags_DefaultOpen)) {
+									ImGui::Checkbox("启用", &show_items_window_auto_enable);
+									ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
+									ImGui::SliderInt(I18Nc("finder.setting.slider-pickupRange"), &show_items_window_auto_dis, 1, 100, "%d米");
+									ImGui::SliderInt(I18Nc("finder.setting.slider-pickupFrequency"), &refresh_time_auto, 1, 10, "%d秒");
+									ImGui::SliderInt(I18Nc("finder.setting.slider-pickupQuantity"), &show_items_window_auto_every_max, 1, 10, "%d个");
+									ImGui::PopItemWidth();
+									ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupPrompt"), &show_items_window_auto_notification);
+
+									if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_SWORD, "finder.setting.label-weaponFiltering"), ImGuiTreeNodeFlags_DefaultOpen)) {
+										ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupOnlyEnchanting"), &show_items_window_auto_weap_enchant);
+										ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupValueSetting"), &show_items_window_auto_weap_price);
+										ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
+										if (show_items_window_auto_weap_price) {
+											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+											ImGui::SliderInt("##设置价格", &show_items_window_auto_weap_price_value, 100, 10000, I18Nc("finder.setting.slider-exceed"));
+										}
+										ImGui::PopItemWidth();
+
+										ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupValueRadioSetting"), &show_items_window_auto_weap_priceweight);
+										ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
+										if (show_items_window_auto_weap_priceweight) {
+											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+											ImGui::SliderInt("##设置价重比", &show_items_window_auto_weap_priceweight_value, 2, 500, I18Nc("finder.setting.slider-exceed"));
+										}
+										ImGui::PopItemWidth();
+
+										ImGui::TreePop();
+									}
+
+									if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_SHIELD_HALF_FULL, "finder.setting.label-armorFiltering"), ImGuiTreeNodeFlags_DefaultOpen)) {
+										ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupOnlyEnchanting"), &show_items_window_auto_armo_enchant);
+
+										ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupValueSetting"), &show_items_window_auto_armo_price);
+										ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
+										if (show_items_window_auto_armo_price) {
+											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+											ImGui::SliderInt("##设置价格2", &show_items_window_auto_armo_price_value, 100, 10000, I18Nc("finder.setting.slider-exceed"));
+										}
+										ImGui::PopItemWidth();
+
+										ImGui::Checkbox(I18Nc("finder.setting.checkbox-pickupValueRadioSetting"), &show_items_window_auto_armo_priceweight);
+										ImGui::PushItemWidth(ImGui::GetFontSize() * 6);
+										if (show_items_window_auto_armo_priceweight) {
+											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+											ImGui::SliderInt("##设置价重比2", &show_items_window_auto_armo_priceweight_value, 2, 500, I18Nc("finder.setting.slider-exceed"));
+										}
+										ImGui::PopItemWidth();
+
+										ImGui::TreePop();
+									}
+
+									ImGui::Checkbox(I18Nc("finder.setting.checkbox-locationFiltering"), &show_items_window_auto_ignore);
+									if (show_items_window_auto_ignore) {
+										ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+										if (ImGui::SmallButton(I18Nc("finder.setting.btn-excludeCurrentLocation"))) {
+											auto player = RE::PlayerCharacter::GetSingleton();
+#if SSE_CODE
+											auto currentLocation = player->currentLocation;
+#else
+											auto currentLocation = player->GetCurrentLocation();
+#endif
+											RE::FormID formid = 0;
+											std::string name = "天际";
+											if (currentLocation) {
+												formid = currentLocation->GetFormID();
+												name = currentLocation->GetFullName();
+											}
+											bool exist = false;
+											for (const auto& excludeForm : excludeLocationForms) {
+												if (excludeForm.formId == formid) {
+													exist = true;
+													break;
+												}
+											}
+											if (!exist) {
+												excludeLocationForms.push_back({ formid, name, "" });
+											}
+											excludeLocationFormIds.insert(formid);
+										}
+										ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+										ImGui::Text(ICON_MDI_MAP_MARKER_RADIUS " %s", playerInfo.location.c_str());
+										static ImGuiTableFlags flagsItem =
+											ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
+
+										const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+										if (ImGui::BeginTable("tableItemLocationIngore", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
+											ImGui::TableSetupColumn(I18Nc("finder.ui.column-formid"), ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_1);
+											ImGui::TableSetupColumn(I18Nc("finder.ui.column-name"), ImGuiTableColumnFlags_WidthFixed, 60.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_2);
+											ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 40.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_3);
+
+											ImGui::TableSetupScrollFreeze(0, 1);  // Make row always visible
+											ImGui::TableHeadersRow();
+
+											int deleteFormId = 0;
+
+											ImGuiListClipper clipper;
+											clipper.Begin(excludeLocationForms.size());
+											while (clipper.Step())
+												for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
+													ExcludeForm& item = excludeLocationForms[row_n];
+													ImGui::PushID(item.formId + 0x3000000);
+													ImGui::TableNextRow();
+													ImGui::TableNextColumn();
+													ImGui::Text("%08X", item.formId);
+													ImGui::TableNextColumn();
+													ImGui::Text("%s", item.name.c_str());
+													ImGui::TableNextColumn();
+													//ImGui::Text("%s", item.formTypeStr.c_str());
+
+													if (ImGui::SmallButton(ICON_MDI_CLOSE)) {
+														deleteFormId = item.formId == 0 ? -1 : item.formId;
+													}
+
+													ImGui::PopID();
+												}
+											ImGui::EndTable();
+											if (deleteFormId != 0) {
+												if (deleteFormId == -1) {
+													deleteFormId = 0;
+												}
+												excludeLocationFormIds.erase(deleteFormId);
+												excludeLocationForms.erase(std::remove_if(excludeLocationForms.begin(), excludeLocationForms.end(),
+																			   [&deleteFormId](const ExcludeForm& x) {
+																				   return x.formId == deleteFormId;
+																			   }),
+													excludeLocationForms.end());
+											}
+										}
+									}
+
+									ImGui::TreePop();
+								}
+
+#if SSE_CODE
+								if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_TABLE_OF_CONTENTS, "finder.setting.label-hud"), ImGuiTreeNodeFlags_DefaultOpen)) {
+									ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyNirnRootQuantity"), &stats::showlocationNirnRootCount);
+									ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyNirnRootRedQuantity"), &stats::showlocationNirnRootRedCount);
+									ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyVeinQuantity"), &stats::showlocationOreCount);
+
+									if (lotd::isLoad) {
+										ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyLotdItemsQuantity"), &lotd::showlocationItemCount);
+										ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayNearbyLotdExcavationQuantity"), &stats::showlocationExCount);
+										ImGui::Checkbox(I18Nc("finder.setting.checkbox-displayLotdItemsQuantity"), &lotd::showDisplayItemCount);
+									}
+									ImGui::TreePop();
+								}
+#endif
+
+								if (ImGui::TreeNodeEx(I18Ni(ICON_MDI_MAP_SEARCH_OUTLINE, "finder.setting.label-marker"), ImGuiTreeNodeFlags_DefaultOpen)) {
+									ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerNameTag"), &show_item_window_track_icon_name);
+									if (menu::show_item_window_track_icon_name) {
+										ImGui::Indent();
+										ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerOutOfRangeIcon"), &menu::show_item_window_track_auto_tag_OutOfRangeIcon);
+										ImGui::Unindent();
+									}
+									ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerHighLight"), &show_item_window_track_highlight);
+
+									ImGui::Checkbox(I18Nc("finder.setting.checkbox-markerAutoZoom"), &show_item_window_track_auto_tag);
+									if (show_item_window_track_auto_tag) {
+										ImGui::Indent();
+										ImGui::AlignTextToFramePadding();
+										ImGui::Text(I18Nc("finder.setting.slider-markerZoomMax"));
+										ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+										ImGui::PushItemWidth(ImGui::GetFontSize() * 5);
+										ImGui::SliderFloat("##markerZoomMax", &show_item_window_track_icon_scale_max, 1.0f, 10.0f, "+%0.1f");
+										ImGui::PopItemWidth();
+
+										ImGui::AlignTextToFramePadding();
+										ImGui::Text(I18Nc("finder.setting.slider-markerZoomMin"));
+										ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+										ImGui::PushItemWidth(ImGui::GetFontSize() * 5);
+										ImGui::SliderFloat("##markerZoomMin", &show_item_window_track_icon_scale_min, 0.1f, 1.0f, "+%0.1f");
+										ImGui::PopItemWidth();
+										ImGui::Unindent();
+									} else {
+										ImGui::Indent();
+										ImGui::AlignTextToFramePadding();
+										ImGui::Text(I18Nc("finder.setting.slider-markerZoom"));
+										ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+										ImGui::PushItemWidth(ImGui::GetFontSize() * 5);
+										ImGui::SliderFloat("##markerZoom", &show_item_window_track_icon_scale, 0.0f, 10.0f, "+%0.1f");
+										ImGui::PopItemWidth();
+										ImGui::Unindent();
+									}
+
+									ImGui::AlignTextToFramePadding();
+									if (ImGui::BeginPopupContextItem("PopupDisplayType")) {
+										for (auto& item : menu::displayType) {
+											if (ImGui::Selectable(item.second.c_str())) {
+												menu::show_item_window_track_displayType = item.first;
+												if (item.first == 2) {
+													menu::isTrack = false;
+												}
+											}
+										}
+										ImGui::EndPopup();
+									}
+									ImGui::Text(I18Nc("finder.setting.btn-markerDisplayType"));
+									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+									if (ImGui::Button(menu::displayType.at(menu::show_item_window_track_displayType).c_str(), ImVec2(ImGui::GetFontSize() * 5, 0))) {
+										ImGui::OpenPopup("PopupDisplayType");
+									}
+									if (menu::show_item_window_track_displayType != 0) {
+										ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+										ImGui::Text("当前绑定:");
+										ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+										ImGui::Text(dinputhook::getKeyName(hotkeyTrack, hotkeyTrackModifier, isWaitTrack).c_str());
+									}
+
+#if SSE_CODE
+									if (lotd::isLoad) {
+										ImGui::Checkbox(I18Nc("finder.setting.checkbox-autoMarkLotdExcavation"), &lotd::isAutoTrackLotdExcavation);
+										ImGui::Checkbox(I18Nc("finder.setting.checkbox-autoMarkLotdCards"), &lotd::isAutoTrackLotdCards);
+										ImGui::Checkbox(I18Nc("finder.setting.checkbox-autoMarkLotdItems"), &lotd::isAutoTrackLotdItems);
+										if (lotd::isAutoTrackLotdItems) {
+											ImGui::Indent();
+											ImGui::Checkbox(I18Nc("finder.setting.checkbox-excludePrivateItems"), &lotd::isAutoTrackLotdItemsCrimeIgnore);
+											ImGui::Checkbox(I18Nc("finder.setting.checkbox-excludeArmoryItems"), &lotd::isArmoryIgnore);
+											ImGui::ColorEdit4(I18Nc("finder.setting.color-markerTagColorLotd"), &menu::ColorTrackLotd.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf);
+
+											ImGui::Unindent();
+										}
+									}
+#endif
+
+									ImGui::Checkbox(I18Nc("finder.setting.checkbox-autoMarkItems"), &track::isAutoTrackItems);
+									{
+										static ImGuiTableFlags flagsItem =
+											ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
+
+										const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+										if (ImGui::BeginTable("tableItemAutoTrack", 3, flagsItem, ImVec2(TEXT_BASE_HEIGHT * 12, TEXT_BASE_HEIGHT * 6), 0.0f)) {
+											ImGui::TableSetupColumn(I18Nc("finder.ui.column-formid"), ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_1);
+											ImGui::TableSetupColumn(I18Nc("finder.ui.column-name"), ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_2);
+											ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 30.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_3);
+
+											ImGui::TableSetupScrollFreeze(0, 1);
+											ImGui::TableHeadersRow();
+
+											int deleteFormId = 0;
+
+											ImGuiListClipper clipper;
+											clipper.Begin(data::autoTrackForms.size());
+											while (clipper.Step())
+												for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++) {
+													ExcludeForm& item = data::autoTrackForms[row_n];
+													ImGui::PushID(item.formId);
+													ImGui::TableNextRow();
+													ImGui::TableNextColumn();
+													ImGui::Text("%08X", item.formId);
+													ImGui::TableNextColumn();
+													ImGui::Text("%s", item.name.c_str());
+													ImGui::TableNextColumn();
+
+													if (ImGui::SmallButton(ICON_MDI_CLOSE)) {
+														deleteFormId = item.formId;
+													}
+
+													ImGui::PopID();
+												}
+											ImGui::EndTable();
+											if (deleteFormId) {
+												data::autoTrackFormIds.erase(deleteFormId);
+												data::autoTrackForms.erase(std::remove_if(data::autoTrackForms.begin(), data::autoTrackForms.end(),
+																			   [&deleteFormId](const ExcludeForm& x) {
+																				   return x.formId == deleteFormId;
+																			   }),
+													data::autoTrackForms.end());
+											}
+										}
+									}
+									ImGui::TreePop();
+								}
+								ImGui::EndChild();
 							}
-							ImGui::TreePop();
 						}
-						ImGui::EndChild();
+						ImGui::EndTable();
 					}
+				} else if (selectedPage == 1) {
+					renderPlayerInv2();
 				}
-				ImGui::EndTable();
+				ImGui::EndGroup();
 			}
+
+			
+			ImGui::SameLine();
+			{
+				ImGui::BeginGroup();
+
+				ImVec2 size(ImGui::GetFontSize() * 1, 0);
+				if (ImGui::Selectable(ICON_MDI_MAP_SEARCH_OUTLINE, selectedPage == 0, 0, size)) {
+					selectedPage = 0;
+				}
+				if (ImGui::Selectable(ICON_MDI_FLASH, selectedPage == 1, 0, size)) {
+					selectedPage = 1;
+					RefreshPlayerInvInfo();
+				}
+
+				ImGui::EndGroup();
+			}
+
+
 			ImGui::End();
 		}
 	}
+
+	
+	void RefreshPlayerInv()
+	{
+		if (selectedPage == 1) {
+			RefreshPlayerInvInfo();
+		}
+	}
+
+
 }

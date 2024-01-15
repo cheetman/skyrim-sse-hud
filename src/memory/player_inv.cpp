@@ -9,8 +9,9 @@ PlayerInventoryInfo* MyInventoryInfo = new PlayerInventoryInfo[2];
 std::vector<FavorInfo> favorAlchemy;
 std::vector<FavorInfo> favorSmithing;
 
-bool isFavor(const InventoryInfo& inv, const std::vector<FavorInfo>& favors)
+int getFavor(const InventoryInfo& inv, const std::vector<FavorInfo>& favors)
 {
+	int i = 0;
 	for (auto& favor : favors) {
 		if (favor.formId == inv.formId) {
 			if (favor.entDetail.size() == 0) {
@@ -73,10 +74,11 @@ bool isFavor(const InventoryInfo& inv, const std::vector<FavorInfo>& favors)
 				}
 			}
 			//favor.isMap = true; // 标记一下
-			return true;  // 找到
+			return i;  // 找到
 		}
+		i++;
 	}
-	return false;
+	return -1;
 }
 
 InventoryInfo* getFavor(const FavorInfo& favor, std::vector<InventoryInfo>& invs, int count)
@@ -219,43 +221,43 @@ int getPlayerInvEnchantingFavorCount()
 	return MyInventoryInfo[!nowIndexPI].inventorysEnchantingFavorCount;
 }
 
-InventoryInfo* getPlayerInvData()
-{
-	return &MyInventoryInfo[!nowIndexPI].inventorys[0];
-}
-InventoryInfo* getPlayerInvARMOData()
-{
-	return &MyInventoryInfo[!nowIndexPI].inventorysARMO[0];
-}
-InventoryInfo* getPlayerInvWEAPData()
-{
-	return &MyInventoryInfo[!nowIndexPI].inventorysWEAP[0];
-}
-InventoryInfo* getPlayerInvBOOKData()
-{
-	return &MyInventoryInfo[!nowIndexPI].inventorysBOOK[0];
-}
-InventoryInfo* getPlayerInvAMMOData()
-{
-	return &MyInventoryInfo[!nowIndexPI].inventorysAMMO[0];
-}
-InventoryInfo* getPlayerInvFOODData()
-{
-	return &MyInventoryInfo[!nowIndexPI].inventorysFOOD[0];
-}
-InventoryInfo* getPlayerInvALCHData()
-{
-	return &MyInventoryInfo[!nowIndexPI].inventorysALCH[0];
-}
-InventoryInfo* getPlayerInvINGRData()
-{
-	return &MyInventoryInfo[!nowIndexPI].inventorysINGR[0];
-}
-
-InventoryInfo* getPlayerInvData(int i)
-{
-	return &MyInventoryInfo[!nowIndexPI].inventorys[i];
-}
+//InventoryInfo* getPlayerInvData()
+//{
+//	return &MyInventoryInfo[!nowIndexPI].inventorys[0];
+//}
+//InventoryInfo* getPlayerInvARMOData()
+//{
+//	return &MyInventoryInfo[!nowIndexPI].inventorysARMO[0];
+//}
+//InventoryInfo* getPlayerInvWEAPData()
+//{
+//	return &MyInventoryInfo[!nowIndexPI].inventorysWEAP[0];
+//}
+//InventoryInfo* getPlayerInvBOOKData()
+//{
+//	return &MyInventoryInfo[!nowIndexPI].inventorysBOOK[0];
+//}
+//InventoryInfo* getPlayerInvAMMOData()
+//{
+//	return &MyInventoryInfo[!nowIndexPI].inventorysAMMO[0];
+//}
+//InventoryInfo* getPlayerInvFOODData()
+//{
+//	return &MyInventoryInfo[!nowIndexPI].inventorysFOOD[0];
+//}
+//InventoryInfo* getPlayerInvALCHData()
+//{
+//	return &MyInventoryInfo[!nowIndexPI].inventorysALCH[0];
+//}
+//InventoryInfo* getPlayerInvINGRData()
+//{
+//	return &MyInventoryInfo[!nowIndexPI].inventorysINGR[0];
+//}
+//
+//InventoryInfo* getPlayerInvData(int i)
+//{
+//	return &MyInventoryInfo[!nowIndexPI].inventorys[i];
+//}
 
 std::vector<InventoryInfo>& getPlayerInvAlchemy()
 {
@@ -337,7 +339,7 @@ bool compareForInventorySmithingPotion(const InventoryInfo& info1, const Invento
 	}
 }
 
-void buildPlayerAlchemy(InventoryInfo inv[], std::int32_t count)
+void buildPlayerAlchemy(std::vector<InventoryInfo>& inv, std::int32_t count)
 {
 	auto& listAlchemy = MyInventoryInfo[nowIndexPI].inventorysAlchemy;
 	auto& listSmithing = MyInventoryInfo[nowIndexPI].inventorysSmithing;
@@ -356,7 +358,7 @@ void buildPlayerAlchemy(InventoryInfo inv[], std::int32_t count)
 			listAlchemy[tmpCountAlchemy].invExtraPtr = inv[i].invExtraPtr;
 			listAlchemy[tmpCountAlchemy].count = inv[i].count;
 			listAlchemy[tmpCountAlchemy].formId = inv[i].formId;
-			if (isFavor(inv[i], favorAlchemy)) {
+			if (getFavor(inv[i], favorAlchemy) >= 0) {
 				listAlchemy[tmpCountAlchemy].isFavor = true;
 				listAlchemy[tmpCountAlchemy].name = ICON_MDI_STAR;
 				listAlchemy[tmpCountAlchemy].name += inv[i].name;
@@ -384,8 +386,8 @@ void buildPlayerAlchemy(InventoryInfo inv[], std::int32_t count)
 			listAlchemy[tmpCountAlchemy].slotMask = inv[i].slotMask;
 
 			tmpCountAlchemy++;
-
-		} else if (item.isSmithingEnt) {
+		}
+		if (item.isSmithingEnt) {
 			if (tmpCountSmithing + 1 > listSmithing.size()) {
 				listSmithing.resize(listSmithing.size() + 20);
 			}
@@ -394,7 +396,7 @@ void buildPlayerAlchemy(InventoryInfo inv[], std::int32_t count)
 			listSmithing[tmpCountSmithing].invExtraPtr = inv[i].invExtraPtr;
 			listSmithing[tmpCountSmithing].count = inv[i].count;
 			listSmithing[tmpCountSmithing].formId = inv[i].formId;
-			if (isFavor(inv[i], favorSmithing)) {
+			if (getFavor(inv[i], favorSmithing) >= 0) {
 				listSmithing[tmpCountSmithing].isFavor = true;
 				listSmithing[tmpCountSmithing].name = ICON_MDI_STAR;
 				listSmithing[tmpCountSmithing].name += inv[i].name;
@@ -429,7 +431,7 @@ void buildPlayerAlchemy(InventoryInfo inv[], std::int32_t count)
 	MyInventoryInfo[nowIndexPI].inventorysSmithingCount = tmpCountSmithing;
 }
 
-void buildPlayerPotion(InventoryInfo inv[], std::int32_t count)
+void buildPlayerPotion(std::vector<InventoryInfo>& inv, std::int32_t count)
 {
 	auto& listEnchanting = MyInventoryInfo[nowIndexPI].inventorysEnchantingPotion;
 	auto& listSmithing = MyInventoryInfo[nowIndexPI].inventorysSmithingPotion;
@@ -452,9 +454,11 @@ void buildPlayerPotion(InventoryInfo inv[], std::int32_t count)
 			listSmithing[tmpCountSmithing].isWorn = inv[i].isWorn;
 			listSmithing[tmpCountSmithing].weight = inv[i].weight;
 			listSmithing[tmpCountSmithing].SmithingValue = inv[i].SmithingValue;
+			listSmithing[tmpCountSmithing].isSmithingEnt = true;
 
 			tmpCountSmithing++;
-		} else if (item.isEnchantingEnt) {
+		} 
+		if (item.isEnchantingEnt) {
 			if (tmpCountEnchanting + 1 > listEnchanting.size()) {
 				listEnchanting.resize(listEnchanting.size() + 20);
 			}
@@ -468,6 +472,7 @@ void buildPlayerPotion(InventoryInfo inv[], std::int32_t count)
 			listEnchanting[tmpCountEnchanting].isWorn = inv[i].isWorn;
 			listEnchanting[tmpCountEnchanting].weight = inv[i].weight;
 			listEnchanting[tmpCountEnchanting].EnchantingValue = inv[i].EnchantingValue;
+			listEnchanting[tmpCountEnchanting].isEnchantingEnt = true;
 
 			tmpCountEnchanting++;
 		}
@@ -504,9 +509,11 @@ void buildPlayerFavor(std::vector<InventoryInfo>& inv, std::int32_t count, std::
 			list[tmpCount].slotMask = inv2->slotMask;
 			list[tmpCount].slotMaskStr = inv2->slotMaskStr;
 			list[tmpCount].isWorn = inv2->isWorn;
+			list[tmpCount].favPtr = &favor;
 		} else {
 			list[tmpCount].ptr = nullptr;
-			list[tmpCount].name = "丢失";
+			list[tmpCount].name = "[已丢失]" + favor.name;
+			list[tmpCount].favPtr = &favor;
 		}
 
 		tmpCount++;
@@ -515,15 +522,20 @@ void buildPlayerFavor(std::vector<InventoryInfo>& inv, std::int32_t count, std::
 	listCount = tmpCount;
 }
 
-void __fastcall buildPlayerInvData(InventoryInfo inv[], int& i, RE::TESBoundObject* item, RE::InventoryEntryData* entry, std::int32_t count)
+void __fastcall buildPlayerInvData(std::vector<InventoryInfo>& inv, int& i, RE::TESBoundObject* item, RE::InventoryEntryData* entry, std::int32_t count)
 {
 	// 要判断extras
 
 	if (entry->extraLists) {
 		for (auto& xList : *entry->extraLists) {
 			if (xList) {
+				if (i + 1 > inv.size()) {
+					inv.resize(inv.size() + 20);
+				}
+
 				inv[i].isAlchemyEnt = false;
 				inv[i].isSmithingEnt = false;
+				inv[i].isEnchantingEnt = false;
 				inv[i].isEnchanted = false;
 				inv[i].debugName = "";
 				auto xCount = xList->GetCount();
@@ -538,37 +550,39 @@ void __fastcall buildPlayerInvData(InventoryInfo inv[], int& i, RE::TESBoundObje
 				inv[i].formId = item->GetFormID();
 				//inv[i].formIdStr = FormIDToString(item->GetFormID());
 
-				// 附魔
-				auto ench = item->As<RE::TESEnchantableForm>();
-				if (ench && ench->formEnchanting) {
-					inv[i].isEnchanted = true;
-					for (auto effect : ench->formEnchanting->effects) {
-						inv[i].debugName += "|";
-						inv[i].debugName += effect->baseEffect->GetFullName();
-						if (effect->baseEffect->GetFormID() == 0x8B65C) {
-							inv[i].isAlchemyEnt = true;
-							inv[i].AlchemyValue = effect->effectItem.magnitude;
+				if (item->IsArmor()) {
+					// 附魔
+					auto ench = item->As<RE::TESEnchantableForm>();
+					if (ench && ench->formEnchanting) {
+						inv[i].isEnchanted = true;
+						for (auto effect : ench->formEnchanting->effects) {
+							inv[i].debugName += "|";
+							inv[i].debugName += effect->baseEffect->GetFullName();
+							if (effect->baseEffect->GetFormID() == 0x8B65C) {
+								inv[i].isAlchemyEnt = true;
+								inv[i].AlchemyValue = effect->effectItem.magnitude;
 
-						} else if (effect->baseEffect->GetFormID() == 0x7A102) {
-							inv[i].isSmithingEnt = true;
-							inv[i].SmithingValue = effect->effectItem.magnitude;
+							} else if (effect->baseEffect->GetFormID() == 0x7A102) {
+								inv[i].isSmithingEnt = true;
+								inv[i].SmithingValue = effect->effectItem.magnitude;
+							}
 						}
 					}
-				}
 
-				const auto xEnch = xList->GetByType<RE::ExtraEnchantment>();
-				if (xEnch && xEnch->enchantment) {
-					inv[i].isEnchanted = true;
-					for (auto effect : xEnch->enchantment->effects) {
-						inv[i].debugName += "|";
-						inv[i].debugName += effect->baseEffect->GetFullName();
+					const auto xEnch = xList->GetByType<RE::ExtraEnchantment>();
+					if (xEnch && xEnch->enchantment) {
+						inv[i].isEnchanted = true;
+						for (auto effect : xEnch->enchantment->effects) {
+							inv[i].debugName += "|";
+							inv[i].debugName += effect->baseEffect->GetFullName();
 
-						if (effect->baseEffect->GetFormID() == 0x8B65C) {
-							inv[i].isAlchemyEnt = true;
-							inv[i].AlchemyValue = effect->effectItem.magnitude;
-						} else if (effect->baseEffect->GetFormID() == 0x7A102) {
-							inv[i].isSmithingEnt = true;
-							inv[i].SmithingValue = effect->effectItem.magnitude;
+							if (effect->baseEffect->GetFormID() == 0x8B65C) {
+								inv[i].isAlchemyEnt = true;
+								inv[i].AlchemyValue = effect->effectItem.magnitude;
+							} else if (effect->baseEffect->GetFormID() == 0x7A102) {
+								inv[i].isSmithingEnt = true;
+								inv[i].SmithingValue = effect->effectItem.magnitude;
+							}
 						}
 					}
 				}
@@ -629,8 +643,13 @@ void __fastcall buildPlayerInvData(InventoryInfo inv[], int& i, RE::TESBoundObje
 		}
 	}
 	if (count > 0) {
+		if (i + 1 > inv.size()) {
+			inv.resize(inv.size() + 20);
+		}
+
 		inv[i].isAlchemyEnt = false;
 		inv[i].isSmithingEnt = false;
+		inv[i].isEnchantingEnt = false;
 		inv[i].isEnchanted = false;
 		inv[i].debugName = "";
 
@@ -642,20 +661,22 @@ void __fastcall buildPlayerInvData(InventoryInfo inv[], int& i, RE::TESBoundObje
 		//inv[i].formIdStr = FormIDToString(item->GetFormID());
 		//inv[i].name = entry->GetDisplayName();
 
-		auto ench = item->As<RE::TESEnchantableForm>();
-		if (ench && ench->formEnchanting) {
-			inv[i].isEnchanted = true;
+		if (item->IsArmor()) {
+			auto ench = item->As<RE::TESEnchantableForm>();
+			if (ench && ench->formEnchanting) {
+				inv[i].isEnchanted = true;
 
-			for (auto effect : ench->formEnchanting->effects) {
-				inv[i].debugName += "|";
-				inv[i].debugName += effect->baseEffect->GetFullName();
-				if (effect->baseEffect->GetFormID() == 0x8B65C) {
-					inv[i].isAlchemyEnt = true;
-					inv[i].AlchemyValue = effect->effectItem.magnitude;
+				for (auto effect : ench->formEnchanting->effects) {
+					inv[i].debugName += "|";
+					inv[i].debugName += effect->baseEffect->GetFullName();
+					if (effect->baseEffect->GetFormID() == 0x8B65C) {
+						inv[i].isAlchemyEnt = true;
+						inv[i].AlchemyValue = effect->effectItem.magnitude;
 
-				} else if (effect->baseEffect->GetFormID() == 0x7A102) {
-					inv[i].isSmithingEnt = true;
-					inv[i].SmithingValue = effect->effectItem.magnitude;
+					} else if (effect->baseEffect->GetFormID() == 0x7A102) {
+						inv[i].isSmithingEnt = true;
+						inv[i].SmithingValue = effect->effectItem.magnitude;
+					}
 				}
 			}
 		}
@@ -709,7 +730,7 @@ void __fastcall buildPlayerInvData(InventoryInfo inv[], int& i, RE::TESBoundObje
 	//logger::trace("Inv Name {} {} "sv, i, StringUtil::Utf8ToGbk(entry->GetDisplayName()));
 }
 
-void modPlayerInv(std::vector<InventoryInfo>& invs, std::int32_t count,int type)
+void modPlayerInv(std::vector<InventoryInfo>& invs, std::int32_t count, int type)
 {
 	std::unordered_map<int, float> cache;
 	for (int i = 0; i < count; i++) {
@@ -792,7 +813,7 @@ void modPlayerInvPotion(std::vector<InventoryInfo>& invs, std::int32_t count, in
 
 void RefreshPlayerInvInfo()
 {
-	if (show_inv_window) {
+	if (show_inv_window || true) {
 		// 刷新自己的装备
 		auto player = RE::PlayerCharacter::GetSingleton();
 		const auto inv = player->GetInventory();
@@ -823,28 +844,31 @@ void RefreshPlayerInvInfo()
 					} else if (item->IsArmor()) {
 						buildPlayerInvData(MyInventoryInfo[nowIndexPI].inventorysARMO, MyInventoryInfo[nowIndexPI].inventoryARMOCount, item, entry.get(), count);
 					} else if (item->IsWeapon()) {
-						buildPlayerInvData(MyInventoryInfo[nowIndexPI].inventorysWEAP, MyInventoryInfo[nowIndexPI].inventoryWEAPCount, item, entry.get(), count);
+						//buildPlayerInvData(MyInventoryInfo[nowIndexPI].inventorysWEAP, MyInventoryInfo[nowIndexPI].inventoryWEAPCount, item, entry.get(), count);
 					} else if (item->IsAmmo()) {
-						buildPlayerInvData(MyInventoryInfo[nowIndexPI].inventorysAMMO, MyInventoryInfo[nowIndexPI].inventoryAMMOCount, item, entry.get(), count);
+						//buildPlayerInvData(MyInventoryInfo[nowIndexPI].inventorysAMMO, MyInventoryInfo[nowIndexPI].inventoryAMMOCount, item, entry.get(), count);
 					} else if (item->IsBook()) {
-						buildPlayerInvData(MyInventoryInfo[nowIndexPI].inventorysBOOK, MyInventoryInfo[nowIndexPI].inventoryBOOKCount, item, entry.get(), count);
+						//buildPlayerInvData(MyInventoryInfo[nowIndexPI].inventorysBOOK, MyInventoryInfo[nowIndexPI].inventoryBOOKCount, item, entry.get(), count);
 					} else if (item->GetFormType() == RE::FormType::AlchemyItem) {
 						auto alchemyItem = item->As<RE::AlchemyItem>();
 						if (alchemyItem->IsFood()) {
-							buildPlayerInvData(MyInventoryInfo[nowIndexPI].inventorysFOOD, MyInventoryInfo[nowIndexPI].inventoryFOODCount, item, entry.get(), count);
+							//buildPlayerInvData(MyInventoryInfo[nowIndexPI].inventorysFOOD, MyInventoryInfo[nowIndexPI].inventoryFOODCount, item, entry.get(), count);
 						} else {
 							buildPlayerInvData(MyInventoryInfo[nowIndexPI].inventorysALCH, MyInventoryInfo[nowIndexPI].inventoryALCHCount, item, entry.get(), count);
 						}
 					} else if (item->GetFormType() == RE::FormType::Ingredient) {
-						buildPlayerInvData(MyInventoryInfo[nowIndexPI].inventorysINGR, MyInventoryInfo[nowIndexPI].inventoryINGRCount, item, entry.get(), count);
+						//buildPlayerInvData(MyInventoryInfo[nowIndexPI].inventorysINGR, MyInventoryInfo[nowIndexPI].inventoryINGRCount, item, entry.get(), count);
 					} else {
-						buildPlayerInvData(MyInventoryInfo[nowIndexPI].inventorys, MyInventoryInfo[nowIndexPI].inventoryCount, item, entry.get(), count);
+						//buildPlayerInvData(MyInventoryInfo[nowIndexPI].inventorys, MyInventoryInfo[nowIndexPI].inventoryCount, item, entry.get(), count);
 					}
 				}
 			}
 		}
 
-		if (MyInventoryInfo[nowIndexPI].inventoryARMOCount > 1) {
+		std::partial_sort(MyInventoryInfo[nowIndexPI].inventorysARMO.begin(), MyInventoryInfo[nowIndexPI].inventorysARMO.begin() + MyInventoryInfo[nowIndexPI].inventoryARMOCount, MyInventoryInfo[nowIndexPI].inventorysARMO.begin() + MyInventoryInfo[nowIndexPI].inventoryARMOCount, compareForInventory);
+		std::partial_sort(MyInventoryInfo[nowIndexPI].inventorysALCH.begin(), MyInventoryInfo[nowIndexPI].inventorysALCH.begin() + MyInventoryInfo[nowIndexPI].inventoryALCHCount, MyInventoryInfo[nowIndexPI].inventorysALCH.begin() + MyInventoryInfo[nowIndexPI].inventoryALCHCount, compareForInventory);
+
+		/*	if (MyInventoryInfo[nowIndexPI].inventoryARMOCount > 1) {
 			std::sort(MyInventoryInfo[nowIndexPI].inventorysARMO, MyInventoryInfo[nowIndexPI].inventorysARMO + MyInventoryInfo[nowIndexPI].inventoryARMOCount, compareForInventory);
 		}
 		if (MyInventoryInfo[nowIndexPI].inventoryWEAPCount > 1) {
@@ -867,7 +891,7 @@ void RefreshPlayerInvInfo()
 		}
 		if (MyInventoryInfo[nowIndexPI].inventoryINGRCount > 1) {
 			std::sort(MyInventoryInfo[nowIndexPI].inventorysINGR, MyInventoryInfo[nowIndexPI].inventorysINGR + MyInventoryInfo[nowIndexPI].inventoryINGRCount, compareForInventory);
-		}
+		}*/
 
 		buildPlayerAlchemy(MyInventoryInfo[nowIndexPI].inventorysARMO, MyInventoryInfo[nowIndexPI].inventoryARMOCount);
 		buildPlayerPotion(MyInventoryInfo[nowIndexPI].inventorysALCH, MyInventoryInfo[nowIndexPI].inventoryALCHCount);
@@ -882,12 +906,12 @@ void RefreshPlayerInvInfo()
 		std::partial_sort(MyInventoryInfo[nowIndexPI].inventorysAlchemy.begin(), MyInventoryInfo[nowIndexPI].inventorysAlchemy.begin() + MyInventoryInfo[nowIndexPI].inventorysAlchemyFavorCount, MyInventoryInfo[nowIndexPI].inventorysAlchemy.begin() + MyInventoryInfo[nowIndexPI].inventorysAlchemyFavorCount, compareForInventoryAlchemy);
 		std::partial_sort(MyInventoryInfo[nowIndexPI].inventorysSmithing.begin(), MyInventoryInfo[nowIndexPI].inventorysSmithing.begin() + MyInventoryInfo[nowIndexPI].inventorysSmithingFavorCount, MyInventoryInfo[nowIndexPI].inventorysSmithing.begin() + MyInventoryInfo[nowIndexPI].inventorysSmithingFavorCount, compareForInventorySmithing);
 
-		modPlayerInv(MyInventoryInfo[nowIndexPI].inventorysAlchemy, MyInventoryInfo[nowIndexPI].inventorysAlchemyCount,1);
-		modPlayerInv(MyInventoryInfo[nowIndexPI].inventorysSmithing, MyInventoryInfo[nowIndexPI].inventorysSmithingCount,2);
-		modPlayerInv(MyInventoryInfo[nowIndexPI].inventorysAlchemyFavor, MyInventoryInfo[nowIndexPI].inventorysAlchemyFavorCount,1);
-		modPlayerInv(MyInventoryInfo[nowIndexPI].inventorysSmithingFavor, MyInventoryInfo[nowIndexPI].inventorysSmithingFavorCount,2);
-		modPlayerInvPotion(MyInventoryInfo[nowIndexPI].inventorysSmithingPotion, MyInventoryInfo[nowIndexPI].inventorysSmithingPotionCount,2);
-		modPlayerInvPotion(MyInventoryInfo[nowIndexPI].inventorysEnchantingPotion, MyInventoryInfo[nowIndexPI].inventorysEnchantingPotionCount,3);
+		modPlayerInv(MyInventoryInfo[nowIndexPI].inventorysAlchemy, MyInventoryInfo[nowIndexPI].inventorysAlchemyCount, 1);
+		modPlayerInv(MyInventoryInfo[nowIndexPI].inventorysSmithing, MyInventoryInfo[nowIndexPI].inventorysSmithingCount, 2);
+		modPlayerInv(MyInventoryInfo[nowIndexPI].inventorysAlchemyFavor, MyInventoryInfo[nowIndexPI].inventorysAlchemyFavorCount, 1);
+		modPlayerInv(MyInventoryInfo[nowIndexPI].inventorysSmithingFavor, MyInventoryInfo[nowIndexPI].inventorysSmithingFavorCount, 2);
+		modPlayerInvPotion(MyInventoryInfo[nowIndexPI].inventorysSmithingPotion, MyInventoryInfo[nowIndexPI].inventorysSmithingPotionCount, 2);
+		modPlayerInvPotion(MyInventoryInfo[nowIndexPI].inventorysEnchantingPotion, MyInventoryInfo[nowIndexPI].inventorysEnchantingPotionCount, 3);
 
 		// 双缓冲可以不用
 		//MyInventoryInfo[nowIndexPI].inventoryCount = i;

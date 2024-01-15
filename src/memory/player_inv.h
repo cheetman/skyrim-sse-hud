@@ -4,6 +4,20 @@
 extern bool show_inv_window;
 
 
+struct FavorEntDetailInfo
+{
+	RE::FormID formId = 0;
+	float value = 0;
+};
+struct FavorInfo
+{
+	RE::FormID formId = 0;
+	std::string name = "";
+	//bool isMap = false;
+	std::vector<FavorEntDetailInfo> entDetail;
+	std::vector<FavorEntDetailInfo> entDetail2;
+};
+
 
 struct InventoryInfo
 {
@@ -29,21 +43,9 @@ struct InventoryInfo
 	std::string slotMaskStr = "";
 	bool isFavor = false;
 	bool isBest = false;
+	FavorInfo* favPtr = nullptr;
 };
 
-
-struct FavorEntDetailInfo 
-{
-	RE::FormID formId = 0;
-	float value = 0;
-};
-struct FavorInfo : InventoryInfo
-{
-	//RE::FormID formId = 0;
-	bool isMap = false;
-	std::vector<FavorEntDetailInfo> entDetail;
-	std::vector<FavorEntDetailInfo> entDetail2;
-};
 
 extern std::vector<FavorInfo> favorAlchemy;
 extern std::vector<FavorInfo> favorSmithing;
@@ -61,14 +63,14 @@ struct PlayerInventoryInfo
 	int inventoryINGRCount = 0;
 	int inventoryCount = 0;
 	int gold = 0;
-	InventoryInfo inventorysARMO[300];
-	InventoryInfo inventorysWEAP[300];
-	InventoryInfo inventorysBOOK[300];
-	InventoryInfo inventorysAMMO[100];
-	InventoryInfo inventorysALCH[300];
-	InventoryInfo inventorysFOOD[300];
-	InventoryInfo inventorysINGR[300];
-	InventoryInfo inventorys[300];
+	std::vector<InventoryInfo> inventorysARMO;
+	//std::vector<InventoryInfo> inventorysWEAP;
+	//std::vector<InventoryInfo> inventorysBOOK;
+	//std::vector<InventoryInfo> inventorysAMMO;
+	std::vector<InventoryInfo> inventorysALCH;
+	//std::vector<InventoryInfo> inventorysFOOD;
+	//std::vector<InventoryInfo> inventorysINGR;
+	//std::vector<InventoryInfo> inventorys;
 
 	std::vector<InventoryInfo> inventorysAlchemy;
 	std::vector<InventoryInfo> inventorysSmithing;
@@ -110,15 +112,15 @@ int getPlayerInvEnchantingPotionCount();
 int getPlayerInvAlchemyFavorCount();
 int getPlayerInvSmithingFavorCount();
 int getPlayerInvEnchantingFavorCount();
-InventoryInfo* getPlayerInvData();
-InventoryInfo* getPlayerInvARMOData();
-InventoryInfo* getPlayerInvBOOKData();
-InventoryInfo* getPlayerInvWEAPData();
-InventoryInfo* getPlayerInvAMMOData();
-InventoryInfo* getPlayerInvALCHData();
-InventoryInfo* getPlayerInvFOODData();
-InventoryInfo* getPlayerInvINGRData();
-InventoryInfo* getPlayerInvData(int);
+//InventoryInfo* getPlayerInvData();
+//InventoryInfo* getPlayerInvARMOData();
+//InventoryInfo* getPlayerInvBOOKData();
+//InventoryInfo* getPlayerInvWEAPData();
+//InventoryInfo* getPlayerInvAMMOData();
+//InventoryInfo* getPlayerInvALCHData();
+//InventoryInfo* getPlayerInvFOODData();
+//InventoryInfo* getPlayerInvINGRData();
+//InventoryInfo* getPlayerInvData(int);
 std::vector<InventoryInfo>& getPlayerInvAlchemy();
 std::vector<InventoryInfo>& getPlayerInvSmithing();
 std::vector<InventoryInfo>& getPlayerInvAlchemyPotion();
@@ -130,4 +132,6 @@ std::vector<InventoryInfo>& getPlayerInvEnchantingFavor();
 
 void RefreshPlayerInvInfo();
 
-bool isFavor(const InventoryInfo& inv, const std::vector<FavorInfo>& favors);
+int getFavor(const InventoryInfo& inv, const std::vector<FavorInfo>& favors);
+
+

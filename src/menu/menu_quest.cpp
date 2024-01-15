@@ -104,7 +104,7 @@ namespace menu
 			ImGui::TableSetupColumn("名称", ImGuiTableColumnFlags_WidthFixed, 150.0f * ImGui::GetIO().FontGlobalScale, TableColumn_2);
 			ImGui::TableSetupColumn("任务类型", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, TableColumn_3);
 			if (show_items_window_refid) {
-				ImGui::TableSetupColumn("EDITORID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, TableColumn_6);
+				ImGui::TableSetupColumn("EDITORID", ImGuiTableColumnFlags_WidthFixed, 80.0f * ImGui::GetIO().FontGlobalScale, TableColumn_6);
 			}
 			if (show_items_window_formid) {
 				ImGui::TableSetupColumn("FORMID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, TableColumn_7);
@@ -431,9 +431,11 @@ namespace menu
 
 					ImGui::TableNextColumn();
 					if (item.isActive) {
-						ImGui::Text("%s", item.questTypeName.c_str());
+						//ImGui::Text("%s", item.questTypeName.c_str());
+						ImGui::Text("%d", item.flag);
 					} else {
-						myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "%s", item.questTypeName.c_str());
+						//myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "%s", item.questTypeName.c_str());
+						ImGui::Text("%d", item.flag);
 					}
 
 					if (show_items_window_refid) {

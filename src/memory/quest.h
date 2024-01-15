@@ -28,6 +28,7 @@ struct QuestInfo
 	std::string editorId = "";
 	std::string formTypeStr = "";
 	std::string filename = "";
+	std::uint16_t flag = 0;
 
 	std::string name = "";
 	bool isActive = false;

@@ -6,6 +6,7 @@
 #include <memory/lotd.h>
 #include <memory/memory.h>
 #include <menu/menu.h>
+#include <menu/menu_items.h>
 
 namespace dinputhook
 {
@@ -659,6 +660,9 @@ namespace dinputhook
 								if (checkModifier(menu::hotkeyItemFinderModifier)) {
 									activeItems = !activeItems;
 									_DispatchInputEvent(a_dispatcher, dummy);
+									if (activeItems) {
+										menu::RefreshPlayerInv();
+									}
 									return;
 								}
 							}
