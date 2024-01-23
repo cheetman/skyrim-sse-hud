@@ -1,4 +1,5 @@
 #pragma once
+#include <unordered_set>
 
 struct Item2Info;
 
@@ -48,6 +49,7 @@ struct QuestInfo
 
 namespace quest
 {
+	extern std::unordered_set<RE::FormID> excludeQuestFormIds;
 	void refreshQuestInfo(Item2Info& item);
 
 }

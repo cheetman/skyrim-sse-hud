@@ -1204,18 +1204,19 @@ namespace setting
 																 , { "isAutoTrackLotdCards", lotd::isAutoTrackLotdCards }
 																 , { "isAutoTrackLotdItemsCrimeIgnore", lotd::isAutoTrackLotdItemsCrimeIgnore }
 																 , { "showDisplayItemCount", lotd::showDisplayItemCount }
-																 , { "scanType", lotd::scanType } } }, { "QuestInfo", {
-																																																																																																																																																																																																																																																																																								{ "isShowQuest", isShowQuest },
-																																																																																																																																																																																																																																																																																								{ "colorQuestTableHeaderBgX", menu::colorQuestTableHeaderBg.x },
-																																																																																																																																																																																																																																																																																								{ "colorQuestTableHeaderBgY", menu::colorQuestTableHeaderBg.y },
-																																																																																																																																																																																																																																																																																								{ "colorQuestTableHeaderBgZ", menu::colorQuestTableHeaderBg.z },
-																																																																																																																																																																																																																																																																																								{ "colorQuestTableHeaderBgW", menu::colorQuestTableHeaderBg.w },
-																																																																																																																																																																																																																																																																																								{ "colorQuestTableBorderStrongX", menu::colorQuestTableBorderStrong.x },
-																																																																																																																																																																																																																																																																																								{ "colorQuestTableBorderStrongY", menu::colorQuestTableBorderStrong.y },
-																																																																																																																																																																																																																																																																																								{ "colorQuestTableBorderStrongZ", menu::colorQuestTableBorderStrong.z },
-																																																																																																																																																																																																																																																																																								{ "colorQuestTableBorderStrongW", menu::colorQuestTableBorderStrong.w },
+																 , { "scanType", lotd::scanType } } }
+											, { "QuestInfo", {
+																{ "isShowQuest", isShowQuest },
+																{ "colorQuestTableHeaderBgX", menu::colorQuestTableHeaderBg.x },
+																{ "colorQuestTableHeaderBgY", menu::colorQuestTableHeaderBg.y },
+																{ "colorQuestTableHeaderBgZ", menu::colorQuestTableHeaderBg.z },
+																{ "colorQuestTableHeaderBgW", menu::colorQuestTableHeaderBg.w },
+																{ "colorQuestTableBorderStrongX", menu::colorQuestTableBorderStrong.x },
+																{ "colorQuestTableBorderStrongY", menu::colorQuestTableBorderStrong.y },
+																{ "colorQuestTableBorderStrongZ", menu::colorQuestTableBorderStrong.z },
+																{ "colorQuestTableBorderStrongW", menu::colorQuestTableBorderStrong.w },
 
-																																																																																																																																																																																																																																																																																							} },
+															} },
 									   { "StatInfo", {
 														 { "show_gametime_window", stats::show_gametime_window },
 														 { "show_playtime_window", stats::show_playtime_window },

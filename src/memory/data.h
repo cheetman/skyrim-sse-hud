@@ -44,6 +44,7 @@ extern std::unordered_set<RE::FormID> oreFormIds;
 extern std::vector<WeatherForm> weatherForms;
 extern RE::FormID currentWeather;
 
+
 namespace data
 {
 	void init();

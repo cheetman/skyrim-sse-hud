@@ -1,9 +1,13 @@
 #include "quest.h"
-#include <memory/memory.h>
 #include <fonts/IconsMaterialDesignIcons.h>
+#include <memory/memory.h>
+
 
 namespace quest
 {
+	// 任务忽略
+	std::unordered_set<RE::FormID> excludeQuestFormIds;
+
 	bool compareForQuest(const QuestInfo& info1, const QuestInfo& info2)
 	{
 		if (info1.isActive != info2.isActive) {
@@ -47,6 +51,10 @@ namespace quest
 					item.quests[tmpQuestCount].editorId = quest->GetFormEditorID();
 					tmpQuestCount++;
 				}*/
+
+			if (excludeQuestFormIds.find(quest->GetFormID()) != excludeQuestFormIds.end()) {
+				continue;
+			}
 
 			if (quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD) && !quest->IsCompleted()) {
 				if (quest->waitingStages) {
@@ -132,6 +140,7 @@ namespace quest
 								item.quests[tmpQuestCount].aliases[aliasCount].type = "Ref";
 								if (reference->fillType == RE::BGSBaseAlias::FILL_TYPE::kForced) {
 									item.quests[tmpQuestCount].aliases[aliasCount].fillType = "Forced";
+									
 									auto ref = reference->fillData.forced.forcedRef;
 									if (ref) {
 										std::string name = ref.get().get()->GetDisplayFullName();

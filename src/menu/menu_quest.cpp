@@ -125,6 +125,13 @@ namespace menu
 					ImGui::TableNextRow();
 					ImGui::TableNextColumn();
 
+					if (ImGui::BeginPopupContextItem("itemQuestPopMenu")) {
+						if (ImGui::Button(ICON_MDI_EYE_REMOVE_OUTLINE " 忽略")) {
+							quest::excludeQuestFormIds.insert(item.formId);
+						}
+						ImGui::EndPopup();
+					}
+
 					char buf[32];
 					snprintf(buf, 32, "%d/%d", item.completedStage, item.allStage);
 
@@ -358,8 +365,7 @@ namespace menu
 							}
 							//ImGui::Separator();
 
-							if (isShowQuestText) 
-							{
+							if (isShowQuestText) {
 								//ImGui::Separator();
 								ImGui::Spacing();
 								ImGui::BeginGroup();
@@ -372,7 +378,7 @@ namespace menu
 										if (item.aliases[i].targetName.empty() || alias.isLink) {
 											continue;
 										}
-										
+
 										if (alias.refPtr) {
 											if (alias.refPtr->IsPlayerRef()) {
 												continue;
@@ -429,13 +435,16 @@ namespace menu
 						myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "%s", item.name.c_str());
 					}
 
+					ImGui::OpenPopupOnItemClick("itemQuestPopMenu", ImGuiPopupFlags_MouseButtonRight);
+
+
 					ImGui::TableNextColumn();
 					if (item.isActive) {
-						//ImGui::Text("%s", item.questTypeName.c_str());
-						ImGui::Text("%d", item.flag);
+						ImGui::Text("%s", item.questTypeName.c_str());
+						//ImGui::Text("%d", item.flag);
 					} else {
-						//myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "%s", item.questTypeName.c_str());
-						ImGui::Text("%d", item.flag);
+						myTextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "%s", item.questTypeName.c_str());
+						//ImGui::Text("%d", item.flag);
 					}
 
 					if (show_items_window_refid) {

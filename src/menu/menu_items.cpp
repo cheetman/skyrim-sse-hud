@@ -191,17 +191,7 @@ namespace menu
 						}
 
 						if (ImGui::Button(ICON_MDI_EYE_REMOVE_OUTLINE " 忽略")) {
-							bool exist = false;
-							for (const auto& excludeForm : excludeForms) {
-								if (excludeForm.formId == item.baseFormId) {
-									exist = true;
-									break;
-								}
-							}
-							if (!exist) {
-								excludeForms.push_back({ item.baseFormId, item.name, item.formTypeStr });
-							}
-							excludeFormIds.insert(item.baseFormId);
+							ignoreItem(item);
 						}
 
 						if (showOther) {
