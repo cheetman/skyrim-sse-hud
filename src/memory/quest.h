@@ -51,5 +51,4 @@ namespace quest
 {
 	extern std::unordered_set<RE::FormID> excludeQuestFormIds;
 	void refreshQuestInfo(Item2Info& item);
-
 }

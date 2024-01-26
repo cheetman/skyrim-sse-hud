@@ -1175,6 +1175,7 @@ namespace lotd
 
 											itemptr->ptr = nullptr;
 											itemptr->formId = 0;
+											itemptr->baseObjPtr = obj;
 											itemptr->baseFormId = obj->GetFormID();
 											itemptr->weight = obj->GetWeight();
 											itemptr->gold = obj->GetGoldValue();

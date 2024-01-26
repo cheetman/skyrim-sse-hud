@@ -9,6 +9,9 @@
 #include <utils/NameUtil.h>
 #include <utils/PlayerDataProvider.h>
 
+
+
+
 bool show_items_window_auto_ignore = true;
 bool show_items_window_auto_notification = true;
 bool show_items_window_auto_ammo = false;
@@ -89,13 +92,69 @@ int show_items_window_auto_every = 0;
 bool show_items_window_auto_enable = true;
 
 // 地点排除
-std::unordered_set<int> excludeLocationFormIds;
+std::unordered_set<RE::FormID> excludeLocationFormIds;
 std::vector<ExcludeForm> excludeLocationForms;
 
 // 容器类型
 std::unordered_set<RE::FormID> autoContFormIds;
 std::vector<IncludeForm> autoContForms;
-//std::unordered_set<RE::TESObjectREFR*> deleteREFRs;
+
+
+std::unordered_map<std::string, std::unordered_set<RE::FormID>> whiteListFormIds;
+std::unordered_map<std::string, std::vector<ExcludeForm>> whiteListForms;
+std::unordered_map<std::string, std::unordered_set<RE::FormID>> blackListFormIds;
+std::unordered_map<std::string, std::vector<ExcludeForm>> blackListForms;
+
+bool auto_whitelist_misc = false;
+bool auto_whitelist_ammo = false;
+bool auto_whitelist_food = false;
+bool auto_whitelist_flor = false;
+bool auto_whitelist_ingr = false;
+bool auto_whitelist_alch = false;
+bool auto_whitelist_sgem = false;
+bool auto_whitelist_tree = false;
+bool auto_whitelist_weap = false;
+bool auto_whitelist_ston = false;
+bool auto_whitelist_anvi = false;
+bool auto_whitelist_anhd = false;
+bool auto_whitelist_anpa = false;
+bool auto_whitelist_armo = false;
+bool auto_whitelist_tool = false;
+
+
+//std::unordered_set<RE::FormID> whiteListFormIds_misc;
+//std::unordered_set<RE::FormID> whiteListFormIds_ammo;
+//std::unordered_set<RE::FormID> whiteListFormIds_food;
+//std::unordered_set<RE::FormID> whiteListFormIds_flor;
+//std::unordered_set<RE::FormID> whiteListFormIds_ingr;
+//std::unordered_set<RE::FormID> whiteListFormIds_alch;
+//std::unordered_set<RE::FormID> whiteListFormIds_sgem;
+//std::unordered_set<RE::FormID> whiteListFormIds_tree;
+//std::unordered_set<RE::FormID> whiteListFormIds_weap;
+//std::unordered_set<RE::FormID> whiteListFormIds_ston;
+//std::unordered_set<RE::FormID> whiteListFormIds_anvi;
+//std::unordered_set<RE::FormID> whiteListFormIds_anhd;
+//std::unordered_set<RE::FormID> whiteListFormIds_anpa;
+//std::unordered_set<RE::FormID> whiteListFormIds_armo;
+//
+//std::vector<ExcludeForm> whiteListForms_misc;
+//std::vector<ExcludeForm> whiteListForms_ammo;
+//std::vector<ExcludeForm> whiteListForms_food;
+//std::vector<ExcludeForm> whiteListForms_flor;
+//std::vector<ExcludeForm> whiteListForms_ingr;
+//std::vector<ExcludeForm> whiteListForms_alch;
+//std::vector<ExcludeForm> whiteListForms_sgem;
+//std::vector<ExcludeForm> whiteListForms_tree;
+//std::vector<ExcludeForm> whiteListForms_weap;
+//std::vector<ExcludeForm> whiteListForms_ston;
+//std::vector<ExcludeForm> whiteListForms_anvi;
+//std::vector<ExcludeForm> whiteListForms_anhd;
+//std::vector<ExcludeForm> whiteListForms_anpa;
+//std::vector<ExcludeForm> whiteListForms_tool;
+//std::vector<ExcludeForm> whiteListForms_armo;
+
+
+
 
 bool checkTakeCount()
 {

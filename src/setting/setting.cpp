@@ -507,8 +507,6 @@ namespace setting
 						show_items_window_auto_cont_ingr = j2["show_items_window_auto_cont_ingr"].get<bool>();
 					}
 
-					
-
 					if (j2.contains("show_items_window_auto_cont_food")) {
 						show_items_window_auto_cont_food = j2["show_items_window_auto_cont_food"].get<bool>();
 					}
@@ -674,7 +672,6 @@ namespace setting
 					if (j2.contains("show_items_window_auto_book")) {
 						show_items_window_auto_book = j2["show_items_window_auto_book"].get<bool>();
 					}
-					
 				}
 
 				if (j.contains("LotdInfo")) {
@@ -903,7 +900,6 @@ namespace setting
 				}
 			}
 
-			
 			if (json.contains("favorSmithing")) {
 				for (auto const& j : json["favorSmithing"]) {
 					if (j.contains("formId")) {
@@ -922,6 +918,23 @@ namespace setting
 							item.entDetail2.push_back(detail);
 						}
 						favorSmithing.push_back(item);
+					}
+				}
+			}
+
+			if (json.contains("autoBlackList")) {
+				// 遍历属性
+				for (auto const& j : json["autoBlackList"].items()) {
+					for (auto const& j2 : j.value()) {
+						blackListFormIds[j.key()].insert(j2.get<RE::FormID>());
+					}
+				}
+			}
+			if (json.contains("autoWhiteList")) {
+				// 遍历属性
+				for (auto const& j : json["autoWhiteList"].items()) {
+					for (auto const& j2 : j.value()) {
+						whiteListFormIds[j.key()].insert(j2.get<RE::FormID>());
 					}
 				}
 			}
@@ -1102,7 +1115,7 @@ namespace setting
 															 { "show_items_window_auto_anvi", show_items_window_auto_anvi },
 															 { "show_items_window_auto_ston", show_items_window_auto_ston },
 															 { "show_items_window_auto_keym", show_items_window_auto_keym },
-															 
+
 															 { "show_items_window_auto_anhd", show_items_window_auto_anhd },
 															 { "show_items_window_auto_anpa", show_items_window_auto_anpa },
 															 { "show_items_window_auto_tool", show_items_window_auto_tool },
@@ -1186,37 +1199,21 @@ namespace setting
 															 { "show_items_window_auto_enable", show_items_window_auto_enable },
 
 														 } },
-									   { "LotdInfo", { { "showlocationItemCount", lotd::showlocationItemCount }
-																 , { "isArmoryIgnore", lotd::isArmoryIgnore }
-																 , { "isCrimeIgnore", lotd::isCrimeIgnore }
-																 , { "isInvIgnore", lotd::isInvIgnore }
-																 , { "isShowAttached", lotd::isShowAttached }
-																 , { "colorTableHeaderBgX", lotd::colorTableHeaderBg.x }
-																 , { "colorTableHeaderBgY", lotd::colorTableHeaderBg.y }
-																 , { "colorTableHeaderBgZ", lotd::colorTableHeaderBg.z }
-																 , { "colorTableHeaderBgW", lotd::colorTableHeaderBg.w }
-																 , { "colorTableBorderStrongX", lotd::colorTableBorderStrong.x }
-																 , { "colorTableBorderStrongY", lotd::colorTableBorderStrong.y }
-																 , { "colorTableBorderStrongZ", lotd::colorTableBorderStrong.z }
-																 , { "colorTableBorderStrongW", lotd::colorTableBorderStrong.w }
-																 , { "isAutoTrackLotdItems", lotd::isAutoTrackLotdItems }
-																 , { "isAutoTrackLotdExcavation", lotd::isAutoTrackLotdExcavation }
-																 , { "isAutoTrackLotdCards", lotd::isAutoTrackLotdCards }
-																 , { "isAutoTrackLotdItemsCrimeIgnore", lotd::isAutoTrackLotdItemsCrimeIgnore }
-																 , { "showDisplayItemCount", lotd::showDisplayItemCount }
-																 , { "scanType", lotd::scanType } } }
-											, { "QuestInfo", {
-																{ "isShowQuest", isShowQuest },
-																{ "colorQuestTableHeaderBgX", menu::colorQuestTableHeaderBg.x },
-																{ "colorQuestTableHeaderBgY", menu::colorQuestTableHeaderBg.y },
-																{ "colorQuestTableHeaderBgZ", menu::colorQuestTableHeaderBg.z },
-																{ "colorQuestTableHeaderBgW", menu::colorQuestTableHeaderBg.w },
-																{ "colorQuestTableBorderStrongX", menu::colorQuestTableBorderStrong.x },
-																{ "colorQuestTableBorderStrongY", menu::colorQuestTableBorderStrong.y },
-																{ "colorQuestTableBorderStrongZ", menu::colorQuestTableBorderStrong.z },
-																{ "colorQuestTableBorderStrongW", menu::colorQuestTableBorderStrong.w },
+									   { "LotdInfo", { { "showlocationItemCount", lotd::showlocationItemCount }, { "isArmoryIgnore", lotd::isArmoryIgnore }, { "isCrimeIgnore", lotd::isCrimeIgnore }, { "isInvIgnore", lotd::isInvIgnore }, { "isShowAttached", lotd::isShowAttached }, { "colorTableHeaderBgX", lotd::colorTableHeaderBg.x }, { "colorTableHeaderBgY", lotd::colorTableHeaderBg.y }, { "colorTableHeaderBgZ", lotd::colorTableHeaderBg.z }, { "colorTableHeaderBgW", lotd::colorTableHeaderBg.w }, { "colorTableBorderStrongX", lotd::colorTableBorderStrong.x }, { "colorTableBorderStrongY", lotd::colorTableBorderStrong.y }, { "colorTableBorderStrongZ", lotd::colorTableBorderStrong.z }, { "colorTableBorderStrongW", lotd::colorTableBorderStrong.w }, { "isAutoTrackLotdItems", lotd::isAutoTrackLotdItems }, { "isAutoTrackLotdExcavation", lotd::isAutoTrackLotdExcavation }, { "isAutoTrackLotdCards", lotd::isAutoTrackLotdCards }, { "isAutoTrackLotdItemsCrimeIgnore", lotd::isAutoTrackLotdItemsCrimeIgnore }, { "showDisplayItemCount", lotd::showDisplayItemCount }, { "scanType", lotd::scanType } } }
 
-															} },
+									   ,
+									   { "QuestInfo", {
+														  { "isShowQuest", isShowQuest },
+														  { "colorQuestTableHeaderBgX", menu::colorQuestTableHeaderBg.x },
+														  { "colorQuestTableHeaderBgY", menu::colorQuestTableHeaderBg.y },
+														  { "colorQuestTableHeaderBgZ", menu::colorQuestTableHeaderBg.z },
+														  { "colorQuestTableHeaderBgW", menu::colorQuestTableHeaderBg.w },
+														  { "colorQuestTableBorderStrongX", menu::colorQuestTableBorderStrong.x },
+														  { "colorQuestTableBorderStrongY", menu::colorQuestTableBorderStrong.y },
+														  { "colorQuestTableBorderStrongZ", menu::colorQuestTableBorderStrong.z },
+														  { "colorQuestTableBorderStrongW", menu::colorQuestTableBorderStrong.w },
+
+													  } },
 									   { "StatInfo", {
 														 { "show_gametime_window", stats::show_gametime_window },
 														 { "show_playtime_window", stats::show_playtime_window },
@@ -1284,7 +1281,6 @@ namespace setting
 			}
 			json["moveToPositions"] = arrPosition;
 
-			
 			nlohmann::json arrFavorAlchemy = nlohmann::json::array();
 			for (auto item : favorAlchemy) {
 				nlohmann::json obj;
@@ -1309,7 +1305,6 @@ namespace setting
 			}
 			json["favorAlchemy"] = arrFavorAlchemy;
 
-			
 			nlohmann::json arrFavorSmithing = nlohmann::json::array();
 			for (auto item : favorSmithing) {
 				nlohmann::json obj;
@@ -1333,6 +1328,26 @@ namespace setting
 				arrFavorSmithing.push_back(obj);
 			}
 			json["favorSmithing"] = arrFavorSmithing;
+
+			nlohmann::json objWhiteList;
+			for (auto forms : whiteListFormIds) {
+				nlohmann::json arrWhiteList = nlohmann::json::array();
+				for (auto ids : whiteListFormIds[forms.first]) {
+					arrWhiteList.push_back(ids);
+				}
+				objWhiteList[forms.first] = arrWhiteList;
+			}
+			json["autoWhiteList"] = objWhiteList;
+
+			nlohmann::json objBlackList;
+			for (auto forms : blackListFormIds) {
+				nlohmann::json arrBlackList = nlohmann::json::array();
+				for (auto ids : blackListFormIds[forms.first]) {
+					arrBlackList.push_back(ids);
+				}
+				objBlackList[forms.first] = arrBlackList;
+			}
+			json["autoBlackList"] = objBlackList;
 
 			std::ofstream o(settings_path);
 			o << std::setw(4) << json << std::endl;

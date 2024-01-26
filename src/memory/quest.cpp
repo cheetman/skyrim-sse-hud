@@ -2,7 +2,6 @@
 #include <fonts/IconsMaterialDesignIcons.h>
 #include <memory/memory.h>
 
-
 namespace quest
 {
 	// 任务忽略
@@ -55,24 +54,38 @@ namespace quest
 			if (excludeQuestFormIds.find(quest->GetFormID()) != excludeQuestFormIds.end()) {
 				continue;
 			}
+			if (std::string(quest->GetFormEditorID()) == "BQ01") {
+				// 看看状态
+				int i = 0;
+			}
 
 			if (quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD) && !quest->IsCompleted()) {
 				if (quest->waitingStages) {
-					item.quests[tmpQuestCount].name = quest->GetFullName();
-					item.quests[tmpQuestCount].formId = quest->GetFormID();
-					item.quests[tmpQuestCount].currentInstanceID = quest->currentInstanceID;
-					item.quests[tmpQuestCount].currentStage = quest->GetCurrentStageID();
-					item.quests[tmpQuestCount].editorId = quest->GetFormEditorID();
-					item.quests[tmpQuestCount].isActive = quest->IsActive();
+					auto currentStageID = quest->GetCurrentStageID();
 					int completedStage = 0;
 					int allStage = 0;
+					std::uint16_t lastIndex = 0;
 					for (auto item : *quest->waitingStages) {
 						allStage++;
 						if (item->data.flags.underlying() == 1) {
 							//completedStage++;
 							completedStage = allStage;
 						}
+						lastIndex = item->data.index;
 					}
+
+					// 排除已经到最后阶段的任务
+					if (currentStageID == lastIndex) {
+						continue;
+					}
+
+					item.quests[tmpQuestCount].name = quest->GetFullName();
+					item.quests[tmpQuestCount].formId = quest->GetFormID();
+					item.quests[tmpQuestCount].currentInstanceID = quest->currentInstanceID;
+					item.quests[tmpQuestCount].currentStage = currentStageID;
+					item.quests[tmpQuestCount].editorId = quest->GetFormEditorID();
+					item.quests[tmpQuestCount].isActive = quest->IsActive();
+
 					item.quests[tmpQuestCount].allStage = allStage;
 					item.quests[tmpQuestCount].completedStage = completedStage;
 					item.quests[tmpQuestCount].progressStage = (float)completedStage / (float)(allStage == 0 ? 1 : allStage);
@@ -140,7 +153,7 @@ namespace quest
 								item.quests[tmpQuestCount].aliases[aliasCount].type = "Ref";
 								if (reference->fillType == RE::BGSBaseAlias::FILL_TYPE::kForced) {
 									item.quests[tmpQuestCount].aliases[aliasCount].fillType = "Forced";
-									
+
 									auto ref = reference->fillData.forced.forcedRef;
 									if (ref) {
 										std::string name = ref.get().get()->GetDisplayFullName();

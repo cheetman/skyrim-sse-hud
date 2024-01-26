@@ -6,8 +6,6 @@
 #include <memory/player.h>
 #include <utils/utils.h>
 
-
-
 // 物品排除
 std::unordered_set<RE::FormID> excludeFormIds;
 std::vector<ExcludeForm> excludeForms;
@@ -147,6 +145,25 @@ namespace data
 				item.worldSpacePtr = form2;
 			}
 			moveToPositions.push_back(item);
+		}
+
+		// 拾取黑白名单
+
+		for (auto forms : whiteListFormIds) {
+			for (auto ids : whiteListFormIds[forms.first]) {
+				auto form = RE::TESForm::LookupByID(ids);
+				if (form) {
+					whiteListForms[forms.first].push_back({ form->GetFormID(), form->GetName(), "" });
+				}
+			}
+		}
+		for (auto forms : blackListFormIds) {
+			for (auto ids : blackListFormIds[forms.first]) {
+				auto form = RE::TESForm::LookupByID(ids);
+				if (form) {
+					blackListForms[forms.first].push_back({ form->GetFormID(), form->GetName(), "" });
+				}
+			}
 		}
 	}
 }
