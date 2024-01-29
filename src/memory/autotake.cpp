@@ -718,6 +718,9 @@ void __cdecl TimerAutoPick(void*)
 			for (auto& [id, form] : *map) {
 				if (form) {
 					if (form->Is(RE::FormType::ActorCharacter)) {
+						if (!show_items_window_auto_achr && !only_pickup_lotd_items) {
+							continue;
+						}
 						auto actor = form->As<RE::Actor>();
 						if (actor && actor->IsDead() && !actor->IsSummoned()) {
 							if (actor->GetCurrentLocation() == currentLocation) {
@@ -759,7 +762,7 @@ void __cdecl TimerAutoPick(void*)
 									auto& [count, entry] = data;
 									if (count > 0 && entry) {
 										// 自动拾取
-										if (show_items_window_auto_achr && distance < show_items_window_auto_dis) {
+										if (distance < show_items_window_auto_dis) {
 											/*if (FormUtil::IsQuestItem(&entry.get()->extraLists) {
 												return false;
 											}*/
@@ -1516,7 +1519,7 @@ void __cdecl TimerAutoPick(void*)
 										}
 									case RE::FormType::Container:
 										{
-											if (!show_items_window_auto_cont) {
+											if (!show_items_window_auto_cont && !only_pickup_lotd_items) {
 												continue;
 											}
 

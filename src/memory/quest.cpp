@@ -169,12 +169,27 @@ namespace quest
 									if (ref) {
 										std::string name = ref.get().get()->GetDisplayFullName();
 										if (name.empty()) {
-											continue;
-											item.quests[tmpQuestCount].aliases[aliasCount].targetName = ICON_MDI_MAP_MARKER_RADIUS + std::string(" ") + name;
-											item.quests[tmpQuestCount].aliases[aliasCount].targetFormId = ref.get().get()->GetFormID();
-											item.quests[tmpQuestCount].aliases[aliasCount].refPtr = ref.get().get();
+											auto reff = ref.get().get();
+											auto baseObj = reff->GetBaseObject();
+											switch (baseObj->GetFormType()) {
+											case RE::FormType::Door:
+												item.quests[tmpQuestCount].aliases[aliasCount].targetName = ICON_MDI_DOOR + std::string(" ") + std::string(alias->aliasName);
+												item.quests[tmpQuestCount].aliases[aliasCount].targetFormId = ref.get().get()->GetFormID();
+												item.quests[tmpQuestCount].aliases[aliasCount].refPtr = ref.get().get();
+												break;
+											case RE::FormType::Static:
+												item.quests[tmpQuestCount].aliases[aliasCount].targetName =  ICON_MDI_FLAG + std::string(" ") + std::string(alias->aliasName);
+												item.quests[tmpQuestCount].aliases[aliasCount].targetFormId = ref.get().get()->GetFormID();
+												item.quests[tmpQuestCount].aliases[aliasCount].refPtr = ref.get().get();
+												break;
+											default:
+												item.quests[tmpQuestCount].aliases[aliasCount].targetName = ICON_MDI_MAP_MARKER_ALERT + std::string(" ") + std::string(alias->aliasName);
+												item.quests[tmpQuestCount].aliases[aliasCount].targetFormId = ref.get().get()->GetFormID();
+												item.quests[tmpQuestCount].aliases[aliasCount].refPtr = ref.get().get();
+												break;
+											}
 										} else {
-											item.quests[tmpQuestCount].aliases[aliasCount].targetName = ICON_MDI_FLAG + std::string(" ") + std::string(alias->aliasName);
+											item.quests[tmpQuestCount].aliases[aliasCount].targetName = ICON_MDI_MAP_MARKER_RADIUS + std::string(" ") + name;
 											item.quests[tmpQuestCount].aliases[aliasCount].targetFormId = ref.get().get()->GetFormID();
 											item.quests[tmpQuestCount].aliases[aliasCount].refPtr = ref.get().get();
 										}

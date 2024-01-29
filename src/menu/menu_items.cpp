@@ -67,7 +67,6 @@ namespace menu
 			whiteListForms[type].end());
 	}
 
-	
 	void addBlackList(ItemInfo& item, std::string type)
 	{
 		bool exist = false;
@@ -1075,7 +1074,7 @@ namespace menu
 		}
 	}
 
-	void __fastcall buildItemInfo(int count, ItemInfo* items, RE::FormType formType,  std::string type)
+	void __fastcall buildItemInfo(int count, ItemInfo* items, RE::FormType formType, std::string type)
 	{
 		static ImGuiTableFlags flagsItem =
 			ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoBordersInBody;
@@ -1449,7 +1448,6 @@ namespace menu
 		}
 	}
 
-	
 	void buildBlackList(std::string type)
 	{
 		static ImGuiTableFlags flagsItem =
@@ -1464,7 +1462,7 @@ namespace menu
 			if (show_items_window_formid) {
 				ImGui::TableSetupColumn(I18Nc("finder.ui.column-formid"), ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 80.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_1);
 			}
-			ImGui::TableSetupColumn(I18Nc("finder.ui.column-name"), ImGuiTableColumnFlags_WidthFixed,120.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_2);
+			ImGui::TableSetupColumn(I18Nc("finder.ui.column-name"), ImGuiTableColumnFlags_WidthFixed, 120.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_2);
 			ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 20.0f * ImGui::GetIO().FontGlobalScale, PlayerInfoColumnID_3);
 
 			ImGui::TableSetupScrollFreeze(0, 1);
@@ -1563,9 +1561,27 @@ namespace menu
 		}
 	};
 
+	ImGuiWindow* childWindow = nullptr;
 	void renderItems()
 	{
 		if (activeItems) {
+			
+			if (childWindow) {
+				ImVec2 childWindowSize = childWindow->Size;
+				ImVec2 childWindowPos = childWindow->Pos;
+				// 设置下一个窗口的位置为(10, 10)
+				ImGui::SetNextWindowPos(ImVec2(childWindowPos.x, childWindowPos.y));
+				ImGui::SetNextWindowSize(ImVec2(400, 400));
+			} else {
+				ImGui::SetNextWindowPos(ImVec2(0, 0));
+				ImGui::SetNextWindowSize(ImVec2(0, 0));
+			}
+
+			// 背面窗口
+			ImGui::Begin("BackgroundWindow", nullptr, ImGuiWindowFlags_NoTitleBar);
+			ImGui::End();
+
+
 			ImGuiWindowFlags window_flags2 = 0;
 			if (no_titlebar)
 				window_flags2 |= ImGuiWindowFlags_NoTitleBar;
@@ -1827,7 +1843,7 @@ namespace menu
 										ImGui::EndPopup();
 									}
 									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									if (ImGui::Button(ICON_MDI_PLAYLIST_CHECK "##weap")) {
+									if (ImGui::SmallButton(ICON_MDI_PLAYLIST_CHECK "##weap")) {
 										ImGui::OpenPopup("PopupWhiteList-weap");
 									}
 								}
@@ -1875,7 +1891,7 @@ namespace menu
 										ImGui::EndPopup();
 									}
 									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									if (ImGui::Button(ICON_MDI_PLAYLIST_CHECK "##armo")) {
+									if (ImGui::SmallButton(ICON_MDI_PLAYLIST_CHECK "##armo")) {
 										ImGui::OpenPopup("PopupWhiteList-armo");
 									}
 								}
@@ -1920,7 +1936,7 @@ namespace menu
 										ImGui::EndPopup();
 									}
 									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									if (ImGui::Button(ICON_MDI_PLAYLIST_CHECK "##ammo")) {
+									if (ImGui::SmallButton(ICON_MDI_PLAYLIST_CHECK "##ammo")) {
 										ImGui::OpenPopup("PopupWhiteList-ammo");
 									}
 								}
@@ -1986,7 +2002,7 @@ namespace menu
 										ImGui::EndPopup();
 									}
 									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									if (ImGui::Button(ICON_MDI_PLAYLIST_CHECK "##alch")) {
+									if (ImGui::SmallButton(ICON_MDI_PLAYLIST_CHECK "##alch")) {
 										ImGui::OpenPopup("PopupWhiteList-alch");
 									}
 								}
@@ -2032,7 +2048,7 @@ namespace menu
 										ImGui::EndPopup();
 									}
 									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									if (ImGui::Button(ICON_MDI_PLAYLIST_CHECK "##food")) {
+									if (ImGui::SmallButton(ICON_MDI_PLAYLIST_CHECK "##food")) {
 										ImGui::OpenPopup("PopupWhiteList-food");
 									}
 								}
@@ -2078,7 +2094,7 @@ namespace menu
 										ImGui::EndPopup();
 									}
 									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									if (ImGui::Button(ICON_MDI_PLAYLIST_CHECK "##ingr")) {
+									if (ImGui::SmallButton(ICON_MDI_PLAYLIST_CHECK "##ingr")) {
 										ImGui::OpenPopup("PopupWhiteList-ingr");
 									}
 								}
@@ -2124,7 +2140,7 @@ namespace menu
 										ImGui::EndPopup();
 									}
 									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									if (ImGui::Button(ICON_MDI_PLAYLIST_CHECK "##sgem")) {
+									if (ImGui::SmallButton(ICON_MDI_PLAYLIST_CHECK "##sgem")) {
 										ImGui::OpenPopup("PopupWhiteList-sgem");
 									}
 								}
@@ -2190,7 +2206,7 @@ namespace menu
 										ImGui::EndPopup();
 									}
 									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									if (ImGui::Button(ICON_MDI_PLAYLIST_CHECK "##ston")) {
+									if (ImGui::SmallButton(ICON_MDI_PLAYLIST_CHECK "##ston")) {
 										ImGui::OpenPopup("PopupWhiteList-ston");
 									}
 								}
@@ -2236,7 +2252,7 @@ namespace menu
 										ImGui::EndPopup();
 									}
 									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									if (ImGui::Button(ICON_MDI_PLAYLIST_CHECK "##anvi")) {
+									if (ImGui::SmallButton(ICON_MDI_PLAYLIST_CHECK "##anvi")) {
 										ImGui::OpenPopup("PopupWhiteList-anvi");
 									}
 								}
@@ -2247,7 +2263,7 @@ namespace menu
 									ImGui::Text(ICON_MDI_AUTORENEW);
 								}
 							}
-							buildItemInfo(getItemCountANVI(), getItemsANVI(), RE::FormType::Misc,  "anvi");
+							buildItemInfo(getItemCountANVI(), getItemsANVI(), RE::FormType::Misc, "anvi");
 							ImGui::Spacing();
 						}
 						if (getItemCountANHD() > 0) {
@@ -2282,7 +2298,7 @@ namespace menu
 										ImGui::EndPopup();
 									}
 									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									if (ImGui::Button(ICON_MDI_PLAYLIST_CHECK "##anhd")) {
+									if (ImGui::SmallButton(ICON_MDI_PLAYLIST_CHECK "##anhd")) {
 										ImGui::OpenPopup("PopupWhiteList-anhd");
 									}
 								}
@@ -2328,7 +2344,7 @@ namespace menu
 										ImGui::EndPopup();
 									}
 									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									if (ImGui::Button(ICON_MDI_PLAYLIST_CHECK "##anpa")) {
+									if (ImGui::SmallButton(ICON_MDI_PLAYLIST_CHECK "##anpa")) {
 										ImGui::OpenPopup("PopupWhiteList-anpa");
 									}
 								}
@@ -2374,7 +2390,7 @@ namespace menu
 										ImGui::EndPopup();
 									}
 									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									if (ImGui::Button(ICON_MDI_PLAYLIST_CHECK "##tool")) {
+									if (ImGui::SmallButton(ICON_MDI_PLAYLIST_CHECK "##tool")) {
 										ImGui::OpenPopup("PopupWhiteList-tool");
 									}
 								}
@@ -2420,7 +2436,7 @@ namespace menu
 										ImGui::EndPopup();
 									}
 									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									if (ImGui::Button(ICON_MDI_PLAYLIST_CHECK "##misc")) {
+									if (ImGui::SmallButton(ICON_MDI_PLAYLIST_CHECK "##misc")) {
 										ImGui::OpenPopup("PopupWhiteList-misc");
 									}
 								}
@@ -2466,7 +2482,7 @@ namespace menu
 										ImGui::EndPopup();
 									}
 									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									if (ImGui::Button(ICON_MDI_PLAYLIST_CHECK "##flor")) {
+									if (ImGui::SmallButton(ICON_MDI_PLAYLIST_CHECK "##flor")) {
 										ImGui::OpenPopup("PopupWhiteList-flor");
 									}
 								}
@@ -2512,7 +2528,7 @@ namespace menu
 										ImGui::EndPopup();
 									}
 									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									if (ImGui::Button(ICON_MDI_PLAYLIST_CHECK "##tree")) {
+									if (ImGui::SmallButton(ICON_MDI_PLAYLIST_CHECK "##tree")) {
 										ImGui::OpenPopup("PopupWhiteList-tree");
 									}
 								}
@@ -2591,77 +2607,77 @@ namespace menu
 											ImGui::TableNextColumn();
 
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-weap"), whiteListForms["weap"].size());
+											ImGui::Text(I18Ni(ICON_MDI_SWORD, "finder.ui.label-weap"), whiteListForms["weap"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##weap"), &auto_whitelist_weap);
 											buildWhiteList("weap");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-armo"), whiteListForms["armo"].size());
+											ImGui::Text(I18Ni(ICON_MDI_SHIELD_HALF_FULL, "finder.ui.label-armo"), whiteListForms["armo"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##armo"), &auto_whitelist_armo);
 											buildWhiteList("armo");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-ammo"), whiteListForms["ammo"].size());
+											ImGui::Text(I18Ni(ICON_MDI_ARROW_PROJECTILE, "finder.ui.label-ammo"), whiteListForms["ammo"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##ammo"), &auto_whitelist_ammo);
 											buildWhiteList("ammo");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-alch"), whiteListForms["alch"].size());
+											ImGui::Text(I18Ni(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE, "finder.ui.label-alch"), whiteListForms["alch"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##alch"), &auto_whitelist_alch);
 											buildWhiteList("alch");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-food"), whiteListForms["food"].size());
+											ImGui::Text(I18Ni(ICON_MDI_FOOD_DRUMSTICK, "finder.ui.label-food"), whiteListForms["food"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##food"), &auto_whitelist_food);
 											buildWhiteList("food");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-ingr"), whiteListForms["ingr"].size());
+											ImGui::Text(I18Ni(ICON_MDI_SOURCE_BRANCH, "finder.ui.label-ingr"), whiteListForms["ingr"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##ingr"), &auto_whitelist_ingr);
 											buildWhiteList("ingr");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-sgem"), whiteListForms["sgem"].size());
+											ImGui::Text(I18Ni(ICON_MDI_CARDS_DIAMOND, "finder.ui.label-sgem"), whiteListForms["sgem"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##sgem"), &auto_whitelist_sgem);
 											buildWhiteList("sgem");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-tree"), whiteListForms["tree"].size());
+											ImGui::Text(I18Ni(ICON_MDI_FLOWER_TULIP_OUTLINE, "finder.ui.label-tree"), whiteListForms["tree"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##tree"), &auto_whitelist_tree);
 											buildWhiteList("tree");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-flor"), whiteListForms["flor"].size());
+											ImGui::Text(I18Ni(ICON_MDI_BASKET_OUTLINE, "finder.ui.label-flor"), whiteListForms["flor"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##flor"), &auto_whitelist_flor);
 											buildWhiteList("flor");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-anvi"), whiteListForms["anvi"].size());
+											ImGui::Text(I18Ni(ICON_MDI_ANVIL, "finder.ui.label-anvi"), whiteListForms["anvi"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##anvi"), &auto_whitelist_anvi);
 											buildWhiteList("anvi");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-ston"), whiteListForms["ston"].size());
+											ImGui::Text(I18Ni(ICON_MDI_DIAMOND_STONE, "finder.ui.label-ston"), whiteListForms["ston"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##ston"), &auto_whitelist_ston);
 											buildWhiteList("ston");
@@ -2675,21 +2691,21 @@ namespace menu
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-anpa"), whiteListForms["anpa"].size());
+											ImGui::Text(I18Ni(ICON_MDI_RABBIT, "finder.ui.label-anpa"), whiteListForms["anpa"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##anpa"), &auto_whitelist_anpa);
 											buildWhiteList("anpa");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-tool"), whiteListForms["tool"].size());
+											ImGui::Text(I18Ni(ICON_MDI_TOOLS, "finder.ui.label-tool"), whiteListForms["tool"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##tool"), &auto_whitelist_tool);
 											buildWhiteList("tool");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-misc"), whiteListForms["misc"].size());
+											ImGui::Text(I18Ni(ICON_MDI_PACKAGE_VARIANT_CLOSED, "finder.ui.label-misc"), whiteListForms["misc"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##misc"), &auto_whitelist_misc);
 											buildWhiteList("misc");
@@ -2697,64 +2713,64 @@ namespace menu
 											ImGui::EndTable();
 										}
 										ImGui::Spacing();
-										
+
 										ImGui::Text("黑名单");
 
 										if (ImGui::BeginTable("tableBlackList", 8)) {
 											ImGui::TableNextColumn();
 
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-weap"), blackListForms["weap"].size());
+											ImGui::Text(I18Ni(ICON_MDI_SWORD, "finder.ui.label-weap"), blackListForms["weap"].size());
 											buildBlackList("weap");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-armo"), blackListForms["armo"].size());
+											ImGui::Text(I18Ni(ICON_MDI_SHIELD_HALF_FULL, "finder.ui.label-armo"), blackListForms["armo"].size());
 											buildBlackList("armo");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-ammo"), blackListForms["ammo"].size());
+											ImGui::Text(I18Ni(ICON_MDI_ARROW_PROJECTILE, "finder.ui.label-ammo"), blackListForms["ammo"].size());
 											buildBlackList("ammo");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-alch"), blackListForms["alch"].size());
+											ImGui::Text(I18Ni(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE, "finder.ui.label-alch"), blackListForms["alch"].size());
 											buildBlackList("alch");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-food"), blackListForms["food"].size());
+											ImGui::Text(I18Ni(ICON_MDI_FOOD_DRUMSTICK, "finder.ui.label-food"), blackListForms["food"].size());
 											buildBlackList("food");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-ingr"), blackListForms["ingr"].size());
+											ImGui::Text(I18Ni(ICON_MDI_SOURCE_BRANCH, "finder.ui.label-ingr"), blackListForms["ingr"].size());
 											buildBlackList("ingr");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-sgem"), blackListForms["sgem"].size());
+											ImGui::Text(I18Ni(ICON_MDI_CARDS_DIAMOND, "finder.ui.label-sgem"), blackListForms["sgem"].size());
 											buildBlackList("sgem");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-tree"), blackListForms["tree"].size());
+											ImGui::Text(I18Ni(ICON_MDI_FLOWER_TULIP_OUTLINE, "finder.ui.label-tree"), blackListForms["tree"].size());
 											buildBlackList("tree");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-flor"), blackListForms["flor"].size());
+											ImGui::Text(I18Ni(ICON_MDI_BASKET_OUTLINE, "finder.ui.label-flor"), blackListForms["flor"].size());
 											buildBlackList("flor");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-anvi"), blackListForms["anvi"].size());
+											ImGui::Text(I18Ni(ICON_MDI_ANVIL, "finder.ui.label-anvi"), blackListForms["anvi"].size());
 											buildBlackList("anvi");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-ston"), blackListForms["ston"].size());
+											ImGui::Text(I18Ni(ICON_MDI_DIAMOND_STONE, "finder.ui.label-ston"), blackListForms["ston"].size());
 											buildBlackList("ston");
 
 											ImGui::TableNextColumn();
@@ -2764,28 +2780,28 @@ namespace menu
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-anpa"), blackListForms["anpa"].size());
+											ImGui::Text(I18Ni(ICON_MDI_RABBIT, "finder.ui.label-anpa"), blackListForms["anpa"].size());
 											buildBlackList("anpa");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-tool"), blackListForms["tool"].size());
+											ImGui::Text(I18Ni(ICON_MDI_TOOLS, "finder.ui.label-tool"), blackListForms["tool"].size());
 											buildBlackList("tool");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-misc"), blackListForms["misc"].size());
+											ImGui::Text(I18Ni(ICON_MDI_PACKAGE_VARIANT_CLOSED, "finder.ui.label-misc"), blackListForms["misc"].size());
 											buildBlackList("misc");
 
 											ImGui::EndTable();
 										}
 										ImGui::EndPopup();
 									}
-									if (ImGui::Button(ICON_MDI_FILTER_CHECK "##achr")) {
+									if (ImGui::SmallButton(ICON_MDI_FILTER_CHECK "##achr")) {
 										ImGui::OpenPopup("PopupFilterAchr");
 									}
 									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									if (ImGui::Button(ICON_MDI_PLAYLIST_CHECK "##achr2")) {
+									if (ImGui::SmallButton(ICON_MDI_PLAYLIST_CHECK "##achr2")) {
 										ImGui::OpenPopup("PopupWhiteListAchr");
 									}
 								}
@@ -2862,77 +2878,77 @@ namespace menu
 											ImGui::TableNextColumn();
 
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-weap"), whiteListForms["weap"].size());
+											ImGui::Text(I18Ni(ICON_MDI_SWORD, "finder.ui.label-weap"), whiteListForms["weap"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##weap"), &auto_whitelist_weap);
 											buildWhiteList("weap");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-armo"), whiteListForms["armo"].size());
+											ImGui::Text(I18Ni(ICON_MDI_SHIELD_HALF_FULL, "finder.ui.label-armo"), whiteListForms["armo"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##armo"), &auto_whitelist_armo);
 											buildWhiteList("armo");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-ammo"), whiteListForms["ammo"].size());
+											ImGui::Text(I18Ni(ICON_MDI_ARROW_PROJECTILE, "finder.ui.label-ammo"), whiteListForms["ammo"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##ammo"), &auto_whitelist_ammo);
 											buildWhiteList("ammo");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-alch"), whiteListForms["alch"].size());
+											ImGui::Text(I18Ni(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE, "finder.ui.label-alch"), whiteListForms["alch"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##alch"), &auto_whitelist_alch);
 											buildWhiteList("alch");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-food"), whiteListForms["food"].size());
+											ImGui::Text(I18Ni(ICON_MDI_FOOD_DRUMSTICK, "finder.ui.label-food"), whiteListForms["food"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##food"), &auto_whitelist_food);
 											buildWhiteList("food");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-ingr"), whiteListForms["ingr"].size());
+											ImGui::Text(I18Ni(ICON_MDI_SOURCE_BRANCH, "finder.ui.label-ingr"), whiteListForms["ingr"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##ingr"), &auto_whitelist_ingr);
 											buildWhiteList("ingr");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-sgem"), whiteListForms["sgem"].size());
+											ImGui::Text(I18Ni(ICON_MDI_CARDS_DIAMOND, "finder.ui.label-sgem"), whiteListForms["sgem"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##sgem"), &auto_whitelist_sgem);
 											buildWhiteList("sgem");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-tree"), whiteListForms["tree"].size());
+											ImGui::Text(I18Ni(ICON_MDI_FLOWER_TULIP_OUTLINE, "finder.ui.label-tree"), whiteListForms["tree"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##tree"), &auto_whitelist_tree);
 											buildWhiteList("tree");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-flor"), whiteListForms["flor"].size());
+											ImGui::Text(I18Ni(ICON_MDI_BASKET_OUTLINE, "finder.ui.label-flor"), whiteListForms["flor"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##flor"), &auto_whitelist_flor);
 											buildWhiteList("flor");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-anvi"), whiteListForms["anvi"].size());
+											ImGui::Text(I18Ni(ICON_MDI_ANVIL, "finder.ui.label-anvi"), whiteListForms["anvi"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##anvi"), &auto_whitelist_anvi);
 											buildWhiteList("anvi");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-ston"), whiteListForms["ston"].size());
+											ImGui::Text(I18Ni(ICON_MDI_DIAMOND_STONE, "finder.ui.label-ston"), whiteListForms["ston"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##ston"), &auto_whitelist_ston);
 											buildWhiteList("ston");
@@ -2946,21 +2962,21 @@ namespace menu
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-anpa"), whiteListForms["anpa"].size());
+											ImGui::Text(I18Ni(ICON_MDI_RABBIT, "finder.ui.label-anpa"), whiteListForms["anpa"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##anpa"), &auto_whitelist_anpa);
 											buildWhiteList("anpa");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-tool"), whiteListForms["tool"].size());
+											ImGui::Text(I18Ni(ICON_MDI_TOOLS, "finder.ui.label-tool"), whiteListForms["tool"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##tool"), &auto_whitelist_tool);
 											buildWhiteList("tool");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-misc"), whiteListForms["misc"].size());
+											ImGui::Text(I18Ni(ICON_MDI_PACKAGE_VARIANT_CLOSED, "finder.ui.label-misc"), whiteListForms["misc"].size());
 											ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 											ImGui::Checkbox(I18Nc2("finder.setting.checkbox-whitelistMode", "##misc"), &auto_whitelist_misc);
 											buildWhiteList("misc");
@@ -2977,57 +2993,57 @@ namespace menu
 											ImGui::TableNextColumn();
 
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-weap"), blackListForms["weap"].size());
+											ImGui::Text(I18Ni(ICON_MDI_SWORD, "finder.ui.label-weap"), blackListForms["weap"].size());
 											buildBlackList("weap");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-armo"), blackListForms["armo"].size());
+											ImGui::Text(I18Ni(ICON_MDI_SHIELD_HALF_FULL, "finder.ui.label-armo"), blackListForms["armo"].size());
 											buildBlackList("armo");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-ammo"), blackListForms["ammo"].size());
+											ImGui::Text(I18Ni(ICON_MDI_ARROW_PROJECTILE, "finder.ui.label-ammo"), blackListForms["ammo"].size());
 											buildBlackList("ammo");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-alch"), blackListForms["alch"].size());
+											ImGui::Text(I18Ni(ICON_MDI_BOTTLE_TONIC_PLUS_OUTLINE, "finder.ui.label-alch"), blackListForms["alch"].size());
 											buildBlackList("alch");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-food"), blackListForms["food"].size());
+											ImGui::Text(I18Ni(ICON_MDI_FOOD_DRUMSTICK, "finder.ui.label-food"), blackListForms["food"].size());
 											buildBlackList("food");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-ingr"), blackListForms["ingr"].size());
+											ImGui::Text(I18Ni(ICON_MDI_SOURCE_BRANCH, "finder.ui.label-ingr"), blackListForms["ingr"].size());
 											buildBlackList("ingr");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-sgem"), blackListForms["sgem"].size());
+											ImGui::Text(I18Ni(ICON_MDI_CARDS_DIAMOND, "finder.ui.label-sgem"), blackListForms["sgem"].size());
 											buildBlackList("sgem");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-tree"), blackListForms["tree"].size());
+											ImGui::Text(I18Ni(ICON_MDI_FLOWER_TULIP_OUTLINE, "finder.ui.label-tree"), blackListForms["tree"].size());
 											buildBlackList("tree");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-flor"), blackListForms["flor"].size());
+											ImGui::Text(I18Ni(ICON_MDI_BASKET_OUTLINE, "finder.ui.label-flor"), blackListForms["flor"].size());
 											buildBlackList("flor");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-anvi"), blackListForms["anvi"].size());
+											ImGui::Text(I18Ni(ICON_MDI_ANVIL, "finder.ui.label-anvi"), blackListForms["anvi"].size());
 											buildBlackList("anvi");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-ston"), blackListForms["ston"].size());
+											ImGui::Text(I18Ni(ICON_MDI_DIAMOND_STONE, "finder.ui.label-ston"), blackListForms["ston"].size());
 											buildBlackList("ston");
 
 											ImGui::TableNextColumn();
@@ -3037,17 +3053,17 @@ namespace menu
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-anpa"), blackListForms["anpa"].size());
+											ImGui::Text(I18Ni(ICON_MDI_RABBIT, "finder.ui.label-anpa"), blackListForms["anpa"].size());
 											buildBlackList("anpa");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-tool"), blackListForms["tool"].size());
+											ImGui::Text(I18Ni(ICON_MDI_TOOLS, "finder.ui.label-tool"), blackListForms["tool"].size());
 											buildBlackList("tool");
 
 											ImGui::TableNextColumn();
 											ImGui::AlignTextToFramePadding();
-											ImGui::Text(I18Ni(ICON_MDI_BOX_CUTTER, "finder.ui.label-misc"), blackListForms["misc"].size());
+											ImGui::Text(I18Ni(ICON_MDI_PACKAGE_VARIANT_CLOSED, "finder.ui.label-misc"), blackListForms["misc"].size());
 											buildBlackList("misc");
 
 											ImGui::EndTable();
@@ -3055,12 +3071,12 @@ namespace menu
 										ImGui::EndPopup();
 									}
 
-									if (ImGui::Button(ICON_MDI_FILTER_CHECK "##cont")) {
+									if (ImGui::SmallButton(ICON_MDI_FILTER_CHECK "##cont")) {
 										ImGui::OpenPopup("PopupFilterCont");
 									}
 
 									ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-									if (ImGui::Button(ICON_MDI_PLAYLIST_CHECK "##cont")) {
+									if (ImGui::SmallButton(ICON_MDI_PLAYLIST_CHECK "##cont")) {
 										ImGui::OpenPopup("PopupWhiteListCont");
 									}
 								}
@@ -3363,7 +3379,6 @@ namespace menu
 										}
 									}
 
-									
 									if (lotd::isLoad) {
 										ImGui::Checkbox("只拾取艺术馆物品", &only_pickup_lotd_items);
 									}
@@ -3546,6 +3561,15 @@ namespace menu
 			}
 
 			ImGui::End();
+
+			childWindow = ImGui::FindWindowByName("附近物品信息");
+
+			/*ImVec2 windowSize = ImGui::GetWindowSize();
+			float windowWidth = windowSize.x;
+			float windowHeight = windowSize.y;
+			ImVec2 windowPos = ImGui::GetWindowPos();
+			float windowX = windowPos.x;
+			float windowY = windowPos.y;*/
 		}
 	}
 
