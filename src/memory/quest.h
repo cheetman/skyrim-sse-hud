@@ -37,7 +37,8 @@ struct QuestInfo
 	bool isDeleted = false;
 	bool isHarvested = false;
 	std::string questTypeName = "";
-
+	std::uint8_t questType = 0;
+	
 	int completedStage = 0;
 	int allStage = 0;
 	float progressStage = 0;

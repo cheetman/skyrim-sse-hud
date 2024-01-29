@@ -9,9 +9,6 @@
 #include <utils/NameUtil.h>
 #include <utils/PlayerDataProvider.h>
 
-
-
-
 bool show_items_window_auto_ignore = true;
 bool show_items_window_auto_notification = true;
 bool show_items_window_auto_ammo = false;
@@ -99,7 +96,6 @@ std::vector<ExcludeForm> excludeLocationForms;
 std::unordered_set<RE::FormID> autoContFormIds;
 std::vector<IncludeForm> autoContForms;
 
-
 std::unordered_map<std::string, std::unordered_set<RE::FormID>> whiteListFormIds;
 std::unordered_map<std::string, std::vector<ExcludeForm>> whiteListForms;
 std::unordered_map<std::string, std::unordered_set<RE::FormID>> blackListFormIds;
@@ -120,41 +116,7 @@ bool auto_whitelist_anhd = false;
 bool auto_whitelist_anpa = false;
 bool auto_whitelist_armo = false;
 bool auto_whitelist_tool = false;
-
-
-//std::unordered_set<RE::FormID> whiteListFormIds_misc;
-//std::unordered_set<RE::FormID> whiteListFormIds_ammo;
-//std::unordered_set<RE::FormID> whiteListFormIds_food;
-//std::unordered_set<RE::FormID> whiteListFormIds_flor;
-//std::unordered_set<RE::FormID> whiteListFormIds_ingr;
-//std::unordered_set<RE::FormID> whiteListFormIds_alch;
-//std::unordered_set<RE::FormID> whiteListFormIds_sgem;
-//std::unordered_set<RE::FormID> whiteListFormIds_tree;
-//std::unordered_set<RE::FormID> whiteListFormIds_weap;
-//std::unordered_set<RE::FormID> whiteListFormIds_ston;
-//std::unordered_set<RE::FormID> whiteListFormIds_anvi;
-//std::unordered_set<RE::FormID> whiteListFormIds_anhd;
-//std::unordered_set<RE::FormID> whiteListFormIds_anpa;
-//std::unordered_set<RE::FormID> whiteListFormIds_armo;
-//
-//std::vector<ExcludeForm> whiteListForms_misc;
-//std::vector<ExcludeForm> whiteListForms_ammo;
-//std::vector<ExcludeForm> whiteListForms_food;
-//std::vector<ExcludeForm> whiteListForms_flor;
-//std::vector<ExcludeForm> whiteListForms_ingr;
-//std::vector<ExcludeForm> whiteListForms_alch;
-//std::vector<ExcludeForm> whiteListForms_sgem;
-//std::vector<ExcludeForm> whiteListForms_tree;
-//std::vector<ExcludeForm> whiteListForms_weap;
-//std::vector<ExcludeForm> whiteListForms_ston;
-//std::vector<ExcludeForm> whiteListForms_anvi;
-//std::vector<ExcludeForm> whiteListForms_anhd;
-//std::vector<ExcludeForm> whiteListForms_anpa;
-//std::vector<ExcludeForm> whiteListForms_tool;
-//std::vector<ExcludeForm> whiteListForms_armo;
-
-
-
+bool only_pickup_lotd_items = false;
 
 bool checkTakeCount()
 {
@@ -166,10 +128,44 @@ bool checkTakeCount()
 	return false;
 }
 
+bool checkWhiteBlackList(RE::FormID formId, bool isWhiteMode, std::string type)
+{
+	if (isWhiteMode) {
+		if (whiteListFormIds[type].find(formId) != whiteListFormIds[type].end()) {
+			return false;
+		}
+		return true;
+	} else {
+		if (blackListFormIds[type].find(formId) != blackListFormIds[type].end()) {
+			return true;
+		}
+		return false;
+	}
+}
+
 bool __fastcall autoTakeArmo(RE::TESObjectREFR* reff, RE::PlayerCharacter* player, bool autoFlag, int distance)
 {
-	// 自动拾取
-	if (autoFlag) {
+	if (only_pickup_lotd_items) {
+		if (!reff->IsCrimeToActivate()) {
+			if (!reff->IsMarkedForDeletion()) {
+				//reff->extraList.GetCount();
+				if (FormUtil::IsQuestItem(&reff->extraList)) {
+					return false;
+				}
+
+				if (!lotd::checkItem(reff->GetBaseObject()->GetFormID())) {
+					return false;
+				}
+				// 限制数量
+				if (checkTakeCount()) {
+					return true;
+				}
+				addItemAuto(nullptr, reff, 1);
+				return true;
+			}
+		}
+
+	} else if (autoFlag) {
 		if (distance < show_items_window_auto_dis) {
 			if (!reff->IsCrimeToActivate()) {
 				if (!reff->IsMarkedForDeletion()) {
@@ -233,7 +229,27 @@ bool __fastcall autoTakeArmo(RE::TESObjectREFR* reff, RE::PlayerCharacter* playe
 bool __fastcall autoTakeWeap(RE::TESObjectREFR* reff, RE::PlayerCharacter* player, bool autoFlag, int distance)
 {
 	// 自动拾取
-	if (autoFlag) {
+	if (only_pickup_lotd_items) {
+		if (!reff->IsCrimeToActivate()) {
+			if (!reff->IsMarkedForDeletion()) {
+				//reff->extraList.GetCount();
+				if (FormUtil::IsQuestItem(&reff->extraList)) {
+					return false;
+				}
+
+				if (!lotd::checkItem(reff->GetBaseObject()->GetFormID())) {
+					return false;
+				}
+				// 限制数量
+				if (checkTakeCount()) {
+					return true;
+				}
+				addItemAuto(nullptr, reff, 1);
+				return true;
+			}
+		}
+
+	} else if (autoFlag) {
 		if (distance < show_items_window_auto_dis) {
 			if (!reff->IsCrimeToActivate()) {
 				if (!reff->IsMarkedForDeletion()) {
@@ -297,8 +313,26 @@ bool __fastcall autoTakeWeap(RE::TESObjectREFR* reff, RE::PlayerCharacter* playe
 
 bool __fastcall autoTake(RE::TESObjectREFR* reff, RE::PlayerCharacter* player, bool autoFlag, int distance)
 {
-	// 自动拾取
-	if (autoFlag) {
+	if (only_pickup_lotd_items) {
+		if (!reff->IsCrimeToActivate()) {
+			if (!reff->IsMarkedForDeletion()) {
+				if (FormUtil::IsQuestItem(&reff->extraList)) {
+					return false;
+				}
+
+				if (!lotd::checkItem(reff->GetBaseObject()->GetFormID())) {
+					return false;
+				}
+				// 限制数量
+				if (checkTakeCount()) {
+					return true;
+				}
+				addItemAuto(nullptr, reff, 1);
+				return true;
+			}
+		}
+
+	} else if (autoFlag) {
 		if (distance < show_items_window_auto_dis) {
 			if (!reff->IsCrimeToActivate()) {
 				if (!reff->IsMarkedForDeletion()) {
@@ -594,7 +628,7 @@ void __cdecl TimerAutoPick(void*)
 			continue;
 		}
 
-		if (!show_items_window_auto_enable || (!show_items_window && !show_items_window_auto_ammo && !show_items_window_auto_flor && !show_items_window_auto_food && !show_items_window_auto_ingr && !show_items_window_auto_alch && !show_items_window_auto_misc && !show_items_window_auto_tree && !show_items_window_auto_sgem && !show_items_window_auto_achr && !show_items_window_auto_cont && !show_items_window_auto_ston && !show_items_window_auto_anvi && !show_items_window_auto_anhd && !show_items_window_auto_anpa && !show_items_window_auto_tool && !show_items_window_auto_book)) {
+		if (!show_items_window_auto_enable || (!only_pickup_lotd_items && !show_items_window && !show_items_window_auto_ammo && !show_items_window_auto_flor && !show_items_window_auto_food && !show_items_window_auto_ingr && !show_items_window_auto_alch && !show_items_window_auto_misc && !show_items_window_auto_tree && !show_items_window_auto_sgem && !show_items_window_auto_achr && !show_items_window_auto_cont && !show_items_window_auto_ston && !show_items_window_auto_anvi && !show_items_window_auto_anhd && !show_items_window_auto_anpa && !show_items_window_auto_tool && !show_items_window_auto_book)) {
 			Sleep(1000);
 			// 暂时挂在这里
 			if (lotd::isLoad) {
@@ -735,36 +769,60 @@ void __cdecl TimerAutoPick(void*)
 											}
 											switch (obj->GetFormType()) {
 											case RE::FormType::Weapon:
-												if (show_items_window_auto_achr_weap) {
-													if (show_items_window_auto_weap_enchant) {
-														if (!entry.get()->IsEnchanted()) {
-															break;
+												{
+													if (only_pickup_lotd_items) {
+														if (!lotd::checkItem(obj->GetFormID())) {
+															continue;
+														}
+														if (autoTakeForACHR(actor, obj, count, player)) {
+															continue;
+														}
+													} else if (show_items_window_auto_achr_weap) {
+														if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_weap, "weap")) {
+															continue;
+														}
+
+														if (show_items_window_auto_weap_enchant) {
+															if (!entry.get()->IsEnchanted()) {
+																break;
+															}
+														}
+
+														if (show_items_window_auto_weap_price) {
+															if (obj->GetGoldValue() < show_items_window_auto_weap_price_value) {
+																break;
+															}
+														}
+
+														if (show_items_window_auto_weap_priceweight) {
+															float weight = obj->GetWeight();
+															if (weight == 0) {
+																break;
+															}
+															if ((obj->GetGoldValue() / weight) < show_items_window_auto_weap_priceweight_value) {
+																break;
+															}
+														}
+
+														if (autoTakeForACHR(actor, obj, count, player)) {
+															continue;
 														}
 													}
-
-													if (show_items_window_auto_weap_price) {
-														if (obj->GetGoldValue() < show_items_window_auto_weap_price_value) {
-															break;
-														}
+													break;
+												}
+											case RE::FormType::Armor:
+												if (only_pickup_lotd_items) {
+													if (!lotd::checkItem(obj->GetFormID())) {
+														continue;
 													}
-
-													if (show_items_window_auto_weap_priceweight) {
-														float weight = obj->GetWeight();
-														if (weight == 0) {
-															break;
-														}
-														if ((obj->GetGoldValue() / weight) < show_items_window_auto_weap_priceweight_value) {
-															break;
-														}
-													}
-
 													if (autoTakeForACHR(actor, obj, count, player)) {
 														continue;
 													}
-												}
-												break;
-											case RE::FormType::Armor:
-												if (show_items_window_auto_achr_armo) {
+												} else if (show_items_window_auto_achr_armo) {
+													if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_armo, "armo")) {
+														continue;
+													}
+
 													if (show_items_window_auto_armo_enchant) {
 														if (!entry.get()->IsEnchanted()) {
 															break;
@@ -793,21 +851,45 @@ void __cdecl TimerAutoPick(void*)
 												}
 												break;
 											case RE::FormType::Ammo:
-												if (show_items_window_auto_achr_ammo) {
+												if (only_pickup_lotd_items) {
+													if (!lotd::checkItem(obj->GetFormID())) {
+														continue;
+													}
+													if (autoTakeForACHR(actor, obj, count, player)) {
+														continue;
+													}
+												} else if (show_items_window_auto_achr_ammo) {
+													if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_ammo, "ammo")) {
+														continue;
+													}
 													if (autoTakeForACHR(actor, obj, count, player)) {
 														continue;
 													}
 												}
 												break;
 											case RE::FormType::Scroll:
-												if (show_items_window_auto_achr_scrl) {
+												if (only_pickup_lotd_items) {
+													if (!lotd::checkItem(obj->GetFormID())) {
+														continue;
+													}
+													if (autoTakeForACHR(actor, obj, count, player)) {
+														continue;
+													}
+												} else if (show_items_window_auto_achr_scrl) {
 													if (autoTakeForACHR(actor, obj, count, player)) {
 														continue;
 													}
 												}
 												break;
 											case RE::FormType::Misc:
-												{
+												if (only_pickup_lotd_items) {
+													if (!lotd::checkItem(obj->GetFormID())) {
+														continue;
+													}
+													if (autoTakeForACHR(actor, obj, count, player)) {
+														continue;
+													}
+												} else {
 													if (obj->IsGold()) {
 														if (show_items_window_auto_achr_gold) {
 															if (autoTakeForACHR(actor, obj, count, player)) {
@@ -826,6 +908,9 @@ void __cdecl TimerAutoPick(void*)
 														if (misc) {
 															if (FormUtil::HasKeyword(misc, VendorItemGem)) {
 																if (show_items_window_auto_achr_ston) {
+																	if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_ston, "ston")) {
+																		continue;
+																	}
 																	if (autoTakeForACHR(actor, obj, count, player)) {
 																		continue;
 																	}
@@ -833,30 +918,45 @@ void __cdecl TimerAutoPick(void*)
 
 															} else if (FormUtil::HasKeyword(misc, VendorItemOreIngot)) {
 																if (show_items_window_auto_achr_anvi) {
+																	if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_anvi, "anvi")) {
+																		continue;
+																	}
 																	if (autoTakeForACHR(actor, obj, count, player)) {
 																		continue;
 																	}
 																}
 															} else if (FormUtil::HasKeyword(misc, VendorItemAnimalHide)) {
 																if (show_items_window_auto_achr_anhd) {
+																	if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_anhd, "anhd")) {
+																		continue;
+																	}
 																	if (autoTakeForACHR(actor, obj, count, player)) {
 																		continue;
 																	}
 																}
 															} else if (FormUtil::HasKeyword(misc, VendorItemAnimalPart)) {
 																if (show_items_window_auto_achr_anpa) {
+																	if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_anpa, "anpa")) {
+																		continue;
+																	}
 																	if (autoTakeForACHR(actor, obj, count, player)) {
 																		continue;
 																	}
 																}
 															} else if (FormUtil::HasKeyword(misc, VendorItemTool)) {
 																if (show_items_window_auto_achr_tool) {
+																	if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_tool, "tool")) {
+																		continue;
+																	}
 																	if (autoTakeForACHR(actor, obj, count, player)) {
 																		continue;
 																	}
 																}
 															} else {
 																if (show_items_window_auto_achr_misc) {
+																	if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_misc, "misc")) {
+																		continue;
+																	}
 																	if (autoTakeForACHR(actor, obj, count, player)) {
 																		continue;
 																	}
@@ -864,21 +964,38 @@ void __cdecl TimerAutoPick(void*)
 															}
 														}
 													}
-													break;
 												}
+												break;
 
 											case RE::FormType::KeyMaster:
-												if (show_items_window_auto_achr_keym) {
+												if (only_pickup_lotd_items) {
+													if (!lotd::checkItem(obj->GetFormID())) {
+														continue;
+													}
+													if (autoTakeForACHR(actor, obj, count, player)) {
+														continue;
+													}
+												} else if (show_items_window_auto_achr_keym) {
 													if (autoTakeForACHR(actor, obj, count, player)) {
 														continue;
 													}
 												}
 												break;
 											case RE::FormType::AlchemyItem:
-												{
+												if (only_pickup_lotd_items) {
+													if (!lotd::checkItem(obj->GetFormID())) {
+														continue;
+													}
+													if (autoTakeForACHR(actor, obj, count, player)) {
+														continue;
+													}
+												} else {
 													auto alchemyItem = obj->As<RE::AlchemyItem>();
 													if (alchemyItem->IsFood()) {
 														if (show_items_window_auto_achr_food) {
+															if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_food, "food")) {
+																continue;
+															}
 															if (autoTakeForACHR(actor, obj, count, player)) {
 																continue;
 															}
@@ -886,29 +1003,59 @@ void __cdecl TimerAutoPick(void*)
 
 													} else {
 														if (show_items_window_auto_achr_alch) {
+															if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_alch, "alch")) {
+																continue;
+															}
 															if (autoTakeForACHR(actor, obj, count, player)) {
 																continue;
 															}
 														}
 													}
-													break;
 												}
+												break;
 											case RE::FormType::SoulGem:
-												if (show_items_window_auto_achr_sgem) {
+												if (only_pickup_lotd_items) {
+													if (!lotd::checkItem(obj->GetFormID())) {
+														continue;
+													}
+													if (autoTakeForACHR(actor, obj, count, player)) {
+														continue;
+													}
+												} else if (show_items_window_auto_achr_sgem) {
+													if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_sgem, "sgem")) {
+														continue;
+													}
 													if (autoTakeForACHR(actor, obj, count, player)) {
 														continue;
 													}
 												}
 												break;
 											case RE::FormType::Ingredient:
-												if (show_items_window_auto_achr_ingr) {
+												if (only_pickup_lotd_items) {
+													if (!lotd::checkItem(obj->GetFormID())) {
+														continue;
+													}
+													if (autoTakeForACHR(actor, obj, count, player)) {
+														continue;
+													}
+												} else if (show_items_window_auto_achr_ingr) {
+													if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_ingr, "ingr")) {
+														continue;
+													}
 													if (autoTakeForACHR(actor, obj, count, player)) {
 														continue;
 													}
 												}
 												break;
 											case RE::FormType::Book:
-												if (show_items_window_auto_achr_book) {
+												if (only_pickup_lotd_items) {
+													if (!lotd::checkItem(obj->GetFormID())) {
+														continue;
+													}
+													if (autoTakeForACHR(actor, obj, count, player)) {
+														continue;
+													}
+												} else if (show_items_window_auto_achr_book) {
 													auto book = obj->As<RE::TESObjectBOOK>();
 													if (book) {
 														if (book->IsRead()) {
@@ -984,11 +1131,16 @@ void __cdecl TimerAutoPick(void*)
 												}
 											}
 
+											if (!only_pickup_lotd_items) {
+												if (checkWhiteBlackList(baseObj->GetFormID(), auto_whitelist_weap, "weap")) {
+													continue;
+												}
+											}
+
 											// 自动拾取判断
 											if (autoTakeWeap(reff, player, show_items_window_auto_weap, distance)) {
 												continue;
 											}
-
 											tmpCountWEAP++;
 
 											break;
@@ -1021,6 +1173,12 @@ void __cdecl TimerAutoPick(void*)
 												}
 											} else {
 												if (distance > show_items_window_auto_dis_local) {
+													continue;
+												}
+											}
+
+											if (!only_pickup_lotd_items) {
+												if (checkWhiteBlackList(baseObj->GetFormID(), auto_whitelist_armo, "armo")) {
 													continue;
 												}
 											}
@@ -1065,6 +1223,12 @@ void __cdecl TimerAutoPick(void*)
 												}
 											}
 
+											if (!only_pickup_lotd_items) {
+												if (checkWhiteBlackList(baseObj->GetFormID(), auto_whitelist_ammo, "ammo")) {
+													continue;
+												}
+											}
+
 											// 自动拾取判断
 											if (autoTake(reff, player, show_items_window_auto_ammo, distance)) {
 												continue;
@@ -1105,10 +1269,12 @@ void __cdecl TimerAutoPick(void*)
 												}
 											}
 
-											auto book = baseObj->As<RE::TESObjectBOOK>();
-											if (book) {
-												if (book->IsRead()) {
-													continue;
+											if (!only_pickup_lotd_items) {
+												auto book = baseObj->As<RE::TESObjectBOOK>();
+												if (book) {
+													if (book->IsRead()) {
+														continue;
+													}
 												}
 											}
 
@@ -1151,6 +1317,11 @@ void __cdecl TimerAutoPick(void*)
 														continue;
 													}
 												}
+												if (!only_pickup_lotd_items && show_items_window_auto_food) {
+													if (checkWhiteBlackList(baseObj->GetFormID(), auto_whitelist_food, "food")) {
+														continue;
+													}
+												}
 
 												// 自动拾取判断
 												if (autoTake(reff, player, show_items_window_auto_food, distance)) {
@@ -1171,6 +1342,12 @@ void __cdecl TimerAutoPick(void*)
 													}
 												} else {
 													if (distance > show_items_window_auto_dis_local) {
+														continue;
+													}
+												}
+
+												if (!only_pickup_lotd_items && show_items_window_auto_alch) {
+													if (checkWhiteBlackList(baseObj->GetFormID(), auto_whitelist_alch, "alch")) {
 														continue;
 													}
 												}
@@ -1208,6 +1385,11 @@ void __cdecl TimerAutoPick(void*)
 												}
 											} else {
 												if (distance > show_items_window_auto_dis_local) {
+													continue;
+												}
+											}
+											if (!only_pickup_lotd_items && show_items_window_auto_ingr) {
+												if (checkWhiteBlackList(baseObj->GetFormID(), auto_whitelist_ingr, "ingr")) {
 													continue;
 												}
 											}
@@ -1259,45 +1441,66 @@ void __cdecl TimerAutoPick(void*)
 											auto misc = baseObj->As<RE::TESObjectMISC>();
 											if (misc) {
 												if (FormUtil::HasKeyword(misc, VendorItemGem)) {
-													if (show_items_window_auto_ston) {
-														// 自动拾取判断
-														if (autoTake(reff, player, show_items_window_auto_ston, distance)) {
+													if (!only_pickup_lotd_items && show_items_window_auto_ston) {
+														if (checkWhiteBlackList(baseObj->GetFormID(), auto_whitelist_ston, "ston")) {
 															continue;
 														}
+													}
+													// 自动拾取判断
+													if (autoTake(reff, player, show_items_window_auto_ston, distance)) {
+														continue;
 													}
 
 												} else if (FormUtil::HasKeyword(misc, VendorItemOreIngot)) {
-													if (show_items_window_auto_anvi) {
-														// 自动拾取判断
-														if (autoTake(reff, player, show_items_window_auto_anvi, distance)) {
+													if (!only_pickup_lotd_items && show_items_window_auto_anvi) {
+														if (checkWhiteBlackList(baseObj->GetFormID(), auto_whitelist_anvi, "anvi")) {
 															continue;
 														}
 													}
+													// 自动拾取判断
+													if (autoTake(reff, player, show_items_window_auto_anvi, distance)) {
+														continue;
+													}
+
 												} else if (FormUtil::HasKeyword(misc, VendorItemAnimalHide)) {
-													if (show_items_window_auto_anhd) {
-														// 自动拾取判断
-														if (autoTake(reff, player, show_items_window_auto_anhd, distance)) {
+													if (!only_pickup_lotd_items && show_items_window_auto_anhd) {
+														if (checkWhiteBlackList(baseObj->GetFormID(), auto_whitelist_anhd, "anhd")) {
 															continue;
 														}
+													}
+													// 自动拾取判断
+													if (autoTake(reff, player, show_items_window_auto_anhd, distance)) {
+														continue;
 													}
 												} else if (FormUtil::HasKeyword(misc, VendorItemAnimalPart)) {
-													if (show_items_window_auto_anpa) {
-														// 自动拾取判断
-														if (autoTake(reff, player, show_items_window_auto_anpa, distance)) {
+													if (!only_pickup_lotd_items && show_items_window_auto_anpa) {
+														if (checkWhiteBlackList(baseObj->GetFormID(), auto_whitelist_anpa, "anpa")) {
 															continue;
 														}
 													}
+													// 自动拾取判断
+													if (autoTake(reff, player, show_items_window_auto_anpa, distance)) {
+														continue;
+													}
 												} else if (FormUtil::HasKeyword(misc, VendorItemTool)) {
-													if (show_items_window_auto_tool) {
-														// 自动拾取判断
-														if (autoTake(reff, player, show_items_window_auto_tool, distance)) {
+													if (!only_pickup_lotd_items && show_items_window_auto_tool) {
+														if (checkWhiteBlackList(baseObj->GetFormID(), auto_whitelist_tool, "tool")) {
 															continue;
 														}
+													}
+													// 自动拾取判断
+													if (autoTake(reff, player, show_items_window_auto_tool, distance)) {
+														continue;
 													}
 												} else {
 													if (show_items_window_auto_misc) {
 														if (clawFormIds.find(baseObj->GetFormID()) != clawFormIds.end()) {
 															continue;
+														}
+														if (!only_pickup_lotd_items && show_items_window_auto_misc) {
+															if (checkWhiteBlackList(baseObj->GetFormID(), auto_whitelist_misc, "misc")) {
+																continue;
+															}
 														}
 														// 自动拾取判断
 														if (autoTake(reff, player, show_items_window_auto_misc, distance)) {
@@ -1376,7 +1579,18 @@ void __cdecl TimerAutoPick(void*)
 														if (!isCrimeInv) {
 															switch (obj->GetFormType()) {
 															case RE::FormType::Weapon:
-																if (show_items_window_auto_cont_weap) {
+																if (only_pickup_lotd_items) {
+																	if (!lotd::checkItem(obj->GetFormID())) {
+																		continue;
+																	}
+																	if (autoTakeForCONT(reff, obj, count, player)) {
+																		continue;
+																	}
+																} else if (show_items_window_auto_cont_weap) {
+																	if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_weap, "weap")) {
+																		continue;
+																	}
+
 																	if (show_items_window_auto_weap_enchant) {
 																		if (!entry.get()->IsEnchanted()) {
 																			break;
@@ -1404,7 +1618,18 @@ void __cdecl TimerAutoPick(void*)
 																}
 																break;
 															case RE::FormType::Armor:
-																if (show_items_window_auto_cont_armo) {
+																if (only_pickup_lotd_items) {
+																	if (!lotd::checkItem(obj->GetFormID())) {
+																		continue;
+																	}
+																	if (autoTakeForCONT(reff, obj, count, player)) {
+																		continue;
+																	}
+																} else if (show_items_window_auto_cont_armo) {
+																	if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_armo, "armo")) {
+																		continue;
+																	}
+
 																	if (show_items_window_auto_armo_enchant) {
 																		if (!entry.get()->IsEnchanted()) {
 																			break;
@@ -1433,21 +1658,45 @@ void __cdecl TimerAutoPick(void*)
 																}
 																break;
 															case RE::FormType::Ammo:
-																if (show_items_window_auto_cont_ammo) {
+																if (only_pickup_lotd_items) {
+																	if (!lotd::checkItem(obj->GetFormID())) {
+																		continue;
+																	}
+																	if (autoTakeForCONT(reff, obj, count, player)) {
+																		continue;
+																	}
+																} else if (show_items_window_auto_cont_ammo) {
+																	if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_ammo, "ammo")) {
+																		continue;
+																	}
 																	if (autoTakeForCONT(reff, obj, count, player)) {
 																		continue;
 																	}
 																}
 																break;
 															case RE::FormType::Scroll:
-																if (show_items_window_auto_cont_scrl) {
+																if (only_pickup_lotd_items) {
+																	if (!lotd::checkItem(obj->GetFormID())) {
+																		continue;
+																	}
+																	if (autoTakeForCONT(reff, obj, count, player)) {
+																		continue;
+																	}
+																} else if (show_items_window_auto_cont_scrl) {
 																	if (autoTakeForCONT(reff, obj, count, player)) {
 																		continue;
 																	}
 																}
 																break;
 															case RE::FormType::Misc:
-																{
+																if (only_pickup_lotd_items) {
+																	if (!lotd::checkItem(obj->GetFormID())) {
+																		continue;
+																	}
+																	if (autoTakeForCONT(reff, obj, count, player)) {
+																		continue;
+																	}
+																} else {
 																	if (obj->IsGold()) {
 																		if (show_items_window_auto_cont_gold) {
 																			if (autoTakeForCONT(reff, obj, count, player)) {
@@ -1466,6 +1715,9 @@ void __cdecl TimerAutoPick(void*)
 																		if (misc) {
 																			if (FormUtil::HasKeyword(misc, VendorItemGem)) {
 																				if (show_items_window_auto_cont_ston) {
+																					if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_ston, "ston")) {
+																						continue;
+																					}
 																					if (autoTakeForCONT(reff, obj, count, player)) {
 																						continue;
 																					}
@@ -1473,30 +1725,45 @@ void __cdecl TimerAutoPick(void*)
 
 																			} else if (FormUtil::HasKeyword(misc, VendorItemOreIngot)) {
 																				if (show_items_window_auto_cont_anvi) {
+																					if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_anvi, "anvi")) {
+																						continue;
+																					}
 																					if (autoTakeForCONT(reff, obj, count, player)) {
 																						continue;
 																					}
 																				}
 																			} else if (FormUtil::HasKeyword(misc, VendorItemAnimalHide)) {
 																				if (show_items_window_auto_cont_anhd) {
+																					if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_anhd, "anhd")) {
+																						continue;
+																					}
 																					if (autoTakeForCONT(reff, obj, count, player)) {
 																						continue;
 																					}
 																				}
 																			} else if (FormUtil::HasKeyword(misc, VendorItemAnimalPart)) {
 																				if (show_items_window_auto_cont_anpa) {
+																					if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_anpa, "anpa")) {
+																						continue;
+																					}
 																					if (autoTakeForCONT(reff, obj, count, player)) {
 																						continue;
 																					}
 																				}
 																			} else if (FormUtil::HasKeyword(misc, VendorItemTool)) {
 																				if (show_items_window_auto_cont_tool) {
+																					if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_tool, "tool")) {
+																						continue;
+																					}
 																					if (autoTakeForCONT(reff, obj, count, player)) {
 																						continue;
 																					}
 																				}
 																			} else {
 																				if (show_items_window_auto_cont_misc) {
+																					if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_misc, "misc")) {
+																						continue;
+																					}
 																					if (autoTakeForCONT(reff, obj, count, player)) {
 																						continue;
 																					}
@@ -1504,10 +1771,9 @@ void __cdecl TimerAutoPick(void*)
 																			}
 																		}
 																	}
-
-																	break;
 																}
 
+																break;
 															case RE::FormType::KeyMaster:
 																if (show_items_window_auto_cont_keym) {
 																	if (autoTakeForCONT(reff, obj, count, player)) {
@@ -1516,10 +1782,20 @@ void __cdecl TimerAutoPick(void*)
 																}
 																break;
 															case RE::FormType::AlchemyItem:
-																{
+																if (only_pickup_lotd_items) {
+																	if (!lotd::checkItem(obj->GetFormID())) {
+																		continue;
+																	}
+																	if (autoTakeForCONT(reff, obj, count, player)) {
+																		continue;
+																	}
+																} else {
 																	auto alchemyItem = obj->As<RE::AlchemyItem>();
 																	if (alchemyItem->IsFood()) {
 																		if (show_items_window_auto_cont_food) {
+																			if (checkWhiteBlackList(baseObj->GetFormID(), auto_whitelist_food, "food")) {
+																				continue;
+																			}
 																			if (autoTakeForCONT(reff, obj, count, player)) {
 																				continue;
 																			}
@@ -1527,22 +1803,45 @@ void __cdecl TimerAutoPick(void*)
 
 																	} else {
 																		if (show_items_window_auto_cont_alch) {
+																			if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_alch, "alch")) {
+																				continue;
+																			}
 																			if (autoTakeForCONT(reff, obj, count, player)) {
 																				continue;
 																			}
 																		}
 																	}
-																	break;
 																}
+																break;
 															case RE::FormType::SoulGem:
-																if (show_items_window_auto_cont_sgem) {
+																if (only_pickup_lotd_items) {
+																	if (!lotd::checkItem(obj->GetFormID())) {
+																		continue;
+																	}
+																	if (autoTakeForCONT(reff, obj, count, player)) {
+																		continue;
+																	}
+																} else if (show_items_window_auto_cont_sgem) {
+																	if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_sgem, "sgem")) {
+																		continue;
+																	}
 																	if (autoTakeForCONT(reff, obj, count, player)) {
 																		continue;
 																	}
 																}
 																break;
 															case RE::FormType::Ingredient:
-																if (show_items_window_auto_cont_ingr) {
+																if (only_pickup_lotd_items) {
+																	if (!lotd::checkItem(obj->GetFormID())) {
+																		continue;
+																	}
+																	if (autoTakeForCONT(reff, obj, count, player)) {
+																		continue;
+																	}
+																} else if (show_items_window_auto_cont_ingr) {
+																	if (checkWhiteBlackList(obj->GetFormID(), auto_whitelist_ingr, "ingr")) {
+																		continue;
+																	}
 																	if (autoTakeForCONT(reff, obj, count, player)) {
 																		continue;
 																	}
@@ -1550,7 +1849,14 @@ void __cdecl TimerAutoPick(void*)
 																break;
 
 															case RE::FormType::Book:
-																if (show_items_window_auto_cont_book) {
+																if (only_pickup_lotd_items) {
+																	if (!lotd::checkItem(obj->GetFormID())) {
+																		continue;
+																	}
+																	if (autoTakeForCONT(reff, obj, count, player)) {
+																		continue;
+																	}
+																} else if (show_items_window_auto_cont_book) {
 																	auto book = obj->As<RE::TESObjectBOOK>();
 																	if (book) {
 																		if (book->IsRead()) {
@@ -1612,6 +1918,11 @@ void __cdecl TimerAutoPick(void*)
 												}
 											}
 
+											if (!only_pickup_lotd_items && show_items_window_auto_flor) {
+												if (checkWhiteBlackList(baseObj->GetFormID(), auto_whitelist_flor, "flor")) {
+													continue;
+												}
+											}
 											// 自动拾取判断
 											if (autoHarvest(reff, player, show_items_window_auto_flor, distance, flora)) {
 												continue;
@@ -1661,6 +1972,11 @@ void __cdecl TimerAutoPick(void*)
 												}
 											}
 
+											if (!only_pickup_lotd_items && show_items_window_auto_tree) {
+												if (checkWhiteBlackList(baseObj->GetFormID(), auto_whitelist_tree, "tree")) {
+													continue;
+												}
+											}
 											// 自动拾取判断
 											if (autoHarvest(reff, player, show_items_window_auto_tree, distance, tree)) {
 												continue;
@@ -1972,6 +2288,11 @@ void __cdecl TimerAutoPick(void*)
 												}
 											}
 
+											if (!only_pickup_lotd_items && show_items_window_auto_sgem) {
+												if (checkWhiteBlackList(baseObj->GetFormID(), auto_whitelist_sgem, "sgem")) {
+													continue;
+												}
+											}
 											// 自动拾取判断
 											if (autoTake(reff, player, show_items_window_auto_sgem, distance)) {
 												continue;

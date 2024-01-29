@@ -9,6 +9,12 @@ namespace quest
 
 	bool compareForQuest(const QuestInfo& info1, const QuestInfo& info2)
 	{
+		if (info1.questType == 6 && info2.questType != 6) {
+			return false;
+		} else if (info1.questType != 6 && info2.questType == 6) {
+			return true;
+		}
+
 		if (info1.isActive != info2.isActive) {
 			return info1.isActive > info2.isActive;
 		} else if (info1.progressStage != info2.progressStage) {
@@ -59,7 +65,8 @@ namespace quest
 				int i = 0;
 			}
 
-			if (quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD) && !quest->IsCompleted()) {
+			if (
+				(std::string(quest->GetFormEditorID()) == "BQ01" || (quest->data.flags.all(RE::QuestFlag::kDisplayedInHUD) || (quest->data.questType.all(RE::QUEST_DATA::Type::kMiscellaneous) && quest->data.flags.all(RE::QuestFlag::kKeepInstance) && quest->IsEnabled())) && !quest->IsCompleted())) {
 				if (quest->waitingStages) {
 					auto currentStageID = quest->GetCurrentStageID();
 					int completedStage = 0;
@@ -90,6 +97,7 @@ namespace quest
 					item.quests[tmpQuestCount].completedStage = completedStage;
 					item.quests[tmpQuestCount].progressStage = (float)completedStage / (float)(allStage == 0 ? 1 : allStage);
 					item.quests[tmpQuestCount].ptr = quest;
+					item.quests[tmpQuestCount].questType = quest->data.questType.underlying();
 					std::string questTypeName = "";
 					auto questType = quest->data.questType.get();
 					switch (questType) {
@@ -122,6 +130,9 @@ namespace quest
 						break;
 					case RE::QUEST_DATA::Type::kDLC02_Dragonborn:
 						questTypeName = "DLC2龙裔";
+						break;
+					case RE::QUEST_DATA::Type::kMiscellaneous:
+						questTypeName = "杂项任务";
 						break;
 					default:
 						break;
@@ -159,10 +170,14 @@ namespace quest
 										std::string name = ref.get().get()->GetDisplayFullName();
 										if (name.empty()) {
 											continue;
+											item.quests[tmpQuestCount].aliases[aliasCount].targetName = ICON_MDI_MAP_MARKER_RADIUS + std::string(" ") + name;
+											item.quests[tmpQuestCount].aliases[aliasCount].targetFormId = ref.get().get()->GetFormID();
+											item.quests[tmpQuestCount].aliases[aliasCount].refPtr = ref.get().get();
+										} else {
+											item.quests[tmpQuestCount].aliases[aliasCount].targetName = ICON_MDI_FLAG + std::string(" ") + std::string(alias->aliasName);
+											item.quests[tmpQuestCount].aliases[aliasCount].targetFormId = ref.get().get()->GetFormID();
+											item.quests[tmpQuestCount].aliases[aliasCount].refPtr = ref.get().get();
 										}
-										item.quests[tmpQuestCount].aliases[aliasCount].targetName = ICON_MDI_MAP_MARKER_RADIUS + std::string(" ") + name;
-										item.quests[tmpQuestCount].aliases[aliasCount].targetFormId = ref.get().get()->GetFormID();
-										item.quests[tmpQuestCount].aliases[aliasCount].refPtr = ref.get().get();
 									}
 								} else if (reference->fillType == RE::BGSBaseAlias::FILL_TYPE::kUniqueActor) {
 									item.quests[tmpQuestCount].aliases[aliasCount].fillType = "UniqueActor";
@@ -187,6 +202,15 @@ namespace quest
 										//item.quests[tmpQuestCount].aliases[aliasCount].objPtr = obj;
 									}
 								}
+								if (reference->fillType == RE::BGSBaseAlias::FILL_TYPE::kFromAlias) {
+									item.quests[tmpQuestCount].aliases[aliasCount].fillType = "FromAlias";
+									//auto obj = reference->fillData.fromAlias.forcedRefType;
+									//if (obj) {
+									//	item.quests[tmpQuestCount].aliases[aliasCount].targetName = obj->GetName();
+									//	item.quests[tmpQuestCount].aliases[aliasCount].targetFormId = obj->GetFormID();
+									//	//item.quests[tmpQuestCount].aliases[aliasCount].objPtr = obj;
+									//}
+								}
 							}
 						} else if (alias->GetVMTypeID() == RE::BGSLocAlias::VMTYPEID) {
 							auto reference = skyrim_cast<RE::BGSLocAlias*>(alias);
@@ -198,6 +222,20 @@ namespace quest
 										item.quests[tmpQuestCount].aliases[aliasCount].targetName = ((RE::BGSLocation*)reference->unk28)->GetFullName();
 										item.quests[tmpQuestCount].aliases[aliasCount].targetFormId = ((RE::BGSLocation*)reference->unk28)->GetFormID();
 									}
+								} else if (reference->fillType == RE::BGSBaseAlias::FILL_TYPE::kConditions) {
+									item.quests[tmpQuestCount].aliases[aliasCount].fillType = "Conditions";
+									if (reference->conditions) {
+										//if (reference->conditions->head->data.functionData.function.all(RE::FUNCTION_DATA::FunctionID::kHasSameEditorLocAsRefAlias)) {
+										//auto obj = skyrim_cast<RE::BGSRefAlias*>((void*)(reference->conditions->head->data.functionData.params[1]));
+										/*auto loc = (RE::BGSLocation*)reference->conditions->head->data.functionData.params[1];
+											auto loc = (RE::TESForm*)reference->conditions->head->data.functionData.params[1];
+
+											item.quests[tmpQuestCount].aliases[aliasCount].targetName = loc->GetFullName();
+											item.quests[tmpQuestCount].aliases[aliasCount].targetFormId = loc->GetFormID();*/
+										//}
+									}
+								} else if (reference->fillType == RE::BGSBaseAlias::FILL_TYPE::kFromEvent) {
+									item.quests[tmpQuestCount].aliases[aliasCount].fillType = "FromEvent";
 								}
 							}
 						}

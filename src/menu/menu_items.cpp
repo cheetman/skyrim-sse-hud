@@ -3363,6 +3363,10 @@ namespace menu
 										}
 									}
 
+									
+									if (lotd::isLoad) {
+										ImGui::Checkbox("只拾取艺术馆物品", &only_pickup_lotd_items);
+									}
 									ImGui::TreePop();
 								}
 

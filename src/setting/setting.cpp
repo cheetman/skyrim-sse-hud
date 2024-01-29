@@ -672,6 +672,55 @@ namespace setting
 					if (j2.contains("show_items_window_auto_book")) {
 						show_items_window_auto_book = j2["show_items_window_auto_book"].get<bool>();
 					}
+
+					if (j2.contains("auto_whitelist_misc")) {
+						auto_whitelist_misc = j2["auto_whitelist_misc"].get<bool>();
+					}
+					if (j2.contains("auto_whitelist_ammo")) {
+						auto_whitelist_ammo = j2["auto_whitelist_ammo"].get<bool>();
+					}
+					if (j2.contains("auto_whitelist_food")) {
+						auto_whitelist_food = j2["auto_whitelist_food"].get<bool>();
+					}
+					if (j2.contains("auto_whitelist_flor")) {
+						auto_whitelist_flor = j2["auto_whitelist_flor"].get<bool>();
+					}
+					if (j2.contains("auto_whitelist_ingr")) {
+						auto_whitelist_ingr = j2["auto_whitelist_ingr"].get<bool>();
+					}
+					if (j2.contains("auto_whitelist_alch")) {
+						auto_whitelist_alch = j2["auto_whitelist_alch"].get<bool>();
+					}
+					if (j2.contains("auto_whitelist_sgem")) {
+						auto_whitelist_sgem = j2["auto_whitelist_sgem"].get<bool>();
+					}
+					if (j2.contains("auto_whitelist_tree")) {
+						auto_whitelist_tree = j2["auto_whitelist_tree"].get<bool>();
+					}
+					if (j2.contains("auto_whitelist_weap")) {
+						auto_whitelist_weap = j2["auto_whitelist_weap"].get<bool>();
+					}
+					if (j2.contains("auto_whitelist_ston")) {
+						auto_whitelist_ston = j2["auto_whitelist_ston"].get<bool>();
+					}
+					if (j2.contains("auto_whitelist_anvi")) {
+						auto_whitelist_anvi = j2["auto_whitelist_anvi"].get<bool>();
+					}
+					if (j2.contains("auto_whitelist_anhd")) {
+						auto_whitelist_anhd = j2["auto_whitelist_anhd"].get<bool>();
+					}
+					if (j2.contains("auto_whitelist_anpa")) {
+						auto_whitelist_anpa = j2["auto_whitelist_anpa"].get<bool>();
+					}
+					if (j2.contains("auto_whitelist_armo")) {
+						auto_whitelist_armo = j2["auto_whitelist_armo"].get<bool>();
+					}
+					if (j2.contains("auto_whitelist_tool")) {
+						auto_whitelist_tool = j2["auto_whitelist_tool"].get<bool>();
+					}
+					if (j2.contains("only_pickup_lotd_items")) {
+						only_pickup_lotd_items = j2["only_pickup_lotd_items"].get<bool>();
+					}
 				}
 
 				if (j.contains("LotdInfo")) {
@@ -1197,6 +1246,22 @@ namespace setting
 															 { "show_items_window_auto_cont_book", show_items_window_auto_cont_book },
 															 { "show_items_window_auto_achr_book", show_items_window_auto_achr_book },
 															 { "show_items_window_auto_enable", show_items_window_auto_enable },
+															 { "auto_whitelist_misc", auto_whitelist_misc },
+															 { "auto_whitelist_ammo", auto_whitelist_ammo },
+															 { "auto_whitelist_food", auto_whitelist_food },
+															 { "auto_whitelist_flor", auto_whitelist_flor },
+															 { "auto_whitelist_ingr", auto_whitelist_ingr },
+															 { "auto_whitelist_alch", auto_whitelist_alch },
+															 { "auto_whitelist_sgem", auto_whitelist_sgem },
+															 { "auto_whitelist_tree", auto_whitelist_tree },
+															 { "auto_whitelist_weap", auto_whitelist_weap },
+															 { "auto_whitelist_ston", auto_whitelist_ston },
+															 { "auto_whitelist_anvi", auto_whitelist_anvi },
+															 { "auto_whitelist_anhd", auto_whitelist_anhd },
+															 { "auto_whitelist_anpa", auto_whitelist_anpa },
+															 { "auto_whitelist_armo", auto_whitelist_armo },
+															 { "auto_whitelist_tool", auto_whitelist_tool },
+															 { "only_pickup_lotd_items", only_pickup_lotd_items },
 
 														 } },
 									   { "LotdInfo", { { "showlocationItemCount", lotd::showlocationItemCount }, { "isArmoryIgnore", lotd::isArmoryIgnore }, { "isCrimeIgnore", lotd::isCrimeIgnore }, { "isInvIgnore", lotd::isInvIgnore }, { "isShowAttached", lotd::isShowAttached }, { "colorTableHeaderBgX", lotd::colorTableHeaderBg.x }, { "colorTableHeaderBgY", lotd::colorTableHeaderBg.y }, { "colorTableHeaderBgZ", lotd::colorTableHeaderBg.z }, { "colorTableHeaderBgW", lotd::colorTableHeaderBg.w }, { "colorTableBorderStrongX", lotd::colorTableBorderStrong.x }, { "colorTableBorderStrongY", lotd::colorTableBorderStrong.y }, { "colorTableBorderStrongZ", lotd::colorTableBorderStrong.z }, { "colorTableBorderStrongW", lotd::colorTableBorderStrong.w }, { "isAutoTrackLotdItems", lotd::isAutoTrackLotdItems }, { "isAutoTrackLotdExcavation", lotd::isAutoTrackLotdExcavation }, { "isAutoTrackLotdCards", lotd::isAutoTrackLotdCards }, { "isAutoTrackLotdItemsCrimeIgnore", lotd::isAutoTrackLotdItemsCrimeIgnore }, { "showDisplayItemCount", lotd::showDisplayItemCount }, { "scanType", lotd::scanType } } }

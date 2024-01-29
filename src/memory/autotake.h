@@ -30,36 +30,7 @@ extern bool auto_whitelist_anpa;
 extern bool auto_whitelist_armo;
 extern bool auto_whitelist_tool;
 
-//extern std::unordered_set<RE::FormID> whiteListFormIds_misc;
-//extern std::unordered_set<RE::FormID> whiteListFormIds_ammo;
-//extern std::unordered_set<RE::FormID> whiteListFormIds_food;
-//extern std::unordered_set<RE::FormID> whiteListFormIds_flor;
-//extern std::unordered_set<RE::FormID> whiteListFormIds_ingr;
-//extern std::unordered_set<RE::FormID> whiteListFormIds_alch;
-//extern std::unordered_set<RE::FormID> whiteListFormIds_sgem;
-//extern std::unordered_set<RE::FormID> whiteListFormIds_tree;
-//extern std::unordered_set<RE::FormID> whiteListFormIds_weap;
-//extern std::unordered_set<RE::FormID> whiteListFormIds_ston;
-//extern std::unordered_set<RE::FormID> whiteListFormIds_anvi;
-//extern std::unordered_set<RE::FormID> whiteListFormIds_anhd;
-//extern std::unordered_set<RE::FormID> whiteListFormIds_anpa;
-//extern std::unordered_set<RE::FormID> whiteListFormIds_armo;
-//
-//extern std::vector<ExcludeForm> whiteListForms_misc;
-//extern std::vector<ExcludeForm> whiteListForms_ammo;
-//extern std::vector<ExcludeForm> whiteListForms_food;
-//extern std::vector<ExcludeForm> whiteListForms_flor;
-//extern std::vector<ExcludeForm> whiteListForms_ingr;
-//extern std::vector<ExcludeForm> whiteListForms_alch;
-//extern std::vector<ExcludeForm> whiteListForms_sgem;
-//extern std::vector<ExcludeForm> whiteListForms_tree;
-//extern std::vector<ExcludeForm> whiteListForms_weap;
-//extern std::vector<ExcludeForm> whiteListForms_ston;
-//extern std::vector<ExcludeForm> whiteListForms_anvi;
-//extern std::vector<ExcludeForm> whiteListForms_anhd;
-//extern std::vector<ExcludeForm> whiteListForms_anpa;
-//extern std::vector<ExcludeForm> whiteListForms_tool;
-//extern std::vector<ExcludeForm> whiteListForms_armo;
+extern bool only_pickup_lotd_items;
 
 extern bool show_items_window_auto_ignore;
 extern int show_items_window_auto_dis;

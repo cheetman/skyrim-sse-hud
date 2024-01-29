@@ -70,6 +70,7 @@ namespace lotd
 	bool isAutoTrackLotdItemsCrimeIgnore = true;
 	float displayCount = 0.0f;
 
+
 	bool compareForLotdItem(const LotdInfo& info1, const LotdInfo& info2)
 	{
 		if (info1.gold != info2.gold) {
@@ -416,7 +417,6 @@ namespace lotd
 							}
 
 						} else {
-						
 						}
 					}
 				} else {

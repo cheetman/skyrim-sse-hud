@@ -8,7 +8,7 @@
 
 namespace menu
 {
-	bool isShowQuestText = true;
+	bool isShowQuestText = false;
 	bool isShowQuestStageAll = false;
 
 	ImVec4 colorQuestTableHeaderBg(0.0f, 0.7f, 0.0f, 0.75f);
