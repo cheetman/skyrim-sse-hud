@@ -1562,26 +1562,33 @@ namespace menu
 	};
 
 	ImGuiWindow* childWindow = nullptr;
+	ImVec2 windowLastSize(0, 0);
+	ImVec2 uv0(0, 0);  // 左上角UV坐标
+	ImVec2 uv1(1, 1);
+
+	void calPicSize(ImVec2& windowSize)
+	{
+		float screenAspect = windowSize.x / windowSize.y;
+		float imageAspect = data::images[0].width / data::images[0].height;
+		if (imageAspect > screenAspect) {
+			float aspect = screenAspect / imageAspect;
+			uv0.x = (1.0f - aspect) * 0.5f;
+			uv1.x = 1.0f - uv0.x;
+			uv0.y = 0.0f;
+			uv1.y = 1.0f;
+		} else {
+			float aspect = imageAspect / screenAspect;
+			uv0.y = (1.0f - aspect) * 0.5f;
+			uv1.y = 1.0f - uv0.y;
+			uv0.x = 0.0f;
+			uv1.x = 1.0f;
+		}
+	}
+
+
 	void renderItems()
 	{
 		if (activeItems) {
-			
-			if (childWindow) {
-				ImVec2 childWindowSize = childWindow->Size;
-				ImVec2 childWindowPos = childWindow->Pos;
-				// 设置下一个窗口的位置为(10, 10)
-				ImGui::SetNextWindowPos(ImVec2(childWindowPos.x, childWindowPos.y));
-				ImGui::SetNextWindowSize(ImVec2(400, 400));
-			} else {
-				ImGui::SetNextWindowPos(ImVec2(0, 0));
-				ImGui::SetNextWindowSize(ImVec2(0, 0));
-			}
-
-			// 背面窗口
-			ImGui::Begin("BackgroundWindow", nullptr, ImGuiWindowFlags_NoTitleBar);
-			ImGui::End();
-
-
 			ImGuiWindowFlags window_flags2 = 0;
 			if (no_titlebar)
 				window_flags2 |= ImGuiWindowFlags_NoTitleBar;
@@ -3563,13 +3570,40 @@ namespace menu
 			ImGui::End();
 
 			childWindow = ImGui::FindWindowByName("附近物品信息");
+			ImVec2 windowSize;
+			bool isShow = false;
+			if (childWindow) {
+				windowSize = childWindow->Size;
+				if (childWindow->Size.x != windowLastSize.x || childWindow->Size.y != windowLastSize.y) {
+					calPicSize(windowSize);
+					windowLastSize.x = windowSize.x;
+					windowLastSize.y = windowSize.y;
+					ImVec2 windowPos = childWindow->Pos;
+					ImGui::SetNextWindowPos(ImVec2(windowPos.x, windowPos.y));
+					ImGui::SetNextWindowSize(ImVec2(windowSize.x, windowSize.y));
+					isShow = true;
+				} else {
+					ImVec2 windowPos = childWindow->Pos;
+					// 设置下一个窗口的位置为(10, 10)
+					ImGui::SetNextWindowPos(ImVec2(windowPos.x, windowPos.y));
+					ImGui::SetNextWindowSize(ImVec2(windowSize.x, windowSize.y));
+					isShow = true;
+				}
+			}
 
-			/*ImVec2 windowSize = ImGui::GetWindowSize();
-			float windowWidth = windowSize.x;
-			float windowHeight = windowSize.y;
-			ImVec2 windowPos = ImGui::GetWindowPos();
-			float windowX = windowPos.x;
-			float windowY = windowPos.y;*/
+			if (isShow) {
+				// 背面窗口
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+				ImGui::Begin("BackgroundWindow", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus);
+				if (!data::images.empty()) {
+					// 计算uv
+					ImGui::Image(data::images[0].textureView, ImVec2(windowSize.x, windowSize.y), uv0, uv1);
+				}
+				ImGui::End();
+				ImGui::PopStyleVar(2);
+
+			}
 		}
 	}
 

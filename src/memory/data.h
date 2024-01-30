@@ -1,5 +1,6 @@
 #pragma once
 #include <unordered_set>
+#include <utils/WICTextureLoader/WICTextureLoader11.h>
 
 struct ExcludeForm
 {
@@ -66,6 +67,17 @@ namespace data
 		RE::NiPoint3 angle;
 	};
 
+	
+	struct ImageData
+	{
+		std::string name;
+		ID3D11ShaderResourceView* textureView;
+		ID3D11Resource* texture;
+		float width;
+		float height;
+	};
+
 	extern std::vector<PositionData> moveToPositions;
 	extern std::vector<PositionData> tmpMoveToPositions;
+	extern std::vector<ImageData> images;
 }

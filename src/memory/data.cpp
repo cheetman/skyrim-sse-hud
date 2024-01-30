@@ -1,4 +1,5 @@
 #include "data.h"
+#include <hook/BSRenderManager.h>
 #include <memory/autotake.h>
 #include <memory/lotd.h>
 #include <memory/memory.h>
@@ -33,6 +34,8 @@ namespace data
 
 	std::vector<PositionData> moveToPositions;
 	std::vector<PositionData> tmpMoveToPositions;
+
+	std::vector<ImageData> images;
 
 	void init()
 	{
@@ -165,5 +168,47 @@ namespace data
 				}
 			}
 		}
+
+		// 图片载入
+
+		//LoadFromWICFile
+		//ImGui::Image();
+		//HRESULT hr = DirectX::LoadFromWICFile(L"your_image.png", DirectX::WIC_FLAGS_NONE, &metadata, scratchImage);
+		//WCHAR strFile[40];
+		//wsprintfW(strFile, L"E:\\test.png");
+
+		
+		for (const auto& entry : std::filesystem::directory_iterator(L"C:\\Users\\汪意超\\Downloads")) {
+			if (entry.path().extension() == ".png" || entry.path().extension() == ".jpg") {
+				// 创建纹理和纹理视图
+				ID3D11ShaderResourceView* textureView;
+				ID3D11Resource* texture;
+				auto manager = RE::BSRenderManager::GetSingleton();
+				auto device = reinterpret_cast<ID3D11Device*>(manager->forwarder);
+				HRESULT hr = DirectX::CreateWICTextureFromFile(device, entry.path().c_str(), &texture, &textureView);
+				if (SUCCEEDED(hr)) {
+
+					ID3D11Texture2D* pTexture = reinterpret_cast<ID3D11Texture2D*>(texture);
+					if (pTexture) {
+						D3D11_TEXTURE2D_DESC desc;
+						pTexture->GetDesc(&desc);
+						UINT width = desc.Width;
+						UINT height = desc.Height;
+
+						ImageData item;
+						item.name = entry.path().filename().string();
+						item.textureView = textureView;
+						item.texture = texture;
+						item.width = desc.Width;
+						item.height = desc.Height;
+						images.push_back(item);
+					}
+				}
+
+
+			}
+		}
+
+	
 	}
 }
